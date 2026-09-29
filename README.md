@@ -1,91 +1,74 @@
-# CleanImage
+# Toolstack
 
-A privacy-first web app that inspects and removes embedded metadata (EXIF, XMP, IPTC, PNG text, C2PA and more) from images, **entirely in the browser**. Images are never uploaded.
+A growing collection of file tools that run **entirely in the browser**. Files are never uploaded. The home page (`/`) lists every tool, and each tool lives at `/tools/<tool-id>`.
 
-> CleanImage removes supported embedded metadata and provenance information from the image file. It does not modify pixels, so it does not remove invisible watermarks or other signals in the image content, and it does not make an image "undetectable".
+| Tool | URL | What it does |
+|---|---|---|
+| **Clean Image** | `/tools/clean-image` | Inspect and remove EXIF, GPS, XMP, IPTC, PNG text, C2PA and AI-generation metadata from JPEG, PNG and WebP without re-encoding. |
 
-## Features
+More tools will be added. See [docs/adding-a-tool.md](docs/adding-a-tool.md).
 
-- **Inspect** EXIF (incl. GPS, camera, dates, embedded thumbnails), XMP, IPTC/Photoshop IRB, JPEG comments, PNG `tEXt`/`zTXt`/`iTXt`/`eXIf`/`tIME`, ICC profiles, C2PA manifests and trailing data.
-- **AI / provenance labelling**: flags generator-related fields (e.g. `Software`, `CreatorTool`, Stable Diffusion `parameters`) and explicit declarations (IPTC `DigitalSourceType`, C2PA). These are labels, not a detection verdict.
-- **Lossless sanitization**: metadata containers are cut out of the file and the compressed image data is copied byte for byte, so nothing is re-encoded.
-- **Two modes**: *Clean privacy metadata* (keeps the ICC color profile) and *Remove all supported metadata*.
-- **Orientation-safe**: optionally keeps a single-tag EXIF block so rotated photos still display upright.
-- **Self-verification**: the output is re-parsed, then checked for leftover metadata, unchanged dimensions, byte-identical image data, valid PNG CRCs and decodability.
-- Before/after comparison, per-field diff, a Web Worker with cancellation, drag & drop, paste, dark mode, and keyboard and screen-reader support.
-- **File explained view** with Overview / All metadata / Technical tabs: encoding details (JPEG process, subsampling, JFIF; PNG bit depth, color type, gamma; WebP compression, alpha, animation), MD5/SHA-1/SHA-256/SHA-512/CRC32/Adler32 checksums, first-bytes hex and ASCII preview, raw JSON, and **Export metadata** as JSON.
-- **AI disclosure detection**: recognizes labels such as "Made with Google AI" and "Imagined with AI", plus common generator names and prompt parameters. CleanImage does not touch pixel-level watermarks such as SynthID (see the FAQ in the app).
+## Project structure
+
+```text
+src/
+├── main.tsx                 entry: theme + router
+├── app/                     site shell
+│   ├── router.tsx           routes generated from the tool registry (each tool lazy-loaded)
+│   ├── Layout.tsx           header, footer, page titles
+│   └── RouteStates.tsx      loading and error screens
+├── pages/                   site pages (HomePage = tool directory, NotFoundPage)
+├── config/site.ts           site name, tagline, description
+├── shared/                  code any tool can use
+│   ├── ui/                  Button, Card, Badge, Icon, Tabs, Panel, Headline, ThemeToggle…
+│   ├── lib/                 byte readers, CRC-32, bounded inflate, checksums, AppError
+│   └── utils/               formatting, theme
+├── styles/index.css         design tokens (palette, primary color, fonts)
+└── tools/
+    ├── types.ts             ToolDefinition
+    ├── registry.ts          the list of tools ← register new tools here
+    └── clean-image/         everything for the Clean Image tool
+        ├── index.ts         tool definition
+        ├── CleanImagePage.tsx
+        ├── components/  features/  hooks/  workers/  config/  types/  utils/
+tests/tools/<tool-id>/       unit tests per tool (Vitest)
+e2e/                         browser tests: home.spec.ts + one spec per tool (Playwright)
+docs/                        adding-a-tool.md + docs/tools/<tool-id>/
+```
 
 ## Privacy
 
-- No backend, no uploads, no database, no analytics, no telemetry.
-- All processing happens in a Web Worker. The worker has no network code.
-- A strict Content Security Policy (`connect-src 'self'`) is shipped for Netlify/Cloudflare (`public/_headers`) and Vercel (`vercel.json`).
-- The e2e suite asserts that processing an image triggers only same-origin `GET` requests for app assets.
-
-See [docs/privacy.md](docs/privacy.md).
-
-## Supported formats
-
-| Format | Inspect | Sanitize | Verification |
-|---|:-:|:-:|:-:|
-| JPEG | ✓ | ✓ | ✓ |
-| PNG (incl. APNG) | ✓ | ✓ | ✓ |
-| WebP (lossy, lossless, animated) | ✓ | ✓ | ✓ |
-| HEIC / AVIF / TIFF | Planned | Planned | Planned |
-
-Details per metadata type: [docs/supported-formats.md](docs/supported-formats.md).
-
-## Architecture
-
-```text
-React UI ──postMessage(File)──▶ Web Worker
-                                  │
-                                  ├─ detect format (magic bytes)
-                                  ├─ walk structure (JPEG segments / PNG chunks / RIFF chunks)
-                                  ├─ parse payloads (EXIF, XMP, IPTC, ICC, C2PA)
-                                  ├─ sanitize (drop metadata containers, copy image data)
-                                  └─ verify (re-parse + diff + checks + createImageBitmap)
-React UI ◀──ArrayBuffer (transferred)──┘  → Blob → object URL → download
-```
-
-The parsers are written from scratch against the format specs, with no third-party metadata libraries. See [docs/architecture.md](docs/architecture.md).
+- No backend, uploads, database, analytics or telemetry. Every tool processes files locally, heavy work runs in Web Workers.
+- A strict Content Security Policy (`connect-src 'self'`) ships for Netlify/Cloudflare (`public/_headers`) and Vercel (`vercel.json`).
+- The e2e suite asserts that processing a file makes only same-origin `GET` requests for the app's own assets.
 
 ## Development
 
-Requires Node 20.19+ (see `.nvmrc`).
+Requires Node 20.19+ (`nvm use` reads `.nvmrc`).
 
 ```bash
 npm install
 npm run dev          # http://localhost:5173
-npm test             # unit tests (Vitest)
-npm run test:e2e     # browser tests (Playwright; builds and serves the production bundle)
+npm test             # unit tests
+npm run test:e2e     # browser tests against the production build (first run: npx playwright install chromium)
 npm run lint
-npm run build        # static output in dist/
-npm run preview
+npm run typecheck
+npm run build        # static site in dist/
 ```
-
-First-time e2e setup: `npx playwright install chromium`.
-
-## Testing
-
-- `tests/`: unit tests for parsers, sanitizers, verification, classification and hostile input (truncated files, IFD loops, invalid lengths, decompression bombs, oversized values, pixel limits, XSS strings). Fixtures are generated in code (`tests/fixtures/builders.ts`), so each test documents exactly what it feeds in.
-- `e2e/`: real Chromium. Real JPEG/PNG/WebP files are produced by the browser's canvas encoder, metadata is injected, and each file is cleaned through the UI. The test downloads the result, re-analyzes it, and asserts all checks pass with no off-origin requests and no console/CSP errors.
 
 ## Deployment
 
-`npm run build` produces a fully static `dist/`. Deploy it to Netlify, Cloudflare Pages, Vercel or GitHub Pages. Keep the CSP headers from `public/_headers` / `vercel.json`. GitHub Pages can't set headers, so prefer a host that can.
+`npm run build` produces a fully static `dist/`. Tool pages use client-side routes, so the host must serve `index.html` for unknown paths. That's already configured for Netlify/Cloudflare Pages (`public/_redirects`) and Vercel (`vercel.json`). Keep the security headers from the same files.
 
-## Limitations
+## Clean Image
 
-- Pixel-level signals (invisible watermarks, steganography) are not touched.
-- C2PA manifests are detected and removed, but their signatures are **not** validated. Removing the embedded manifest doesn't affect provenance records held elsewhere.
-- Extra images appended to a JPEG (MPF previews, depth maps) are removed as trailing data. Their pixels are not analyzed.
-- Limits: 50 MB file size, 100 MP (header-checked before any decode). Configurable in `src/config/limits.ts`.
+- **Inspects** EXIF (GPS, camera, dates, thumbnails), XMP, IPTC, JPEG comments, PNG text chunks, ICC, C2PA and trailing data, plus encoding details, checksums and raw bytes.
+- **Labels** AI and provenance metadata (C2PA, IPTC digital source type, "Made with Google AI", generator parameters). These are labels, not a detection verdict.
+- **Cleans losslessly** by removing metadata containers and copying image data byte for byte. Two modes are available, and orientation can be preserved.
+- **Verifies** the output by re-parsing it, diffing the metadata, checking dimensions and image-data identity, and test-decoding it in the browser.
+- **Doesn't touch pixels**, so it doesn't remove invisible watermarks (e.g. SynthID) and doesn't change AI-detector results.
 
-## Roadmap
-
-Next: PWA/offline install, batch mode + ZIP, HEIC/AVIF/TIFF, deeper C2PA inspection, optional ExifTool backend. See the implementation plan.
+Docs: [architecture](docs/tools/clean-image/architecture.md) · [supported formats](docs/tools/clean-image/supported-formats.md) · [privacy](docs/tools/clean-image/privacy.md)
 
 ## License
 
