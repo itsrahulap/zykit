@@ -22,7 +22,9 @@ function ToolCard({ tool }: { tool: ToolDefinition }) {
           </span>
         )}
       </div>
-      <h3 className="mt-5 text-xl font-bold tracking-tight text-slate-900 dark:text-white">{tool.name}</h3>
+      <h3 id={`card-${tool.id}`} className="mt-5 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+        {tool.name}
+      </h3>
       <p className="mt-1 font-medium text-slate-700 dark:text-slate-300">{tool.tagline}</p>
       <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{tool.description}</p>
       <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tags">
@@ -50,7 +52,7 @@ function ToolCard({ tool }: { tool: ToolDefinition }) {
       >
         {body}
       </Link>
-      <FavoriteButton tool={tool} className="absolute top-6 right-6 sm:top-7 sm:right-7" />
+      <FavoriteButton tool={tool} describedBy={`card-${tool.id}`} className="absolute top-6 right-6 sm:top-7 sm:right-7" />
     </div>
   );
 }

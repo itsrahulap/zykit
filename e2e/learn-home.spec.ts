@@ -104,7 +104,7 @@ test.describe('Learn home and shell', () => {
     await page.goto('/learn');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.keyboard.press('Control+k');
-    const dialog = page.getByRole('dialog', { name: 'Search Learn' });
+    const dialog = page.getByRole('dialog', { name: 'Search Zykit' });
     await expect(dialog).toBeVisible();
     const input = dialog.getByRole('combobox');
     await expect(input).toBeFocused();
@@ -119,10 +119,10 @@ test.describe('Learn home and shell', () => {
     await expect(dialog.getByRole('option').first()).toHaveAttribute('aria-selected', 'true');
 
     await input.fill('closure');
-    const first = dialog.getByRole('option').first();
+    const first = dialog.getByRole('group', { name: 'Learn' }).getByRole('option').first();
     await expect(first).toContainText('Closures');
     await expect(first).toContainText('Topic · JavaScript');
-    await expect(first).toHaveAttribute('aria-selected', 'true');
+    await expect(dialog.getByRole('option').first()).toHaveAttribute('aria-selected', 'true');
     await expect(first.locator('mark')).toHaveText('Closure');
     await input.press('Enter');
     await expect(page).toHaveURL(/\/learn\/javascript\/closures$/);

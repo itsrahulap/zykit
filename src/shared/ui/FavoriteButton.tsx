@@ -10,17 +10,22 @@ export function StarIcon({ filled, className = 'h-5 w-5' }: { filled: boolean; c
   );
 }
 
-export function FavoriteButton({ tool, className = '' }: { tool: { id: string; name: string }; className?: string }) {
+/**
+ * The accessible name is always "Add to favorites" (state via aria-pressed), so it never collides
+ * with a tool's own buttons; pass `describedBy` to name the tool when several stars share a page.
+ */
+export function FavoriteButton({ tool, className = '', describedBy }: { tool: { id: string; name: string }; className?: string; describedBy?: string }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const on = isFavorite(tool.id);
   return (
     <button
       type="button"
       aria-pressed={on}
-      aria-label={`Favorite ${tool.name}`}
-      title={on ? 'Remove from favorites' : 'Add to favorites'}
+      aria-label="Add to favorites"
+      aria-describedby={describedBy}
+      title={on ? `Remove ${tool.name} from favorites` : `Add ${tool.name} to favorites`}
       onClick={(e) => {
-        // Cards wrap the button in a link; starring shouldn't open the tool.
+        // Never let a click on the star reach a surrounding link.
         e.preventDefault();
         e.stopPropagation();
         toggleFavorite(tool.id);

@@ -80,3 +80,43 @@ test('home page has no horizontal scroll at 320px', async ({ page }) => {
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test('favorite and recently used tools show above the directory', async ({ page }) => {
+  await page.goto('/tools/json-formatter');
+  const star = page.getByRole('button', { name: 'Add to favorites' });
+  await expect(star).toHaveAttribute('aria-pressed', 'false');
+  await star.click();
+  await expect(star).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/tools/uuid-generator');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+  await page.goto('/');
+  await page.reload();
+  const favorites = page.getByRole('region', { name: 'Favorites' });
+  await expect(favorites.getByRole('link', { name: 'JSON Formatter' })).toBeVisible();
+  const recent = page.getByRole('region', { name: 'Recently used' });
+  await expect(recent.getByRole('link')).toHaveText(['UUID Generator', 'JSON Formatter']);
+
+  // Hidden while searching.
+  await page.getByRole('searchbox', { name: 'Search tools' }).fill('uuid');
+  await expect(favorites).toBeHidden();
+  await expect(recent).toBeHidden();
+  await page.getByRole('searchbox', { name: 'Search tools' }).fill('');
+
+  // Unstar from the home card.
+  const cardStar = page.getByRole('button', { name: 'Add to favorites', pressed: true });
+  await expect(cardStar).toHaveCount(1);
+  await cardStar.click();
+  await expect(favorites).toBeHidden();
+  await expect(page).toHaveURL(/\/$/);
+});
+
+test('tool pages suggest related tools and Learn lessons', async ({ page }) => {
+  await page.goto('/tools/sql-formatter');
+  const related = page.getByRole('region', { name: 'Related tools' });
+  await expect(related.getByRole('link')).not.toHaveCount(0);
+  const learn = page.getByRole('region', { name: 'Learn the concept' });
+  await expect(learn.getByRole('link', { name: /Joins/ })).toHaveAttribute('href', '/learn/databases/joins');
+  await related.getByRole('link', { name: /JSON to SQL/ }).click();
+  await expect(page).toHaveURL(/\/tools\/json-to-sql$/);
+});

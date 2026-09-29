@@ -97,6 +97,14 @@
   outline-offset: 2px;
 }
 
+/* Text fields show a caret when focused and style their own focus (border + ring utilities),
+   so they skip the outline. Buttons, links, checkboxes and other controls keep it. */
+input:not([type='checkbox'], [type='radio'], [type='file'], [type='range'], [type='color'], [type='button'], [type='submit'], [type='reset']):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* iOS Safari zooms the page when a field under 16px gets focus, so phones get 16px fields.
    Unlayered, so it wins over Tailwind's text-sm utility without !important. */
 @media (max-width: 639px) {

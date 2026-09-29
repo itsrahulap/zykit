@@ -212,9 +212,9 @@ export function planResize(srcW: number, srcH: number, spec: ResizeSpec): Resize
         plan = { width: side(srcW * k), height: side(srcH * k), ...full };
       } else {
         // cover: crop the source to the box's aspect ratio, centred.
-        const k = Math.max(bw / srcW, bh / srcH);
-        const sw = Math.min(srcW, bw / k);
-        const sh = Math.min(srcH, bh / k);
+        const wider = srcW * bh > bw * srcH;
+        const sw = wider ? (srcH * bw) / bh : srcW;
+        const sh = wider ? srcH : (srcW * bh) / bw;
         plan = { width: bw, height: bh, sx: (srcW - sw) / 2, sy: (srcH - sh) / 2, sw, sh };
       }
       break;

@@ -58,7 +58,7 @@ export function decodeInput(text: string): Decoded {
   let s = text.trim();
   // Pull a data URI out of CSS, HTML or JSON wrappers.
   const at = s.search(/data:/i);
-  if (at > 0) s = s.slice(at).replace(/["')\s>;]+[\s\S]*$/, (m) => (/^[\s]/.test(m) && !/["')>;]/.test(m) ? m : ''));
+  if (at > 0) s = s.slice(at).split(/["')>]/)[0].replace(/;\s*$/, '').trim();
   s = s.replace(/^["']|["']$/g, '');
   if (!s) throw new Base64Error('Paste a Base64 string or a data URI.');
 
