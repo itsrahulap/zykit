@@ -9,13 +9,11 @@ const CommandPalette = lazy(() => import('./CommandPalette'));
 const preload = () => void import('./CommandPalette');
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [opens, setOpens] = useState(0);
+  const [{ isOpen, opens }, setState] = useState({ isOpen: false, opens: 0 });
   const setOpen = useCallback((next: boolean | ((was: boolean) => boolean)) => {
-    setIsOpen((was) => {
-      const now = typeof next === 'function' ? next(was) : next;
-      if (now && !was) setOpens((n) => n + 1);
-      return now;
+    setState((s) => {
+      const now = typeof next === 'function' ? next(s.isOpen) : next;
+      return now === s.isOpen ? s : { isOpen: now, opens: s.opens + (now ? 1 : 0) };
     });
   }, []);
   const open = useCallback(() => setOpen(true), [setOpen]);

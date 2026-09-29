@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import imageConverter from './index';
 import { convertedName, convertJob, DEFAULT_SETTINGS, READABLE, type ConvertSettings, type OutputFormat } from './features/convert';
-import { detectEncodableTypes, isLossy, MIME_LABEL, supportsAlpha } from '../../shared/lib/image';
+import { detectEncodableTypes, isLossy, MIME_EXT, MIME_LABEL, supportsAlpha } from '../../shared/lib/image';
 import {
   BatchList,
   BatchToolbar,
@@ -75,7 +75,7 @@ export default function ImageConverterPage() {
         <ImageDropZone onFiles={batch.addFiles} accept={ACCEPT} hint="Many at once · up to 50 MB each · or paste" />
       ) : (
         <div className="space-y-4">
-          <BatchToolbar items={batch.items} zipName={`converted-${MIME_EXT_FOR_ZIP[s.format]}.zip`} onClear={batch.clear} onAdd={batch.addFiles} />
+          <BatchToolbar items={batch.items} zipName={`converted-${MIME_EXT[s.format]}.zip`} onClear={batch.clear} onAdd={batch.addFiles} />
           <BatchList items={batch.items} onRemove={batch.remove} />
         </div>
       )}
@@ -98,4 +98,3 @@ export default function ImageConverterPage() {
   );
 }
 
-const MIME_EXT_FOR_ZIP: Record<OutputFormat, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/avif': 'avif' };
