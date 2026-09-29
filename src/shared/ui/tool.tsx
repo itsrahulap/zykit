@@ -3,11 +3,15 @@
 import { useEffect, useState, type TextareaHTMLAttributes } from 'react';
 import { Link } from 'react-router';
 import type { ToolDefinition } from '../../tools/types';
+import { DropZone } from './DropZone';
 import { FavoriteButton } from './FavoriteButton';
+import { ShareButton } from './ShareButton';
+import { useCurrentTool } from './toolContext';
 import { Icon } from './ui';
 
 /** "All tools / <Tool name>" trail shown at the top of every tool page, with the favorite star. */
 export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id?: string } }) {
+  const ctx = useCurrentTool();
   const trail = (
     <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-slate-500 dark:text-slate-400">
       <ol className="flex flex-wrap items-center gap-2">
@@ -27,19 +31,32 @@ export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id
   return (
     <div className="flex items-center justify-between gap-3">
       {trail}
-      <FavoriteButton tool={{ id: tool.id, name: tool.name }} />
+      <div className="flex shrink-0 items-center gap-1">
+        {ctx?.tool.id === tool.id && ctx.tool.shareable && <ShareButton />}
+        <FavoriteButton tool={{ id: tool.id, name: tool.name }} />
+      </div>
     </div>
   );
 }
 
-/** Monospace textarea for code and text input. Pass `label` for an accessible name. */
+/**
+ * Monospace textarea for code and text input. Pass `label` for an accessible name, and
+ * `onFileText` to accept a dropped text file (with a drop state and size cap).
+ */
 export function CodeArea({
   label,
   hint,
   className = '',
+  onFileText,
+  maxFileBytes,
   ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; hint?: string }) {
-  return (
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label: string;
+  hint?: string;
+  onFileText?: (text: string, file: File) => void;
+  maxFileBytes?: number;
+}) {
+  const field = (
     <label className="block">
       <span className="eyebrow mb-2 flex items-baseline justify-between gap-3 text-slate-600 dark:text-slate-400">
         {label}
@@ -54,6 +71,12 @@ export function CodeArea({
         {...props}
       />
     </label>
+  );
+  if (!onFileText || props.readOnly || props.disabled) return field;
+  return (
+    <DropZone onText={onFileText} maxBytes={maxFileBytes}>
+      {field}
+    </DropZone>
   );
 }
 

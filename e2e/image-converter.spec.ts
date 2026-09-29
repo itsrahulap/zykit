@@ -42,3 +42,16 @@ test('Image Converter has no sideways scrolling on a phone', async ({ page }) =>
   await page.goto('/tools/image-converter');
   await expectNoSideScroll(page);
 });
+
+test('converts an SVG (decoded through an image element) to PNG', async ({ page }) => {
+  const w = watch(page);
+  await page.goto('/tools/image-converter');
+  await page.getByRole('button', { name: 'PNG', exact: true }).click();
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="32"><rect width="64" height="32" fill="#059669"/></svg>';
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'badge.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svg) });
+  const files = page.getByRole('list', { name: 'Files' });
+  await expect(files.getByText('64 × 32 → 64 × 32 px')).toBeVisible();
+  const [dl] = await Promise.all([page.waitForEvent('download'), files.getByRole('link', { name: /badge\.png/ }).click()]);
+  expect(sniffImageType(await downloaded(dl))?.mime).toBe('image/png');
+  w.check();
+});

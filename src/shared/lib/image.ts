@@ -299,8 +299,7 @@ async function decodeWithElement(source: Blob): Promise<ImageBitmap> {
 
 /**
  * Decode a file to an ImageBitmap with EXIF orientation applied. Checks the 50 MB and 100 MP caps
- * (from the header before decoding when possible). Falls back to an <img> on the main thread, which
- * also handles SVG and anything else the browser can display.
+ * (from the header before decoding when possible). SVG is decoded through an <img> on the main thread.
  */
 export async function decodeImage(source: Blob): Promise<ImageBitmap> {
   checkFileSize(source.size);
@@ -311,7 +310,9 @@ export async function decodeImage(source: Blob): Promise<ImageBitmap> {
   try {
     bitmap = await createImageBitmap(source, { imageOrientation: 'from-image' });
   } catch {
-    if (typeof document !== 'undefined') bitmap = await decodeWithElement(source).catch(() => null);
+    // createImageBitmap can't take SVG from a Blob; an <img> can. (Only for SVG: a failed <img>
+    // decode also logs a CSP error in Chrome.)
+    if (typeof document !== 'undefined' && sniffImageType(head)?.mime === 'image/svg+xml') bitmap = await decodeWithElement(source).catch(() => null);
   }
   if (!bitmap) {
     const name = formatName(head, source.type);
