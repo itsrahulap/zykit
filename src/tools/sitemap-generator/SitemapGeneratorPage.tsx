@@ -111,8 +111,8 @@ export default function SitemapGeneratorPage() {
       {tab === 'generate' ? (
         <>
           <section aria-label="Defaults" className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-            <label className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              lastmod
+            <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span>lastmod</span>
               <input type="date" aria-label="lastmod" className={inputClass} value={lastmod} onChange={(e) => setLastmod(e.target.value)} />
               <button type="button" className={smallButton} onClick={() => setLastmod(today())}>
                 Today
@@ -122,7 +122,7 @@ export default function SitemapGeneratorPage() {
                   None
                 </button>
               )}
-            </label>
+            </div>
             <Select<string>
               label="changefreq"
               options={[{ value: '', label: 'None' }, ...CHANGEFREQS.map((c) => ({ value: c, label: c }))]}

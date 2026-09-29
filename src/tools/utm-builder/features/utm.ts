@@ -93,13 +93,13 @@ function decodeKey(k: string): string {
 /** Parse a base URL. Adds https:// when the scheme is missing. */
 export function parseBase(input: string): { url: URL; addedScheme: boolean } | null {
   const raw = input.trim();
-  if (!raw) return null;
+  if (!raw || /\s/.test(raw)) return null;
   const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw) && !/^[^/:]+:\d/.test(raw);
   const candidate = hasScheme ? raw : `https://${raw.replace(/^\/\//, '')}`;
   try {
     const url = new URL(candidate);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
-    if (!url.hostname) return null;
+    if (!url.hostname || (!url.hostname.includes('.') && url.hostname !== 'localhost' && !url.hostname.startsWith('['))) return null;
     return { url, addedScheme: !hasScheme };
   } catch {
     return null;

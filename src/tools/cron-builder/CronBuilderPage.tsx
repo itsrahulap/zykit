@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import cronBuilder from './index';
 import {
   builderToField,
@@ -132,13 +132,18 @@ export default function CronBuilderPage() {
   const [tz, setTz] = useState(localZone);
   const [field, setFieldTab] = useState<FieldName>('minute');
   const zones = useMemo(() => timeZones(), []);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
 
   const parsed = useMemo(() => parseCron(expression), [expression]);
   const cron = parsed.ok && 'cron' in parsed ? parsed.cron : null;
   const reboot = parsed.ok && 'reboot' in parsed;
   const errors = parsed.ok ? [] : parsed.errors;
   const description = cron ? describeCron(cron) : reboot ? 'At system startup' : '';
-  const runs = useMemo(() => (cron ? nextRuns(cron, new Date(), tz, 10) : null), [cron, tz]);
+  const runs = useMemo(() => (cron ? nextRuns(cron, new Date(now), tz, 10) : null), [cron, tz, now]);
 
   const fieldTexts = splitFields(expression);
   const hasSeconds = fieldTexts ? 'second' in fieldTexts : false;
