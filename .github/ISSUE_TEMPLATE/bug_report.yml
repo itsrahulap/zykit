@@ -1,0 +1,42 @@
+name: Bug report
+description: Something on the site doesn’t work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting. For security problems, use the Security tab’s “Report a vulnerability” instead (see SECURITY.md).
+  - type: input
+    id: page
+    attributes:
+      label: Page or tool
+      description: The URL or tool name, for example https://zykit.vercel.app/tools/jwt-decoder
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Paste …
+        3. Click …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 131 on macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, console errors or sample input
+      description: Don’t attach files that contain personal data.

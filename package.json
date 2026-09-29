@@ -37,6 +37,27 @@
     "vitest": "^5.0.2"
   },
   "description": "A growing set of private, in-browser file and developer tools",
+  "keywords": [
+    "developer-tools",
+    "privacy",
+    "in-browser",
+    "offline",
+    "jwt",
+    "json-formatter",
+    "diff",
+    "hash",
+    "exif",
+    "react",
+    "vite"
+  ],
+  "homepage": "https://zykit.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsrahulap/zykit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itsrahulap/zykit/issues"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20.19"

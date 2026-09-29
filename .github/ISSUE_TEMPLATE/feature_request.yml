@@ -1,0 +1,44 @@
+name: Tool or feature request
+description: Suggest a new tool, a feature for an existing one, or new Learn or blog content
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of request is this?
+      options:
+        - New tool
+        - Feature for an existing tool
+        - Learn content
+        - Blog post
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: Who needs this and what do they do today instead?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: checkboxes
+    id: local
+    attributes:
+      label: Privacy
+      options:
+        - label: This can work entirely in the browser, without sending data to a server.
+          required: true
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you like to build it?
+      options:
+        - Yes, I’d like to open a pull request
+        - Maybe, with some guidance
+        - No

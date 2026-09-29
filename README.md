@@ -70,6 +70,8 @@ Developed with Claude Code and a set of plugins (superpowers, frontend-design, c
 
 `npm run build` produces a fully static `dist/`. Tool pages use client-side routes, so the host must serve `index.html` for unknown paths. That's already configured for Netlify/Cloudflare Pages (`public/_redirects`) and Vercel (`vercel.json`). Keep the security headers from the same files.
 
+On Vercel, `vercel.json` maps clean URLs (`/tools/jwt-decoder`) to the pre-rendered `.html` pages with rewrites instead of `cleanUrls`, so real files such as the Google Search Console verification file (`public/google*.html`) are served at their exact URL without a redirect. See [docs/search-console.md](docs/search-console.md) for getting the site indexed.
+
 ## Learn
 
 `/learn` is a software-engineering course migrated from EngineeringWiki: 8 subjects (JavaScript, TypeScript, DSA, Web Fundamentals, Backend, Databases, System Design, Software Architecture), 150 lessons, 151 solved DSA problems and 9 system design case studies. Progress, bookmarks and solved problems are kept in the browser only.
@@ -91,6 +93,10 @@ Developed with Claude Code and a set of plugins (superpowers, frontend-design, c
 
 Docs: [architecture](docs/tools/clean-image/architecture.md) · [supported formats](docs/tools/clean-image/supported-formats.md) · [privacy](docs/tools/clean-image/privacy.md)
 
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, project rules and the pull request process, and follow the [Code of Conduct](CODE_OF_CONDUCT.md). Report security issues privately as described in [SECURITY.md](SECURITY.md).
+
 ## License
 
-MIT
+[MIT](LICENSE)

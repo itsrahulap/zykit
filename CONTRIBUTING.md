@@ -17,8 +17,8 @@ By taking part you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 Requires Node 20.19 or newer; `.nvmrc` pins the version CI uses.
 
 ```bash
-git clone https://github.com/itsrahulap/toolstack.git
-cd toolstack
+git clone https://github.com/itsrahulap/zykit.git
+cd zykit
 nvm use                      # or install the Node version in .nvmrc
 npm ci
 npx playwright install chromium   # once, for the browser tests
