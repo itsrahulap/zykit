@@ -66,7 +66,8 @@ export function Button({
 export type IconName =
   | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'
   | 'grid' | 'arrow' | 'image' | 'key' | 'diff' | 'code' | 'braces' | 'hash' | 'swap' | 'copy' | 'play' | 'stop'
-  | 'book' | 'globe' | 'server' | 'database' | 'layers' | 'network' | 'puzzle' | 'building' | 'bookmark' | 'chart' | 'search' | 'menu' | 'chevron-left' | 'chevron-right' | 'lightbulb';
+  | 'book' | 'globe' | 'server' | 'database' | 'layers' | 'network' | 'puzzle' | 'building' | 'bookmark' | 'chart' | 'search' | 'menu' | 'chevron-left' | 'chevron-right' | 'lightbulb'
+  | 'clock' | 'link' | 'dice' | 'regex' | 'file' | 'text';
 
 export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; className?: string }) {
   const paths: Record<IconName, ReactNode> = {
@@ -108,6 +109,12 @@ export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; classNam
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     'chevron-left': <path d="M15 5l-7 7 7 7" />,
     'chevron-right': <path d="M9 5l7 7-7 7" />,
+    clock: <path d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2" />,
+    link: <path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1" />,
+    dice: <path d="M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01" />,
+    regex: <path d="M17 3v8M13.5 5l7 4M20.5 5l-7 4M6 20a2 2 0 100-4 2 2 0 000 4z" />,
+    file: <path d="M14 3H6v18h12V7l-4-4zM14 3v4h4M9 13h6M9 17h6" />,
+    text: <path d="M4 6V4h16v2M12 4v16M9 20h6" />,
     lightbulb: <path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z" />,
   };
   return (

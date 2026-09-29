@@ -2,7 +2,7 @@
 // serves the same index.html. After `vite build` it writes, from the tool registry:
 //   dist/index.html            home page metadata, JSON-LD and a static tool list inside #root
 //   dist/tools/<id>.html       one page per tool with its own title, description, canonical, OG tags,
-//                              JSON-LD and readable content (served at /tools/<id>; see vercel.json cleanUrls)
+//                              JSON-LD and readable content (served at /tools/<id> via the rewrites in vercel.json)
 //   dist/learn/**.html         every Learn page (subjects, lessons, problems, case studies) with its full text
 //                              (see scripts/learn-pages.ts)
 //   dist/blog.html             the blog home, plus dist/blog/<slug>.html per post (src/blog/html.ts)

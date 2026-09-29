@@ -1,0 +1,15 @@
+import type { ToolDefinition } from '../types';
+
+const urlParser: ToolDefinition = {
+  id: 'url-parser',
+  name: 'URL Parser',
+  tagline: 'Break a URL into its parts',
+  description: 'Inspect protocol, host, path, query parameters and fragment, edit parameters and rebuild the URL.',
+  category: 'Developer',
+  icon: 'link',
+  tags: ['URL', 'Query string', 'Params'],
+  status: 'available',
+  load: () => import('./UrlParserPage'),
+};
+
+export default urlParser;
