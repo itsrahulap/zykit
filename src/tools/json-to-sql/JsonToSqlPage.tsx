@@ -3,7 +3,7 @@ import jsonToSql from './index';
 import { collectColumns, DIALECTS, generateSql, type Dialect } from './features/sql';
 import { errorSnippet, parseJson } from '../json-formatter/features/json';
 import { Headline, StatusStrip } from '../../shared/ui/page';
-import { DetailRows, Panel } from '../../shared/ui/Panel';
+import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -207,7 +207,17 @@ export default function JsonToSqlPage() {
               )}
 
               <Panel eyebrow="Columns" icon="database">
-                <DetailRows rows={result.columns.map((c) => [c.name, `${c.sqlType}${c.nullable ? '' : ' NOT NULL'}`] as [string, string])} />
+                <dl className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
+                  {result.columns.map((c) => (
+                    <div key={c.name} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-2.5">
+                      <dt className="min-w-0 break-all font-mono text-slate-700 dark:text-slate-300">{c.name}</dt>
+                      <dd className="min-w-0 break-words font-mono text-slate-900 dark:text-slate-100">
+                        {c.sqlType}
+                        {c.nullable ? '' : ' NOT NULL'}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
               </Panel>
             </>
           )}

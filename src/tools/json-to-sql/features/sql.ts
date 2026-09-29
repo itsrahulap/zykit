@@ -77,6 +77,7 @@ export function quoteString(value: string, dialect: Dialect, onNul?: () => void)
   const s = wellFormed(value);
   switch (dialect) {
     case 'mysql':
+      // oxlint-disable-next-line no-control-regex -- escaping control characters is the point
       return `'${s.replace(/[\0\n\r\x1a\\']/g, (c) => MYSQL_ESCAPES[c])}'`;
     case 'postgres':
       if (s.includes('\0')) onNul?.();
