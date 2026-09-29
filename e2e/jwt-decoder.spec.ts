@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('decodes the example token and verifies its signature', async ({ page }) => {
   const offOrigin: string[] = [];
   page.on('request', (r) => {
-    if (!r.url().startsWith('http://localhost:4173') || r.method() !== 'GET') offOrigin.push(`${r.method()} ${r.url()}`);
+    if (!r.url().startsWith(new URL(test.info().project.use.baseURL!).origin) || r.method() !== 'GET') offOrigin.push(`${r.method()} ${r.url()}`);
   });
 
   await page.goto('/tools/jwt-decoder');

@@ -45,6 +45,7 @@ test('opens a DER file and warns about private keys without showing them', async
   await expect(page.getByRole('alert')).toContainText('private key');
   await expect(page.getByText('RSA 2048-bit')).toBeVisible();
   const bodyLine = key.split('\n')[1];
+  await expect(page.getByRole('region', { name: 'Block 1' })).toContainText('PKCS#1 RSA');
   await expect(page.getByRole('region', { name: 'Block 1' })).not.toContainText(bodyLine.slice(0, 20));
   expect(bad).toEqual([]);
 });

@@ -60,7 +60,7 @@ const CASES = [
 
 for (const c of CASES) {
   test(`cleans a real ${c.mime} end to end without network uploads`, async ({ page }) => {
-    const origin = 'http://localhost:4173';
+    const origin = new URL(test.info().project.use.baseURL!).origin;
     const requests: { url: string; method: string }[] = [];
     const consoleErrors: string[] = [];
     page.on('request', (r) => requests.push({ url: r.url(), method: r.method() }));
