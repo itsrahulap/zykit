@@ -77,14 +77,11 @@ export default function JsRunnerPage() {
 
   // Per-viewer convenience only; failures (private mode, blocked storage) are ignored.
   useEffect(() => {
-    const t = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ code, language, limit } satisfies Saved));
-      } catch {
-        /* ignore */
-      }
-    }, 300);
-    return () => clearTimeout(t);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ code, language, limit } satisfies Saved));
+    } catch {
+      /* ignore */
+    }
   }, [code, language, limit]);
 
   // Compiled JS preview (TypeScript only), debounced.
@@ -190,7 +187,8 @@ export default function JsRunnerPage() {
             onKeyDown={onKeyDown}
             onBlur={() => (escaped.current = false)}
             rows={18}
-            className="min-h-64"
+            wrap="off"
+            className="min-h-64 overflow-x-auto whitespace-pre"
           />
 
           <div className="mt-4 flex flex-wrap items-center gap-3">

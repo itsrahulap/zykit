@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { JwtError, type DecodedJwt } from '../features/jwt';
 import { keyKindFor, verifyJwt, type VerifyKey } from '../features/verify';
 import { Panel } from '../../../shared/ui/Panel';
@@ -17,7 +17,10 @@ export function VerifyPanel({ jwt, exampleSecret }: { jwt: DecodedJwt; exampleSe
   const [outcome, setOutcome] = useState<Outcome | null>(null);
 
   const kind = keyKindFor(jwt.alg);
-  const key: VerifyKey | null = kind === 'secret' ? { kind, secret, base64 } : kind === 'public' ? { kind, text: publicKey } : null;
+  const key = useMemo<VerifyKey | null>(
+    () => (kind === 'secret' ? { kind, secret, base64 } : kind === 'public' ? { kind, text: publicKey } : null),
+    [kind, secret, base64, publicKey],
+  );
   const hasKey = kind === 'secret' ? !!secret : !!publicKey.trim();
   const id = key && hasKey ? JSON.stringify([jwt.signingInput, jwt.parts[2], key]) : null;
 
@@ -35,8 +38,7 @@ export function VerifyPanel({ jwt, exampleSecret }: { jwt: DecodedJwt; exampleSe
       cancelled = true;
       clearTimeout(t);
     };
-    // `id` captures everything the verification depends on.
-  }, [id]);
+  }, [id, jwt, key]);
 
   const current = outcome && outcome.for === id ? outcome : null;
 

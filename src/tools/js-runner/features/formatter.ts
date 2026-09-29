@@ -128,11 +128,11 @@ export function createFormatter(options?: FormatterOptions): Formatter {
       return isNaN(t) ? 'Invalid Date' : (obj as Date).toISOString();
     }
     if (tag === '[object RegExp]') return String(obj);
-    if (tag === '[object Number]') return '[Number: ' + num((obj as Number).valueOf()) + ']';
-    if (tag === '[object String]') return '[String: ' + quote((obj as String).valueOf()) + ']';
-    if (tag === '[object Boolean]') return '[Boolean: ' + String((obj as Boolean).valueOf()) + ']';
-    if (tag === '[object Symbol]') return '[Symbol: ' + (obj as Symbol).valueOf().toString() + ']';
-    if (tag === '[object BigInt]') return '[BigInt: ' + String((obj as BigInt).valueOf()) + 'n]';
+    if (tag === '[object Number]') return '[Number: ' + num((obj as { valueOf(): number }).valueOf()) + ']';
+    if (tag === '[object String]') return '[String: ' + quote((obj as { valueOf(): string }).valueOf()) + ']';
+    if (tag === '[object Boolean]') return '[Boolean: ' + String((obj as { valueOf(): boolean }).valueOf()) + ']';
+    if (tag === '[object Symbol]') return '[Symbol: ' + (obj as { valueOf(): symbol }).valueOf().toString() + ']';
+    if (tag === '[object BigInt]') return '[BigInt: ' + String((obj as { valueOf(): bigint }).valueOf()) + 'n]';
     if (tag === '[object Promise]') return 'Promise { <state hidden> }';
     if (tag === '[object WeakMap]' || tag === '[object WeakSet]') return (cname || 'WeakMap') + ' { <items unknown> }';
     if (tag === '[object ArrayBuffer]' || tag === '[object SharedArrayBuffer]') {

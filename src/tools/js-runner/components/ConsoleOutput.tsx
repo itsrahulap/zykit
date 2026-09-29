@@ -40,14 +40,21 @@ export function ConsoleOutput({ entries, timestamps }: { entries: ConsoleEntry[]
         return (
           <li key={e.id} className={`flex gap-2 py-1.5 pr-4 ${INDENT[Math.min(e.depth, INDENT.length - 1)]} ${s.row}`}>
             {s.icon ? (
-              <span className={`mt-0.5 flex shrink-0 items-center gap-1 text-xs font-sans font-semibold not-italic uppercase tracking-wide ${s.tag}`}>
+              <span className={`mt-0.5 flex shrink-0 self-start items-center gap-1 text-xs font-sans font-semibold not-italic uppercase tracking-wide ${s.tag}`}>
                 <Icon name={s.icon} className="h-3.5 w-3.5" />
                 <span className={e.level === 'system' ? 'sr-only' : ''}>{LEVEL_LABELS[e.level]}</span>
               </span>
             ) : (
               <span className="sr-only">log:</span>
             )}
-            <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">{e.text}</span>
+            <span
+              className={`min-w-0 flex-1 ${
+                // console.table output must keep its columns aligned, so it scrolls instead of wrapping
+                e.text.startsWith('┌') ? 'overflow-x-auto whitespace-pre' : 'whitespace-pre-wrap break-words'
+              }`}
+            >
+              {e.text}
+            </span>
             {timestamps && e.at !== undefined && (
               <span className="shrink-0 font-sans text-xs tabular-nums text-slate-400 dark:text-slate-500">{formatTime(e.at)}</span>
             )}
