@@ -1,7 +1,8 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import svgOptimizer from './index';
 import { DEFAULT_OPTIONS, MAX_SVG_BYTES, optimizeSvg, XmlError, type SvgOptions } from './features/optimize';
-import { RangeField, SizeChange, useObjectUrl, usePageFileIntake } from '../../shared/ui/ImageBatch';
+import { RangeField, SizeChange } from '../../shared/ui/ImageBatch';
+import { useObjectUrl, usePageFileIntake } from '../../shared/hooks/useImageBatch';
 import { Checkbox, ErrorPanel, Notices, OpenFileButton, OptionsCard, OutputPanel } from '../../shared/ui/convert';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';

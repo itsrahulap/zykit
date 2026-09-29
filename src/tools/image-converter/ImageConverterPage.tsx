@@ -2,16 +2,8 @@ import { useEffect, useState } from 'react';
 import imageConverter from './index';
 import { convertedName, convertJob, DEFAULT_SETTINGS, READABLE, type ConvertSettings, type OutputFormat } from './features/convert';
 import { detectEncodableTypes, isLossy, MIME_EXT, MIME_LABEL, supportsAlpha } from '../../shared/lib/image';
-import {
-  BatchList,
-  BatchToolbar,
-  FilePickerButton,
-  ImageDropZone,
-  MetadataNote,
-  RangeField,
-  useImageBatch,
-  usePageFileIntake,
-} from '../../shared/ui/ImageBatch';
+import { BatchList, BatchToolbar, FilePickerButton, ImageDropZone, MetadataNote, RangeField } from '../../shared/ui/ImageBatch';
+import { useImageBatch, usePageFileIntake } from '../../shared/hooks/useImageBatch';
 import { Checkbox, OptionsCard } from '../../shared/ui/convert';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';

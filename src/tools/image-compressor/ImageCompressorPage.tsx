@@ -2,19 +2,8 @@ import { useEffect, useState } from 'react';
 import imageCompressor from './index';
 import { compressedName, compressJob, DEFAULT_SETTINGS, pickOutput, type CompressFormat, type CompressSettings } from './features/compress';
 import { detectEncodableTypes, MIME_LABEL } from '../../shared/lib/image';
-import {
-  BatchList,
-  BatchToolbar,
-  CompareView,
-  FilePickerButton,
-  ImageDropZone,
-  MetadataNote,
-  NumberField,
-  RangeField,
-  useImageBatch,
-  useObjectUrl,
-  usePageFileIntake,
-} from '../../shared/ui/ImageBatch';
+import { BatchList, BatchToolbar, CompareView, FilePickerButton, ImageDropZone, MetadataNote, NumberField, RangeField } from '../../shared/ui/ImageBatch';
+import { useImageBatch, useObjectUrl, usePageFileIntake } from '../../shared/hooks/useImageBatch';
 import { Checkbox, OptionsCard } from '../../shared/ui/convert';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';

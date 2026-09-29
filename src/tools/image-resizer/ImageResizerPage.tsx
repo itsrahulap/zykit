@@ -2,17 +2,8 @@ import { useEffect, useState } from 'react';
 import imageResizer from './index';
 import { DEFAULT_SETTINGS, lockedSide, PRESETS, resizedName, resizeJob, resizeSpec, type ResizeMode, type ResizeSettings } from './features/resize';
 import { detectEncodableTypes, isLossy, type FitMode } from '../../shared/lib/image';
-import {
-  BatchList,
-  BatchToolbar,
-  FilePickerButton,
-  ImageDropZone,
-  MetadataNote,
-  NumberField,
-  RangeField,
-  useImageBatch,
-  usePageFileIntake,
-} from '../../shared/ui/ImageBatch';
+import { BatchList, BatchToolbar, FilePickerButton, ImageDropZone, MetadataNote, NumberField, RangeField } from '../../shared/ui/ImageBatch';
+import { useImageBatch, usePageFileIntake } from '../../shared/hooks/useImageBatch';
 import { Checkbox, OptionsCard } from '../../shared/ui/convert';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';

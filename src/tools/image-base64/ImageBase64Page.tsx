@@ -3,7 +3,9 @@ import imageBase64 from './index';
 import { decodeInput, downloadName, encodeImage, MAX_ENCODE_BYTES, snippet, type Encoded, type SnippetKind } from './features/base64-image';
 import { Base64Error } from '../../shared/lib/base64';
 import { sniffImageType } from '../../shared/lib/image';
-import { downloadBlob, FilePickerButton, ImageDropZone, useObjectUrl, usePageFileIntake } from '../../shared/ui/ImageBatch';
+import { FilePickerButton, ImageDropZone } from '../../shared/ui/ImageBatch';
+import { useObjectUrl, usePageFileIntake } from '../../shared/hooks/useImageBatch';
+import { downloadBlob } from '../../shared/lib/imageClient';
 import { MAX_PREVIEW_CHARS, Notices } from '../../shared/ui/convert';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
@@ -74,7 +76,7 @@ function EncodePanel() {
               <div className="mt-4">
                 <DetailRows
                   rows={[
-                    ['File', <span className="break-all">{file.name}</span>],
+                    ['File', <span key="name" className="break-all">{file.name}</span>],
                     ['Type', file.label],
                     ['Image size', formatBytes(file.bytes.length)],
                     ['Base64 size', formatBytes(encoded.base64.length)],
