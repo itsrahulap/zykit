@@ -50,9 +50,11 @@ export function jpegTechnical(b: Uint8Array, st: JpegStructure): TechnicalField[
   const scans = st.segments.filter((s) => s.marker === 0xda).length;
   if (scans > 1) add('Encoding', 'Scans', String(scans));
 
+  let seenJfif = false;
   for (const s of st.segments) {
     const d = s.dataStart;
-    if (s.marker === 0xe0 && matchAscii(b, d, 'JFIF\0') && s.dataEnd - d >= 14) {
+    if (!seenJfif && s.marker === 0xe0 && matchAscii(b, d, 'JFIF\0') && s.dataEnd - d >= 14) {
+      seenJfif = true;
       const units = ['None (aspect ratio only)', 'Pixels per inch', 'Pixels per centimeter'][b[d + 7]] ?? `Unknown (${b[d + 7]})`;
       add('JFIF', 'JFIF version', `${b[d + 5]}.${String(b[d + 6]).padStart(2, '0')}`);
       add('JFIF', 'Resolution unit', units);

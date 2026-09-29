@@ -73,7 +73,7 @@ export function MetadataTable({ entries }: { entries: MetadataEntry[] }) {
 
       <div className="space-y-3">
         {groups.map(({ cat, items }) => (
-          <details key={cat} open className="group rounded-xl border border-slate-200 dark:border-slate-800">
+          <details key={cat} open className="group rounded-2xl border border-slate-200 dark:border-slate-800">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800/50">
               <span>
                 {CATEGORY_LABELS[cat]} <span className="font-normal text-slate-500">· {items.length}</span>
@@ -82,23 +82,24 @@ export function MetadataTable({ entries }: { entries: MetadataEntry[] }) {
                 ›
               </span>
             </summary>
-            <table className="w-full table-fixed border-t border-slate-200 text-sm dark:border-slate-800">
-              <thead className="sr-only">
-                <tr>
-                  <th>Field</th>
-                  <th>Value</th>
+            <table className="w-full table-fixed border-t border-slate-200 text-sm sm:text-base dark:border-slate-800">
+              <thead>
+                <tr className="text-left text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <th scope="col" className="px-4 pb-2 pt-3">Tag</th>
+                  <th scope="col" className="px-4 pb-2 pt-3">Value</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {items.map((e, i) => (
                   <tr key={i} className="align-top">
-                    <th scope="row" className="w-2/5 px-4 py-2 text-left font-medium text-slate-700 sm:w-1/3 dark:text-slate-300">
+                    <th scope="row" className="w-2/5 px-4 py-3 text-left font-medium text-slate-700 sm:w-1/3 dark:text-slate-300">
                       <span className="block break-words">{e.key}</span>
+                      <span className="block break-words text-xs font-normal text-slate-500">{e.location}</span>
                       <span className="mt-1 block">
                         <EntryTags entry={e} />
                       </span>
                     </th>
-                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-400">
                       {/* Rendered as text: metadata is untrusted input. */}
                       <div className="max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">{e.value}</div>
                     </td>

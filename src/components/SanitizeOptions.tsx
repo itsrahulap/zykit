@@ -3,7 +3,7 @@ import { formatOrientation } from '../features/metadata/exif.parser';
 import { shouldRemove, type ImageMetadataReport, type SanitizeMode } from '../features/metadata/metadata.types';
 import type { SanitizeOptions as Options } from '../features/sanitizer/sanitizer.types';
 import { pluralize } from '../utils/format.utils';
-import { Button, Card, Icon } from './ui';
+import { Button, Icon } from './ui';
 
 export function SanitizeOptions({ report, onClean, busy }: { report: ImageMetadataReport; onClean: (o: Options) => void; busy: boolean }) {
   const [mode, setMode] = useState<SanitizeMode>('privacy');
@@ -29,17 +29,24 @@ export function SanitizeOptions({ report, onClean, busy }: { report: ImageMetada
   ];
 
   return (
-    <Card title="Clean this image" subtitle="Metadata containers are removed without re-encoding, so image quality is unchanged.">
+    <section aria-labelledby="clean-title" className="rounded-3xl border border-primary-edge bg-primary-soft p-6 sm:p-10 dark:border-emerald-900 dark:bg-emerald-950/60">
+      <p className="eyebrow text-emerald-800 dark:text-emerald-300">Ready to share?</p>
+      <h2 id="clean-title" className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+        Strip what you don&rsquo;t want to share.
+      </h2>
+      <p className="mb-6 mt-2 text-slate-700 dark:text-slate-300">
+        Metadata is removed without re-encoding, so image quality is unchanged. The result is verified before download.
+      </p>
       <fieldset>
         <legend className="sr-only">Cleaning mode</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {modes.map((m) => (
             <label
               key={m.id}
-              className={`cursor-pointer rounded-xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-500 ${
+              className={`cursor-pointer rounded-2xl border-2 p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-emerald-500 ${
                 mode === m.id
-                  ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30'
-                  : 'border-slate-200 hover:border-slate-300 dark:border-slate-700'
+                  ? 'border-emerald-600 bg-white dark:bg-slate-900'
+                  : 'border-transparent bg-white/60 hover:bg-white dark:bg-slate-900/50 dark:hover:bg-slate-900'
               }`}
             >
               <input type="radio" name="mode" value={m.id} checked={mode === m.id} onChange={() => setMode(m.id)} className="sr-only" />
@@ -85,6 +92,6 @@ export function SanitizeOptions({ report, onClean, busy }: { report: ImageMetada
         </Button>
         {count === 0 && <span className="text-sm text-slate-500">This image has no removable metadata in this mode.</span>}
       </div>
-    </Card>
+    </section>
   );
 }

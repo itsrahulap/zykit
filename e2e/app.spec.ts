@@ -68,14 +68,18 @@ for (const c of CASES) {
     page.on('pageerror', (e) => consoleErrors.push(e.message));
 
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /remove hidden metadata/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /see what your images reveal/i })).toBeVisible();
 
     const input = c.build(await canvasImage(page, c.mime));
-    await page.locator('input[type=file]').setInputFiles({ name: c.name, mimeType: c.mime, buffer: Buffer.from(input) });
+    await page.locator('input[type=file]').first().setInputFiles({ name: c.name, mimeType: c.mime, buffer: Buffer.from(input) });
 
     await expect(page.getByRole('heading', { name: 'Metadata found' })).toBeVisible();
-    await expect(page.getByText('GPSLatitude').first()).toBeVisible();
     await expect(page.getByRole('img', { name: /original image preview/i })).toBeVisible();
+    await page.getByRole('tab', { name: /all metadata/i }).click();
+    await expect(page.getByText('GPSLatitude').first()).toBeVisible();
+    await page.getByRole('tab', { name: 'Technical' }).click();
+    await expect(page.getByText('SHA-256')).toBeVisible();
+    await page.getByRole('tab', { name: 'Overview' }).click();
 
     await page.getByRole('button', { name: 'Clean image' }).click();
     await expect(page.getByText('Your clean image is ready')).toBeVisible();
@@ -106,7 +110,7 @@ for (const c of CASES) {
 
 test('rejects a non-image file with a friendly message', async ({ page }) => {
   await page.goto('/');
-  await page.locator('input[type=file]').setInputFiles({ name: 'fake.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('definitely not a jpeg') });
+  await page.locator('input[type=file]').first().setInputFiles({ name: 'fake.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('definitely not a jpeg') });
   await expect(page.getByRole('alert')).toContainText("doesn't look like a JPEG, PNG or WebP");
 });
 
@@ -115,5 +119,5 @@ test('keyboard users can reach the file picker', async ({ page }) => {
   await page.keyboard.press('Tab'); // skip link
   await page.keyboard.press('Tab'); // logo
   await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Select image' })).toBeFocused();
+  await expect(page.getByRole('button', { name: /choose a file/i })).toBeFocused();
 });

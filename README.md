@@ -13,6 +13,8 @@ A privacy-first web app that inspects and removes embedded metadata (EXIF, XMP, 
 - **Orientation-safe**: optionally keeps a single-tag EXIF block so rotated photos still display upright.
 - **Self-verification**: the output is re-parsed, then checked for leftover metadata, unchanged dimensions, byte-identical image data, valid PNG CRCs and decodability.
 - Before/after comparison, per-field diff, a Web Worker with cancellation, drag & drop, paste, dark mode, and keyboard and screen-reader support.
+- **File explained view** with Overview / All metadata / Technical tabs: encoding details (JPEG process, subsampling, JFIF; PNG bit depth, color type, gamma; WebP compression, alpha, animation), MD5/SHA-1/SHA-256/SHA-512/CRC32/Adler32 checksums, first-bytes hex and ASCII preview, raw JSON, and **Export metadata** as JSON.
+- **AI disclosure detection**: recognizes labels such as "Made with Google AI" and "Imagined with AI", plus common generator names and prompt parameters. CleanImage does not touch pixel-level watermarks such as SynthID (see the FAQ in the app).
 
 ## Privacy
 

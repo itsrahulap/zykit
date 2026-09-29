@@ -3,7 +3,7 @@ import { Icon } from './ui';
 
 export function Logo() {
   return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white sm:h-11 sm:w-11">
+    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-ink ring-1 ring-inset ring-primary-edge sm:h-11 sm:w-11">
       <Icon name="shield" className="h-6 w-6" />
     </span>
   );
@@ -15,9 +15,7 @@ export function Header() {
       <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
         <a href="/" className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
           <Logo />
-          <span>
-            clean<span className="text-emerald-600 dark:text-emerald-400">.</span>image
-          </span>
+          <span>CleanImage</span>
         </a>
         <p className="eyebrow hidden items-center gap-2 text-slate-600 sm:flex dark:text-slate-400">
           <Icon name="lock" className="h-4 w-4" /> Metadata inspector &amp; cleaner
@@ -43,7 +41,7 @@ export function StatusStrip({ status, tone = 'neutral' }: { status: string; tone
   const pill = {
     neutral: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
     busy: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-    good: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100',
+    good: 'bg-primary text-primary-ink',
   }[tone];
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-200 py-5 dark:border-slate-800" aria-live="polite">
@@ -77,7 +75,7 @@ export function Footer() {
   return (
     <footer className="mx-auto mt-16 max-w-6xl px-4 pb-10 sm:px-6">
       <div className="flex flex-col gap-4 border-t border-slate-200 pt-8 text-sm text-slate-600 sm:flex-row sm:items-start sm:justify-between dark:border-slate-800 dark:text-slate-400">
-        <p>clean.image · Local file processing</p>
+        <p>CleanImage · Local file processing</p>
         <p className="max-w-xl sm:text-right">
           Removes supported embedded metadata from image files. It does not alter pixels, so it doesn't remove invisible watermarks
           and doesn't make an image “undetectable”. C2PA signatures are detected but not verified.

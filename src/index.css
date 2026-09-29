@@ -27,6 +27,13 @@
   --color-emerald-900: #1a3329;
   --color-emerald-950: #0e1d17;
 
+  /* Primary brand color. Light fill, so it always pairs with dark ink text (11:1 contrast). */
+  --color-primary: #dce3da;
+  --color-primary-hover: #cdd7ca;
+  --color-primary-edge: #c2cebf;
+  --color-primary-soft: #eef2ec;
+  --color-primary-ink: #1f3a2d;
+
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 }
