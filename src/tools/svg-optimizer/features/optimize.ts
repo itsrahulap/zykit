@@ -44,7 +44,8 @@ export interface OptimizeResult {
   security: string[];
 }
 
-const EDITOR_PREFIXES = new Set(['inkscape', 'sodipodi', 'sketch', 'serif', 'i', 'x', 'graph', 'a', 'illustrator', 'figma', 'bx', 'krita', 'vectornator', 'boxy-svg']);
+/** Editor prefixes removed even when their namespace isn't declared. */
+const EDITOR_PREFIXES = ['inkscape', 'sodipodi', 'sketch', 'serif'];
 const EDITOR_NS = [
   'inkscape.org/namespaces',
   'sodipodi.sourceforge.net',
@@ -201,7 +202,7 @@ function sanitize(doc: XmlDocument, security: string[]) {
       return true;
     });
   });
-  for (const [what, n] of counts) security.push(`Removed ${n} ${what}${n > 1 && !what.endsWith('>') ? 's' : ''}${n > 1 && what.endsWith('>') ? ` ×${n}` : ''}`);
+  for (const [what, n] of counts) security.push(`Removed ${what}${n > 1 ? ` (×${n})` : ''}`);
 }
 
 function isEditorName(name: string, editorPrefixes: Set<string>) {
@@ -217,10 +218,10 @@ function removeEditorData(doc: XmlDocument, bump: (k: string, n?: number) => voi
       if (!a.name.startsWith('xmlns:')) continue;
       const prefix = a.name.slice(6);
       const uri = decodeEntities(a.value);
-      if (EDITOR_NS.some((ns) => uri.includes(ns)) || (['inkscape', 'sodipodi', 'sketch', 'serif'].includes(prefix) && !uri.includes('w3.org'))) editor.add(prefix);
+      if (EDITOR_NS.some((ns) => uri.includes(ns))) editor.add(prefix);
     }
   });
-  for (const p of EDITOR_PREFIXES) if (['inkscape', 'sodipodi', 'sketch', 'serif'].includes(p)) editor.add(p);
+  for (const p of EDITOR_PREFIXES) editor.add(p);
 
   bump('editor elements', prune(doc.children, (n) => n.type === 'element' && isEditorName(n.name, editor)));
   walk(doc.children, (el) => {
@@ -316,7 +317,7 @@ function cleanAttributes(doc: XmlDocument, o: SvgOptions, bump: (k: string, n?: 
   })();
   const hasText = (() => {
     let found = false;
-    walk(doc.children, (el) => (found ||= TEXT_CONTENT.has(el.name) && el.name !== 'title' && el.name !== 'desc'));
+    walk(doc.children, (el) => (found ||= el.name === 'text' || el.name === 'tspan' || el.name === 'textPath'));
     return found;
   })();
 
@@ -328,7 +329,9 @@ function cleanAttributes(doc: XmlDocument, o: SvgOptions, bump: (k: string, n?: 
       const trimmed = v.trim();
       if (o.removeDefaults) {
         if (a.name === 'style') {
-          v = trimmed.replace(/\s*;\s*/g, ';').replace(/\s*:\s*/g, ':').replace(/;+$/, '');
+          const canDropInherited = !hasStylesheet && !inReferenced && el.name !== 'use';
+          v = cleanStyle(trimmed, o, (prop) => canDropInherited && !parents.some((p) => getAttr(p, prop) !== undefined || (getAttr(p, 'style') ?? '').includes(prop)));
+          if (v !== trimmed) bump('style declarations');
           if (!v) {
             bump('default values');
             continue;
@@ -380,12 +383,37 @@ function cleanAttributes(doc: XmlDocument, o: SvgOptions, bump: (k: string, n?: 
   });
 }
 
-/** Remove whitespace-only text between elements (not inside text content or xml:space="preserve"). */
+/**
+ * Clean a style attribute: drop default declarations (inherited ones only when `canDrop` allows),
+ * shorten colours, round numbers. Leaves anything it doesn't understand (quotes, url(), !important) alone.
+ */
+function cleanStyle(style: string, o: SvgOptions, canDrop: (prop: string) => boolean): string {
+  const compact = style.replace(/\s*;\s*/g, ';').replace(/\s*:\s*/g, ':').replace(/;+$/, '').replace(/^;+/, '');
+  if (!o.removeDefaults || /["'\\]|url\((?!#[\w.:-]+\))|!important|\/\*/i.test(compact)) return compact;
+  const out: string[] = [];
+  for (const decl of compact.split(';')) {
+    const c = decl.indexOf(':');
+    if (c <= 0) return compact;
+    const prop = decl.slice(0, c).trim().toLowerCase();
+    let value = decl.slice(c + 1).trim();
+    if ((prop === 'opacity' || prop === 'stop-opacity') && value === '1') continue;
+    if (INHERITED_DEFAULTS[prop]?.includes(value) && canDrop(prop)) continue;
+    if (COLOR_ATTRS.has(prop) && /^#[0-9a-f]{3,8}$/i.test(value)) value = shortColor(value);
+    if (o.roundNumbers && NUMERIC_ATTRS.has(prop)) {
+      const m = /^([-+]?(?:\d+\.?\d*|\.\d+))(px)?$/i.exec(value);
+      if (m) value = formatNumber(Number(m[1]), o.precision) + (m[2] ? 'px' : '');
+    }
+    out.push(`${prop}:${value}`);
+  }
+  return out.join(';');
+}
+
+/** Remove whitespace-only text between elements, except inside text content (where it can render). */
 function collapseWhitespace(nodes: XmlNode[], keep: boolean) {
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i];
     if (n.type === 'text' && !keep && !n.value.trim()) nodes.splice(i, 1);
-    else if (n.type === 'element') collapseWhitespace(n.children, keep || TEXT_CONTENT.has(n.name) || getAttr(n, 'xml:space') === 'preserve');
+    else if (n.type === 'element') collapseWhitespace(n.children, keep || TEXT_CONTENT.has(n.name));
   }
 }
 

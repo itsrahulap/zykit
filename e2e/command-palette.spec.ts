@@ -65,7 +65,7 @@ test.describe('Command palette', () => {
     await expect(input).toBeFocused();
     await expect(palette(page).getByRole('group', { name: 'Actions' })).toBeVisible();
     await input.fill('dark mode');
-    await input.press('Enter');
+    await palette(page).getByRole('group', { name: 'Actions' }).getByRole('option', { name: /Switch to dark mode/ }).click();
     await expect(palette(page)).toBeHidden();
     await expect(page.locator('html')).toHaveClass(/dark/);
     await expect(page.getByRole('button', { name: 'Switch to light mode' })).toBeVisible();
