@@ -2,7 +2,9 @@
 
 import type { LogLevel } from '../../tools/js-runner/features/protocol';
 
-export const SANDBOX_URL = '/sandbox/dom';
+// Production (Vercel cleanUrls) and `vite preview` serve dom.html at the clean URL. The dev server
+// doesn't: it answers /sandbox/dom with the app's index.html, whose dev scripts the sandbox can't load.
+export const SANDBOX_URL = import.meta.env.DEV ? '/sandbox/dom.html' : '/sandbox/dom';
 export const SANDBOX_TAG = 'zykit-dom-sandbox';
 export const PARENT_TAG = 'zykit-learn';
 /** Defined (read-only) by the sandbox page; see loopGuard.ts. */

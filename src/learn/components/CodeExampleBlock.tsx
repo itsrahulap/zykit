@@ -200,17 +200,17 @@ function PlaygroundShell({
   const [source, setSource] = useState(code);
   const { entries, run, start, stop, clear } = runner;
   const escaped = useRef(false);
-  const started = useRef(false);
   const busy = run.status === 'compiling' || run.status === 'running' || run.status === 'waiting';
 
   const runNow = (src = source) => void start(codeToRun(src, testCases), plan.language, TIME_LIMIT_MS);
 
-  // "Run" opens the playground and runs straight away (once).
+  // "Run" opens the playground and runs straight away, once per mount. No "already started" ref:
+  // React StrictMode (dev) mounts twice and the runner's unmount cleanup stops the first run, so the
+  // second mount must start it again or the run would hang at "Running…".
   useEffect(() => {
-    if (!autoRun || started.current) return;
-    started.current = true;
-    void start(codeToRun(code, testCases), plan.language, TIME_LIMIT_MS);
-  }, [autoRun, code, testCases, plan.language, start]);
+    if (autoRun) void start(codeToRun(code, testCases), plan.language, TIME_LIMIT_MS);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only; later runs come from Run / Ctrl+Enter
+  }, []);
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
