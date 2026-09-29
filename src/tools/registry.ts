@@ -21,6 +21,15 @@ import randomString from './random-string';
 import slugGenerator from './slug-generator';
 import caseConverter from './case-converter';
 import wordCounter from './word-counter';
+import jsonToTypescript from './json-to-typescript';
+import jsonDiff from './json-diff';
+import jsonToSql from './json-to-sql';
+import yamlJson from './yaml-json';
+import xmlJson from './xml-json';
+import csvJson from './csv-json';
+import csvViewer from './csv-viewer';
+import sqlFormatter from './sql-formatter';
+import curlConverter from './curl-converter';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -42,6 +51,15 @@ export const TOOLS: ToolDefinition[] = [
   slugGenerator,
   caseConverter,
   wordCounter,
+  jsonToTypescript,
+  jsonDiff,
+  jsonToSql,
+  yamlJson,
+  xmlJson,
+  csvJson,
+  csvViewer,
+  sqlFormatter,
+  curlConverter,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

@@ -5,4 +5,5 @@ export const SITE = {
   url: 'https://zykit.vercel.app',
   tagline: 'Private tools that run in your browser',
   description: 'A growing set of file and developer tools that run entirely on your device. Nothing is uploaded.',
+  repo: 'https://github.com/itsrahulap/zykit',
 } as const;
