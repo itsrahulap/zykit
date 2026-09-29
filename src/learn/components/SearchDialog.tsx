@@ -30,13 +30,13 @@ function useSearchIndex() {
   return state;
 }
 
-export function entryPath(e: SearchEntry): string {
+function entryPath(e: SearchEntry): string {
   if (e.kind === 'topic') return topicPath(e.subjectId, e.id);
   if (e.kind === 'problem') return problemPath(e.subjectId, e.id);
   return caseStudyPath(e.id);
 }
 
-export function entryLabel(e: SearchEntry): string {
+function entryLabel(e: SearchEntry): string {
   if (e.kind === 'topic') return `Topic · ${getSubjectMeta(e.subjectId)?.title ?? e.subjectId}`;
   if (e.kind === 'problem') return `Problem · ${getCategory(e.subjectId)?.title ?? e.subjectId}`;
   return 'Case study';

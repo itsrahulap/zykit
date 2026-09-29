@@ -3,6 +3,7 @@ import { SITE } from '../config/site';
 import { Headline, IconTile } from '../shared/ui/page';
 import { Icon } from '../shared/ui/ui';
 import { TOOLS, toolPath } from '../tools/registry';
+import { learnStats } from '../learn/data/stats.generated';
 import type { ToolDefinition } from '../tools/types';
 
 function ToolCard({ tool }: { tool: ToolDefinition }) {
@@ -89,6 +90,55 @@ export function HomePage() {
           </ul>
         </section>
       ))}
+
+      <LearnBanner />
     </div>
+  );
+}
+
+// Counts come from a tiny generated file so the home page never loads Learn content.
+function LearnBanner() {
+  const stats = [
+    { value: learnStats.subjects, label: 'subjects' },
+    { value: learnStats.topics, label: 'lessons' },
+    { value: learnStats.problems, label: 'practice problems' },
+    { value: learnStats.caseStudies, label: 'case studies' },
+  ];
+  return (
+    <section aria-labelledby="learn-banner">
+      <p className="eyebrow mb-5 border-b border-slate-200 pb-3 text-slate-600 dark:border-slate-800 dark:text-slate-400">Learn</p>
+      <div className="grid gap-8 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center dark:border-slate-800 dark:bg-slate-900">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <IconTile icon="book" />
+            <h2 id="learn-banner" className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              Learn once. Understand{' '}
+              <em className="font-serif font-normal italic text-emerald-600 dark:text-emerald-400">deeply</em>.
+            </h2>
+          </div>
+          <p className="mt-4 max-w-2xl text-slate-600 dark:text-slate-400">
+            Free, plain-language software engineering lessons, from JavaScript basics to system design, with examples you can run and progress
+            saved in your browser.
+          </p>
+          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap sm:gap-x-8">
+            {stats.map((s) => (
+              <div key={s.label} className="flex items-baseline gap-2">
+                <dt className="sr-only">{s.label}</dt>
+                <dd className="text-2xl font-bold tabular-nums text-slate-900 dark:text-white">{s.value}</dd>
+                <dd aria-hidden="true" className="text-sm text-slate-500 dark:text-slate-400">
+                  {s.label}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <Link
+          to="/learn"
+          className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-primary px-5 py-3 font-semibold text-primary-ink ring-1 ring-inset ring-primary-edge hover:bg-primary-hover pointer-coarse:min-h-11 lg:self-center"
+        >
+          Start learning <Icon name="arrow" className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
   );
 }
