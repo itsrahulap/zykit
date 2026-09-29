@@ -195,7 +195,7 @@ export default function FaviconGeneratorPage() {
       {needsImage ? (
         <ImageDropZone onFiles={openImage} multiple={false} hint="A square PNG or SVG of at least 512 px works best · or paste" />
       ) : (
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <Panel eyebrow="Preview" icon="globe">
             <div className="space-y-4">
               {(['light', 'dark'] as const).map((mode) => (
@@ -211,7 +211,7 @@ export default function FaviconGeneratorPage() {
                       <span className="truncate">{site.name || 'My site'}</span>
                       <Icon name="x" className="ml-auto h-3 w-3 shrink-0 opacity-60" />
                     </div>
-                    <div className="truncate px-3 py-2 text-sm opacity-60">New tab</div>
+                    <div className="hidden truncate px-3 py-2 text-sm opacity-60 sm:block">New tab</div>
                   </div>
                   <div className={`h-3 ${mode === 'light' ? 'bg-white' : 'bg-slate-800'}`} />
                 </div>
@@ -277,7 +277,7 @@ export default function FaviconGeneratorPage() {
         <TextField label="Path" value={site.basePath} onChange={(basePath) => setSite((s) => ({ ...s, basePath }))} className="w-32" maxLength={100} />
       </OptionsCard>
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <section aria-label="HTML" className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">

@@ -7,8 +7,9 @@ test('compresses a batch, compares, and downloads one file and a ZIP', async ({ 
   await page.goto('/tools/image-compressor');
   await expect(page).toHaveTitle(/Image Compressor/);
   await expect(page.getByRole('heading', { name: /make your images lighter/i })).toBeVisible();
-  await expect(page.getByText(/removes metadata such as EXIF and GPS/)).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Clean Image' })).toHaveAttribute('href', '/tools/clean-image');
+  const note = page.getByText(/removes metadata such as EXIF and GPS/);
+  await expect(note).toBeVisible();
+  await expect(note.getByRole('link', { name: 'Clean Image' })).toHaveAttribute('href', '/tools/clean-image');
 
   const png = await canvasImage(page, 'image/png', 400, 200);
   const jpeg = await canvasImage(page, 'image/jpeg', 300, 300);

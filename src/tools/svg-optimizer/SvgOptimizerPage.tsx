@@ -101,7 +101,7 @@ export default function SvgOptimizerPage() {
         />
       </OptionsCard>
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <CodeArea
           id={INPUT_ID}
           label="SVG input"
@@ -131,7 +131,7 @@ export default function SvgOptimizerPage() {
       {result?.ok && (
         <>
           <section aria-label="Preview" className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <SvgPreview svg={deferred} label="Original" />
               <SvgPreview svg={result.output} label="Optimized" />
             </div>

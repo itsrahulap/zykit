@@ -70,7 +70,7 @@ function EncodePanel() {
         <ImageDropZone onFiles={onFiles} multiple={false} hint={`Any image up to ${formatBytes(MAX_ENCODE_BYTES)} · or paste`} />
       ) : (
         <>
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
             <Panel eyebrow="Image" icon="image">
               <Preview url={url} alt={`Preview of ${file.name}`} />
               <div className="mt-4">
@@ -145,7 +145,7 @@ function DecodePanel() {
   const url = useObjectUrl(result?.ok && result.d.detected ? blob : null);
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
       <CodeArea
         label="Base64 or data URI"
         hint="CSS url(…) and <img> tags work too"

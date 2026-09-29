@@ -245,7 +245,7 @@ export function BatchList({
               {extra?.(item)}
             </div>
             <div className="flex shrink-0 items-center gap-1">
-              {onSelect && r && (
+              {onSelect && r && item.status === 'done' && (
                 <button
                   type="button"
                   aria-pressed={selected}
@@ -255,7 +255,7 @@ export function BatchList({
                   Compare
                 </button>
               )}
-              {r && (
+              {r && item.status === 'done' && (
                 <a
                   href={r.url}
                   download={r.name}
@@ -296,7 +296,7 @@ export function BatchToolbar({
   /** Files to put in the ZIP; defaults to every finished result. */
   files?: { name: string; blob: Blob }[];
 }) {
-  const done = items.filter((i) => i.result && i.status !== 'error');
+  const done = items.filter((i) => i.result && i.status === 'done');
   const zipFiles = files ?? done.map((i) => ({ name: i.result!.name, blob: i.result!.blob }));
   const before = done.reduce((s, i) => s + i.file.size, 0);
   const after = zipFiles.reduce((s, f) => s + f.blob.size, 0);
@@ -378,7 +378,7 @@ export function CompareView({ beforeUrl, afterUrl, beforeLabel, afterLabel }: { 
           />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[
             [beforeUrl, beforeLabel, 'Before'],
             [afterUrl, afterLabel, 'After'],

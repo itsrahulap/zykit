@@ -86,21 +86,19 @@ export function useImageBatch({
     }
   }, [patch]);
 
-  const restart = useCallback(() => {
-    gen.current++;
-    client.current?.cancel();
-    commit(list.current.map((i) => ({ ...i, status: 'queued' })));
-    void pump();
-  }, [commit, pump]);
-
-  // Re-run everything when the settings change (debounced for sliders).
+  // Settings changed: results are stale at once (so nothing outdated can be downloaded), but the
+  // re-run is debounced so dragging a slider doesn't re-encode on every step.
   const firstKey = useRef(key);
   useEffect(() => {
     if (key === firstKey.current) return;
     firstKey.current = key;
-    const t = setTimeout(() => list.current.length && restart(), 250);
+    if (!list.current.length) return;
+    gen.current++;
+    client.current?.cancel();
+    commit(list.current.map((i) => ({ ...i, status: 'queued' })));
+    const t = setTimeout(() => void pump(), 250);
     return () => clearTimeout(t);
-  }, [key, restart]);
+  }, [key, commit, pump]);
 
   useEffect(
     () => () => {

@@ -14,7 +14,7 @@ test('converts PNG to JPEG and WebP, flags files the browser cannot decode', asy
     { name: 'broken.heic', mimeType: 'image/heic', buffer: Buffer.from('not really a heic file') },
   ]);
   const files = page.getByRole('list', { name: 'Files' });
-  await expect(files.getByRole('alert')).toContainText("Your browser can't decode this file");
+  await expect(files.getByRole('alert')).toContainText("Your browser can't decode HEIC images");
 
   const [dl] = await Promise.all([page.waitForEvent('download'), files.getByRole('link', { name: /logo\.jpg/ }).click()]);
   const jpeg = await downloaded(dl);
