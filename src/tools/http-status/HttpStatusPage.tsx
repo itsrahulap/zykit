@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import httpStatus from './index';
 import { CLASS_INFO, classOf, searchStatuses, STATUSES, type HttpStatus, type StatusClass } from './features/statuses';
+import { useShareState } from '../../shared/hooks/useShareState';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, Segmented } from '../../shared/ui/tool';
 import { Badge, Icon } from '../../shared/ui/ui';
@@ -70,6 +71,19 @@ export default function HttpStatusPage() {
   const q = useDeferredValue(query);
   /** Code still waiting to be scrolled to (its card may not be rendered yet). */
   const pendingScroll = useRef<number | null>(highlight);
+
+  useShareState(
+    { query, filter, code: highlight ?? 0 },
+    (r) => {
+      if (r.query !== undefined) setQuery(r.query);
+      if (r.filter !== undefined) setFilter(r.filter);
+      if (r.code !== undefined && STATUSES.some((s) => s.code === r.code)) {
+        setHighlight(r.code);
+        pendingScroll.current = r.code;
+      }
+    },
+    { filter: ['all', ...CLASSES] },
+  );
 
   const results = useMemo(() => {
     const found = searchStatuses(q);

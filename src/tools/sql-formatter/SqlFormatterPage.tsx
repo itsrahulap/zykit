@@ -3,7 +3,11 @@ import sqlFormatter from './index';
 import { minifySql } from './features/minify';
 import { DIALECTS, describeFormatError, type Dialect, type FormatErrorInfo } from './features/options';
 import { offsetOf } from '../../shared/lib/textpos';
-import { Checkbox } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
@@ -33,6 +37,7 @@ const CASES: { value: Case; label: string }[] = [
   { value: 'upper', label: 'UPPER' },
   { value: 'lower', label: 'lower' },
 ];
+const CASE_VALUES = CASES.map((c) => c.value);
 
 // The formatter is ~200 KB, so it is fetched only when this page opens.
 let formatterPromise: Promise<FormatFn> | null = null;
@@ -96,6 +101,35 @@ export default function SqlFormatterPage() {
   const error = result && 'error' in result ? result.error : null;
   const dialectLabel = DIALECTS.find((d) => d.value === dialect)?.label ?? dialect;
 
+  const download = () => downloadText(output, action === 'minify' ? 'minified.sql' : 'formatted.sql', 'application/sql');
+
+  useIncomingText(sqlFormatter.id, (t) => setInput(t));
+  useToolShortcuts({ getOutput: () => output, onDownload: () => output && download() });
+  useShareState(
+    { input, action, dialect, keywordCase, identifierCase, indent, linesBetween, dense, logicalNewline, stripComments },
+    (s) => {
+      if (s.input !== undefined) setInput(s.input);
+      if (s.action) setAction(s.action);
+      if (s.dialect) setDialect(s.dialect);
+      if (s.keywordCase) setKeywordCase(s.keywordCase);
+      if (s.identifierCase) setIdentifierCase(s.identifierCase);
+      if (s.indent) setIndent(s.indent);
+      if (s.linesBetween !== undefined) setLinesBetween(s.linesBetween);
+      if (s.dense !== undefined) setDense(s.dense);
+      if (s.logicalNewline) setLogicalNewline(s.logicalNewline);
+      if (s.stripComments !== undefined) setStripComments(s.stripComments);
+    },
+    {
+      action: ['format', 'minify'],
+      dialect: DIALECTS.map((d) => d.value),
+      keywordCase: CASE_VALUES,
+      identifierCase: CASE_VALUES,
+      indent: ['2', '4', 'tab'],
+      linesBetween: [0, 1, 2, 3],
+      logicalNewline: ['before', 'after'],
+    },
+  );
+
   const status = loadError
     ? loadError
     : tooLarge
@@ -118,6 +152,7 @@ export default function SqlFormatterPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".sql,.txt,application/sql" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -196,6 +231,7 @@ export default function SqlFormatterPage() {
           rows={18}
           placeholder="SELECT * FROM users WHERE id = 1;"
           aria-invalid={error ? true : undefined}
+          onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
@@ -232,9 +268,10 @@ export default function SqlFormatterPage() {
                 </h2>
                 <div className="flex flex-wrap items-center gap-1">
                   <CopyButton text={output} />
+                  <SendToMenu text={output} kind="sql" />
                   <button
                     type="button"
-                    onClick={() => downloadText(output, action === 'minify' ? 'minified.sql' : 'formatted.sql', 'application/sql')}
+                    onClick={download}
                     className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     <Icon name="download" className="h-4 w-4" /> Download .sql

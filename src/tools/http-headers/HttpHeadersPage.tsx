@@ -4,7 +4,8 @@ import { headerInfo } from './features/headers';
 import { parseHeaders, SAMPLE_HEADERS, type Header } from './features/parse';
 import { reviewSecurity, summariseCaching, type Level } from './features/review';
 import { describeValue } from './features/values';
-import { Notices } from '../../shared/ui/convert';
+import { Notices, OpenFileButton } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea } from '../../shared/ui/tool';
@@ -61,6 +62,7 @@ function HeaderRow({ h }: { h: Header }) {
 export default function HttpHeadersPage() {
   const [text, setText] = useState('');
   const deferred = useDeferredValue(text);
+  useIncomingText(httpHeaders.id, (t) => setText(t));
   const parsed = useMemo(() => (deferred.trim() ? parseHeaders(deferred) : null), [deferred]);
   const isResponse = parsed?.kind === 'response';
   const status = parsed?.start?.kind === 'response' ? parsed.start.status : undefined;
@@ -89,11 +91,13 @@ export default function HttpHeadersPage() {
           onChange={(e) => setText(e.target.value)}
           placeholder={'HTTP/2 200\ncontent-type: text/html\ncache-control: max-age=300'}
           className="break-all"
+          onFileText={(t) => setText(t)}
         />
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" className="pointer-coarse:min-h-11" onClick={() => setText(SAMPLE_HEADERS)}>
             Load sample
           </Button>
+          <OpenFileButton accept=".txt,.http,.headers,text/plain" onText={(t) => setText(t)} />
           <Button variant="ghost" className="pointer-coarse:min-h-11" onClick={() => setText('')} disabled={!text}>
             Clear
           </Button>

@@ -6,6 +6,11 @@ import { credentialHeaders, generate, type Target } from './features/generate';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
+import { OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 
 type Direction = 'to-code' | 'to-curl';
 
@@ -15,6 +20,7 @@ const TARGETS: { value: Target; label: string }[] = [
   { value: 'axios', label: 'axios' },
   { value: 'python', label: 'Python requests' },
 ];
+const TARGET_LANG: Record<Target, string> = { fetch: 'js', node: 'js', axios: 'js', python: 'py' };
 
 const CURL_SAMPLE = `curl 'https://api.example.com/v1/orders?limit=10' \\
   -X POST \\
@@ -86,6 +92,25 @@ export default function CurlConverterPage() {
   const toCode = direction === 'to-code';
   const targetLabel = TARGETS.find((t) => t.value === target)!.label;
 
+  const headerText = result?.request ? result.request.headers.map(([k, v]) => `${k}: ${v}`).join('\n') : '';
+  const outputLang = toCode ? TARGET_LANG[target] : undefined;
+
+  useIncomingText(curlConverter.id, (t) => {
+    setDirection('to-code');
+    setInputs((prev) => ({ ...prev, 'to-code': t }));
+  });
+  useToolShortcuts({ getOutput: () => result?.output ?? '' });
+  useShareState(
+    { direction, curl: inputs['to-code'], fetch: inputs['to-curl'], target },
+    (s) => {
+      if (s.direction) setDirection(s.direction);
+      if (s.curl !== undefined || s.fetch !== undefined)
+        setInputs((prev) => ({ 'to-code': s.curl ?? prev['to-code'], 'to-curl': s.fetch ?? prev['to-curl'] }));
+      if (s.target) setTarget(s.target);
+    },
+    { direction: ['to-code', 'to-curl'], target: TARGETS.map((t) => t.value) },
+  );
+
   const status = !result
     ? toCode
       ? 'Paste a cURL command to turn it into code.'
@@ -104,6 +129,7 @@ export default function CurlConverterPage() {
           <Button variant="secondary" onClick={() => setInput(toCode ? CURL_SAMPLE : FETCH_SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".sh,.txt,.js,.mjs,.ts,.curl" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -137,6 +163,7 @@ export default function CurlConverterPage() {
           rows={16}
           placeholder={toCode ? "curl -H 'Accept: application/json' https://api.example.com" : "fetch('https://api.example.com', { method: 'POST' })"}
           aria-invalid={result?.error ? true : undefined}
+          onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
@@ -153,10 +180,30 @@ export default function CurlConverterPage() {
                 <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
                   <Icon name="code" className="h-4 w-4" /> {toCode ? targetLabel : 'cURL'}
                 </h2>
-                <CopyButton text={result.output} />
+                <div className="flex flex-wrap items-center gap-1">
+                  <CopyButton text={result.output} />
+                  <SendToMenu text={result.output} kind="code" lang={outputLang} />
+                </div>
               </header>
               <div className="p-4">
                 <CodeBlock className="max-h-[36rem] overflow-y-auto">{result.output}</CodeBlock>
+              </div>
+            </section>
+          )}
+
+          {result?.output && headerText && (
+            <section aria-label="Request headers" className="rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+                <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <Icon name="server" className="h-4 w-4" /> Request headers
+                </h2>
+                <div className="flex flex-wrap items-center gap-1">
+                  <CopyButton text={headerText} label="Copy headers" />
+                  <SendToMenu text={headerText} kind="headers" />
+                </div>
+              </header>
+              <div className="p-4">
+                <CodeBlock className="max-h-72 overflow-y-auto">{headerText}</CodeBlock>
               </div>
             </section>
           )}

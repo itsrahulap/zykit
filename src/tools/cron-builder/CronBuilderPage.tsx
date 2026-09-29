@@ -20,6 +20,7 @@ import {
   type FieldDef,
   type FieldName,
 } from './features/cron';
+import { useShareState } from '../../shared/hooks/useShareState';
 import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
@@ -137,6 +138,16 @@ export default function CronBuilderPage() {
     const t = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(t);
   }, []);
+
+  useShareState(
+    { expression, tz, field },
+    (r) => {
+      if (r.expression !== undefined) setExpression(r.expression);
+      if (r.tz !== undefined) setTz(r.tz);
+      if (r.field !== undefined) setFieldTab(r.field);
+    },
+    { tz: zones, field: FIELD_ORDER_6 },
+  );
 
   const parsed = useMemo(() => parseCron(expression), [expression]);
   const cron = parsed.ok && 'cron' in parsed ? parsed.cron : null;

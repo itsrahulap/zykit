@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
 import encodeDecode from './index';
 import { CODECS, CodecError, transform, type CodecId, type Direction } from './features/codecs';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
+import { OpenFileButton } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 
@@ -25,6 +29,20 @@ export default function EncodeDecodePage() {
   const output = result.ok ? result.text : '';
   const info = CODECS.find((c) => c.id === codec)!;
   const verb = direction === 'encode' ? 'Encoded' : 'Decoded';
+
+  useIncomingText(encodeDecode.id, (t, { kind }) => {
+    if (kind === 'jwt') {
+      const parts = t.trim().split('.');
+      setCodec('base64url');
+      setDirection('decode');
+      setInput(parts.length === 3 ? parts[1] : t.trim());
+    } else if (kind === 'url') {
+      setCodec('url');
+      setDirection('decode');
+      setInput(t.trim());
+    } else setInput(t);
+  });
+  useToolShortcuts({ getOutput: () => output });
 
   const swap = () => {
     setInput(output);
@@ -87,8 +105,10 @@ export default function EncodeDecodePage() {
             placeholder={direction === 'encode' ? 'Hello, world 👋' : 'Paste encoded text…'}
             aria-invalid={!result.ok}
             aria-describedby={!result.ok ? 'codec-error' : undefined}
+            onFileText={(t) => setInput(t)}
           />
-          <div className="mt-3 flex justify-end">
+          <div className="mt-3 flex flex-wrap justify-end gap-3">
+            <OpenFileButton accept=".txt,.b64,.json,.html,.xml,.csv,.md,text/*" onText={(t) => setInput(t)} />
             <Button variant="ghost" onClick={() => setInput('')} disabled={!input}>
               Clear
             </Button>
@@ -114,7 +134,10 @@ export default function EncodeDecodePage() {
                 </p>
               )}
             </div>
-            <CopyButton text={output} label="Copy output" />
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+              <CopyButton text={output} label="Copy output" />
+              <SendToMenu text={output} />
+            </div>
           </div>
         </section>
       </div>

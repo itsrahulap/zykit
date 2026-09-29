@@ -58,40 +58,40 @@ function FileCheck() {
   const ext = file ? extensionOf(file.name) : '';
   return (
     <DropZone onFile={(f) => setFile({ name: f.name, type: f.type })} label="Drop a file to check it">
-    <Panel eyebrow="Check a file" icon="file">
-      <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-        Only the file&rsquo;s name and the type your browser reports are used. Its contents are not read.
-      </p>
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 pointer-coarse:min-h-11 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800">
-        <Icon name="upload" className="h-4 w-4" /> Choose a file
-        <input
-          type="file"
-          className="sr-only"
-          aria-label="Choose a file to check"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            setFile(f ? { name: f.name, type: f.type } : null);
-          }}
-        />
-      </label>
-      {file && (
-        <div className="mt-5">
-          <DetailRows
-            rows={[
-              ['File name', <span key="n" className="break-all">{file.name}</span>],
-              ['Extension', ext ? `.${ext}` : 'none'],
-              ['Type from extension', <span key="e" className="break-all font-mono">{match?.mime ?? 'unknown'}</span>],
-              ['Browser-reported type', <span key="b" className="break-all font-mono">{file.type || '(empty)'}</span>],
-            ]}
+      <Panel eyebrow="Check a file" icon="file">
+        <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+          Only the file&rsquo;s name and the type your browser reports are used. Its contents are not read.
+        </p>
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-emerald-500 pointer-coarse:min-h-11 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800">
+          <Icon name="upload" className="h-4 w-4" /> Choose a file
+          <input
+            type="file"
+            className="sr-only"
+            aria-label="Choose a file to check"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setFile(f ? { name: f.name, type: f.type } : null);
+            }}
           />
-          {match && file.type && match.mime !== file.type && (
-            <p className="mt-3 text-sm text-amber-800 dark:text-amber-300">
-              These differ. Browsers guess from the extension using the operating system&rsquo;s own table, so both can be valid aliases.
-            </p>
-          )}
-        </div>
-      )}
-    </Panel>
+        </label>
+        {file && (
+          <div className="mt-5">
+            <DetailRows
+              rows={[
+                ['File name', <span key="n" className="break-all">{file.name}</span>],
+                ['Extension', ext ? `.${ext}` : 'none'],
+                ['Type from extension', <span key="e" className="break-all font-mono">{match?.mime ?? 'unknown'}</span>],
+                ['Browser-reported type', <span key="b" className="break-all font-mono">{file.type || '(empty)'}</span>],
+              ]}
+            />
+            {match && file.type && match.mime !== file.type && (
+              <p className="mt-3 text-sm text-amber-800 dark:text-amber-300">
+                These differ. Browsers guess from the extension using the operating system&rsquo;s own table, so both can be valid aliases.
+              </p>
+            )}
+          </div>
+        )}
+      </Panel>
     </DropZone>
   );
 }

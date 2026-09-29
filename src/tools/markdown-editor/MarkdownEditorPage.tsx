@@ -4,6 +4,11 @@ import { applyEdit, insertTable, link, linePrefix, wrap, type Edit } from './fea
 import { countText, documentTitle, standaloneHtml } from './features/markdown';
 import { loadRenderer, type Renderer } from './features/sanitize';
 import { Notices, OpenFileButton } from '../../shared/ui/convert';
+import { DropZone } from '../../shared/ui/DropZone';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -127,20 +132,16 @@ export default function MarkdownEditorPage() {
     apply(tool.make);
   };
 
-  const openFile = async (file: File) => {
-    if (file.size > MAX_FILE_BYTES) {
-      setError(`That file is too large (limit ${MAX_FILE_BYTES / 1024 / 1024} MB).`);
-      return;
-    }
-    try {
-      setText(await file.text());
-      setError('');
-    } catch {
-      setError('That file could not be read.');
-    }
-  };
+  const openText = (t: string) => setText(t);
 
   const html = rendered?.html ?? '';
+  const downloadMd = () => downloadText(text, 'document.md', 'text/markdown');
+
+  useIncomingText(markdownEditor.id, (t) => setText(t));
+  useToolShortcuts({ getOutput: () => (renderer ? html : ''), onDownload: () => text && downloadMd() });
+  useShareState({ text }, (s) => {
+    if (s.text !== undefined) setText(s.text);
+  });
   const status = !renderer ? (error ? 'Renderer unavailable.' : 'Loading the Markdown renderer…') : `${pluralize(counts.words, 'word')} · ${pluralize(counts.chars, 'character')}`;
 
   return (
@@ -149,7 +150,7 @@ export default function MarkdownEditorPage() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <Headline accent="preview">Markdown, with a live </Headline>
         <div className="flex flex-wrap gap-3">
-          <OpenFileButton accept=".md,.markdown,.mdown,.txt,text/markdown,text/plain" onFile={openFile} label="Open .md" />
+          <OpenFileButton accept=".md,.markdown,.mdown,.txt,text/markdown,text/plain" onText={openText} maxBytes={MAX_FILE_BYTES} label="Open .md" />
           <Button variant="secondary" onClick={() => setText(WELCOME)}>
             Example
           </Button>
@@ -194,20 +195,22 @@ export default function MarkdownEditorPage() {
               </button>
             ))}
           </div>
-          <label htmlFor={EDITOR_ID} className="sr-only">
-            Markdown
-          </label>
-          <textarea
-            id={EDITOR_ID}
-            ref={ref}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={24}
-            spellCheck
-            placeholder="# Start writing…"
-            className="block h-[32rem] w-full resize-y rounded-b-3xl bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 lg:h-[40rem]"
-          />
+          <DropZone onText={openText} maxBytes={MAX_FILE_BYTES}>
+            <label htmlFor={EDITOR_ID} className="sr-only">
+              Markdown
+            </label>
+            <textarea
+              id={EDITOR_ID}
+              ref={ref}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={onKeyDown}
+              rows={24}
+              spellCheck
+              placeholder="# Start writing…"
+              className="block h-[32rem] w-full resize-y rounded-b-3xl bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 lg:h-[40rem]"
+            />
+          </DropZone>
         </section>
 
         <section
@@ -220,7 +223,8 @@ export default function MarkdownEditorPage() {
             </h2>
             <div className="flex flex-wrap items-center gap-1">
               <CopyButton text={html} label="Copy HTML" disabled={!renderer} />
-              <button type="button" aria-label="Download .md" className={smallButton} disabled={!text} onClick={() => downloadText(text, 'document.md', 'text/markdown')}>
+              <SendToMenu text={text} kind="markdown" />
+              <button type="button" aria-label="Download .md" className={smallButton} disabled={!text} onClick={downloadMd}>
                 <Icon name="download" className="h-4 w-4" /> .md
               </button>
               <button

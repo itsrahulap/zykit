@@ -105,21 +105,21 @@ export default function UrlParserPage() {
 
       <section aria-label="Input" className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <DropZone onText={(t) => setInput(t.trim())}>
-        <label className="block">
-          <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">URL</span>
-          <input
-            type="text"
-            inputMode="url"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="https://example.com/path?key=value#section"
-            spellCheck={false}
-            autoCapitalize="off"
-            autoComplete="off"
-            aria-invalid={parsed ? !parsed.ok : undefined}
-            className={INPUT}
-          />
-        </label>
+          <label className="block">
+            <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">URL</span>
+            <input
+              type="text"
+              inputMode="url"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="https://example.com/path?key=value#section"
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              aria-invalid={parsed ? !parsed.ok : undefined}
+              className={INPUT}
+            />
+          </label>
         </DropZone>
         <label className="block">
           <span className="mb-2 block text-sm text-slate-600 dark:text-slate-400">Base URL (optional, for relative URLs)</span>

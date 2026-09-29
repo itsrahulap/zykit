@@ -15,6 +15,8 @@ import {
   UNIT_LABELS,
   type Unit,
 } from './features/timestamp';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { DropZone } from '../../shared/ui/DropZone';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
@@ -59,6 +61,19 @@ export default function TimestampConverterPage() {
 
   const [civil, setCivil] = useState(() => toDatetimeLocal(Date.now(), local));
   const [civilZone, setCivilZone] = useState(local);
+
+  const zoneIds = useMemo(() => zoneOptions.map((z) => z.value), [zoneOptions]);
+  useShareState(
+    { input, unitChoice, zone, civil, civilZone },
+    (r) => {
+      if (r.input !== undefined) setInput(r.input);
+      if (r.unitChoice !== undefined) setUnitChoice(r.unitChoice);
+      if (r.zone !== undefined) setZone(r.zone);
+      if (r.civil !== undefined) setCivil(r.civil);
+      if (r.civilZone !== undefined) setCivilZone(r.civilZone);
+    },
+    { unitChoice: ['auto', 's', 'ms', 'us', 'ns'] as const, zone: zoneIds, civilZone: zoneIds },
+  );
 
   const parsed = useMemo(() => parseTimestamp(input, unitChoice === 'auto' ? undefined : unitChoice), [input, unitChoice]);
   const reverse = useMemo(() => (civil ? civilToMs(civil, civilZone) : null), [civil, civilZone]);
@@ -108,19 +123,21 @@ export default function TimestampConverterPage() {
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <Panel eyebrow="Timestamp to date" icon="clock" className="min-w-0">
           <div className="space-y-4">
-            <label className="block">
-              <span className="mb-2 block text-sm text-slate-600 dark:text-slate-400">Unix timestamp</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                spellCheck={false}
-                autoComplete="off"
-                aria-invalid={!parsed.ok}
-                className={INPUT}
-              />
-            </label>
+            <DropZone onText={(t) => setInput(t.trim())}>
+              <label className="block">
+                <span className="mb-2 block text-sm text-slate-600 dark:text-slate-400">Unix timestamp</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  spellCheck={false}
+                  autoComplete="off"
+                  aria-invalid={!parsed.ok}
+                  className={INPUT}
+                />
+              </label>
+            </DropZone>
             <Segmented<UnitChoice>
               label="Unit"
               options={[

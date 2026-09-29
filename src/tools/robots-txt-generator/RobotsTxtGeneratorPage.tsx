@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import robotsTxtGenerator from './index';
 import { generate, parse, PRESETS, testUrl, type Group, type RobotsDoc, type RuleType } from './features/robots';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Select } from '../../shared/ui/Select';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { downloadText } from '../../shared/utils/dom.utils';
 import { pluralize } from '../../shared/utils/format.utils';
@@ -84,6 +86,8 @@ export default function RobotsTxtGeneratorPage() {
   const [url, setUrl] = useState('/');
 
   const generated = useMemo(() => generate({ ...doc, sitemaps: sitemaps.split('\n') }), [doc, sitemaps]);
+  const download = () => downloadText(generated, 'robots.txt', 'text/plain');
+  useToolShortcuts({ getOutput: () => generated, onDownload: () => generated && download() });
   const testedText = source === 'generated' ? generated : pasted;
   const parsed = useMemo(() => parse(testedText), [testedText]);
   const result = useMemo(() => (url.trim() ? testUrl(parsed.doc, agent, url) : null), [parsed, agent, url]);
@@ -128,7 +132,7 @@ export default function RobotsTxtGeneratorPage() {
           <Button variant="secondary" onClick={() => setDoc((d) => ({ ...d, groups: [...d.groups, { userAgents: [''], rules: [{ type: 'disallow', path: '/' }] }] }))}>
             + Add group
           </Button>
-          <CodeArea label="Sitemaps" hint="absolute URLs, one per line" rows={3} value={sitemaps} onChange={(e) => setSitemaps(e.target.value)} placeholder="https://example.com/sitemap.xml" />
+          <CodeArea label="Sitemaps" hint="absolute URLs, one per line" rows={3} value={sitemaps} onChange={(e) => setSitemaps(e.target.value)} onFileText={setSitemaps} placeholder="https://example.com/sitemap.xml" />
         </div>
 
         <div className="min-w-0 space-y-6">
@@ -139,7 +143,8 @@ export default function RobotsTxtGeneratorPage() {
               </h2>
               <div className="flex flex-wrap gap-1">
                 <CopyButton text={generated} />
-                <button type="button" disabled={!generated} onClick={() => downloadText(generated, 'robots.txt', 'text/plain')} className={smallButton}>
+                <SendToMenu text={generated} kind="text" />
+                <button type="button" disabled={!generated} onClick={download} className={smallButton}>
                   <Icon name="download" className="h-4 w-4" /> Download robots.txt
                 </button>
               </div>
@@ -163,7 +168,7 @@ export default function RobotsTxtGeneratorPage() {
               onChange={setSource}
             />
             {source === 'pasted' && (
-              <CodeArea label="Robots.txt to test" rows={8} value={pasted} onChange={(e) => setPasted(e.target.value)} placeholder={'User-agent: *\nDisallow: /admin/'} />
+              <CodeArea label="Robots.txt to test" rows={8} value={pasted} onChange={(e) => setPasted(e.target.value)} onFileText={setPasted} placeholder={'User-agent: *\nDisallow: /admin/'} />
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block min-w-0">

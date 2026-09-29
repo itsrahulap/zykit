@@ -86,6 +86,7 @@ export default function SitemapGeneratorPage() {
           >
             Try an example
           </Button>
+          {tab === 'generate' && <OpenFileButton accept=".txt,.csv,.tsv,.md,text/plain,text/csv" onText={setInput} />}
           <Button
             variant="ghost"
             disabled={tab === 'generate' ? !input : !xml}
@@ -145,6 +146,7 @@ export default function SitemapGeneratorPage() {
                 hint={extract ? 'any text' : 'one per line · optional date, priority, changefreq'}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onFileText={setInput}
                 rows={16}
                 placeholder={'https://example.com/\nhttps://example.com/about 2026-01-15 0.8 monthly'}
               />
@@ -191,8 +193,8 @@ export default function SitemapGeneratorPage() {
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-2">
           <div className="min-w-0 space-y-3">
-            <CodeArea label="Sitemap XML" value={xml} onChange={(e) => setXml(e.target.value)} rows={16} placeholder={'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">…'} />
-            <OpenFileButton accept=".xml,text/xml,application/xml" onFile={(f) => f.text().then(setXml)} />
+            <CodeArea label="Sitemap XML" value={xml} onChange={(e) => setXml(e.target.value)} onFileText={setXml} rows={16} placeholder={'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">…'} />
+            <OpenFileButton accept=".xml,text/xml,application/xml" onText={setXml} />
           </div>
           <div className="min-w-0">
             {validation && (

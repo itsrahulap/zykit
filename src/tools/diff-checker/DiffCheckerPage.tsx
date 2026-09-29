@@ -4,6 +4,9 @@ import { DiffView, type ViewMode } from './components/DiffView';
 import type { DiffResult } from './features/diff';
 import { useDiff } from './hooks/useDiff';
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CopyButton, Segmented } from '../../shared/ui/tool';
@@ -78,6 +81,23 @@ export default function DiffCheckerPage() {
   const { result, unified, busy, error, version } = useDiff(a, b, { trim, ignoreWhitespace, ignoreCase });
   const empty = !a && !b;
 
+  useIncomingText(diffChecker.id, (t) => setA(t));
+  useToolShortcuts({ getOutput: () => (result && !result.identical && !error ? unified : '') });
+  useShareState(
+    { a, b, trim, ignoreWhitespace, ignoreCase, mode, collapsed, context },
+    (s) => {
+      if (s.a !== undefined) setA(s.a);
+      if (s.b !== undefined) setB(s.b);
+      if (s.trim !== undefined) setTrim(s.trim);
+      if (s.ignoreWhitespace !== undefined) setIgnoreWhitespace(s.ignoreWhitespace);
+      if (s.ignoreCase !== undefined) setIgnoreCase(s.ignoreCase);
+      if (s.mode) setMode(s.mode);
+      if (s.collapsed !== undefined) setCollapsed(s.collapsed);
+      if (s.context !== undefined) setContext(s.context);
+    },
+    { mode: ['split', 'unified'], context: [0, 1, 3, 5, 10] },
+  );
+
   const status = error
     ? 'Can’t compare these inputs.'
     : busy
@@ -121,8 +141,8 @@ export default function DiffCheckerPage() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <CodeArea label="Original" value={a} onChange={(e) => setA(e.target.value)} rows={12} placeholder="Paste the original text…" />
-        <CodeArea label="Changed" value={b} onChange={(e) => setB(e.target.value)} rows={12} placeholder="Paste the changed text…" />
+        <CodeArea label="Original" value={a} onChange={(e) => setA(e.target.value)} rows={12} placeholder="Paste the original text…" onFileText={(t) => setA(t)} />
+        <CodeArea label="Changed" value={b} onChange={(e) => setB(e.target.value)} rows={12} placeholder="Paste the changed text…" onFileText={(t) => setB(t)} />
       </div>
 
       <section aria-label="Comparison options" className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">

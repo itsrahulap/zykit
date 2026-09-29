@@ -1,7 +1,9 @@
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import hashGenerator from './index';
 import { formatDigest, HASH_ALGS, HMAC_ALGS, MAX_FILE_BYTES, type HashRequest, type OutputFormat } from './features/hash';
 import { useHashes } from './hooks/useHashes';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { DropZone } from '../../shared/ui/DropZone';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge } from '../../shared/ui/ui';
@@ -33,10 +35,12 @@ export default function HashGeneratorPage() {
   // Typing is debounced; a freshly chosen file is hashed straight away.
   const { busy, values, error } = useHashes(req, source === 'text' ? 150 : 0);
 
-  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = '';
-    if (!f) return;
+  useIncomingText(hashGenerator.id, (t) => {
+    setSource('text');
+    setText(t);
+  });
+
+  const loadFile = async (f: File) => {
     setFileError(null);
     if (f.size > MAX_FILE_BYTES) {
       setFileError(`${f.name} is ${formatBytes(f.size)}. Files up to ${formatBytes(MAX_FILE_BYTES)} can be hashed here.`);
@@ -97,21 +101,26 @@ export default function HashGeneratorPage() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type or paste text…"
+            onFileText={(t) => setText(t)}
           />
         ) : (
-          <div className="space-y-2">
+          <DropZone className="space-y-2" onFile={(f) => void loadFile(f)}>
             <label className="block">
               <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">File to hash</span>
               <input
                 type="file"
-                onChange={onFile}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = '';
+                  if (f) void loadFile(f);
+                }}
                 className="block w-full min-w-0 text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:font-semibold file:text-slate-800 hover:file:bg-slate-200 dark:text-slate-300 dark:file:bg-slate-800 dark:file:text-slate-100 dark:hover:file:bg-slate-700"
               />
             </label>
             <p className="break-all text-sm text-slate-500 dark:text-slate-400">
               {file ? `${file.name} · ${formatBytes(file.size)}` : `Up to ${formatBytes(MAX_FILE_BYTES)}. The file is read in your browser and never uploaded.`}
             </p>
-          </div>
+          </DropZone>
         )}
 
         <div className="space-y-3 border-t border-slate-100 pt-5 dark:border-slate-800">

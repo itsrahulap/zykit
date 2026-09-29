@@ -9,7 +9,10 @@ import { Breadcrumb, CodeArea } from '../../shared/ui/tool';
 import { Select } from '../../shared/ui/Select';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { Checkbox, Notices, OpenFileButton, OptionsCard } from '../../shared/ui/convert';
+import { DropZone } from '../../shared/ui/DropZone';
 import { downloadText } from '../../shared/utils/dom.utils';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { formatBytes } from '../../shared/utils/format.utils';
 
 const ROW_H = 36;
@@ -223,7 +226,6 @@ export default function CsvViewerPage() {
   const [sort, setSort] = useState<Sort>(null);
   const [hidden, setHidden] = useState<Set<number>>(() => new Set());
   const [statColumn, setStatColumn] = useState(0);
-  const [readError, setReadError] = useState<string | null>(null);
 
   const { table, busy, error } = useCsvTable(source, delimiter, header);
 
@@ -246,21 +248,16 @@ export default function CsvViewerPage() {
   );
   const filtering = dGlobal !== global || dFilters !== filters;
 
-  const openFile = (f: File) => {
-    setReadError(null);
-    if (f.size > MAX_FILE_BYTES) {
-      setReadError(`${f.name} is ${formatBytes(f.size)}; the limit is ${formatBytes(MAX_FILE_BYTES)}.`);
-      return;
-    }
-    f.text().then(
-      (t) => {
-        setFile({ name: f.name, size: f.size });
-        if (/\.tsv$/i.test(f.name)) setDelimiter('\t');
-        setSource(t);
-      },
-      () => setReadError(`Couldn't read ${f.name}.`),
-    );
+  const openText = (t: string, f: File) => {
+    setFile({ name: f.name, size: f.size });
+    if (/\.tsv$/i.test(f.name)) setDelimiter('\t');
+    setSource(t);
   };
+
+  useIncomingText(csvViewer.id, (t) => {
+    setFile(null);
+    setSource(t);
+  });
 
   const onSort = (c: number) =>
     setSort((s) => (s?.column !== c ? { column: c, dir: 'asc' } : s.dir === 'asc' ? { column: c, dir: 'desc' } : null));
@@ -272,6 +269,7 @@ export default function CsvViewerPage() {
     const tsv = table.delimiter === '\t';
     downloadText(writeCsv(rows, { delimiter: table.delimiter }), `${name}-filtered.${tsv ? 'tsv' : 'csv'}`, tsv ? 'text/tab-separated-values' : 'text/csv');
   };
+  useToolShortcuts({ onDownload: () => indices.length && visible.length && exportView() });
 
   const status = error
     ? error
@@ -283,7 +281,6 @@ export default function CsvViewerPage() {
 
   const bigSource = source.length > MAX_TEXTAREA_CHARS;
   const notices = [
-    ...(readError ? [readError] : []),
     ...(table?.truncated ? ['Only the first 1,000,000 rows are shown.'] : []),
     ...(table?.issues.slice(0, 3).map((i) => `Line ${i.line}: ${i.message}`) ?? []),
   ];
@@ -296,7 +293,7 @@ export default function CsvViewerPage() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <Headline accent="at a glance">Big CSV files, </Headline>
         <div className="flex flex-wrap gap-3">
-          <OpenFileButton accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" onFile={openFile} />
+          <OpenFileButton accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" onText={openText} maxBytes={MAX_FILE_BYTES} />
           <Button
             variant="secondary"
             onClick={() => {
@@ -324,26 +321,28 @@ export default function CsvViewerPage() {
 
       <Notices items={notices} />
 
-      {bigSource ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-          <p className="flex min-w-0 items-center gap-2">
-            <Icon name="file" className="h-4 w-4 shrink-0" />
-            <span className="truncate">{file ? `${file.name} · ${formatBytes(file.size)}` : `Pasted text · ${formatBytes(source.length)}`}</span>
-          </p>
-        </div>
-      ) : (
-        <CodeArea
-          label="CSV input"
-          hint={file ? `${file.name} · ${formatBytes(file.size)}` : 'Paste here, or open a file'}
-          value={source}
-          onChange={(e) => {
-            setFile(null);
-            setSource(e.target.value);
-          }}
-          rows={table ? 4 : 10}
-          placeholder={'name,age\nAnn,30\nBob,25'}
-        />
-      )}
+      <DropZone onText={openText} maxBytes={MAX_FILE_BYTES}>
+        {bigSource ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <p className="flex min-w-0 items-center gap-2">
+              <Icon name="file" className="h-4 w-4 shrink-0" />
+              <span className="truncate">{file ? `${file.name} · ${formatBytes(file.size)}` : `Pasted text · ${formatBytes(source.length)}`}</span>
+            </p>
+          </div>
+        ) : (
+          <CodeArea
+            label="CSV input"
+            hint={file ? `${file.name} · ${formatBytes(file.size)}` : 'Paste here, or open a file'}
+            value={source}
+            onChange={(e) => {
+              setFile(null);
+              setSource(e.target.value);
+            }}
+            rows={table ? 4 : 10}
+            placeholder={'name,age\nAnn,30\nBob,25'}
+          />
+        )}
+      </DropZone>
 
       {table && (
         <>

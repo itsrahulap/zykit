@@ -12,7 +12,9 @@ import {
   type SpaceMode,
   type UtmValues,
 } from './features/utm';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Select } from '../../shared/ui/Select';
 import { Checkbox, Notices } from '../../shared/ui/convert';
@@ -119,6 +121,8 @@ export default function UtmBuilderPage() {
         : `${pluralize(bulkRows.filter((r) => r.result.ok).length, 'link')} built${bulkRows.some((r) => !r.result.ok) ? ` · ${bulkRows.filter((r) => !r.result.ok).length} invalid` : ''}`;
 
   const warnings = mode === 'single' ? single.warnings : [...new Set(bulkRows.flatMap((r) => r.result.warnings))];
+  const tagged = mode === 'single' ? (single.ok ? single.url : '') : bulkOutput;
+  useToolShortcuts({ getOutput: () => tagged });
 
   return (
     <div className="space-y-8">
@@ -169,7 +173,7 @@ export default function UtmBuilderPage() {
             {mode === 'single' ? (
               <Field label="Website URL" required value={base} onChange={setBase} placeholder="https://example.com/landing" />
             ) : (
-              <CodeArea label="Base URLs" hint="one per line" value={bulk} onChange={(e) => setBulk(e.target.value)} rows={6} placeholder={'https://example.com/a\nhttps://example.com/b'} />
+              <CodeArea label="Base URLs" hint="one per line" value={bulk} onChange={(e) => setBulk(e.target.value)} rows={6} placeholder={'https://example.com/a\nhttps://example.com/b'} onFileText={(t) => setBulk(t)} />
             )}
             <Field
               label="Your site's domain"
@@ -244,9 +248,12 @@ export default function UtmBuilderPage() {
               <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
                 <Icon name="link" className="h-4 w-4" /> {mode === 'single' ? 'Tagged URL' : 'Tagged URLs'}
               </h2>
-              <span onClick={() => (mode === 'single' ? single.ok && remember(single.url) : bulkRows.forEach((r) => r.result.ok && remember(r.result.url)))}>
-                <CopyButton text={mode === 'single' ? (single.ok ? single.url : '') : bulkOutput} label={mode === 'single' ? 'Copy' : 'Copy all'} />
-              </span>
+              <div className="flex flex-wrap items-center gap-1">
+                <span onClick={() => (mode === 'single' ? single.ok && remember(single.url) : bulkRows.forEach((r) => r.result.ok && remember(r.result.url)))}>
+                  <CopyButton text={tagged} label={mode === 'single' ? 'Copy' : 'Copy all'} />
+                </span>
+                <SendToMenu text={tagged} />
+              </div>
             </header>
             <div className="p-4">
               {mode === 'single' ? (
