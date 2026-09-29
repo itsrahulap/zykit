@@ -10,6 +10,8 @@ const urlCleaner: ToolDefinition = {
   icon: 'link',
   tags: ['Tracking', 'Privacy', 'URL'],
   status: 'available',
+  accepts: ['url'],
+  produces: ['url'],
   load: () => import('./UrlCleanerPage'),
 };
 

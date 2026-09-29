@@ -10,6 +10,7 @@ const jsRunner: ToolDefinition = {
   icon: 'code',
   tags: ['JavaScript', 'TypeScript', 'Console', 'Playground'],
   status: 'available',
+  accepts: ['code'],
   load: () => import('./JsRunnerPage'),
 };
 

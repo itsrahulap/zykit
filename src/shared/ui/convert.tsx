@@ -1,9 +1,13 @@
 // Building blocks shared by the data-conversion tools (YAML, XML, CSV ↔ JSON, CSV viewer).
 
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
+import type { DataKind } from '../../tools/types';
+import { useToolShortcuts } from '../hooks/useToolShortcuts';
 import { errorSnippet, type TextError } from '../lib/textpos';
+import { MAX_TEXT_FILE_BYTES, readTextFile, TextFileError } from '../lib/textFile';
 import { formatBytes } from '../utils/format.utils';
 import { Panel } from './Panel';
+import { SendToMenu } from './SendToMenu';
 import { CodeBlock, CopyButton } from './tool';
 import { Icon, type IconName } from './ui';
 import { downloadText, selectInTextarea } from '../utils/dom.utils';
@@ -68,7 +72,25 @@ export function ErrorPanel({ error, text, inputId, title = 'Syntax error' }: { e
 const toolbarButton =
   'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium pointer-coarse:min-h-11 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800';
 
-/** Output card with copy and download. Long output is previewed, not rendered in full. */
+/** Best guess at what an output is from its MIME type, for "Send to…". */
+export function kindFromMime(mime: string): DataKind | undefined {
+  const m = mime.toLowerCase();
+  if (m.includes('svg')) return undefined;
+  if (m.includes('json')) return 'json';
+  if (m.includes('csv') || m.includes('tab-separated')) return 'csv';
+  if (m.includes('yaml')) return 'yaml';
+  if (m.includes('xml')) return 'xml';
+  if (m.includes('sql')) return 'sql';
+  if (m.includes('markdown')) return 'markdown';
+  if (m.includes('typescript') || m.includes('javascript')) return 'code';
+  if (m.startsWith('text/plain')) return 'text';
+  return undefined;
+}
+
+/**
+ * Output card with copy, "Send to…" and download. Long output is previewed, not rendered in full.
+ * It's the page's main output: Ctrl/⌘+Shift+C copies it and Ctrl/⌘+S downloads it.
+ */
 export function OutputPanel({
   title,
   icon = 'braces',
@@ -76,6 +98,7 @@ export function OutputPanel({
   fileName,
   mime,
   busy,
+  kind,
 }: {
   title: string;
   icon?: IconName;
@@ -83,9 +106,13 @@ export function OutputPanel({
   fileName: string;
   mime: string;
   busy?: boolean;
+  /** What the output is, for "Send to…"; inferred from `mime` when omitted. */
+  kind?: DataKind;
 }) {
   const preview = text.length > MAX_PREVIEW_CHARS ? text.slice(0, MAX_PREVIEW_CHARS) : text;
   const ext = fileName.slice(fileName.lastIndexOf('.'));
+  const download = () => downloadText(text, fileName, mime);
+  useToolShortcuts({ getOutput: () => text, onDownload: () => text && download() });
   return (
     <section aria-label="Output" aria-busy={busy} className="min-w-0 rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-6 dark:border-slate-800">
@@ -94,7 +121,8 @@ export function OutputPanel({
         </h2>
         <div className="flex flex-wrap items-center gap-1">
           <CopyButton text={text} />
-          <button type="button" disabled={!text} onClick={() => downloadText(text, fileName, mime)} className={toolbarButton}>
+          <SendToMenu text={text} kind={kind ?? kindFromMime(mime)} disabled={busy} />
+          <button type="button" disabled={!text} onClick={download} className={toolbarButton}>
             <Icon name="download" className="h-4 w-4" /> Download {ext}
           </button>
         </div>
@@ -125,17 +153,35 @@ export function Notices({ items }: { items: string[] }) {
   );
 }
 
-/** "Open file" button backed by a hidden file input. Reads the file as text. */
+/**
+ * "Open file" button backed by a hidden file input. With `onText` the file is read as text
+ * (size-capped, binary refused) and a friendly error shows next to the button; `onFile`
+ * hands over the raw File instead.
+ */
 export function OpenFileButton({
   accept,
   onFile,
+  onText,
+  maxBytes = MAX_TEXT_FILE_BYTES,
   label = 'Open file',
 }: {
   accept: string;
-  onFile: (file: File) => void;
+  onFile?: (file: File) => void;
+  onText?: (text: string, file: File) => void;
+  maxBytes?: number;
   label?: string;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const handle = (f: File) => {
+    setError(null);
+    if (onFile) onFile(f);
+    if (onText)
+      readTextFile(f, maxBytes).then(
+        (t) => onText(t, f),
+        (err: unknown) => setError(err instanceof TextFileError ? err.message : `Couldn't read ${f.name}.`),
+      );
+  };
   return (
     <>
       <input
@@ -148,7 +194,7 @@ export function OpenFileButton({
         data-testid="file-input"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f) onFile(f);
+          if (f) handle(f);
           e.target.value = '';
         }}
       />
@@ -159,6 +205,11 @@ export function OpenFileButton({
       >
         <Icon name="upload" className="h-4 w-4" /> {label}
       </button>
+      {error && (
+        <p role="alert" className="flex basis-full items-start gap-1.5 text-sm text-red-700 dark:text-red-400">
+          <Icon name="warn" className="mt-0.5 h-4 w-4 shrink-0" /> <span className="min-w-0 break-words">{error}</span>
+        </p>
+      )}
     </>
   );
 }

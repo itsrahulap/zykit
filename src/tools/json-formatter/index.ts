@@ -10,6 +10,9 @@ const jsonFormatter: ToolDefinition = {
   icon: 'braces',
   tags: ['JSON', 'Validate', 'Minify', 'Pretty print'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['json'],
+  shareable: true,
   load: () => import('./JsonFormatterPage'),
 };
 

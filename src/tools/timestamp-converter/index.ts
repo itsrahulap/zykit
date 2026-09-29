@@ -9,6 +9,7 @@ const timestampConverter: ToolDefinition = {
   icon: 'clock',
   tags: ['Unix', 'Epoch', 'ISO 8601', 'Time zone'],
   status: 'available',
+  shareable: true,
   load: () => import('./TimestampConverterPage'),
 };
 

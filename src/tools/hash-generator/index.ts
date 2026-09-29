@@ -10,6 +10,7 @@ const hashGenerator: ToolDefinition = {
   icon: 'hash',
   tags: ['MD5', 'SHA-256', 'SHA-512', 'HMAC'],
   status: 'available',
+  accepts: ['text'],
   load: () => import('./HashGeneratorPage'),
 };
 

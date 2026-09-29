@@ -10,6 +10,9 @@ const textCleaner: ToolDefinition = {
   icon: 'text',
   tags: ['Lines', 'Duplicates', 'Whitespace', 'Sort'],
   status: 'available',
+  accepts: ['text'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./TextCleanerPage'),
 };
 

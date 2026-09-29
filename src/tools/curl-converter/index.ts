@@ -10,6 +10,9 @@ const curlConverter: ToolDefinition = {
   icon: 'code',
   tags: ['cURL', 'fetch', 'HTTP', 'axios'],
   status: 'available',
+  accepts: ['curl'],
+  produces: ['code', 'headers'],
+  shareable: true,
   load: () => import('./CurlConverterPage'),
 };
 

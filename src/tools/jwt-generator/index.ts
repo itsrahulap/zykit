@@ -10,6 +10,7 @@ const jwtGenerator: ToolDefinition = {
   icon: 'key',
   tags: ['JWT', 'Sign', 'HS256', 'RS256'],
   status: 'available',
+  produces: ['jwt'],
   load: () => import('./JwtGeneratorPage'),
 };
 

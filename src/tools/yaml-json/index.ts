@@ -10,6 +10,9 @@ const yamlJson: ToolDefinition = {
   icon: 'swap',
   tags: ['YAML', 'JSON', 'Convert'],
   status: 'available',
+  accepts: ['yaml', 'json'],
+  produces: ['json', 'yaml'],
+  shareable: true,
   load: () => import('./YamlJsonPage'),
 };
 

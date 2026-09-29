@@ -10,6 +10,7 @@ const cronBuilder: ToolDefinition = {
   icon: 'clock',
   tags: ['Cron', 'Crontab', 'Schedule'],
   status: 'available',
+  shareable: true,
   load: () => import('./CronBuilderPage'),
 };
 

@@ -8,7 +8,7 @@ test('a DSA solution opens in the JS Runner with its example calls', async ({ pa
   const editor = page.getByRole('textbox', { name: /(JavaScript|TypeScript) code/ });
   await expect(editor).toHaveValue(/function twoSum/);
   await expect(editor).toHaveValue(/Example 1: twoSum/);
-  expect(await page.evaluate(() => sessionStorage.getItem('zykit-js-runner-handoff'))).toBeNull();
+  expect(await page.evaluate(() => sessionStorage.getItem('zykit-handoff'))).toBeNull();
 
   // Saved, so a reload keeps it.
   await page.reload();

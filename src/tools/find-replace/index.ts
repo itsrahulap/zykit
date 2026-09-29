@@ -10,6 +10,9 @@ const findReplace: ToolDefinition = {
   icon: 'regex',
   tags: ['Find', 'Replace', 'Regex'],
   status: 'available',
+  accepts: ['text'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./FindReplacePage'),
 };
 

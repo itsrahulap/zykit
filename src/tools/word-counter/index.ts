@@ -10,6 +10,8 @@ const wordCounter: ToolDefinition = {
   icon: 'text',
   tags: ['Words', 'Characters', 'Reading time'],
   status: 'available',
+  accepts: ['text', 'markdown'],
+  shareable: true,
   load: () => import('./WordCounterPage'),
 };
 

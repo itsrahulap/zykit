@@ -10,6 +10,7 @@ const utmBuilder: ToolDefinition = {
   icon: 'link',
   tags: ['UTM', 'Campaign', 'Analytics'],
   status: 'available',
+  produces: ['url'],
   load: () => import('./UtmBuilderPage'),
 };
 

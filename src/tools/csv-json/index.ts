@@ -10,6 +10,9 @@ const csvJson: ToolDefinition = {
   icon: 'swap',
   tags: ['CSV', 'TSV', 'JSON', 'Convert'],
   status: 'available',
+  accepts: ['csv', 'json'],
+  produces: ['json', 'csv'],
+  shareable: true,
   load: () => import('./CsvJsonPage'),
 };
 

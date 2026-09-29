@@ -10,6 +10,7 @@ const csvViewer: ToolDefinition = {
   icon: 'layers',
   tags: ['CSV', 'TSV', 'Table', 'Spreadsheet'],
   status: 'available',
+  accepts: ['csv'],
   load: () => import('./CsvViewerPage'),
 };
 

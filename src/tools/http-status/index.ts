@@ -10,6 +10,7 @@ const httpStatus: ToolDefinition = {
   icon: 'info',
   tags: ['HTTP', '404', '500', 'REST'],
   status: 'available',
+  shareable: true,
   load: () => import('./HttpStatusPage'),
 };
 

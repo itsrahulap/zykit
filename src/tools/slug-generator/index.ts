@@ -10,6 +10,9 @@ const slugGenerator: ToolDefinition = {
   icon: 'link',
   tags: ['Slug', 'URL', 'SEO'],
   status: 'available',
+  accepts: ['text'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./SlugGeneratorPage'),
 };
 

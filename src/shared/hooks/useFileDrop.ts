@@ -5,14 +5,17 @@ import { useCallback, useRef, useState, type DragEvent } from 'react';
 import { MAX_TEXT_FILE_BYTES, readTextFile, TextFileError } from '../lib/textFile';
 
 export interface FileDropOptions {
-  onText: (text: string, file: File) => void;
+  /** Called with the file's text (size-capped, binary refused). */
+  onText?: (text: string, file: File) => void;
+  /** Called with the raw file instead, for inputs that also take binary (e.g. DER certificates). */
+  onFile?: (file: File) => void;
   maxBytes?: number;
   disabled?: boolean;
 }
 
 const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes('Files');
 
-export function useFileDrop({ onText, maxBytes = MAX_TEXT_FILE_BYTES, disabled }: FileDropOptions) {
+export function useFileDrop({ onText, onFile, maxBytes = MAX_TEXT_FILE_BYTES, disabled }: FileDropOptions) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const depth = useRef(0);
@@ -20,12 +23,14 @@ export function useFileDrop({ onText, maxBytes = MAX_TEXT_FILE_BYTES, disabled }
   const readFile = useCallback(
     (file: File) => {
       setError(null);
+      if (onFile) return onFile(file);
+      if (!onText) return;
       readTextFile(file, maxBytes).then(
         (text) => onText(text, file),
         (err: unknown) => setError(err instanceof TextFileError ? err.message : `Couldn't read ${file.name}.`),
       );
     },
-    [onText, maxBytes],
+    [onText, onFile, maxBytes],
   );
 
   const bind = disabled

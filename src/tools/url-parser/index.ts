@@ -9,6 +9,8 @@ const urlParser: ToolDefinition = {
   icon: 'link',
   tags: ['URL', 'Query string', 'Params'],
   status: 'available',
+  accepts: ['url'],
+  shareable: true,
   load: () => import('./UrlParserPage'),
 };
 

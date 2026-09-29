@@ -10,6 +10,9 @@ const xmlJson: ToolDefinition = {
   icon: 'swap',
   tags: ['XML', 'JSON', 'Convert'],
   status: 'available',
+  accepts: ['xml', 'json'],
+  produces: ['json', 'xml'],
+  shareable: true,
   load: () => import('./XmlJsonPage'),
 };
 

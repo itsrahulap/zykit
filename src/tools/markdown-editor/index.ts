@@ -10,6 +10,9 @@ const markdownEditor: ToolDefinition = {
   icon: 'file',
   tags: ['Markdown', 'GFM', 'Preview', 'HTML'],
   status: 'available',
+  accepts: ['markdown'],
+  produces: ['markdown'],
+  shareable: true,
   load: () => import('./MarkdownEditorPage'),
 };
 

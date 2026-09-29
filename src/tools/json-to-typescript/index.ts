@@ -10,6 +10,9 @@ const jsonToTypescript: ToolDefinition = {
   icon: 'braces',
   tags: ['JSON', 'TypeScript', 'Interfaces', 'Types'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['code'],
+  shareable: true,
   load: () => import('./JsonToTypescriptPage'),
 };
 

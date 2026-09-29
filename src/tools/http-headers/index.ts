@@ -10,6 +10,7 @@ const httpHeaders: ToolDefinition = {
   icon: 'server',
   tags: ['HTTP', 'Headers', 'Security', 'Cache'],
   status: 'available',
+  accepts: ['headers'],
   load: () => import('./HttpHeadersPage'),
 };
 

@@ -10,6 +10,8 @@ const encodeDecode: ToolDefinition = {
   icon: 'swap',
   tags: ['Base64', 'URL', 'HTML', 'Hex'],
   status: 'available',
+  accepts: ['text', 'url', 'jwt'],
+  produces: ['text'],
   load: () => import('./EncodeDecodePage'),
 };
 

@@ -5,6 +5,7 @@ import { ColouredToken } from './components/ColouredToken';
 import { VerifyPanel } from './components/VerifyPanel';
 import { relativeTime, tokenStatus } from './features/claims';
 import { cleanToken, decodeJwt, EXAMPLE_SECRET, EXAMPLE_TOKEN, JwtError, type DecodedJwt } from './features/jwt';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
@@ -45,21 +46,9 @@ function useNow() {
 }
 
 export default function JwtDecoderPage() {
-  // A token handed over by the JWT Generator ("Open in JWT Decoder").
-  const [input, setInput] = useState(() => {
-    try {
-      return sessionStorage.getItem('zykit-jwt-handoff') ?? '';
-    } catch {
-      return '';
-    }
-  });
-  useEffect(() => {
-    try {
-      sessionStorage.removeItem('zykit-jwt-handoff');
-    } catch {
-      /* storage unavailable */
-    }
-  }, []);
+  const [input, setInput] = useState('');
+  // A token handed over by the JWT Generator ("Open in JWT Decoder") or "Send to…".
+  useIncomingText(jwtDecoder.id, setInput);
   const now = useNow();
   const decoded = useMemo(() => decode(input), [input]);
   const jwt = decoded?.ok ? decoded.jwt : null;

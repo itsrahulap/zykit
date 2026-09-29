@@ -10,6 +10,8 @@ const diffChecker: ToolDefinition = {
   icon: 'diff',
   tags: ['Diff', 'Compare', 'Text', 'Code'],
   status: 'available',
+  accepts: ['text', 'code'],
+  shareable: true,
   load: () => import('./DiffCheckerPage'),
 };
 

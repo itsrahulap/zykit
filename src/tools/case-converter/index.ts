@@ -10,6 +10,9 @@ const caseConverter: ToolDefinition = {
   icon: 'text',
   tags: ['camelCase', 'snake_case', 'kebab-case'],
   status: 'available',
+  accepts: ['text'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./CaseConverterPage'),
 };
 

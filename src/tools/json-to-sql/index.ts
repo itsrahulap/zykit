@@ -10,6 +10,8 @@ const jsonToSql: ToolDefinition = {
   icon: 'database',
   tags: ['JSON', 'SQL', 'INSERT', 'CREATE TABLE'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['sql'],
   load: () => import('./JsonToSqlPage'),
 };
 

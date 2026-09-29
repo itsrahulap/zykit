@@ -9,6 +9,8 @@ const regexTester: ToolDefinition = {
   icon: 'regex',
   tags: ['Regex', 'RegExp', 'Match', 'Replace'],
   status: 'available',
+  accepts: ['regex'],
+  shareable: true,
   load: () => import('./RegexTesterPage'),
 };
 

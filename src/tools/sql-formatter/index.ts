@@ -10,6 +10,9 @@ const sqlFormatter: ToolDefinition = {
   icon: 'database',
   tags: ['SQL', 'Format', 'PostgreSQL', 'MySQL'],
   status: 'available',
+  accepts: ['sql'],
+  produces: ['sql'],
+  shareable: true,
   load: () => import('./SqlFormatterPage'),
 };
 

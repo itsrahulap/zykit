@@ -10,6 +10,8 @@ const jsonDiff: ToolDefinition = {
   icon: 'diff',
   tags: ['JSON', 'Diff', 'Compare'],
   status: 'available',
+  accepts: ['json'],
+  shareable: true,
   load: () => import('./JsonDiffPage'),
 };
 

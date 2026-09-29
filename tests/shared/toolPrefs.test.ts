@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { MAX_RECENT_TOOLS, pushRecent, toggleId } from '../../src/shared/lib/toolPrefs';
-import { parseHandoff } from '../../src/shared/lib/jsRunnerHandoff';
 
 describe('tool favorites and recents', () => {
   it('toggles an id in and out, keeping order', () => {
@@ -15,15 +14,5 @@ describe('tool favorites and recents', () => {
     const next = pushRecent(many, 'new');
     expect(next).toHaveLength(MAX_RECENT_TOOLS);
     expect(next[0]).toBe('new');
-  });
-});
-
-describe('JS Runner handoff', () => {
-  it('accepts code with a language and rejects anything malformed', () => {
-    expect(parseHandoff(JSON.stringify({ code: 'x()', language: 'ts' }))).toEqual({ code: 'x()', language: 'ts' });
-    expect(parseHandoff(JSON.stringify({ code: 'x()' }))).toEqual({ code: 'x()', language: 'js' });
-    expect(parseHandoff(JSON.stringify({ code: '' }))).toBeNull();
-    expect(parseHandoff('{nope')).toBeNull();
-    expect(parseHandoff(null)).toBeNull();
   });
 });

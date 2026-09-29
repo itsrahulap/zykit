@@ -10,6 +10,7 @@ const jwtDecoder: ToolDefinition = {
   icon: 'key',
   tags: ['JWT', 'JWS', 'HS256', 'RS256', 'ES256'],
   status: 'available',
+  accepts: ['jwt'],
   load: () => import('./JwtDecoderPage'),
 };
 

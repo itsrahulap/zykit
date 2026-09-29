@@ -19,14 +19,13 @@ import {
   type DurationUnit,
   type KeyPair,
 } from './features/sign';
+import { sendText } from '../../shared/lib/handoff';
 import { Checkbox, Notices } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
-
-const HANDOFF_KEY = 'zykit-jwt-handoff';
 
 const card = 'min-w-0 space-y-4 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900';
 const input =
@@ -279,13 +278,8 @@ export default function JwtGeneratorPage() {
             {token && (
               <Link
                 to="/tools/jwt-decoder"
-                onClick={() => {
-                  try {
-                    sessionStorage.setItem(HANDOFF_KEY, token);
-                  } catch {
-                    /* storage blocked: the decoder simply opens empty */
-                  }
-                }}
+                // Storage blocked: the decoder simply opens empty.
+                onClick={() => sendText({ to: 'jwt-decoder', text: token, from: jwtGenerator.id, kind: 'jwt' })}
                 className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-emerald-700 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-emerald-400 dark:hover:bg-slate-800"
               >
                 <Icon name="arrow" className="h-4 w-4" /> Open in JWT Decoder

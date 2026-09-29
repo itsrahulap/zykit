@@ -6,6 +6,7 @@ import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
 import { IconTile } from '../shared/ui/page';
 import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPaletteProvider';
+import { openShortcutsHelp, ShortcutsHelpHost } from '../shared/ui/ShortcutsHelpHost';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
 import { Icon } from '../shared/ui/ui';
 
@@ -192,6 +193,9 @@ function SiteFooter() {
               MIT licensed
             </a>
           </p>
+          <button type="button" onClick={openShortcutsHelp} aria-keyshortcuts="?" className="self-start hover:text-slate-900 hover:underline pointer-coarse:min-h-11 sm:self-auto dark:hover:text-white">
+            Keyboard shortcuts
+          </button>
           <p className="flex items-center gap-1.5">
             <Icon name="lock" className="h-3.5 w-3.5" /> Everything runs in your browser. Your files never leave your device.
           </p>
@@ -214,6 +218,7 @@ export function Layout() {
           <Outlet />
         </main>
         <SiteFooter />
+        <ShortcutsHelpHost />
         <ScrollRestoration />
       </div>
     </CommandPaletteProvider>
