@@ -1,0 +1,98 @@
+@import 'tailwindcss';
+
+/* Dark mode is opt-in via the header toggle (class on <html>), not the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Palette: warm paper neutrals ("slate") and deep forest green ("emerald").
+   Components use these two scales, so the whole UI follows the theme. */
+@theme {
+  --color-slate-50: #f6f6f2;
+  --color-slate-100: #eeefe9;
+  --color-slate-200: #e2e4dc;
+  --color-slate-300: #cdd1c6;
+  --color-slate-400: #9ba39a;
+  --color-slate-500: #6e7770;
+  --color-slate-600: #535d56;
+  --color-slate-700: #3d4741;
+  --color-slate-800: #28312c;
+  --color-slate-900: #1a221e;
+  --color-slate-950: #0f1411;
+
+  --color-emerald-50: #eef3ee;
+  --color-emerald-100: #e3eae1;
+  --color-emerald-200: #c6d6c9;
+  --color-emerald-300: #93b7a0;
+  --color-emerald-400: #74a487;
+  --color-emerald-500: #4a8062;
+  --color-emerald-600: #2f5f4b;
+  --color-emerald-700: #264d3d;
+  --color-emerald-800: #1f3e32;
+  --color-emerald-900: #1a3329;
+  --color-emerald-950: #0e1d17;
+
+  /* Primary brand color. Light fill, so it always pairs with dark ink text (11:1 contrast). */
+  --color-primary: #dce3da;
+  --color-primary-hover: #cdd7ca;
+  --color-primary-edge: #c2cebf;
+  --color-primary-soft: #eef2ec;
+  --color-primary-ink: #1f3a2d;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+:root {
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Small uppercase labels ("YOUR FILE, EXPLAINED") */
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Dotted backdrop behind image previews */
+.dotted {
+  background-color: #eceee8;
+  background-image: radial-gradient(#d3d7cd 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+/* Transparent-image backdrop */
+.checkerboard {
+  background-color: #f1f2ee;
+  background-image:
+    linear-gradient(45deg, #e2e4dc 25%, transparent 25%),
+    linear-gradient(-45deg, #e2e4dc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e2e4dc 75%),
+    linear-gradient(-45deg, transparent 75%, #e2e4dc 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+.dark {
+  .dotted {
+    background-color: #141a16;
+    background-image: radial-gradient(#26302a 1px, transparent 1px);
+  }
+  .checkerboard {
+    background-color: #141a16;
+    background-image:
+      linear-gradient(45deg, #1f2722 25%, transparent 25%),
+      linear-gradient(-45deg, #1f2722 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #1f2722 75%),
+      linear-gradient(-45deg, transparent 75%, #1f2722 75%);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #4a8062;
+  outline-offset: 2px;
+}
