@@ -7,6 +7,7 @@ import { entriesToText, formatTime } from './features/transcript';
 import { useJsRunner, type RunState } from './hooks/useJsRunner';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
+import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 
@@ -58,9 +59,6 @@ function statusText(run: RunState, count: number): string {
       return 'Output truncated. The run was stopped.';
   }
 }
-
-const selectClass =
-  'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
 
 export default function JsRunnerPage() {
   const [initial] = useState(loadSaved);
@@ -165,23 +163,12 @@ export default function JsRunnerPage() {
               value={language}
               onChange={setLanguage}
             />
-            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <span>Example</span>
-              <select
-                className={selectClass}
-                value=""
-                onChange={(e) => loadExample(e.target.value)}
-              >
-                <option value="" disabled>
-                  Load an example…
-                </option>
-                {EXAMPLES.map((ex) => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Example"
+              placeholder="Load an example…"
+              options={EXAMPLES.map((ex) => ({ value: ex.id, label: ex.label }))}
+              onChange={loadExample}
+            />
           </div>
 
           <CodeArea
@@ -205,16 +192,7 @@ export default function JsRunnerPage() {
                 <Icon name="play" className="h-4 w-4" /> Run
               </Button>
             )}
-            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <span>Time limit</span>
-              <select className={selectClass} value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
-                {LIMITS.map((s) => (
-                  <option key={s} value={s}>
-                    {s} s
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select label="Time limit" options={LIMITS.map((n) => ({ value: n, label: `${n} s` }))} value={limit} onChange={setLimit} />
             {language === 'ts' && (
               <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                 <input

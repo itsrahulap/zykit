@@ -4,6 +4,7 @@ import { DiffView, type ViewMode } from './components/DiffView';
 import type { DiffResult } from './features/diff';
 import { useDiff } from './hooks/useDiff';
 import { Headline, StatusStrip } from '../../shared/ui/page';
+import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
@@ -137,21 +138,13 @@ export default function DiffCheckerPage() {
             onChange={setMode}
           />
           <Checkbox label="Collapse unchanged lines" checked={collapsed} onChange={setCollapsed} />
-          <label className={`inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 ${collapsed ? '' : 'opacity-50'}`}>
-            Context lines
-            <select
-              value={context}
-              disabled={!collapsed}
-              onChange={(e) => setContext(Number(e.target.value))}
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900"
-            >
-              {[0, 1, 3, 5, 10].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="Context lines"
+            options={[0, 1, 3, 5, 10].map((n) => ({ value: n, label: String(n) }))}
+            value={context}
+            onChange={setContext}
+            disabled={!collapsed}
+          />
         </div>
         <div className="flex flex-wrap gap-3">
           <Button

@@ -78,7 +78,8 @@ test('an infinite loop does not freeze the page and can be stopped', async ({ pa
 
 test('the time limit stops runaway code', async ({ page }) => {
   await open(page);
-  await page.getByLabel('Time limit').selectOption('5');
+  await page.getByRole('combobox', { name: 'Time limit' }).click();
+  await page.getByRole('option', { name: '5 s' }).click();
   await runCode(page, 'let i = 0;\nwhile (true) { i++; }');
   await expect(output(page)).toContainText('Stopped after 5 s (time limit).', { timeout: 10_000 });
 });
@@ -99,4 +100,29 @@ test('import statements get a friendly explanation, and code persists', async ({
   await expect(output(page)).toContainText(/`import` statements aren't supported \(line 1\)/);
   await page.reload();
   await expect(editor(page)).toHaveValue("import _ from 'lodash';\nconsole.log(_);");
+});
+
+test('the styled dropdowns work with the keyboard', async ({ page }) => {
+  await page.goto('/tools/js-runner');
+  const limit = page.getByRole('combobox', { name: 'Time limit' });
+  await limit.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(limit).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('option', { name: '10 s' })).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(limit).toHaveAttribute('aria-expanded', 'false');
+  await expect(limit).toHaveText('30 s');
+  await expect(limit).toBeFocused();
+
+  // Escape closes without changing the value
+  await page.keyboard.press('Home');
+  await page.keyboard.press('Escape');
+  await expect(limit).toHaveText('30 s');
+
+  // Clicking outside closes the list
+  await limit.click();
+  await expect(page.getByRole('listbox', { name: 'Time limit' })).toBeVisible();
+  await page.getByRole('heading', { level: 1 }).click();
+  await expect(page.getByRole('listbox', { name: 'Time limit' })).toBeHidden();
 });

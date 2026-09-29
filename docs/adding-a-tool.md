@@ -59,6 +59,7 @@ The page renders inside the site layout (header, footer, `<main>`), so it only n
 | `src/shared/ui/Panel.tsx` | `Panel`, `DetailRows` |
 | `src/shared/ui/Tabs.tsx` | accessible `Tabs` |
 | `src/shared/ui/tool.tsx` | `Breadcrumb`, `CodeArea` (monospace textarea), `CodeBlock`, `CopyButton`, `Segmented` |
+| `src/shared/ui/Select.tsx` | styled, keyboard-accessible dropdown. Use it instead of a native `<select>`, whose open menu can't be themed |
 | `src/shared/lib/` | byte readers, CRC-32, bounded inflate, MD5/SHA/Adler checksums, `AppError` |
 | `src/shared/utils/` | `formatBytes`, `pluralize`, theme helpers |
 
