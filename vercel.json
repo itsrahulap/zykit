@@ -3,7 +3,6 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "cleanUrls": true,
   "headers": [
     {
       "source": "/((?!sandbox/).*)",
@@ -74,6 +73,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/:path((?!assets/).+)",
+      "destination": "/:path.html"
+    },
     {
       "source": "/((?!assets/).*)",
       "destination": "/index.html"
