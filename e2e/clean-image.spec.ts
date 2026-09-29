@@ -67,7 +67,7 @@ for (const c of CASES) {
     page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text()));
     page.on('pageerror', (e) => consoleErrors.push(e.message));
 
-    await page.goto('/');
+    await page.goto('/tools/clean-image');
     await expect(page.getByRole('heading', { name: /see what your images reveal/i })).toBeVisible();
 
     const input = c.build(await canvasImage(page, c.mime));
@@ -109,19 +109,20 @@ for (const c of CASES) {
 }
 
 test('rejects a non-image file with a friendly message', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/tools/clean-image');
   await page.locator('input[type=file]').first().setInputFiles({ name: 'fake.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('definitely not a jpeg') });
   await expect(page.getByRole('alert')).toContainText("doesn't look like a JPEG, PNG or WebP");
 });
 
 test('keyboard users can reach the file picker', async ({ page }) => {
-  await page.goto('/');
-  await page.keyboard.press('Tab'); // skip link
-  await page.keyboard.press('Tab'); // logo
-  await page.keyboard.press('Tab'); // theme toggle
-  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: /choose a file/i })).toBeFocused();
+  await page.goto('/tools/clean-image');
+  const target = page.getByRole('button', { name: /choose a file/i });
+  let reached = false;
+  for (let i = 0; i < 8 && !reached; i++) {
+    await page.keyboard.press('Tab');
+    reached = await target.evaluate((el) => el === document.activeElement);
+  }
+  expect(reached).toBe(true);
 });
 
 test('is light by default even when the OS prefers dark, and the toggle persists', async ({ page }) => {

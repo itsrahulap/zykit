@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { ImageMetadataReport } from '../features/metadata/metadata.types';
 import { FORMAT_LABELS } from '../types/image.types';
 import { formatBytes } from '../../../shared/utils/format.utils';
-import { DetailRows, Panel } from './FileDetails';
+import { DetailRows, Panel } from '../../../shared/ui/Panel';
 
 function Code({ children }: { children: ReactNode }) {
   return (

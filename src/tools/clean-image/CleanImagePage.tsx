@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
+import cleanImage from './index';
 import { useImageProcessor } from './hooks/useImageProcessor';
 import { BeforeAfter } from './components/BeforeAfter';
 import { Faq } from './components/Faq';
-import { FileDetails, Panel } from './components/FileDetails';
+import { FileDetails } from './components/FileDetails';
 import { ImageUploader } from './components/ImageUploader';
 import { MetadataSummary } from './components/MetadataSummary';
 import { MetadataTable } from './components/MetadataTable';
@@ -10,7 +12,9 @@ import { PreviewPanel } from './components/PreviewPanel';
 import { ProcessingProgress } from './components/ProcessingProgress';
 import { SanitizeOptions } from './components/SanitizeOptions';
 import { SignalsPanel } from './components/SignalsPanel';
-import { DetectorNote, ErrorAlert, Footer, Header, Headline, HowItWorks, StatusStrip } from './components/Sections';
+import { DetectorNote, HowItWorks } from './components/Sections';
+import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
+import { Panel } from '../../shared/ui/Panel';
 import { Tabs } from '../../shared/ui/Tabs';
 import { TechnicalPanel } from './components/TechnicalPanel';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -42,7 +46,7 @@ function VersionToggle({ value, onChange }: { value: Version; onChange: (v: Vers
   );
 }
 
-export default function App() {
+export default function CleanImagePage() {
   const { state, error, dismissError, selectFile, clean, cancel, reset } = useImageProcessor();
   const [tab, setTab] = useState<Tab>('overview');
   const [version, setVersion] = useState<Version>('original');
@@ -59,13 +63,21 @@ export default function App() {
   const hasFile = state.status === 'ready' || state.status === 'sanitizing' || state.status === 'completed';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">
-        Skip to content
-      </a>
-      <Header />
+    <div className="space-y-8">
+      <nav aria-label="Breadcrumb" className="text-sm text-slate-500 dark:text-slate-400">
+        <ol className="flex items-center gap-2">
+          <li>
+            <Link to="/" className="hover:text-slate-900 hover:underline dark:hover:text-white">
+              All tools
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" className="font-medium text-slate-900 dark:text-slate-100">
+            {cleanImage.name}
+          </li>
+        </ol>
+      </nav>
 
-      <main id="main" className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
         {error && <ErrorAlert message={error} onDismiss={dismissError} />}
 
         {!hasFile && (
@@ -234,9 +246,11 @@ export default function App() {
           );
         })()}
 
-        <Faq />
-      </main>
-      <Footer />
+      <Faq />
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        {cleanImage.name} removes supported embedded metadata from image files. It does not alter pixels, so it doesn&rsquo;t remove
+        invisible watermarks and doesn&rsquo;t make an image &ldquo;undetectable&rdquo;. C2PA signatures are detected but not verified.
+      </p>
     </div>
   );
 }

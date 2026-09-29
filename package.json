@@ -1,5 +1,5 @@
 {
-  "name": "clean-image",
+  "name": "localkit",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router": "^8.4.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -30,7 +31,7 @@
     "vite": "^8.3.0",
     "vitest": "^5.0.2"
   },
-  "description": "Privacy-first, in-browser image metadata inspector and sanitizer",
+  "description": "A growing set of private, in-browser file tools",
   "license": "MIT",
   "engines": {
     "node": ">=20.19"

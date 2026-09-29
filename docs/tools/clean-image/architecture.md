@@ -1,8 +1,8 @@
-# Architecture
+# Clean Image — architecture
 
 ```text
-src/
-├── App.tsx, app/useImageProcessor.ts   UI state machine: idle → analyzing → ready → sanitizing → completed
+src/tools/clean-image/
+├── CleanImagePage.tsx, hooks/useImageProcessor.ts   UI state machine: idle → analyzing → ready → sanitizing → completed
 ├── components/                          Presentational React components (metadata rendered as text only)
 ├── workers/                             image.worker.ts + promise client (cancel = terminate worker)
 ├── features/
@@ -11,7 +11,7 @@ src/
 │   ├── sanitizer/    per-format sanitizers + minimal orientation EXIF builder
 │   ├── validation/   metadata diff, image-data identity check, validation.service.ts
 │   └── pipeline.ts   analyze → sanitize → re-analyze → validate (shared by worker and tests)
-├── lib/              byte helpers, CRC-32, bounded inflate, AppError
+(byte helpers, CRC-32, inflate, hashing and AppError live in src/shared/lib)
 └── config/limits.ts  size / pixel / decompression / value-length limits
 ```
 

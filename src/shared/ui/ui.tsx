@@ -63,8 +63,12 @@ export function Button({
   );
 }
 
-export function Icon({ name, className = 'h-5 w-5' }: { name: 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'; className?: string }) {
-  const paths: Record<string, ReactNode> = {
+export type IconName =
+  | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'
+  | 'grid' | 'arrow' | 'image';
+
+export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; className?: string }) {
+  const paths: Record<IconName, ReactNode> = {
     shield: <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z M9 12l2 2 4-4" />,
     upload: <path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />,
     check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
@@ -76,6 +80,9 @@ export function Icon({ name, className = 'h-5 w-5' }: { name: 'shield' | 'upload
     sparkle: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z" />,
     lock: <path d="M7 11V8a5 5 0 0110 0v3M6 11h12v9H6z" />,
     sun: <path d="M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66l1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14l-1.41-1.41M12 16a4 4 0 100-8 4 4 0 000 8z" />,
+    grid: <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />,
+    arrow: <path d="M7 17L17 7M9 7h8v8" />,
+    image: <path d="M4 5h16v14H4z M4 16l5-5 4 4 3-3 4 4 M15 9.5a1.5 1.5 0 100-.01" />,
     moon: <path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z" />,
   };
   return (

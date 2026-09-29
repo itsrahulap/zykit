@@ -8,9 +8,9 @@
 
 ## How this is enforced
 
-1. **Architecture:** all file handling runs in a Web Worker (`src/workers/image.worker.ts`) that contains no network code.
+1. **Architecture:** all file handling runs in a Web Worker (`src/tools/clean-image/workers/image.worker.ts`) that contains no network code.
 2. **Content Security Policy:** `connect-src 'self'` and `default-src 'none'` block requests to any third-party origin, even if a dependency tried to make one. Headers ship in `public/_headers` (Netlify/Cloudflare) and `vercel.json`. `vite preview` uses the same policy.
-3. **Automated check:** `e2e/app.spec.ts` records every request while an image is processed and fails if any request is not a same-origin `GET`, or if any console/CSP error occurs.
+3. **Automated check:** `e2e/clean-image.spec.ts` records every request while an image is processed and fails if any request is not a same-origin `GET`, or if any console/CSP error occurs.
 
 ## Verify it yourself
 
