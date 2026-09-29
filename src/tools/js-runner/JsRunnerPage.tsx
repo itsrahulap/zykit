@@ -101,7 +101,12 @@ export default function JsRunnerPage() {
     };
   }, [code, previewing]);
 
-  const runNow = () => void start(code, language, limit * 1000);
+  const consoleRef = useRef<HTMLElement>(null);
+  const runNow = () => {
+    void start(code, language, limit * 1000);
+    // The console sits below the editor; bring it into view without jumping if it's already visible.
+    consoleRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -148,7 +153,7 @@ export default function JsRunnerPage() {
 
       <StatusStrip status={statusText(run, entries.length)} tone={busy ? 'busy' : run.status === 'finished' && !run.mainFailed ? 'good' : 'neutral'} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6">
         <section aria-label="Editor" className="min-w-0 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <Segmented<Language>
@@ -187,8 +192,7 @@ export default function JsRunnerPage() {
             onKeyDown={onKeyDown}
             onBlur={() => (escaped.current = false)}
             rows={18}
-            wrap="off"
-            className="min-h-64 overflow-x-auto whitespace-pre"
+            className="min-h-64 whitespace-pre-wrap break-words"
           />
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -225,7 +229,7 @@ export default function JsRunnerPage() {
           </div>
         </section>
 
-        <section aria-label="Console" className="flex min-w-0 flex-col rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <section ref={consoleRef} aria-label="Console" className="flex min-w-0 flex-col rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 sm:px-6 dark:border-slate-800">
             <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <Icon name="code" className="h-4 w-4" /> Console
@@ -253,7 +257,7 @@ export default function JsRunnerPage() {
             role="region"
             aria-label="Console output"
             tabIndex={0}
-            className="max-h-[32rem] min-h-64 flex-1 overflow-auto rounded-b-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+            className="max-h-[32rem] min-h-40 flex-1 overflow-auto rounded-b-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
           >
             <ConsoleOutput entries={entries} timestamps={timestamps} />
           </div>
