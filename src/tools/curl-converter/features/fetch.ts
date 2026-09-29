@@ -161,10 +161,17 @@ class Parser {
     if (c === '{') return this.object();
     if (c === '[') return this.array();
     if (c === '(') {
-      this.i++;
-      const v = this.expr();
-      this.expect(')');
-      return v;
+      // A parenthesised literal, or something opaque such as an arrow function or IIFE.
+      try {
+        this.i++;
+        const v = this.expr();
+        this.expect(')');
+        if (!this.s.startsWith('=>', (this.skip(), this.i)) && this.peek() !== '(') return v;
+      } catch (e) {
+        if (!(e instanceof ParseError)) throw e;
+      }
+      this.i = start;
+      return this.opaque(start);
     }
     const num = /^-?(?:0[xX][0-9a-fA-F]+|\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+)/.exec(this.s.slice(this.i));
     if (num) {

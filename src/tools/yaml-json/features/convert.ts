@@ -44,12 +44,11 @@ function describeKey(v: unknown): string {
 export async function yamlToJson(text: string, options: YamlToJsonOptions): Promise<ConvertResult> {
   const YAML = await loadYaml();
   const docs = YAML.parseAllDocuments(text, { prettyErrors: false, merge: true, uniqueKeys: true, logLevel: 'error' });
-  const list = Array.isArray(docs) ? docs : [];
+  const list = [...docs];
   for (const doc of list) {
     const err = doc.errors[0];
     if (err) return { ok: false, error: textError(text, err.pos[0], err.message) };
   }
-  if (!Array.isArray(docs) && docs.errors[0]) return { ok: false, error: textError(text, docs.errors[0].pos[0], docs.errors[0].message) };
 
   const warnings = new Set<string>();
   const nonStringKeys: string[] = [];

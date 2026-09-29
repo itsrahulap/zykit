@@ -19,10 +19,10 @@ const INPUT_ID = 'sql-input';
 const MAX_INPUT_CHARS = 5_000_000;
 
 const SAMPLE = `-- Monthly revenue per active customer
-select c.id, c.name, date_trunc('month', o.created_at) as month, sum(o.total) as revenue, count(*) filter (where o.status = 'refunded') as refunds
+select c.id, c.name, date_trunc('month', o.created_at) as order_month, sum(o.total) as revenue, count(*) filter (where o.status = 'refunded') as refunds
 from customers c join orders o on o.customer_id = c.id
 where c.active = true and o.created_at >= now() - interval '1 year' or c.vip = true
-group by c.id, c.name, month having sum(o.total) > 1000 order by revenue desc limit 50;
+group by c.id, c.name, order_month having sum(o.total) > 1000 order by revenue desc limit 50;
 update customers set last_seen = now() where id in (select customer_id from sessions where started_at > now() - interval '1 day');`;
 
 const CASES: { value: Case; label: string }[] = [

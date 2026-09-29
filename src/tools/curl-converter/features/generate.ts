@@ -290,7 +290,7 @@ function generatePython(req: HttpRequest): Generated {
   } else if (p.text !== undefined) {
     blocks.push(`data = ${pyString(p.text)}`);
     // requests would encode a non-ASCII str body as Latin-1, so send UTF-8 bytes instead.
-    args.push(/[^\x00-\x7f]/.test(p.text) ? "data=data.encode('utf-8')" : 'data=data');
+    args.push([...p.text].some((c) => c > '\x7f') ? "data=data.encode('utf-8')" : 'data=data');
   }
   if (req.basicAuth) args.push(`auth=(${pyString(req.basicAuth.user)}, ${pyString(req.basicAuth.password)})`);
   if (req.insecure) {

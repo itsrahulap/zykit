@@ -36,15 +36,22 @@ export function OptionsCard({ label, children }: { label: string; children: Reac
   );
 }
 
-/** Syntax error with a caret snippet and a "jump to error" link. */
+/**
+ * Syntax error with a caret snippet and a "jump to error" link. Without `inputId` the
+ * error has no position (e.g. the input parsed but can't be converted): only the message shows.
+ */
 export function ErrorPanel({ error, text, inputId, title = 'Syntax error' }: { error: TextError; text: string; inputId?: string; title?: string }) {
   return (
     <Panel eyebrow={title} icon="warn" className="border-red-200 dark:border-red-900">
       <p className="font-medium break-words text-red-800 dark:text-red-300">{error.message}</p>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Line {error.line}, column {error.column}
-      </p>
-      <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, error)}</CodeBlock>
+      {inputId && (
+        <>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Line {error.line}, column {error.column}
+          </p>
+          <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, error)}</CodeBlock>
+        </>
+      )}
       {inputId && (
         <button
           type="button"
