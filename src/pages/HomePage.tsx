@@ -55,7 +55,7 @@ export function HomePage() {
         <p className="eyebrow text-emerald-700 dark:text-emerald-400">{SITE.tagline}</p>
         <Headline accent="device">Useful tools that stay on your </Headline>
         <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-          Every tool here runs entirely in your browser. Your files are never uploaded, stored or seen by anyone else.
+          Every tool here runs entirely in your browser. Your files and text are never uploaded, stored or seen by anyone else.
         </p>
         <ul className="flex flex-wrap gap-2 text-sm text-slate-700 dark:text-slate-300">
           {['No uploads', 'No accounts', 'No tracking', 'Works offline once loaded'].map((p) => (
@@ -66,7 +66,7 @@ export function HomePage() {
         </ul>
       </section>
 
-      {categories.map((cat) => (
+      {categories.map((cat, i) => (
         <section key={cat} aria-labelledby={`cat-${cat}`}>
           <h2 id={`cat-${cat}`} className="eyebrow mb-5 border-b border-slate-200 pb-3 text-slate-600 dark:border-slate-800 dark:text-slate-400">
             {cat}
@@ -77,13 +77,15 @@ export function HomePage() {
                 <ToolCard tool={t} />
               </li>
             ))}
-            <li>
-              <div className="flex h-full min-h-60 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 p-6 text-center text-slate-500 dark:border-slate-700">
-                <Icon name="grid" className="h-6 w-6" />
-                <p className="mt-3 font-semibold text-slate-700 dark:text-slate-300">More tools on the way</p>
-                <p className="mt-1 text-sm">New tools are added here as they&rsquo;re built.</p>
-              </div>
-            </li>
+            {i === categories.length - 1 && (
+              <li>
+                <div className="flex h-full min-h-60 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 p-6 text-center text-slate-500 dark:border-slate-700">
+                  <Icon name="grid" className="h-6 w-6" />
+                  <p className="mt-3 font-semibold text-slate-700 dark:text-slate-300">More tools on the way</p>
+                  <p className="mt-1 text-sm">New tools are added here as they&rsquo;re built.</p>
+                </div>
+              </li>
+            )}
           </ul>
         </section>
       ))}

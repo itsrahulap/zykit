@@ -1,10 +1,16 @@
 # Zykit
 
-A growing collection of file tools that run **entirely in the browser**. Files are never uploaded. The home page (`/`) lists every tool, and each tool lives at `/tools/<tool-id>`.
+A growing collection of file and developer tools that run **entirely in the browser**. Files are never uploaded. The home page (`/`) lists every tool, and each tool lives at `/tools/<tool-id>`.
 
 | Tool | URL | What it does |
 |---|---|---|
 | **Clean Image** | `/tools/clean-image` | Inspect and remove EXIF, GPS, XMP, IPTC, PNG text, C2PA and AI-generation metadata from JPEG, PNG and WebP without re-encoding. |
+| **JWT Decoder** | `/tools/jwt-decoder` | Decode a JWT's header, payload and claims, and verify HMAC, RSA or ECDSA signatures. |
+| **Diff Checker** | `/tools/diff-checker` | Compare two texts line by line with word-level highlights, side by side or unified. |
+| **JS Runner** | `/tools/js-runner` | Run JavaScript or TypeScript in an isolated worker with console output and a time limit. |
+| **JSON Formatter** | `/tools/json-formatter` | Format, minify, sort and validate JSON with exact error positions. |
+| **Encode / Decode** | `/tools/encode-decode` | Base64, Base64URL, URL encoding, HTML entities and hex. |
+| **Hash Generator** | `/tools/hash-generator` | MD5, SHA-1/256/384/512 and HMAC of text or files. |
 
 More tools will be added. See [docs/adding-a-tool.md](docs/adding-a-tool.md).
 
@@ -21,6 +27,7 @@ src/
 ├── config/site.ts           site name, tagline, description
 ├── shared/                  code any tool can use
 │   ├── ui/                  Button, Card, Badge, Icon, Tabs, Panel, Headline, ThemeToggle…
+│   │   └── tool.tsx         Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented (text tools)
 │   ├── lib/                 byte readers, CRC-32, bounded inflate, checksums, AppError
 │   └── utils/               formatting, theme
 ├── styles/index.css         design tokens (palette, primary color, fonts)
@@ -31,6 +38,7 @@ src/
         ├── index.ts         tool definition
         ├── CleanImagePage.tsx
         ├── components/  features/  hooks/  workers/  config/  types/  utils/
+    └── <tool-id>/           jwt-decoder, diff-checker, js-runner, json-formatter, encode-decode, hash-generator
 tests/tools/<tool-id>/       unit tests per tool (Vitest)
 e2e/                         browser tests: home.spec.ts + one spec per tool (Playwright)
 docs/                        adding-a-tool.md + docs/tools/<tool-id>/

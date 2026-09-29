@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 import cleanImage from './index';
 import { useImageProcessor } from './hooks/useImageProcessor';
 import { BeforeAfter } from './components/BeforeAfter';
@@ -16,6 +15,7 @@ import { DetectorNote, HowItWorks } from './components/Sections';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Tabs } from '../../shared/ui/Tabs';
+import { Breadcrumb } from '../../shared/ui/tool';
 import { TechnicalPanel } from './components/TechnicalPanel';
 import { Button, Icon } from '../../shared/ui/ui';
 import { ValidationReport } from './components/ValidationReport';
@@ -64,19 +64,7 @@ export default function CleanImagePage() {
 
   return (
     <div className="space-y-8">
-      <nav aria-label="Breadcrumb" className="text-sm text-slate-500 dark:text-slate-400">
-        <ol className="flex items-center gap-2">
-          <li>
-            <Link to="/" className="hover:text-slate-900 hover:underline dark:hover:text-white">
-              All tools
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page" className="font-medium text-slate-900 dark:text-slate-100">
-            {cleanImage.name}
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumb tool={cleanImage} />
 
         {error && <ErrorAlert message={error} onDismiss={dismissError} />}
 

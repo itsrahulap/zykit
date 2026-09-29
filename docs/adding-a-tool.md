@@ -58,10 +58,11 @@ The page renders inside the site layout (header, footer, `<main>`), so it only n
 | `src/shared/ui/page.tsx` | `Headline`, `StatusStrip`, `ErrorAlert`, `IconTile` |
 | `src/shared/ui/Panel.tsx` | `Panel`, `DetailRows` |
 | `src/shared/ui/Tabs.tsx` | accessible `Tabs` |
+| `src/shared/ui/tool.tsx` | `Breadcrumb`, `CodeArea` (monospace textarea), `CodeBlock`, `CopyButton`, `Segmented` |
 | `src/shared/lib/` | byte readers, CRC-32, bounded inflate, MD5/SHA/Adler checksums, `AppError` |
 | `src/shared/utils/` | `formatBytes`, `pluralize`, theme helpers |
 
-Copy the breadcrumb from `src/tools/clean-image/CleanImagePage.tsx` so users can get back to the tool list.
+Start the page with `<Breadcrumb tool={myTool} />` so users can get back to the tool list.
 
 ## Rules every tool follows
 

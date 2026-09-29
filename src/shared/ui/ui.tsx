@@ -65,7 +65,7 @@ export function Button({
 
 export type IconName =
   | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'
-  | 'grid' | 'arrow' | 'image';
+  | 'grid' | 'arrow' | 'image' | 'key' | 'diff' | 'code' | 'braces' | 'hash' | 'swap' | 'copy' | 'play' | 'stop';
 
 export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; className?: string }) {
   const paths: Record<IconName, ReactNode> = {
@@ -84,6 +84,15 @@ export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; classNam
     arrow: <path d="M7 17L17 7M9 7h8v8" />,
     image: <path d="M4 5h16v14H4z M4 16l5-5 4 4 3-3 4 4 M15 9.5a1.5 1.5 0 100-.01" />,
     moon: <path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z" />,
+    key: <path d="M14.5 13.5a5 5 0 10-4-4L3 17v4h4v-2h2v-2h2l3.5-3.5z M16.5 7.5v.01" />,
+    diff: <path d="M6 3v12M6 15a3 3 0 100 6 3 3 0 000-6zM18 21V9M18 9a3 3 0 100-6 3 3 0 000 6zM6 9h6M12 15h6" />,
+    code: <path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />,
+    braces: <path d="M8 3H7a2 2 0 00-2 2v4a2 2 0 01-2 2v2a2 2 0 012 2v4a2 2 0 002 2h1M16 3h1a2 2 0 012 2v4a2 2 0 002 2v2a2 2 0 00-2 2v4a2 2 0 01-2 2h-1" />,
+    hash: <path d="M10 3L8 21M16 3l-2 18M4 8.5h17M3 15.5h17" />,
+    swap: <path d="M7 4L3 8l4 4M3 8h14M17 12l4 4-4 4M21 16H7" />,
+    copy: <path d="M9 9h11v11H9z M5 15H4V4h11v1" />,
+    play: <path d="M7 4.5v15l12-7.5-12-7.5z" />,
+    stop: <path d="M6 6h12v12H6z" />,
   };
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -4,5 +4,5 @@ export const SITE = {
   name: 'Zykit',
   url: 'https://zykit.vercel.app',
   tagline: 'Private tools that run in your browser',
-  description: 'A growing set of file tools that run entirely on your device. Nothing is uploaded.',
+  description: 'A growing set of file and developer tools that run entirely on your device. Nothing is uploaded.',
 } as const;
