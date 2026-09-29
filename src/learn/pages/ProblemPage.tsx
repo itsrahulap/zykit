@@ -67,7 +67,7 @@ function ProblemView({ category, meta, problem }: { category: ProblemCategory; m
     .filter((t) => t !== undefined);
 
   return (
-    <article className="mx-auto max-w-4xl space-y-10">
+    <article className="mx-auto max-w-4xl space-y-10 break-words">
       <header className="space-y-5">
         <LearnBreadcrumb trail={[{ label: 'Problems', to: problemsPath }, { label: category.title, to: categoryPath(category.id) }, { label: problem.title }]} />
         <p className="eyebrow text-slate-500 dark:text-slate-400">

@@ -16,6 +16,16 @@ function watch(page: Page, baseURL: string | undefined) {
 }
 
 const noPageScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+/** Nothing in <main> sticks out past the viewport, except inside its own scroll box. */
+const mainFits = (page: Page) =>
+  page.evaluate(() => {
+    const w = document.documentElement.clientWidth;
+    return [...document.querySelectorAll('main *')].every((el) => {
+      if (el.getBoundingClientRect().right <= w + 0.5) return true;
+      for (let p = el.parentElement; p; p = p.parentElement) if (/(auto|scroll)/.test(getComputedStyle(p).overflowX)) return true;
+      return false;
+    });
+  });
 
 test('problems home lists every category with progress', async ({ page, baseURL }) => {
   const problems = watch(page, baseURL);
@@ -48,7 +58,7 @@ test('category filters by difficulty and solved state', async ({ page, baseURL }
   expect(easy).toBeLessThan(total);
   for (const row of await list.getByRole('listitem').all()) await expect(row).toContainText('Easy');
 
-  await page.getByRole('group', { name: 'Solved state' }).getByRole('button', { name: 'Solved' }).click();
+  await page.getByRole('group', { name: 'Solved state' }).getByRole('button', { name: 'Solved', exact: true }).click();
   await expect(page.getByText('No problems match these filters.')).toBeVisible();
   await page.getByRole('link', { name: 'Clear filters' }).click();
   await expect(list.getByRole('listitem')).toHaveCount(total);
@@ -89,18 +99,18 @@ test('problem page: hints, solution tabs and solved state that persists', async 
   await expect(tabs.nth(1)).toBeFocused();
 
   // Solved toggle persists across reloads and shows on the category page.
-  const solved = page.getByRole('button', { name: 'Solved' });
+  const solved = page.getByRole('button', { name: 'Solved', exact: true });
   await expect(solved).toHaveAttribute('aria-pressed', 'false');
   await solved.click();
   await expect(solved).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Solved' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Solved', exact: true })).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Arrays & Hashing' }).click();
   const row = page.getByRole('list', { name: 'Arrays & Hashing problems' }).getByRole('listitem').filter({ hasText: 'Contains Duplicate' });
   await expect(row.getByText('Solved', { exact: true })).toBeAttached();
   await expect(page.getByText(/^1 of \d+ solved$/)).toBeVisible();
-  await page.getByRole('group', { name: 'Solved state' }).getByRole('button', { name: 'Solved' }).click();
+  await page.getByRole('group', { name: 'Solved state' }).getByRole('button', { name: 'Solved', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Arrays & Hashing problems' }).getByRole('listitem')).toHaveCount(1);
 
   // Previous / next navigation.
@@ -152,13 +162,16 @@ test('case study diagram and table stay inside their boxes on a phone', async ({
   await expect(page.getByRole('figure').first()).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'On this page' })).toBeHidden();
   expect(await noPageScroll(page)).toBe(true);
+  expect(await mainFits(page)).toBe(true);
   await page.goto('/learn/problems/arrays-hashing/contains-duplicate');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   expect(await noPageScroll(page)).toBe(true);
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.goto('/learn/problems');
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  expect(await noPageScroll(page)).toBe(true);
+  for (const path of ['/learn/problems', '/learn/problems/arrays-hashing', '/learn/problems/arrays-hashing/contains-duplicate', '/learn/case-studies/uber']) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(await mainFits(page), path).toBe(true);
+  }
   expect(problems).toEqual([]);
 });
 

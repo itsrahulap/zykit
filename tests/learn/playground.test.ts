@@ -1,7 +1,7 @@
 import { transform } from 'sucrase';
 import { describe, expect, it } from 'vitest';
 import { subjects } from '../../src/learn/content/index';
-import { codeToRun, isScriptSnippet, looksLikeTypeScript, needsDomSandbox, playgroundPlan, stripComments } from '../../src/learn/features/playground';
+import { codeToRun, isScriptSnippet, languageLabel, looksLikeTypeScript, needsDomSandbox, playgroundPlan, stripComments } from '../../src/learn/features/playground';
 
 const parses = (code: string) => {
   try {
@@ -118,5 +118,17 @@ describe('codeToRun', () => {
     expect(codeToRun(src, [{ input: 'a = 1, b = 2', output: '3' }])).toContain('add(1, 2)');
     expect(codeToRun('add(1, 2)')).toBe('console.log(add(1, 2));');
     expect(codeToRun('const x = 1', [])).toBe('const x = 1');
+  });
+});
+
+describe('languageLabel', () => {
+  it('names the language', () => {
+    expect(languageLabel({ code: 'x', language: 'python' })).toBe('Python');
+    expect(languageLabel({ code: 'SELECT 1', language: 'sql' })).toBe('SQL');
+    expect(languageLabel({ code: 'console.log(1)' })).toBe('JavaScript');
+    expect(languageLabel({ code: 'let n: number = 1' })).toBe('TypeScript');
+    expect(languageLabel({ code: '<p>Hi</p>' })).toBe('HTML');
+    expect(languageLabel({ code: 'p {\n  color: red;\n}' })).toBe('CSS');
+    expect(languageLabel({ code: '{\n  "a": 1\n}' })).toBe('JSON');
   });
 });

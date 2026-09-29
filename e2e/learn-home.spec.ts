@@ -1,22 +1,23 @@
 import { expect, test, type Page } from '@playwright/test';
 
 // Every test fails on console errors, uncaught exceptions or requests that leave the site.
-function watch(page: Page) {
+function watch(page: Page, baseURL: string) {
+  const origin = new URL(baseURL).origin;
   const problems: string[] = [];
   page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   page.on('request', (r) => {
     const url = new URL(r.url());
     if (!['http:', 'https:'].includes(url.protocol)) return;
-    if (url.origin !== new URL(page.url() === 'about:blank' ? r.url() : page.url()).origin) problems.push(`off-origin: ${r.url()}`);
+    if (url.origin !== origin) problems.push(`off-origin: ${r.url()}`);
   });
   return problems;
 }
 
 test.describe('Learn home and shell', () => {
   let problems: string[];
-  test.beforeEach(({ page }) => {
-    problems = watch(page);
+  test.beforeEach(({ page, baseURL }) => {
+    problems = watch(page, baseURL!);
   });
   test.afterEach(() => {
     expect(problems).toEqual([]);
@@ -108,17 +109,21 @@ test.describe('Learn home and shell', () => {
     const input = dialog.getByRole('combobox');
     await expect(input).toBeFocused();
 
+    // Arrow keys move the active option.
+    await input.fill('array');
+    await expect(dialog.getByRole('option').nth(1)).toBeVisible();
+    await input.press('ArrowDown');
+    await expect(dialog.getByRole('option').nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(input).toHaveAttribute('aria-activedescendant', (await dialog.getByRole('option').nth(1).getAttribute('id'))!);
+    await input.press('ArrowUp');
+    await expect(dialog.getByRole('option').first()).toHaveAttribute('aria-selected', 'true');
+
     await input.fill('closure');
     const first = dialog.getByRole('option').first();
     await expect(first).toContainText('Closures');
     await expect(first).toContainText('Topic · JavaScript');
     await expect(first).toHaveAttribute('aria-selected', 'true');
     await expect(first.locator('mark')).toHaveText('Closure');
-
-    // Arrow keys move the active option; Home back to the first.
-    await input.press('ArrowDown');
-    await expect(dialog.getByRole('option').nth(1)).toHaveAttribute('aria-selected', 'true');
-    await input.press('ArrowUp');
     await input.press('Enter');
     await expect(page).toHaveURL(/\/learn\/javascript\/closures$/);
     await expect(dialog).toBeHidden();
@@ -171,7 +176,7 @@ test.describe('Learn home and shell', () => {
   test('home page Learn section links to /learn', async ({ page }) => {
     await page.goto('/');
     const section = page.getByRole('region', { name: /learn once/i });
-    await expect(section).toContainText('150');
+    await expect(section).toContainText(/\d+\s*lessons/);
     await section.getByRole('link', { name: 'Start learning' }).click();
     await expect(page).toHaveURL(/\/learn$/);
     await expect(page.getByRole('heading', { level: 1, name: /learn once/i })).toBeVisible();

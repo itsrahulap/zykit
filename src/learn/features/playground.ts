@@ -79,29 +79,44 @@ function firstCodeLine(code: string): string {
   return stripComments(code).split('\n').map((l) => l.trim()).find((l) => l !== '') ?? '';
 }
 
-/** Heuristic: is this language-less snippet actually JavaScript/TypeScript (not HTML, CSS, JSON…)? */
-export function isScriptSnippet(code: string): boolean {
+export type SnippetKind = 'script' | 'module' | 'html' | 'css' | 'json' | 'text';
+
+/** Heuristic: what a language-less snippet actually is (JavaScript/TypeScript, HTML, CSS, JSON…). */
+export function snippetKind(code: string): SnippetKind {
   const first = firstCodeLine(code);
   const lines = code.split('\n');
-  if (!first) return false;
-  if (first.startsWith('<')) return false; // HTML
-  if (/^[{[]\s*("|$)/.test(first)) return false; // JSON document
-  if (first.startsWith('#') || first.startsWith('--')) return false; // Markdown, SQL
-  if (/^[A-Z][A-Z0-9_]*=/.test(first)) return false; // .env
-  if (/^(npm|npx|yarn|pnpm|node|git|curl|pip|python3?|docker|cd|mkdir|ls|brew)\s/.test(first)) return false; // shell
-  if (/^[\w.@-]+\/$/.test(first)) return false; // folder listing
-  if (/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+\//m.test(code)) return false; // HTTP messages
-  if (lines.some((l) => /[├└]──/.test(l))) return false; // folder tree
-  if (/^[^|=]*\w[^|=]*\|[^|=]+\|[^=]*$/.test(first) && !first.includes('||')) return false; // text table
+  if (!first) return 'text'; // only comments
+  if (first.startsWith('<')) return 'html';
+  if (/^[{[]\s*("|$)/.test(first)) return 'json';
+  if (first.startsWith('#') || first.startsWith('--')) return 'text'; // Markdown, SQL comments
+  if (/^[A-Z][A-Z0-9_]*=/.test(first)) return 'text'; // .env
+  if (/^(npm|npx|yarn|pnpm|node|git|curl|pip|python3?|docker|cd|mkdir|ls|brew)\s/.test(first)) return 'text'; // shell
+  if (/^[\w.@-]+\/$/.test(first)) return 'text'; // folder listing
+  if (/^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+\//m.test(code)) return 'text'; // HTTP messages
+  if (lines.some((l) => /[├└]──/.test(l))) return 'text'; // folder tree
+  if (/^[^|=]*\w[^|=]*\|[^|=]+\|[^=]*$/.test(first) && !first.includes('||')) return 'text'; // text table
   // CSS rule: `selector {` followed by `property: value;`, and no JS/TS declaration keyword.
   if (
     /^[.#:*[]?[\w-]*[^=(){};]*\{\s*$|^[.#:*[]?[\w-]+[^=(){};]*\{\s*[\w-]+\s*:[^;]+;/.test(first) &&
     !/^(interface|type|class|enum|function|const|let|var|if|for|while|switch|else|try|do|namespace|declare|export|import|async|return)\b/.test(first) &&
     /^\s*[a-z-]+\s*:\s*[^;=]+;/m.test(code)
   ) {
-    return false;
+    return 'css';
   }
-  return !findModuleSyntax(code); // modules can't run in a plain script
+  return findModuleSyntax(code) ? 'module' : 'script'; // modules can't run in a plain script
+}
+
+export const isScriptSnippet = (code: string) => snippetKind(code) === 'script';
+
+const LANGUAGE_LABELS: Record<string, string> = { javascript: 'JavaScript', python: 'Python', sql: 'SQL', yaml: 'YAML' };
+const KIND_LABELS: Record<SnippetKind, string> = { script: 'JavaScript', module: 'JavaScript', html: 'HTML', css: 'CSS', json: 'JSON', text: 'Text' };
+
+/** Label shown on the code block. */
+export function languageLabel(example: Pick<CodeExample, 'code' | 'language'>): string {
+  if (example.language && example.language !== 'javascript') return LANGUAGE_LABELS[example.language] ?? example.language.toUpperCase();
+  const kind = snippetKind(example.code);
+  if ((kind === 'script' || kind === 'module') && looksLikeTypeScript(example.code)) return 'TypeScript';
+  return KIND_LABELS[kind];
 }
 
 /** How the example runs, or null when it's display-only. */

@@ -1,8 +1,18 @@
 # Security headers for Netlify / Cloudflare Pages. See docs/privacy.md.
+# /sandbox/* is the lesson-code sandbox (loaded in <iframe sandbox>): it needs its own CSP
+# ('unsafe-eval', framable by this site). "! Header" detaches the value /* set (Cloudflare Pages);
+# otherwise both policies would apply and the frame would be blocked.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
   X-Frame-Options: DENY
+
+/sandbox/*
+  ! Content-Security-Policy
+  ! X-Frame-Options
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; object-src 'none'
+  X-Frame-Options: SAMEORIGIN
+  X-Robots-Tag: noindex

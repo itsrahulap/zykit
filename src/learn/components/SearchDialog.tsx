@@ -163,7 +163,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
                 <span className="block font-semibold text-slate-900 dark:text-white">
                   {highlightParts(e.title, query).map((p, j) =>
                     p.match ? (
-                      <mark key={j} className="rounded bg-emerald-100 px-0.5 text-inherit dark:bg-emerald-900/70">
+                      <mark key={j} className="rounded-sm bg-emerald-100 text-inherit dark:bg-emerald-900/70">
                         {p.text}
                       </mark>
                     ) : (

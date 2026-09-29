@@ -64,6 +64,8 @@ npm run typecheck
 npm run build        # static site in dist/
 ```
 
+Developed with Claude Code and a set of plugins (superpowers, frontend-design, context7, code-review, code-simplifier, claude-mem, context-mode). See [docs/claude-code-plugins.md](docs/claude-code-plugins.md) for what each one does, how to install it and when to use it.
+
 ## Deployment
 
 `npm run build` produces a fully static `dist/`. Tool pages use client-side routes, so the host must serve `index.html` for unknown paths. That's already configured for Netlify/Cloudflare Pages (`public/_redirects`) and Vercel (`vercel.json`). Keep the security headers from the same files.

@@ -5,6 +5,7 @@
 //                              JSON-LD and readable content (served at /tools/<id>; see vercel.json cleanUrls)
 //   dist/learn/**.html         every Learn page (subjects, lessons, problems, case studies) with its full text
 //                              (see scripts/learn-pages.ts)
+//   dist/claude-code.html      the Claude Code plugins page (src/pages/claude-code/plugins.ts)
 //   dist/sitemap.xml
 // React replaces the static #root content when it mounts, so users see the normal app.
 
@@ -75,6 +76,26 @@ function toolBody(tool: Tool, tools: Tool[]) {
   );
 }
 
+interface ClaudeCodeModule {
+  CLAUDE_CODE_PATH: string;
+  PLUGINS: { id: string; name: string; marketplace: string; purpose: string; howToUse: string; prompts: string[]; useCases: string[] }[];
+  installCommands(prefix: string): string[];
+  claudeCodeMeta(): { title: string; description: string };
+}
+
+function claudeCodeBody(cc: ClaudeCodeModule, meta: Meta) {
+  const plugins = cc.PLUGINS.map(
+    (p) =>
+      `<section id="${esc(p.id)}"><h2>${esc(p.name)}</h2><p>${esc(p.purpose)}</p><p>${esc(p.howToUse)}</p>` +
+      `<ul>${p.prompts.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` +
+      `<ul>${p.useCases.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`,
+  ).join('');
+  return (
+    `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><p><a href="/">All tools</a></p><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p>` +
+    `<h2>Install</h2><pre>${esc(cc.installCommands('/plugin').join('\n'))}</pre>${plugins}</main>`
+  );
+}
+
 function sitemap(urls: string[]) {
   const lastmod = new Date().toISOString().slice(0, 10);
   const entries = urls.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
@@ -104,6 +125,9 @@ export function seoPlugin(): Plugin {
         load<LearnSources['seo']>('src/learn/seo.ts'),
         load<LearnSources['html']>('src/learn/features/richTextHtml.ts'),
       ]);
+      const cc = await load<ClaudeCodeModule>('src/pages/claude-code/plugins.ts');
+      const ccMeta: Meta = { title: `${cc.claudeCodeMeta().title} · ${site.SITE.name}`, description: cc.claudeCodeMeta().description, url: `${site.SITE.url}${cc.CLAUDE_CODE_PATH}` };
+      const ccStructuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: ccMeta.title, description: ccMeta.description, url: ccMeta.url };
       const learn = learnPages({
         site: site.SITE,
         subjects: content.subjects,
@@ -125,12 +149,13 @@ export function seoPlugin(): Plugin {
           renderPage(template, seo.toolMeta(t), seo.toolStructuredData(t), toolBody(t, tools)),
         ]),
         ...learn.map((p): [string, string] => [p.file, renderPage(template, learnMeta(p), p.structuredData, p.body)]),
+        [`${cc.CLAUDE_CODE_PATH.slice(1)}.html`, renderPage(template, ccMeta, ccStructuredData, claudeCodeBody(cc, ccMeta))],
       ];
       for (const [file, page] of pages) {
         await mkdir(dirname(join(outDir, file)), { recursive: true });
         await writeFile(join(outDir, file), page);
       }
-      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url)]));
+      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url), ccMeta.url]));
       config.logger.info(`seo: wrote ${pages.length} pages and sitemap.xml`);
     },
   };

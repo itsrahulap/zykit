@@ -19,6 +19,11 @@ export const router = createBrowserRouter([
         lazy: async () => ({ Component: (await tool.load()).default }),
       })),
       ...learnRoutes,
+      {
+        path: 'claude-code',
+        handle: { pageMeta: true } satisfies RouteHandle,
+        lazy: async () => ({ Component: (await import('../pages/claude-code/ClaudeCodePage')).default }),
+      },
       { path: '*', element: <NotFoundPage />, handle: { title: 'Not found' } satisfies RouteHandle },
     ],
   },

@@ -4,7 +4,9 @@ import { homeMeta, toolMeta } from '../config/seo';
 import { SITE } from '../config/site';
 import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
+import { CLAUDE_CODE_PATH } from '../pages/claude-code/plugins';
 import { IconTile } from '../shared/ui/page';
+import { Icon } from '../shared/ui/ui';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
 
 export interface RouteHandle {
@@ -56,12 +58,12 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 function SiteHeader() {
   return (
     <header className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-10">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800">
+      <div className="flex items-center justify-between gap-2 border-b sm:gap-4 border-slate-200 pb-6 dark:border-slate-800">
         <Link to="/" className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
           <IconTile icon="grid" />
           <span>{SITE.name}</span>
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-2 sm:gap-4">
+        <nav aria-label="Main" className="flex items-center gap-1 sm:gap-4">
           <NavLink to="/" end className={navClass}>
             Tools
           </NavLink>
@@ -82,6 +84,9 @@ function SiteFooter() {
         <div className="max-w-md">
           <p className="font-semibold text-slate-900 dark:text-slate-100">{SITE.name}</p>
           <p className="mt-1">{SITE.description}</p>
+          <Link to={CLAUDE_CODE_PATH} className="mt-3 inline-flex items-center gap-1.5 font-medium text-emerald-700 hover:underline dark:text-emerald-400">
+            Built with Claude Code <Icon name="arrow" className="h-4 w-4" />
+          </Link>
         </div>
         <nav aria-label="Tools">
           <p className="eyebrow mb-2 text-slate-500">Tools</p>

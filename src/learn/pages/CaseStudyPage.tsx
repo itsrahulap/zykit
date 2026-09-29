@@ -50,7 +50,7 @@ function CaseStudyView({ meta, cs }: { meta: CaseStudyMeta; cs: CaseStudy }) {
 
   return (
     <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_13rem] xl:gap-10">
-      <article className="min-w-0 space-y-12">
+      <article className="min-w-0 space-y-12 break-words">
         <header className="space-y-5">
           <LearnBreadcrumb trail={[{ label: 'Case studies', to: caseStudiesPath }, { label: cs.title }]} />
           <p className="eyebrow flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
