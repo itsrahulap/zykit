@@ -5,6 +5,14 @@ import { learnRoutes } from '../learn/routes';
 import { TOOLS, toolPath } from '../tools/registry';
 import { Layout, type RouteHandle } from './Layout';
 import { PageLoading, RouteError } from './RouteStates';
+import { ToolRoute } from './ToolRoute';
+import type { ToolDefinition } from '../tools/types';
+
+/** Route `lazy` for a tool: loads its page and the shared extras (related tools, Learn links) in parallel. */
+async function loadToolRoute(tool: ToolDefinition) {
+  const [{ default: Page }, { default: Extras }] = await Promise.all([tool.load(), import('../tools/ToolPageExtras')]);
+  return { Component: () => <ToolRoute tool={tool} Page={Page} Extras={Extras} /> };
+}
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +24,7 @@ export const router = createBrowserRouter([
       ...TOOLS.filter((t) => t.status !== 'coming-soon').map((tool) => ({
         path: toolPath(tool),
         handle: { tool } satisfies RouteHandle,
-        lazy: async () => ({ Component: (await tool.load()).default }),
+        lazy: () => loadToolRoute(tool),
       })),
       ...learnRoutes,
       {

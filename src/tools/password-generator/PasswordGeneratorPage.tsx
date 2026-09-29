@@ -15,6 +15,7 @@ import {
 } from './features/password';
 import { WORDS } from './features/words';
 import { createSampler } from '../../shared/lib/random';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -41,17 +42,7 @@ const clamp = (v: number, min: number, max: number) => (Number.isFinite(v) ? Mat
 
 const inputClass =
   'rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100';
-const checkClass = 'h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600';
 const card = 'rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-900';
-
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className={checkClass} />
-      {label}
-    </label>
-  );
-}
 
 /** Slider plus number box, kept in sync. */
 function RangeField({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
@@ -153,13 +144,13 @@ export default function PasswordGeneratorPage() {
                 <legend className="eyebrow mb-2 text-slate-600 dark:text-slate-400">Characters</legend>
                 <div className="grid gap-x-4 sm:grid-cols-2">
                   {(Object.keys(SET_LABELS) as SetName[]).map((n) => (
-                    <Check key={n} label={SET_LABELS[n]} checked={sets[n]} onChange={(v) => setSets((s) => ({ ...s, [n]: v }))} />
+                    <Checkbox key={n} label={SET_LABELS[n]} checked={sets[n]} onChange={(v) => setSets((s) => ({ ...s, [n]: v }))} />
                   ))}
                 </div>
               </fieldset>
               <div className="space-y-1">
-                <Check label="Exclude look-alikes (0 O 1 l I |)" checked={excludeLookAlikes} onChange={setExcludeLookAlikes} />
-                <Check label="At least one of each chosen set" checked={requireEach} onChange={setRequireEach} />
+                <Checkbox label="Exclude look-alikes (0 O 1 l I |)" checked={excludeLookAlikes} onChange={setExcludeLookAlikes} />
+                <Checkbox label="At least one of each chosen set" checked={requireEach} onChange={setRequireEach} />
               </div>
               <label className="block">
                 <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">Also exclude</span>
@@ -193,8 +184,8 @@ export default function PasswordGeneratorPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Check label="Capitalise words" checked={capitalize} onChange={setCapitalize} />
-                <Check label="Add a number" checked={addNumber} onChange={setAddNumber} />
+                <Checkbox label="Capitalise words" checked={capitalize} onChange={setCapitalize} />
+                <Checkbox label="Add a number" checked={addNumber} onChange={setAddNumber} />
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-400">Words are picked from a built-in list of {WORDS.length.toLocaleString('en-US')} common English words.</p>
             </>

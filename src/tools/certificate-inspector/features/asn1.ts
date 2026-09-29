@@ -149,7 +149,7 @@ export function readOid(n: Asn1Node | undefined): string {
   return [...head, ...parts.slice(1)].join('.');
 }
 
-export const toHex = (b: Uint8Array, sep = ''): string => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join(sep);
+export { bytesToHex as toHex } from '../../../shared/lib/bytes';
 
 /** INTEGER value bytes with a single leading sign-padding zero removed. */
 export function integerBytes(n: Asn1Node | undefined): Uint8Array {

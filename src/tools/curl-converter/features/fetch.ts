@@ -1,6 +1,7 @@
 // fetch() snippet → cURL, without eval: a small tolerant parser for the literal parts of
 // `fetch(url, { method, headers, body })`, plus a cURL command generator with shell quoting.
 
+import { lineCol } from '../../../shared/lib/textpos';
 import { hasHeader, type HttpRequest } from './curl';
 import { shellQuote } from './shell';
 
@@ -25,9 +26,7 @@ class Parser {
   }
 
   fail(msg: string): never {
-    const upto = this.s.slice(0, this.i);
-    const line = upto.split('\n').length;
-    const column = this.i - upto.lastIndexOf('\n');
+    const { line, column } = lineCol(this.s, this.i);
     throw new ParseError(`${msg} (line ${line}, column ${column})`);
   }
 

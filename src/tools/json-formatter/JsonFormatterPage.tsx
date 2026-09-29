@@ -1,11 +1,13 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import jsonFormatter from './index';
-import { errorSnippet, formatJson, parseJson, utf8Length, type Indent } from './features/json';
+import { formatJson, parseJson, utf8Length, type Indent } from './features/json';
+import { errorSnippet } from '../../shared/lib/textpos';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { formatBytes, pluralize } from '../../shared/utils/format.utils';
+import { downloadText, selectInTextarea } from '../../shared/utils/dom.utils';
 
 type Action = 'format' | 'minify' | 'validate';
 type IndentChoice = '2' | '4' | 'tab';
@@ -19,22 +21,6 @@ const INPUT_ID = 'json-input';
 const SAMPLE = `{"name":"Zykit","private":true,"version":"1.0.0","id":12345678901234567890,
 "tools":[{"id":"json-formatter","tags":["JSON","Validate"]},{"id":"diff-checker","tags":["Diff"]}],
 "author":{"name":"You","city":"Z\\u00fcrich"}}`;
-
-function download(text: string, fileName: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function goTo(offset: number) {
-  const el = document.getElementById(INPUT_ID) as HTMLTextAreaElement | null;
-  if (!el) return;
-  el.focus();
-  el.setSelectionRange(offset, Math.min(offset + 1, el.value.length));
-}
 
 export default function JsonFormatterPage() {
   const [input, setInput] = useState('');
@@ -139,7 +125,7 @@ export default function JsonFormatterPage() {
               <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, parsed.error)}</CodeBlock>
               <button
                 type="button"
-                onClick={() => goTo(parsed.error.offset)}
+                onClick={() => selectInTextarea(INPUT_ID, parsed.error.offset)}
                 className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
               >
                 Jump to error in input
@@ -164,7 +150,7 @@ export default function JsonFormatterPage() {
                       <CopyButton text={output} />
                       <button
                         type="button"
-                        onClick={() => download(output, action === 'minify' ? 'minified.json' : 'formatted.json')}
+                        onClick={() => downloadText(output, action === 'minify' ? 'minified.json' : 'formatted.json', 'application/json')}
                         className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
                         <Icon name="download" className="h-4 w-4" /> Download .json

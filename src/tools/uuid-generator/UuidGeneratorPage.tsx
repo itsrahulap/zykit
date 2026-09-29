@@ -3,35 +3,14 @@ import uuidGenerator from './index';
 import { clampCount, formatUuid, generate, inspectUuid, MAX_COUNT, type UuidVersion } from './features/uuid';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
+import { Checkbox } from '../../shared/ui/convert';
 import { Breadcrumb, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
+import { downloadText } from '../../shared/utils/dom.utils';
 
 const INPUT =
   'rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
-
-function download(text: string, fileName: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600"
-      />
-      {label}
-    </label>
-  );
-}
 
 export default function UuidGeneratorPage() {
   const [version, setVersion] = useState<UuidVersion>(4);
@@ -91,9 +70,9 @@ export default function UuidGeneratorPage() {
             className={`${INPUT} w-24`}
           />
         </label>
-        <Check label="Uppercase" checked={uppercase} onChange={setUppercase} />
-        <Check label="Hyphens" checked={hyphens} onChange={setHyphens} />
-        <Check label="Braces" checked={braces} onChange={setBraces} />
+        <Checkbox label="Uppercase" checked={uppercase} onChange={setUppercase} />
+        <Checkbox label="Hyphens" checked={hyphens} onChange={setHyphens} />
+        <Checkbox label="Braces" checked={braces} onChange={setBraces} />
         {countText !== '' && Number(countText) !== count && (
           <p className="w-full text-sm text-amber-700 dark:text-amber-300">
             Count must be between 1 and {MAX_COUNT}; using {count}.
@@ -114,7 +93,7 @@ export default function UuidGeneratorPage() {
               <CopyButton text={output} label="Copy all" />
               <button
                 type="button"
-                onClick={() => download(output + '\n', `uuids-v${version}.txt`)}
+                onClick={() => downloadText(output + '\n', `uuids-v${version}.txt`, 'text/plain')}
                 className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <Icon name="download" className="h-4 w-4" /> Download .txt

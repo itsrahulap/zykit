@@ -1,5 +1,5 @@
 // A tiny localStorage-backed store shared by every component that reads it, so marking a
-// topic complete on its page updates the sidebar, subject list and home page at once.
+// topic complete (or starring a tool) updates every view of it at once.
 // Storage can be unavailable (private mode, blocked site data); state then lives in memory.
 
 import { useSyncExternalStore } from 'react';

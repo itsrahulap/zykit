@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { errorSnippet, jsonErrorOffset, lineCol, parseJsonText } from '../../src/shared/lib/textpos';
+import { errorSnippet, jsonErrorOffset, lineCol, offsetOf, parseJsonText } from '../../src/shared/lib/textpos';
 
 describe('textpos', () => {
+  it('converts line and column to an offset', () => {
+    expect(offsetOf('ab\ncd\nef', 2, 2)).toBe(4);
+    expect(offsetOf('ab', 5, 1)).toBe(2);
+    expect(offsetOf('abc', 1, 99)).toBe(3);
+  });
+
   it('maps offsets to lines and columns', () => {
     expect(lineCol('ab\ncd', 0)).toEqual({ line: 1, column: 1 });
     expect(lineCol('ab\ncd', 4)).toEqual({ line: 2, column: 2 });

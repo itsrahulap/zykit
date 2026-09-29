@@ -11,8 +11,14 @@ export function getStoredTheme(): Theme {
   }
 }
 
+/** Fired on window whenever applyTheme runs, so every theme control stays in sync. */
+export const THEME_EVENT = 'zykit-theme';
+
+export const currentTheme = (): Theme => (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+
 export function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
+  window.dispatchEvent(new Event(THEME_EVENT));
   try {
     localStorage.setItem(KEY, theme);
   } catch {

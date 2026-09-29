@@ -5,6 +5,7 @@ import { SITE } from '../config/site';
 import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
 import { IconTile } from '../shared/ui/page';
+import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPaletteProvider';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
 import { Icon } from '../shared/ui/ui';
 
@@ -72,6 +73,7 @@ function SiteHeader() {
           <NavLink to="/blog" className={navClass}>
             Blog
           </NavLink>
+          <SearchButton compact className="ml-0.5 sm:ml-0" />
           <ThemeToggle />
         </nav>
       </div>
@@ -202,16 +204,18 @@ function SiteFooter() {
 export function Layout() {
   usePageMeta();
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">
-        Skip to content
-      </a>
-      <SiteHeader />
-      <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-        <Outlet />
-      </main>
-      <SiteFooter />
-      <ScrollRestoration />
-    </div>
+    <CommandPaletteProvider>
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">
+          Skip to content
+        </a>
+        <SiteHeader />
+        <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+          <Outlet />
+        </main>
+        <SiteFooter />
+        <ScrollRestoration />
+      </div>
+    </CommandPaletteProvider>
   );
 }

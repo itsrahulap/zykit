@@ -11,7 +11,7 @@ import { downloadText, selectInTextarea } from '../utils/dom.utils';
 /** Output longer than this is truncated on screen; copy and download still get all of it. */
 export const MAX_PREVIEW_CHARS = 1_000_000;
 
-export function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+export function Checkbox({ label, checked, onChange }: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
       <input

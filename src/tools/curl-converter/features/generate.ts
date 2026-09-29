@@ -1,6 +1,7 @@
 // Code generators: HttpRequest → JavaScript fetch, Node fetch, axios, Python requests.
 
-import { base64, getHeader, type FormPart, type HttpRequest } from './curl';
+import { textToBase64 } from '../../../shared/lib/base64';
+import { getHeader, type FormPart, type HttpRequest } from './curl';
 
 export type Target = 'fetch' | 'node' | 'axios' | 'python';
 
@@ -133,7 +134,7 @@ function prepare(req: HttpRequest, { foldAuth, dropJsonType }: { foldAuth: boole
     else headers.push([name, value]);
   }
   if (foldAuth && req.basicAuth && !getHeader(headers, 'Authorization')) {
-    headers.push(['Authorization', `Basic ${base64(`${req.basicAuth.user}:${req.basicAuth.password}`)}`]);
+    headers.push(['Authorization', `Basic ${textToBase64(`${req.basicAuth.user}:${req.basicAuth.password}`)}`]);
   }
   const out: Prepared = { headers };
   const body = req.body;

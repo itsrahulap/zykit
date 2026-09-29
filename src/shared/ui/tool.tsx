@@ -3,13 +3,14 @@
 import { useEffect, useState, type TextareaHTMLAttributes } from 'react';
 import { Link } from 'react-router';
 import type { ToolDefinition } from '../../tools/types';
+import { FavoriteButton } from './FavoriteButton';
 import { Icon } from './ui';
 
-/** "All tools / <Tool name>" trail shown at the top of every tool page. */
-export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> }) {
-  return (
-    <nav aria-label="Breadcrumb" className="text-sm text-slate-500 dark:text-slate-400">
-      <ol className="flex items-center gap-2">
+/** "All tools / <Tool name>" trail shown at the top of every tool page, with the favorite star. */
+export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id?: string } }) {
+  const trail = (
+    <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-slate-500 dark:text-slate-400">
+      <ol className="flex flex-wrap items-center gap-2">
         <li>
           <Link to="/" className="hover:text-slate-900 hover:underline dark:hover:text-white">
             All tools
@@ -21,6 +22,13 @@ export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> }) {
         </li>
       </ol>
     </nav>
+  );
+  if (!tool.id) return trail;
+  return (
+    <div className="flex items-center justify-between gap-3">
+      {trail}
+      <FavoriteButton tool={{ id: tool.id, name: tool.name }} />
+    </div>
   );
 }
 

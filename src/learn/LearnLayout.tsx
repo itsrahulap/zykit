@@ -1,33 +1,15 @@
 // Shell for every /learn page: a sticky sidebar on large screens, a "Browse" drawer on
-// smaller ones, and site-wide search (button or ⌘K / Ctrl K).
+// smaller ones, and buttons for the site-wide search (the ⌘K / Ctrl K command palette).
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import { LearnNav } from './components/LearnNav';
-import { SearchDialog } from './components/SearchDialog';
-import { useModal } from './hooks/useModal';
+import { useModal } from '../shared/hooks/useModal';
+import { SearchButton } from '../shared/ui/CommandPaletteProvider';
+import { useCommandPalette } from '../shared/ui/commandPaletteContext';
 import { Icon } from '../shared/ui/ui';
 
-const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-
-function SearchButton({ onClick, className = '' }: { onClick: () => void; className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-keyshortcuts="Meta+K Control+K"
-      className={`flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 hover:border-slate-300 hover:text-slate-900 pointer-coarse:min-h-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-white ${className}`}
-    >
-      <Icon name="search" className="h-4 w-4 shrink-0" />
-      <span className="flex-1 text-left">Search</span>
-      <kbd className="hidden rounded-md bg-slate-100 px-1.5 py-0.5 font-sans text-xs font-medium text-slate-500 sm:inline dark:bg-slate-800 dark:text-slate-400">
-        {isMac() ? '⌘K' : 'Ctrl K'}
-      </kbd>
-    </button>
-  );
-}
-
-function Drawer({ onClose, onSearch }: { onClose: () => void; onSearch: () => void }) {
+function Drawer({ onClose }: { onClose: () => void }) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
   useModal(true, panel, onClose);
@@ -56,7 +38,7 @@ function Drawer({ onClose, onSearch }: { onClose: () => void; onSearch: () => vo
           </button>
         </div>
         <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 py-4">
-          <SearchButton onClick={onSearch} className="w-full" />
+          <SearchButton className="w-full" />
           <LearnNav />
         </div>
       </div>
@@ -67,25 +49,10 @@ function Drawer({ onClose, onSearch }: { onClose: () => void; onSearch: () => vo
 export default function LearnLayout() {
   const { pathname } = useLocation();
   // The drawer remembers the page it was opened on, so navigating closes it.
-  const [drawerAt, setDrawerAt] = useState<string | null>(null);
-  const drawerOpen = drawerAt === pathname;
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  const openSearch = useCallback(() => {
-    setDrawerAt(null);
-    setSearchOpen(true);
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        openSearch();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [openSearch]);
+  // Opening search (button or shortcut) closes it too, so only one modal is ever open.
+  const palette = useCommandPalette();
+  const [drawer, setDrawer] = useState<{ at: string; opens: number } | null>(null);
+  const drawerOpen = drawer?.at === pathname && drawer.opens === palette.opens;
 
   return (
     <div className="lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[17rem_minmax(0,1fr)]">
@@ -93,7 +60,7 @@ export default function LearnLayout() {
         aria-label="Learn sidebar"
         className="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pb-6 lg:pr-1"
       >
-        <SearchButton onClick={openSearch} className="mb-6 w-full" />
+        <SearchButton className="mb-6 w-full" />
         <LearnNav />
       </aside>
 
@@ -101,7 +68,7 @@ export default function LearnLayout() {
         <div className="mb-6 flex items-center gap-2 border-b border-slate-200 pb-4 lg:hidden dark:border-slate-800">
           <button
             type="button"
-            onClick={() => setDrawerAt(pathname)}
+            onClick={() => setDrawer({ at: pathname, opens: palette.opens })}
             aria-expanded={drawerOpen}
             aria-controls="learn-drawer"
             aria-haspopup="dialog"
@@ -109,13 +76,12 @@ export default function LearnLayout() {
           >
             <Icon name="menu" className="h-4 w-4" /> Browse
           </button>
-          <SearchButton onClick={openSearch} className="ml-auto min-w-0 flex-1 sm:max-w-64 sm:flex-none" />
+          <SearchButton className="ml-auto min-w-0 flex-1 sm:max-w-64 sm:flex-none" />
         </div>
         <Outlet />
       </div>
 
-      {drawerOpen && <Drawer onClose={() => setDrawerAt(null)} onSearch={openSearch} />}
-      {searchOpen && <SearchDialog onClose={() => setSearchOpen(false)} />}
+      {drawerOpen && <Drawer onClose={() => setDrawer(null)} />}
     </div>
   );
 }

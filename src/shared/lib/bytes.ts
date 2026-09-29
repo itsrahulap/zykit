@@ -98,8 +98,12 @@ export function containsAscii(b: Uint8Array, needle: string): boolean {
   return false;
 }
 
+/** Lowercase hex, two digits per byte, joined with `sep`. */
+export function bytesToHex(b: Uint8Array, sep = ''): string {
+  return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join(sep);
+}
+
+/** Space-separated hex of the first `max` bytes, with an ellipsis when truncated. */
 export function toHex(b: Uint8Array, max = 16): string {
-  const parts: string[] = [];
-  for (let i = 0; i < Math.min(b.length, max); i++) parts.push(b[i].toString(16).padStart(2, '0'));
-  return parts.join(' ') + (b.length > max ? ' …' : '');
+  return bytesToHex(b.subarray(0, max), ' ') + (b.length > max ? ' …' : '');
 }

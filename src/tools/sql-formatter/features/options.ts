@@ -42,14 +42,3 @@ export function describeFormatError(err: unknown): FormatErrorInfo {
   const message = first.replace(/\s*at line \d+ column \d+\.?$/, '').replace(/[.:]$/, '') || 'Could not parse this SQL';
   return pos ? { message, line: Number(pos[1]), column: Number(pos[2]) } : { message };
 }
-
-/** Character offset of a 1-based line/column in `text` (clamped to the text). */
-export function offsetOf(text: string, line: number, column: number): number {
-  let offset = 0;
-  for (let l = 1; l < line; l++) {
-    const nl = text.indexOf('\n', offset);
-    if (nl === -1) return text.length;
-    offset = nl + 1;
-  }
-  return Math.min(text.length, offset + Math.max(0, column - 1));
-}

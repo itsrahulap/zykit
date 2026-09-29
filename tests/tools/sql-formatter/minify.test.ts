@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { format } from 'sql-formatter';
 import { minifySql, tokenizeSql } from '../../../src/tools/sql-formatter/features/minify';
-import { describeFormatError, offsetOf } from '../../../src/tools/sql-formatter/features/options';
+import { describeFormatError } from '../../../src/tools/sql-formatter/features/options';
 
 describe('tokenizeSql', () => {
   it('round-trips the input exactly', () => {
@@ -127,11 +127,5 @@ describe('describeFormatError', () => {
   it('handles errors without positions', () => {
     expect(describeFormatError(new Error('Boom.'))).toEqual({ message: 'Boom' });
     expect(describeFormatError('x')).toEqual({ message: 'x' });
-  });
-
-  it('converts line and column to an offset', () => {
-    expect(offsetOf('ab\ncd\nef', 2, 2)).toBe(4);
-    expect(offsetOf('ab', 5, 1)).toBe(2);
-    expect(offsetOf('abc', 1, 99)).toBe(3);
   });
 });

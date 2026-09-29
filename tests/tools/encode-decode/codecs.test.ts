@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  base64ToBytes,
-  bytesToBase64,
   CodecError,
   CODECS,
   htmlDecode,
@@ -41,12 +39,6 @@ describe('Base64', () => {
   it('matches known vectors (RFC 4648)', () => {
     const vectors: [string, string][] = [['', ''], ['f', 'Zg=='], ['fo', 'Zm8='], ['foo', 'Zm9v'], ['foob', 'Zm9vYg=='], ['fooba', 'Zm9vYmE='], ['foobar', 'Zm9vYmFy']];
     for (const [plain, b64] of vectors) expect(transform('base64', 'encode', plain)).toBe(b64);
-  });
-
-  it('matches btoa for all byte values', () => {
-    const bytes = Uint8Array.from({ length: 256 }, (_, i) => i);
-    expect(bytesToBase64(bytes)).toBe(btoa(String.fromCharCode(...bytes)));
-    expect(base64ToBytes(bytesToBase64(bytes))).toEqual(bytes);
   });
 
   it('encodes UTF-8 and emoji', () => {

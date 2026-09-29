@@ -1,10 +1,16 @@
-import { useState } from 'react';
-import { applyTheme, getStoredTheme, type Theme } from '../utils/theme';
+import { useEffect, useState } from 'react';
+import { applyTheme, getStoredTheme, THEME_EVENT, currentTheme, type Theme } from '../utils/theme';
 import { Icon } from './ui';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(getStoredTheme);
   const next: Theme = theme === 'dark' ? 'light' : 'dark';
+  // The command palette can switch the theme too.
+  useEffect(() => {
+    const sync = () => setTheme(currentTheme());
+    window.addEventListener(THEME_EVENT, sync);
+    return () => window.removeEventListener(THEME_EVENT, sync);
+  }, []);
   return (
     <button
       type="button"

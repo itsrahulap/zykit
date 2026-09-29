@@ -11,7 +11,8 @@ import { categoryMetaFor } from '../seo';
 import { LearnBreadcrumb } from '../components/LearnBreadcrumb';
 import { NotFoundState } from '../components/PageStates';
 import { DifficultyBadge } from '../components/status';
-import { DifficultyMix, ProgressBar, SolvedMark } from '../components/problems/bits';
+import { ProgressBar } from '../components/ProgressBar';
+import { DifficultyMix, SolvedMark } from '../components/problems/bits';
 import {
   difficultyMix,
   filterProblems,

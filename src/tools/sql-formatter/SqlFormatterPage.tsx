@@ -1,13 +1,16 @@
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import sqlFormatter from './index';
 import { minifySql } from './features/minify';
-import { DIALECTS, describeFormatError, offsetOf, type Dialect, type FormatErrorInfo } from './features/options';
+import { DIALECTS, describeFormatError, type Dialect, type FormatErrorInfo } from './features/options';
+import { offsetOf } from '../../shared/lib/textpos';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { formatBytes, pluralize } from '../../shared/utils/format.utils';
+import { downloadText, selectInTextarea } from '../../shared/utils/dom.utils';
 
 type Action = 'format' | 'minify';
 type Case = 'preserve' | 'upper' | 'lower';
@@ -35,25 +38,6 @@ const CASES: { value: Case; label: string }[] = [
 let formatterPromise: Promise<FormatFn> | null = null;
 const loadFormatter = () => (formatterPromise ??= import('sql-formatter').then((m) => m.format));
 
-function download(text: string, fileName: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/sql' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function goTo(text: string, line: number, column: number) {
-  const el = document.getElementById(INPUT_ID) as HTMLTextAreaElement | null;
-  if (!el) return;
-  const offset = offsetOf(text, line, column);
-  el.focus();
-  el.setSelectionRange(offset, Math.min(offset + 1, el.value.length));
-}
-
-const checkboxClass = 'h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600';
-const checkLabelClass = 'inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300';
 
 export default function SqlFormatterPage() {
   const [input, setInput] = useState('');
@@ -188,16 +172,18 @@ export default function SqlFormatterPage() {
                 onChange={setLogicalNewline}
               />
             </div>
-            <label className={checkLabelClass}>
-              <input type="checkbox" checked={dense} onChange={(e) => setDense(e.target.checked)} className={checkboxClass} />
-              Dense operators (<code>a=b</code>)
-            </label>
+            <Checkbox
+              label={
+                <>
+                  Dense operators (<code>a=b</code>)
+                </>
+              }
+              checked={dense}
+              onChange={setDense}
+            />
           </>
         ) : (
-          <label className={checkLabelClass}>
-            <input type="checkbox" checked={stripComments} onChange={(e) => setStripComments(e.target.checked)} className={checkboxClass} />
-            Remove comments (optimizer hints are kept)
-          </label>
+          <Checkbox label="Remove comments (optimizer hints are kept)" checked={stripComments} onChange={setStripComments} />
         )}
       </section>
 
@@ -225,7 +211,7 @@ export default function SqlFormatterPage() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => goTo(text, error.line!, error.column!)}
+                    onClick={() => selectInTextarea(INPUT_ID, offsetOf(text, error.line!, error.column!))}
                     className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400"
                   >
                     Jump to error in input
@@ -248,7 +234,7 @@ export default function SqlFormatterPage() {
                   <CopyButton text={output} />
                   <button
                     type="button"
-                    onClick={() => download(output, action === 'minify' ? 'minified.sql' : 'formatted.sql')}
+                    onClick={() => downloadText(output, action === 'minify' ? 'minified.sql' : 'formatted.sql', 'application/sql')}
                     className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     <Icon name="download" className="h-4 w-4" /> Download .sql

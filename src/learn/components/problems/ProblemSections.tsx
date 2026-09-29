@@ -6,6 +6,10 @@ import { Tabs } from '../../../shared/ui/Tabs';
 import { Badge, Button, Icon, type IconName } from '../../../shared/ui/ui';
 import { InlineText, RichText } from '../RichText';
 import { CodeExampleBlock } from '../CodeExampleBlock';
+import { Link } from 'react-router';
+import { buildAutoRunHarness } from '../../features/autoRunHarness';
+import { looksLikeTypeScript, playgroundPlan } from '../../features/playground';
+import { JS_RUNNER_PATH, writeHandoff } from '../../../shared/lib/jsRunnerHandoff';
 
 export function Section({ id, title, icon, children }: { id: string; title: string; icon?: IconName; children: ReactNode }) {
   return (
@@ -117,7 +121,22 @@ export function Solutions({ problem }: { problem: Problem }) {
           example={{ code: solution.code, walkthrough: solution.walkthrough }}
           testCases={problem.examples}
         />
+        <OpenInJsRunner code={solution.code} examples={problem.examples} />
       </div>
     </div>
+  );
+}
+
+/** Sends the solution, plus calls for each example, to the full JS Runner tool. */
+function OpenInJsRunner({ code, examples }: { code: string; examples: ProblemExample[] }) {
+  if (playgroundPlan({ code })?.target !== 'worker') return null;
+  return (
+    <Link
+      to={JS_RUNNER_PATH}
+      onClick={() => writeHandoff({ code: code + buildAutoRunHarness(code, examples), language: looksLikeTypeScript(code) ? 'ts' : 'js' })}
+      className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 pointer-coarse:min-h-11 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-slate-800"
+    >
+      <Icon name="play" className="h-4 w-4" /> Open in JS Runner
+    </Link>
   );
 }

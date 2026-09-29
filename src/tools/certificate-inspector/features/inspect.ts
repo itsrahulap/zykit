@@ -1,5 +1,6 @@
 // Turns pasted PEM text or a DER file into decoded items, and checks how certificates chain.
 
+import { tryBase64ToBytes } from '../../../shared/lib/base64';
 import { Asn1Error, parseDer, isUniversal, TAG, toHex } from './asn1';
 import {
   bytesEqual,
@@ -33,16 +34,13 @@ export interface InspectResult {
 
 const PEM_BLOCK = /-----BEGIN ([A-Z0-9 ]+)-----([\s\S]*?)-----END ([A-Z0-9 ]+)-----/g;
 
-/** Strict standard Base64 decode (whitespace ignored). Returns null if invalid. */
+/** Standard Base64 decode (whitespace ignored). Padding may be partial but not excessive. Returns null if invalid. */
 export function decodeBase64(text: string): Uint8Array | null {
   const s = text.replace(/\s+/g, '');
-  if (!s || s.length % 4 === 1 || !/^[A-Za-z0-9+/]*={0,2}$/.test(s)) return null;
-  try {
-    const bin = atob(s.padEnd(s.length + ((4 - (s.length % 4)) % 4), '='));
-    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  } catch {
-    return null;
-  }
+  const body = s.replace(/=+$/, '');
+  const padding = s.length - body.length;
+  if (!s || padding > (4 - (body.length % 4)) % 4) return null;
+  return tryBase64ToBytes(body);
 }
 
 function describeError(e: unknown): string {

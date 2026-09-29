@@ -1,5 +1,7 @@
 # Adding a new tool
 
+**Quick start:** `npm run new:tool -- my-tool --name "My Tool" --category Developer --icon code` creates the definition, page, feature module, unit test and e2e spec below, registers the tool and updates the README. Then build the page.
+
 Every tool lives in its own folder and registers itself in one place. The home page, routing, page titles and footer links are all generated from the registry.
 
 ## 1. Create the folder

@@ -2,6 +2,8 @@
 // nested input can't overflow the call stack. Scalars keep their source text, which means
 // big numbers (beyond 2^53) and string escapes come out exactly as they went in.
 
+import { lineCol, type TextError } from '../../../shared/lib/textpos';
+
 export type JsonNode =
   | { type: 'object'; entries: JsonEntry[] }
   | { type: 'array'; items: JsonNode[] }
@@ -28,15 +30,7 @@ export interface JsonStats {
   duplicateKeys: string[];
 }
 
-export interface JsonError {
-  message: string;
-  /** UTF-16 offset into the input. */
-  offset: number;
-  /** 1-based. */
-  line: number;
-  /** 1-based. */
-  column: number;
-}
+export type JsonError = TextError;
 
 export type ParseResult = { ok: true; value: JsonNode; stats: JsonStats } | { ok: false; error: JsonError };
 
@@ -55,17 +49,6 @@ class ParseError extends Error {
 type Frame =
   | { kind: 'object'; node: Extract<JsonNode, { type: 'object' }>; open: number; seen: Set<string>; key: string; keyRaw: string }
   | { kind: 'array'; node: Extract<JsonNode, { type: 'array' }>; open: number };
-
-/** 1-based line and column for an offset. */
-export function lineCol(text: string, offset: number): { line: number; column: number } {
-  let line = 1;
-  let lineStart = 0;
-  for (let i = text.indexOf('\n'); i !== -1 && i < offset; i = text.indexOf('\n', i + 1)) {
-    line++;
-    lineStart = i + 1;
-  }
-  return { line, column: offset - lineStart + 1 };
-}
 
 const isWs = (c: number) => c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d;
 const isDigit = (c: number) => c >= 0x30 && c <= 0x39;
@@ -411,20 +394,3 @@ export function utf8Length(s: string): number {
   return bytes;
 }
 
-/** Source line with a caret under the error column, e.g. for display in a code block. */
-export function errorSnippet(text: string, error: Pick<JsonError, 'line' | 'column'>, width = 80): string {
-  const lines = text.split('\n');
-  const raw = (lines[error.line - 1] ?? '').replace(/\r$/, '');
-  let start = 0;
-  let col = error.column - 1;
-  if (raw.length > width) {
-    start = Math.max(0, Math.min(col - Math.floor(width / 2), raw.length - width));
-  }
-  const prefix = start > 0 ? '…' : '';
-  const suffix = start + width < raw.length ? '…' : '';
-  const shown = raw.slice(start, start + width);
-  col -= start;
-  const gutter = `${error.line} | `;
-  const caretPad = shown.slice(0, col).replace(/[^\t]/g, ' ');
-  return `${gutter}${prefix}${shown}${suffix}\n${' '.repeat(gutter.length - 2)}| ${prefix ? ' ' : ''}${caretPad}^`;
-}

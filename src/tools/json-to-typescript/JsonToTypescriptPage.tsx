@@ -1,12 +1,15 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import jsonToTypescript from './index';
 import { generateTypes } from './features/typegen';
-import { errorSnippet, parseJson } from '../json-formatter/features/json';
+import { errorSnippet } from '../../shared/lib/textpos';
+import { parseJson } from '../json-formatter/features/json';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
+import { downloadText, selectInTextarea } from '../../shared/utils/dom.utils';
 
 type Style = 'interface' | 'type';
 
@@ -27,36 +30,6 @@ const SAMPLE = `{
   "scores": [1, 2.5, "n/a"],
   "tags": []
 }`;
-
-function download(text: string, fileName: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function goTo(offset: number) {
-  const el = document.getElementById(INPUT_ID) as HTMLTextAreaElement | null;
-  if (!el) return;
-  el.focus();
-  el.setSelectionRange(offset, Math.min(offset + 1, el.value.length));
-}
-
-function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600"
-      />
-      {label}
-    </label>
-  );
-}
 
 export default function JsonToTypescriptPage() {
   const [input, setInput] = useState('');
@@ -148,7 +121,7 @@ export default function JsonToTypescriptPage() {
               <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, parsed.error)}</CodeBlock>
               <button
                 type="button"
-                onClick={() => goTo(parsed.error.offset)}
+                onClick={() => selectInTextarea(INPUT_ID, parsed.error.offset)}
                 className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400"
               >
                 Jump to error in input
@@ -167,7 +140,7 @@ export default function JsonToTypescriptPage() {
                     <CopyButton text={result.code} />
                     <button
                       type="button"
-                      onClick={() => download(result.code, 'types.ts')}
+                      onClick={() => downloadText(result.code, 'types.ts', 'text/plain')}
                       className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                       <Icon name="download" className="h-4 w-4" /> Download .ts

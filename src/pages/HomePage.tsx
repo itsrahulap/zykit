@@ -7,12 +7,14 @@ import { TOOLS, toolPath } from '../tools/registry';
 import { learnStats } from '../learn/data/stats.generated';
 import type { ToolDefinition } from '../tools/types';
 import { categoryCounts, filterTools } from '../shared/utils/toolSearch';
+import { useFavorites, useRecentTools } from '../shared/lib/toolPrefs';
+import { FavoriteButton } from '../shared/ui/FavoriteButton';
 
 function ToolCard({ tool }: { tool: ToolDefinition }) {
   const soon = tool.status === 'coming-soon';
   const body = (
     <>
-      <div className="flex items-start justify-between gap-3">
+      <div className={`flex items-start justify-between gap-3 ${soon ? '' : 'pr-12 pointer-coarse:pr-14'}`}>
         <IconTile icon={tool.icon} size="lg" />
         {tool.status !== 'available' && (
           <span className="eyebrow rounded-full bg-slate-100 px-2.5 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -41,12 +43,54 @@ function ToolCard({ tool }: { tool: ToolDefinition }) {
   return soon ? (
     <div className={`${cls} opacity-70`}>{body}</div>
   ) : (
-    <Link
-      to={toolPath(tool)}
-      className={`${cls} transition-shadow hover:border-primary-edge hover:shadow-lg hover:shadow-slate-900/5 motion-reduce:transition-none`}
-    >
-      {body}
-    </Link>
+    <div className="relative h-full">
+      <Link
+        to={toolPath(tool)}
+        className={`${cls} transition-shadow hover:border-primary-edge hover:shadow-lg hover:shadow-slate-900/5 motion-reduce:transition-none`}
+      >
+        {body}
+      </Link>
+      <FavoriteButton tool={tool} className="absolute top-6 right-6 sm:top-7 sm:right-7" />
+    </div>
+  );
+}
+
+/** "Favorites" and "Recently used" rows; hidden while searching or filtering. */
+function PersonalRows() {
+  const { favorites } = useFavorites();
+  const recent = useRecentTools();
+  const pick = (ids: string[]) =>
+    ids.map((id) => TOOLS.find((t) => t.id === id)).filter((t): t is ToolDefinition => t !== undefined && t.status !== 'coming-soon');
+  const rows = [
+    { id: 'favorites', title: 'Favorites', tools: pick(favorites) },
+    { id: 'recent', title: 'Recently used', tools: pick(recent) },
+  ].filter((r) => r.tools.length > 0);
+  if (rows.length === 0) return null;
+  return (
+    <>
+      {rows.map((r) => (
+        <section key={r.id} aria-labelledby={`row-${r.id}`}>
+          <h2 id={`row-${r.id}`} className="eyebrow mb-5 border-b border-slate-200 pb-3 text-slate-600 dark:border-slate-800 dark:text-slate-400">
+            {r.title}
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {r.tools.map((t) => (
+              <li key={t.id} className="max-w-full">
+                <Link
+                  to={toolPath(t)}
+                  className="inline-flex max-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white py-1.5 pr-3.5 pl-1.5 text-sm font-semibold text-slate-800 hover:border-primary-edge pointer-coarse:min-h-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-ink ring-1 ring-inset ring-primary-edge">
+                    <Icon name={t.icon} className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 truncate">{t.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </>
   );
 }
 
@@ -228,6 +272,8 @@ export function HomePage() {
             </button>
           </div>
         )}
+
+        {!filtering && <PersonalRows />}
 
         {visibleCategories.map((cat, i) => (
           <section key={cat} aria-labelledby={`cat-${cat}`}>

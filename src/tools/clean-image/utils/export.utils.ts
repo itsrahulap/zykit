@@ -1,3 +1,4 @@
+import { downloadText } from '../../../shared/utils/dom.utils';
 import type { ImageMetadataReport } from '../features/metadata/metadata.types';
 import type { CleanResponse } from '../workers/worker.protocol';
 
@@ -51,10 +52,5 @@ export function buildMetadataExport(fileName: string, declaredType: string, repo
 }
 
 export function downloadJson(data: unknown, fileName: string) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadText(JSON.stringify(data, null, 2), fileName, 'application/json');
 }

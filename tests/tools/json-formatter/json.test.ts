@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { errorSnippet } from '../../../src/shared/lib/textpos';
 import {
   decodeString,
-  errorSnippet,
   formatJson,
   isBigNumber,
   parseJson,

@@ -1,5 +1,7 @@
 // JWS signing with WebCrypto. Keys are imported, generated and used only on this device.
 
+import { bytesToBase64, textToBase64, tryBase64ToBytes } from '../../../shared/lib/base64';
+
 export class SignError extends Error {
   constructor(message: string) {
     super(message);
@@ -52,23 +54,13 @@ export const describeAlg = (alg: Alg): string => {
 
 // ---------- base64 ----------
 
-export function bytesToBase64(b: Uint8Array): string {
-  let s = '';
-  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000));
-  return btoa(s);
-}
-export const bytesToBase64Url = (b: Uint8Array) => bytesToBase64(b).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-export const textToBase64Url = (s: string) => bytesToBase64Url(new TextEncoder().encode(s));
+const bytesToBase64Url = (b: Uint8Array) => bytesToBase64(b, true);
+const textToBase64Url = (s: string) => textToBase64(s, true);
 
 /** Standard or URL-safe Base64, padding optional. Null when invalid. */
 export function base64ToBytes(input: string): Uint8Array | null {
   const s = input.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/, '');
-  if (!/^[A-Za-z0-9+/]*$/.test(s) || s.length % 4 === 1) return null;
-  try {
-    return Uint8Array.from(atob(s + '='.repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
-  } catch {
-    return null;
-  }
+  return tryBase64ToBytes(s);
 }
 
 // ---------- keys ----------

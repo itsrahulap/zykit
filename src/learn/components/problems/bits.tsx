@@ -3,34 +3,7 @@
 import { Link } from 'react-router';
 import type { ProblemDifficulty } from '../../types/problem';
 import { Icon } from '../../../shared/ui/ui';
-import { DIFFICULTIES, percent } from './practice';
-
-/** Horizontal progress bar with an accessible value. */
-export function ProgressBar({
-  value,
-  max,
-  label,
-  className = '',
-}: {
-  value: number;
-  max: number;
-  /** Omit when the numbers are already shown as text next to the bar; the bar is then hidden from assistive tech. */
-  label?: string;
-  className?: string;
-}) {
-  const pct = percent(value, max);
-  const a11y = label
-    ? { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': max, 'aria-valuenow': value, 'aria-valuetext': `${value} of ${max}` }
-    : { 'aria-hidden': true };
-  return (
-    <div
-      {...a11y}
-      className={`h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 ${className}`}
-    >
-      <div className="h-full rounded-full bg-emerald-600 transition-[width] dark:bg-emerald-400" style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
+import { DIFFICULTIES } from './practice';
 
 const MIX_DOT: Record<ProblemDifficulty, string> = {
   Easy: 'bg-emerald-500',

@@ -8,7 +8,8 @@ import { caseStudiesPath, categoryPath, getProblemsInCategory, problemCategories
 import { useSolvedProblems } from '../hooks/useLearnState';
 import { problemsHomeMeta } from '../seo';
 import { LearnBreadcrumb } from '../components/LearnBreadcrumb';
-import { DifficultyMix, ProgressBar } from '../components/problems/bits';
+import { ProgressBar } from '../components/ProgressBar';
+import { DifficultyMix } from '../components/problems/bits';
 import { difficultyMix, percent } from '../components/problems/practice';
 
 const allIds = problems.map((p) => p.id);

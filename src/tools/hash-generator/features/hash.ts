@@ -1,5 +1,7 @@
 // Digests and HMACs. SHA comes from WebCrypto; MD5 from the shared pure-JS implementation.
 
+import { bytesToBase64 } from '../../../shared/lib/base64';
+import { bytesToHex } from '../../../shared/lib/bytes';
 import { md5 } from '../../../shared/lib/hash';
 
 export type HashAlg = 'MD5' | 'SHA-1' | 'SHA-256' | 'SHA-384' | 'SHA-512';
@@ -25,12 +27,8 @@ export async function hmac(alg: Exclude<HashAlg, 'MD5'>, key: Uint8Array, data: 
 }
 
 export function formatDigest(bytes: Uint8Array, format: OutputFormat): string {
-  if (format === 'base64') {
-    let bin = '';
-    for (const b of bytes) bin += String.fromCharCode(b);
-    return btoa(bin);
-  }
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  if (format === 'base64') return bytesToBase64(bytes);
+  const hex = bytesToHex(bytes);
   return format === 'HEX' ? hex.toUpperCase() : hex;
 }
 

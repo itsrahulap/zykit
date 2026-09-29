@@ -1,5 +1,7 @@
 // JWT parsing: base64url → UTF-8 → JSON for the header and payload. No verification here.
 
+import { tryBase64ToBytes } from '../../../shared/lib/base64';
+
 export class JwtError extends Error {
   constructor(message: string) {
     super(message);
@@ -21,28 +23,12 @@ export interface DecodedJwt {
   warnings: string[];
 }
 
-const B64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 const strictUtf8 = new TextDecoder('utf-8', { fatal: true });
 
-/** Strict base64url decode; trailing `=` padding is tolerated. Returns null when invalid. */
+/** Strict base64url decode; trailing `=` padding is tolerated, whitespace is not. Returns null when invalid. */
 export function base64UrlToBytes(input: string): Uint8Array | null {
-  const s = input.replace(/=+$/, '');
-  if (s.length % 4 === 1) return null;
-  const out = new Uint8Array(Math.floor((s.length * 3) / 4));
-  let o = 0;
-  let buf = 0;
-  let bits = 0;
-  for (let i = 0; i < s.length; i++) {
-    const v = B64URL.indexOf(s[i]);
-    if (v < 0) return null;
-    buf = ((buf << 6) | v) & 0xffffff;
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      out[o++] = (buf >> bits) & 0xff;
-    }
-  }
-  return out;
+  if (/\s/.test(input)) return null;
+  return tryBase64ToBytes(input.replace(/=+$/, ''), true);
 }
 
 /** Trims whitespace (including line breaks inside the token) and a leading "Bearer ". */

@@ -17,6 +17,7 @@ import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
+import { downloadText } from '../../shared/utils/dom.utils';
 
 /** Output longer than this is truncated on screen; copy and download still get all of it. */
 const MAX_PREVIEW_CHARS = 200_000;
@@ -26,12 +27,7 @@ const inputClass =
 
 function download(text: string, format: OutputFormat) {
   const json = format === 'json';
-  const url = URL.createObjectURL(new Blob([text], { type: json ? 'application/json' : 'text/plain' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = json ? 'random-strings.json' : 'random-strings.txt';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadText(text, json ? 'random-strings.json' : 'random-strings.txt', json ? 'application/json' : 'text/plain');
 }
 
 function NumberField({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {

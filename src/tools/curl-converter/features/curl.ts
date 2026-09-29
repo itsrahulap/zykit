@@ -108,14 +108,6 @@ for (const o of OPTIONS) {
   if (o.short) BY_SHORT.set(o.short, o);
 }
 
-/** UTF-8 safe base64 (btoa only accepts Latin-1). */
-export function base64(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin);
-}
-
 /** curl's --data-urlencode encoding: like encodeURIComponent but with the RFC 3986 unreserved set. */
 function urlencode(s: string): string {
   return encodeURIComponent(s).replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase());

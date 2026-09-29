@@ -1,5 +1,8 @@
 // Text codecs. Everything works on UTF-8 bytes, so any Unicode text round-trips.
 
+import { base64ToBytes, Base64Error, bytesToBase64 } from '../../../shared/lib/base64';
+import { bytesToHex } from '../../../shared/lib/bytes';
+
 export type CodecId = 'base64' | 'base64url' | 'url-component' | 'url' | 'html' | 'hex';
 export type Direction = 'encode' | 'decode';
 
@@ -37,59 +40,12 @@ export function utf8Decode(bytes: Uint8Array): string {
 
 // ---- Base64 / Base64URL
 
-const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-const B64URL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-
-export function bytesToBase64(bytes: Uint8Array, url = false): string {
-  const abc = url ? B64URL : B64;
-  let out = '';
-  let i = 0;
-  for (; i + 2 < bytes.length; i += 3) {
-    const n = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-    out += abc[n >> 18] + abc[(n >> 12) & 63] + abc[(n >> 6) & 63] + abc[n & 63];
+function decodeBase64(input: string, url: boolean): Uint8Array {
+  try {
+    return base64ToBytes(input, url);
+  } catch (e) {
+    throw e instanceof Base64Error ? new CodecError(e.message) : e;
   }
-  const rest = bytes.length - i;
-  if (rest === 1) {
-    const n = bytes[i] << 16;
-    out += abc[n >> 18] + abc[(n >> 12) & 63] + (url ? '' : '==');
-  } else if (rest === 2) {
-    const n = (bytes[i] << 16) | (bytes[i + 1] << 8);
-    out += abc[n >> 18] + abc[(n >> 12) & 63] + abc[(n >> 6) & 63] + (url ? '' : '=');
-  }
-  return out;
-}
-
-/** Strict decoder. Whitespace is ignored; padding is optional for Base64URL and, if present, must be correct. */
-export function base64ToBytes(input: string, url = false): Uint8Array {
-  const abc = url ? B64URL : B64;
-  const s = input.replace(/\s+/g, '');
-  const pad = s.match(/=*$/)![0].length;
-  const body = s.slice(0, s.length - pad);
-  for (let i = 0; i < body.length; i++) {
-    if (abc.indexOf(body[i]) < 0) {
-      const other = url ? B64 : B64URL;
-      const tip = other.includes(body[i])
-        ? ` That character belongs to ${url ? 'standard Base64' : 'Base64URL'} — try that codec instead.`
-        : '';
-      throw new CodecError(`Invalid ${url ? 'Base64URL' : 'Base64'} character "${body[i]}" at position ${i + 1}.${tip}`);
-    }
-  }
-  if (pad > 2 || (pad > 0 && s.length % 4 !== 0)) throw new CodecError('Invalid Base64 padding.');
-  if (body.length % 4 === 1) throw new CodecError('Invalid Base64 length: the input is truncated or has an extra character.');
-
-  const out = new Uint8Array(Math.floor((body.length * 3) / 4));
-  let o = 0;
-  let buf = 0;
-  let bits = 0;
-  for (let i = 0; i < body.length; i++) {
-    buf = (buf << 6) | abc.indexOf(body[i]);
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      out[o++] = (buf >> bits) & 0xff;
-    }
-  }
-  return out;
 }
 
 // ---- URL
@@ -162,12 +118,6 @@ export function htmlDecode(input: string): string {
 
 // ---- Hex
 
-export function bytesToHex(bytes: Uint8Array): string {
-  let s = '';
-  for (const b of bytes) s += b.toString(16).padStart(2, '0');
-  return s;
-}
-
 export function hexToBytes(input: string): Uint8Array {
   const s = input.replace(/0x/gi, '').replace(/[\s:,-]+/g, '');
   const bad = s.search(/[^0-9a-fA-F]/);
@@ -186,7 +136,7 @@ export function transform(codec: CodecId, direction: Direction, input: string, o
     case 'base64':
     case 'base64url': {
       const url = codec === 'base64url';
-      return enc ? bytesToBase64(encoder.encode(input), url) : utf8Decode(base64ToBytes(input, url));
+      return enc ? bytesToBase64(encoder.encode(input), url) : utf8Decode(decodeBase64(input, url));
     }
     case 'url-component':
       return enc ? uriEncode(input, encodeURIComponent) : uriDecode(input, decodeURIComponent);

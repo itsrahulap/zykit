@@ -15,7 +15,8 @@
     "typecheck": "tsc -b",
     "generate:learn": "tsx scripts/generate-learn-catalog.ts",
     "prebuild": "tsx scripts/generate-learn-catalog.ts",
-    "generate:readme": "tsx scripts/generate-readme-tools.ts"
+    "generate:readme": "tsx scripts/generate-readme-tools.ts",
+    "new:tool": "tsx scripts/new-tool.ts"
   },
   "dependencies": {
     "dompurify": "^3.4.16",

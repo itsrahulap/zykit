@@ -1,5 +1,7 @@
 // UUID generation (v4, v7) and inspection. Pure logic, no DOM.
 
+import { bytesToHex } from '../../../shared/lib/bytes';
+
 export type UuidVersion = 4 | 7;
 
 export interface FormatOptions {
@@ -15,8 +17,7 @@ type RandomFill = (bytes: Uint8Array<ArrayBuffer>) => Uint8Array;
 const defaultFill: RandomFill = (bytes) => crypto.getRandomValues(bytes);
 
 function toHex(bytes: Uint8Array): string {
-  let hex = '';
-  for (const b of bytes) hex += b.toString(16).padStart(2, '0');
+  const hex = bytesToHex(bytes);
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 

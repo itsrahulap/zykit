@@ -1,6 +1,8 @@
 // Minimal, defensive TIFF/EXIF reader. Handles both byte orders, guards against
 // out-of-bounds offsets and IFD loops, and never trusts counts from the file.
 
+import { bytesToHex } from '../../../../shared/lib/bytes';
+
 export interface ExifField {
   key: string;
   value: string;
@@ -103,7 +105,7 @@ export function parseExif(tiff: Uint8Array): ExifResult {
       if (name === 'UserComment' || name === 'GPSProcessingMethod') return decodeUserComment(bytes, le);
       if (name === 'ExifVersion' || name === 'FlashpixVersion') return String.fromCharCode(...bytes);
       if (name === 'MakerNote') return `[manufacturer data, ${count} bytes]`;
-      return count <= 16 ? Array.from(bytes, (x) => x.toString(16).padStart(2, '0')).join(' ') : `[binary, ${count} bytes]`;
+      return count <= 16 ? bytesToHex(bytes, ' ') : `[binary, ${count} bytes]`;
     }
 
     const n = Math.min(count, 16);

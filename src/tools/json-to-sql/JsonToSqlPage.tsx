@@ -1,13 +1,16 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import jsonToSql from './index';
 import { collectColumns, DIALECTS, generateSql, type Dialect } from './features/sql';
-import { errorSnippet, parseJson } from '../json-formatter/features/json';
+import { errorSnippet } from '../../shared/lib/textpos';
+import { parseJson } from '../json-formatter/features/json';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { formatBytes, pluralize } from '../../shared/utils/format.utils';
+import { downloadText, selectInTextarea } from '../../shared/utils/dom.utils';
 
 const MAX_INPUT_CHARS = 10_000_000;
 const MAX_PREVIEW_CHARS = 1_000_000;
@@ -21,22 +24,6 @@ const SAMPLE = `[
 
 const inputClass =
   'min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100';
-
-function download(text: string, fileName: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/sql' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function goTo(offset: number) {
-  const el = document.getElementById(INPUT_ID) as HTMLTextAreaElement | null;
-  if (!el) return;
-  el.focus();
-  el.setSelectionRange(offset, Math.min(offset + 1, el.value.length));
-}
 
 export default function JsonToSqlPage() {
   const [input, setInput] = useState('');
@@ -123,15 +110,7 @@ export default function JsonToSqlPage() {
           onChange={setPrimaryKey}
           disabled={!columnNames.length}
         />
-        <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
-          <input
-            type="checkbox"
-            checked={includeCreate}
-            onChange={(e) => setIncludeCreate(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600"
-          />
-          Include CREATE TABLE
-        </label>
+        <Checkbox label="Include CREATE TABLE" checked={includeCreate} onChange={setIncludeCreate} />
       </section>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
@@ -156,7 +135,7 @@ export default function JsonToSqlPage() {
               <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, parsed.error)}</CodeBlock>
               <button
                 type="button"
-                onClick={() => goTo(parsed.error.offset)}
+                onClick={() => selectInTextarea(INPUT_ID, parsed.error.offset)}
                 className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400"
               >
                 Jump to error in input
@@ -181,7 +160,7 @@ export default function JsonToSqlPage() {
                     <CopyButton text={output} />
                     <button
                       type="button"
-                      onClick={() => download(output, `${(tableName.trim() || 'my_table').replace(/[^\w.-]+/g, '_')}.sql`)}
+                      onClick={() => downloadText(output, `${(tableName.trim() || 'my_table').replace(/[^\w.-]+/g, '_')}.sql`, 'application/sql')}
                       className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                       <Icon name="download" className="h-4 w-4" /> Download .sql

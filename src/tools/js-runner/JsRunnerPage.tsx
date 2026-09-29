@@ -10,6 +10,7 @@ import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
+import { clearHandoff, readHandoff } from '../../shared/lib/jsRunnerHandoff';
 
 const STORAGE_KEY = 'zykit-js-runner';
 const LIMITS = [5, 10, 30, 60];
@@ -20,8 +21,15 @@ interface Saved {
   limit: number;
 }
 
-function loadSaved(): Saved {
+function loadSaved(): Saved & { handedOff: boolean } {
   const fallback: Saved = { code: EXAMPLES[0].code, language: 'js', limit: 10 };
+  const saved = loadStored(fallback);
+  // Code sent from elsewhere (e.g. "Open in JS Runner" on a Learn problem) replaces the editor.
+  const handoff = readHandoff();
+  return handoff ? { ...saved, code: handoff.code, language: handoff.language, handedOff: true } : { ...saved, handedOff: false };
+}
+
+function loadStored(fallback: Saved): Saved {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return fallback;
@@ -70,6 +78,12 @@ export default function JsRunnerPage() {
   const [compiled, setCompiled] = useState<CompileResult | null>(null);
   const { entries, run, start, stop, clear } = useJsRunner();
   const escaped = useRef(false);
+
+  // The handoff is read once, on mount; clear it so a reload shows the saved editor instead.
+  // It isn't lost: it's now the editor content, which the save effect below persists.
+  useEffect(() => {
+    if (initial.handedOff) clearHandoff();
+  }, [initial.handedOff]);
 
   const busy = run.status === 'compiling' || run.status === 'running' || run.status === 'waiting';
 

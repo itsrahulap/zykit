@@ -1,6 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import slugGenerator from './index';
 import { DEFAULT_SLUG_OPTIONS, slugifyLines, type Separator } from './features/slug';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -10,7 +11,6 @@ const SAMPLE = `10 Tips & Tricks for Crème Brûlée
 Straße nach Łódź — Ærø Edition
 The Quick Brown Fox Jumps Over the Lazy Dog`;
 
-const checkbox = 'h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600';
 const option = 'inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300';
 
 export default function SlugGeneratorPage() {
@@ -68,18 +68,9 @@ export default function SlugGeneratorPage() {
           value={separator}
           onChange={setSeparator}
         />
-        <label className={option}>
-          <input type="checkbox" checked={lowercase} onChange={(e) => setLowercase(e.target.checked)} className={checkbox} />
-          Lowercase
-        </label>
-        <label className={option}>
-          <input type="checkbox" checked={ampersand} onChange={(e) => setAmpersand(e.target.checked)} className={checkbox} />
-          &amp; → &ldquo;and&rdquo;
-        </label>
-        <label className={option}>
-          <input type="checkbox" checked={removeStopWords} onChange={(e) => setRemoveStopWords(e.target.checked)} className={checkbox} />
-          Remove stop words
-        </label>
+        <Checkbox label="Lowercase" checked={lowercase} onChange={setLowercase} />
+        <Checkbox label={<>&amp; → &ldquo;and&rdquo;</>} checked={ampersand} onChange={setAmpersand} />
+        <Checkbox label="Remove stop words" checked={removeStopWords} onChange={setRemoveStopWords} />
         <label className={option}>
           Max length
           <input

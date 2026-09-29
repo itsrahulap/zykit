@@ -1,5 +1,6 @@
 // File fingerprints shown in the Technical tab. Computed locally, never sent anywhere.
 
+import { bytesToHex } from './bytes';
 import { crc32 } from './crc32';
 
 export interface FileChecksums {
@@ -10,9 +11,6 @@ export interface FileChecksums {
   crc32: string;
   adler32: string;
 }
-
-const hex = (buf: ArrayBuffer | Uint8Array) =>
-  Array.from(buf instanceof Uint8Array ? buf : new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('');
 
 export function adler32(b: Uint8Array): number {
   let a = 1;
@@ -65,13 +63,13 @@ export function md5(input: Uint8Array): string {
   const out = new Uint8Array(16);
   const ov = new DataView(out.buffer);
   [a0, b0, c0, d0].forEach((v, i) => ov.setUint32(i * 4, v, true));
-  return hex(out);
+  return bytesToHex(out);
 }
 
 export async function computeChecksums(b: Uint8Array): Promise<FileChecksums> {
   const data = b as Uint8Array<ArrayBuffer>;
   const [sha1, sha256, sha512] = await Promise.all(
-    ['SHA-1', 'SHA-256', 'SHA-512'].map(async (alg) => hex(await crypto.subtle.digest(alg, data))),
+    ['SHA-1', 'SHA-256', 'SHA-512'].map(async (alg) => bytesToHex(new Uint8Array(await crypto.subtle.digest(alg, data)))),
   );
   return {
     md5: md5(b),
@@ -84,7 +82,7 @@ export async function computeChecksums(b: Uint8Array): Promise<FileChecksums> {
 }
 
 export function headHex(b: Uint8Array, n = 64): string {
-  return Array.from(b.subarray(0, n), (x) => x.toString(16).padStart(2, '0')).join(' ');
+  return bytesToHex(b.subarray(0, n), ' ');
 }
 
 /** Printable ASCII with dots for everything else, 32 bytes per line. */

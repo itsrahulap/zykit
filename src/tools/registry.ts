@@ -43,6 +43,12 @@ import utmBuilder from './utm-builder';
 import urlCleaner from './url-cleaner';
 import robotsTxtGenerator from './robots-txt-generator';
 import sitemapGenerator from './sitemap-generator';
+import imageCompressor from './image-compressor';
+import imageResizer from './image-resizer';
+import imageConverter from './image-converter';
+import imageBase64 from './image-base64';
+import svgOptimizer from './svg-optimizer';
+import faviconGenerator from './favicon-generator';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -86,6 +92,12 @@ export const TOOLS: ToolDefinition[] = [
   urlCleaner,
   robotsTxtGenerator,
   sitemapGenerator,
+  imageCompressor,
+  imageResizer,
+  imageConverter,
+  imageBase64,
+  svgOptimizer,
+  faviconGenerator,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

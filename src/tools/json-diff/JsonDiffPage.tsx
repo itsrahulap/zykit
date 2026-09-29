@@ -1,7 +1,9 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import jsonDiff from './index';
 import { changesToJson, diffJson, formatPath, parseIgnoreKeys, preview, toJsonPatch, type Change, type DiffNode, type DiffResult } from './features/diff';
-import { errorSnippet, parseJson, type ParseResult } from '../json-formatter/features/json';
+import { errorSnippet } from '../../shared/lib/textpos';
+import { parseJson, type ParseResult } from '../json-formatter/features/json';
+import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
@@ -45,20 +47,6 @@ const STATUS_STYLE = {
   changed: 'bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200',
 };
 const MARK = { added: '+', removed: '−', changed: '~' };
-
-function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 accent-emerald-600 dark:border-slate-600"
-      />
-      {label}
-    </label>
-  );
-}
 
 function SideError({ side, text, parsed }: { side: string; text: string; parsed: ParseResult }) {
   if (parsed.ok) return null;

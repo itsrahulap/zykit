@@ -1,4 +1,4 @@
-// Shared behaviour for the Learn modals (search dialog, navigation drawer): keeps Tab focus
+// Shared modal behaviour (command palette, Learn navigation drawer): keeps Tab focus
 // inside the panel, closes on Escape, locks page scroll and hands focus back on close.
 
 import { useEffect, useRef, type RefObject } from 'react';
@@ -14,6 +14,7 @@ export function useModal(open: boolean, panel: RefObject<HTMLElement | null>, on
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
+    const el = panel.current;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     (initialFocus?.current ?? panel.current?.querySelector<HTMLElement>(FOCUSABLE) ?? panel.current)?.focus();
@@ -42,7 +43,10 @@ export function useModal(open: boolean, panel: RefObject<HTMLElement | null>, on
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
-      if (previous?.isConnected) previous.focus();
+      // Hand focus back unless it has already moved somewhere else (e.g. into another dialog).
+      const now = document.activeElement;
+      const lost = !now || now === document.body || Boolean(el?.contains(now));
+      if (lost && previous?.isConnected) previous.focus();
     };
   }, [open, panel, initialFocus]);
 }

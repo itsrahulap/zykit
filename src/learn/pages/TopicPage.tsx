@@ -33,6 +33,10 @@ import {
 } from '../data';
 import { PROGRESS_LABELS, recordVisit, useBookmarks, useProgress } from '../hooks/useLearnState';
 import { useLoaded } from '../hooks/useLoaded';
+import { toolIdsForTopic } from '../data/toolLinks';
+import { getTool } from '../../tools/registry';
+import { ToolCardGrid } from '../../tools/ToolCardGrid';
+import type { ToolDefinition } from '../../tools/types';
 import { topicMetaFor } from '../seo';
 import type { ProgressStatus, Topic } from '../types/content';
 
@@ -99,6 +103,9 @@ function TopicView({ subject, topic }: { subject: SubjectMeta; topic: Topic }) {
   const caseStudies = subject.id === 'system-design' ? getCaseStudiesForTopic(topic.id) : [];
   const categories =
     subject.id === 'dsa' ? getProblemCategoriesForTopic(topic.id).map((id) => getCategory(id)).filter((c) => c !== undefined) : [];
+  const tools = toolIdsForTopic(subject.id, topic.id)
+    .map((id) => getTool(id))
+    .filter((t): t is ToolDefinition => t !== undefined && t.status !== 'coming-soon');
 
   const sections: (SectionDef & { show: boolean })[] = [
     { id: 'what-is-it', title: 'What is it?', show: true },
@@ -111,6 +118,7 @@ function TopicView({ subject, topic }: { subject: SubjectMeta; topic: Topic }) {
     { id: 'practice', title: 'Practice exercises', show: topic.exercises.length > 0 },
     { id: 'practice-problems', title: 'Practice problems', show: categories.length > 0 },
     { id: 'real-world-examples', title: 'Real-world examples', show: caseStudies.length > 0 },
+    { id: 'try-it-in-a-tool', title: 'Try it in a tool', show: tools.length > 0 },
     { id: 'interview-questions', title: 'Interview questions', show: topic.interviewQuestions.length > 0 },
     { id: 'related-topics', title: 'Related topics', show: related.length > 0 },
   ];
@@ -297,6 +305,12 @@ function TopicView({ subject, topic }: { subject: SubjectMeta; topic: Topic }) {
                 </li>
               ))}
             </ul>
+          </Section>
+        )}
+
+        {tools.length > 0 && (
+          <Section {...def('try-it-in-a-tool')}>
+            <ToolCardGrid tools={tools} />
           </Section>
         )}
 

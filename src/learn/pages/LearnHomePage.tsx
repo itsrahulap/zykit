@@ -1,16 +1,18 @@
 // /learn — overview of every subject, recent lessons, practice material and overall progress.
 
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta';
 import { Headline, IconTile } from '../../shared/ui/page';
 import { Icon } from '../../shared/ui/ui';
 import { ProgressBar } from '../components/ProgressBar';
 import { StatusBadge } from '../components/status';
-import { cardLinkClass, SectionHeading, StatTile } from '../components/learnUi';
+import { cardClass, cardLinkClass, SectionHeading, StatTile } from '../components/learnUi';
 import { caseStudies, caseStudiesPath, getSubjectMeta, getTopicMeta, problemCategories, problems, problemsPath, progressPath, subjectPath, subjects, topicPath } from '../data';
 import { SUBJECT_ICONS } from '../data/subjectIcons';
-import { levelSpread } from '../features/progress';
-import { useProgress, useRecentTopics, useSolvedProblems } from '../hooks/useLearnState';
+import { levelSpread, splitTopicKey } from '../features/progress';
+import { dueForReview } from '../features/review';
+import { useProgress, useRecentTopics, useSolvedProblems, useStatusStamps } from '../hooks/useLearnState';
 import { learnHomeMeta } from '../seo';
 
 const totalTopics = subjects.reduce((n, s) => n + s.topics.length, 0);
@@ -46,6 +48,54 @@ function ContinueLearning() {
   );
 }
 
+const agoLabel = (days: number | undefined) =>
+  days === undefined ? '' : days === 0 ? 'today' : days === 1 ? 'yesterday' : days < 60 ? `${days} days ago` : `${Math.round(days / 30)} months ago`;
+
+function DueForReview() {
+  const { progress } = useProgress();
+  const { stamps, markReviewed } = useStatusStamps();
+  // Taken once on mount; the list doesn't need to tick over while the page is open.
+  const [now] = useState(Date.now);
+  const items = dueForReview(progress, stamps, now)
+    .map((d) => ({ ...d, ...splitTopicKey(d.key) }))
+    .map((d) => ({ ...d, subject: getSubjectMeta(d.subjectId), topic: getTopicMeta(d.subjectId, d.topicId) }))
+    .filter((d) => d.subject && d.topic)
+    .slice(0, 6);
+  if (items.length === 0) return null;
+  return (
+    <section aria-labelledby="due-for-review">
+      <SectionHeading id="due-for-review">Due for review</SectionHeading>
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {items.map(({ key, reason, days, subject, topic, subjectId, topicId }) => (
+          <li key={key} className={`${cardClass} flex items-center gap-3 p-4`}>
+            <Link to={topicPath(subjectId, topicId)} className="flex min-w-0 flex-1 items-center gap-4 rounded-xl pointer-coarse:min-h-11">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Icon name={SUBJECT_ICONS[subject!.id]} className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs text-slate-500 dark:text-slate-400">
+                  {subject!.title} · {reason === 'needs-review' ? 'Marked for review' : `Completed ${agoLabel(days)}`}
+                </span>
+                <span className="block truncate font-semibold text-slate-900 hover:underline dark:text-white">{topic!.title}</span>
+              </span>
+            </Link>
+            {reason === 'spaced' && (
+              <button
+                type="button"
+                onClick={() => markReviewed(subjectId, topicId)}
+                aria-label={`Mark ${topic!.title} as reviewed`}
+                className="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 pointer-coarse:min-h-11 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-slate-800"
+              >
+                Reviewed
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function LearnHomePage() {
   useDocumentMeta(learnHomeMeta());
   const { progress, completion } = useProgress();
@@ -69,6 +119,8 @@ export default function LearnHomePage() {
       </section>
 
       <ContinueLearning />
+
+      <DueForReview />
 
       <section aria-labelledby="subjects">
         <SectionHeading id="subjects">Subjects</SectionHeading>
