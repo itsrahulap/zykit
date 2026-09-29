@@ -9,6 +9,8 @@ import { Select } from '../../shared/ui/Select';
 import { Button, Icon } from '../../shared/ui/ui';
 import { Checkbox, ErrorPanel, Notices, OpenFileButton, OptionsCard, OutputPanel } from '../../shared/ui/convert';
 import { pluralize } from '../../shared/utils/format.utils';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
 
 type Direction = 'c2j' | 'j2c';
 type Shape = 'objects' | 'arrays';
@@ -25,7 +27,8 @@ line two"`;
 
 const SAMPLE_JSON = `[{"id":1,"name":"Ann","address":{"city":"Lisbon","zip":"1000"},"tags":["a","b"]},{"id":2,"name":"Bob, Jr.","address":{"city":"Porto"},"active":false}]`;
 
-const DELIMS: { value: CsvDelimiter; label: string }[] = (Object.keys(DELIMITER_LABELS) as CsvDelimiter[]).map((d) => ({
+const DELIM_KEYS = Object.keys(DELIMITER_LABELS) as CsvDelimiter[];
+const DELIMS: { value: CsvDelimiter; label: string }[] = DELIM_KEYS.map((d) => ({
   value: d,
   label: DELIMITER_LABELS[d],
 }));
@@ -56,7 +59,6 @@ export default function CsvJsonPage() {
   const [flatten, setFlatten] = useState(true);
   const [quoteAll, setQuoteAll] = useState(false);
   const [crlf, setCrlf] = useState(false);
-  const [readError, setReadError] = useState<string | null>(null);
 
   const text = useDeferredValue(input);
   const stale = text !== input;
@@ -103,17 +105,47 @@ export default function CsvJsonPage() {
           ? `Invalid JSON: ${result.error.message} (line ${result.error.line}, column ${result.error.column})`
           : result.error.message;
 
-  const openFile = (file: File) => {
-    setReadError(null);
-    file.text().then(
-      (t) => {
-        setFileName(file.name);
-        setDirection(/\.json$/i.test(file.name) || /^\s*[[{]/.test(t.slice(0, 100)) ? 'j2c' : 'c2j');
-        setInput(t);
-      },
-      () => setReadError(`Couldn't read ${file.name}.`),
-    );
+  const openText = (t: string, file: File) => {
+    setFileName(file.name);
+    setDirection(/\.json$/i.test(file.name) || /^\s*[[{]/.test(t.slice(0, 100)) ? 'j2c' : 'c2j');
+    setInput(t);
   };
+
+  useIncomingText(csvJson.id, (t, h) => {
+    setFileName(null);
+    if (h.kind === 'json') setDirection('j2c');
+    else if (h.kind === 'csv') setDirection('c2j');
+    setInput(t);
+  });
+  useShareState(
+    { input, direction, delimiter, outDelimiter, header, trim, skipEmpty, shape, inferTypes, emptyAsNull, indent, flatten, quoteAll, crlf },
+    (s) => {
+      if (s.input !== undefined) {
+        setInput(s.input);
+        setFileName(null);
+      }
+      if (s.direction) setDirection(s.direction);
+      if (s.delimiter) setDelimiter(s.delimiter);
+      if (s.outDelimiter) setOutDelimiter(s.outDelimiter);
+      if (s.header !== undefined) setHeader(s.header);
+      if (s.trim !== undefined) setTrim(s.trim);
+      if (s.skipEmpty !== undefined) setSkipEmpty(s.skipEmpty);
+      if (s.shape) setShape(s.shape);
+      if (s.inferTypes !== undefined) setInferTypes(s.inferTypes);
+      if (s.emptyAsNull !== undefined) setEmptyAsNull(s.emptyAsNull);
+      if (s.indent) setIndent(s.indent);
+      if (s.flatten !== undefined) setFlatten(s.flatten);
+      if (s.quoteAll !== undefined) setQuoteAll(s.quoteAll);
+      if (s.crlf !== undefined) setCrlf(s.crlf);
+    },
+    {
+      direction: ['c2j', 'j2c'],
+      delimiter: ['auto', ...DELIM_KEYS],
+      outDelimiter: DELIM_KEYS,
+      shape: ['objects', 'arrays'],
+      indent: ['2', '4', 'min'],
+    },
+  );
 
   const swap = () => {
     if (result?.ok) setInput(result.output);
@@ -130,7 +162,7 @@ export default function CsvJsonPage() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <Headline accent="JSON">Turn spreadsheets into </Headline>
         <div className="flex flex-wrap gap-3">
-          <OpenFileButton accept=".csv,.tsv,.txt,.json,text/csv,application/json" onFile={openFile} />
+          <OpenFileButton accept=".csv,.tsv,.txt,.json,text/csv,application/json" onText={openText} />
           <Button
             variant="secondary"
             onClick={() => {
@@ -157,8 +189,6 @@ export default function CsvJsonPage() {
       </div>
 
       <StatusStrip status={status} tone={stale ? 'busy' : result?.ok ? 'good' : 'neutral'} />
-
-      {readError && <Notices items={[readError]} />}
 
       <OptionsCard label="Conversion options">
         <Segmented<Direction>
@@ -224,6 +254,7 @@ export default function CsvJsonPage() {
           rows={18}
           placeholder={direction === 'c2j' ? 'name,age\nAnn,30' : '[{"name": "Ann", "age": 30}]'}
           aria-invalid={result ? !result.ok : undefined}
+          onFileText={openText}
         />
         <div className="min-w-0 space-y-6">
           {result && !result.ok && (

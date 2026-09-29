@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import uuidGenerator from './index';
 import { clampCount, formatUuid, generate, inspectUuid, MAX_COUNT, type UuidVersion } from './features/uuid';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Checkbox } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
@@ -25,6 +27,8 @@ export default function UuidGeneratorPage() {
   const regenerate = (v: UuidVersion = version) => setUuids(generate(v, count));
 
   const output = useMemo(() => uuids.map((u) => formatUuid(u, { uppercase, hyphens, braces })).join('\n'), [uuids, uppercase, hyphens, braces]);
+  const download = () => downloadText(output + '\n', `uuids-v${version}.txt`, 'text/plain');
+  useToolShortcuts({ onRun: () => regenerate(), getOutput: () => output, onDownload: download });
   const info = useMemo(() => (inspectText.trim() ? inspectUuid(inspectText) : null), [inspectText]);
 
   return (
@@ -91,9 +95,10 @@ export default function UuidGeneratorPage() {
             </h2>
             <div className="flex flex-wrap items-center gap-1">
               <CopyButton text={output} label="Copy all" />
+              <SendToMenu text={output} kind="text" />
               <button
                 type="button"
-                onClick={() => downloadText(output + '\n', `uuids-v${version}.txt`, 'text/plain')}
+                onClick={download}
                 className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <Icon name="download" className="h-4 w-4" /> Download .txt

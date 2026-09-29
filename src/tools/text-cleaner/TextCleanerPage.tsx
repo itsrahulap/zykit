@@ -1,7 +1,10 @@
 import { useDeferredValue, useMemo, useState, type ReactNode } from 'react';
 import textCleaner from './index';
 import { cleanText, defaultSteps, STEP_LABELS, type Step, type StepOptions } from './features/clean';
-import { Checkbox, OutputPanel } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { sanitizeShare } from '../../shared/lib/share';
+import { Checkbox, OpenFileButton, OutputPanel } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
@@ -169,11 +172,41 @@ function StepOptionsView({ step, set }: { step: Step; set: (options: object) => 
   }
 }
 
+const TEXT_FILES = '.txt,.csv,.tsv,.md,.log,.json,.xml,.html,.yaml,.yml,text/*';
+
+function restoreSteps(json: string): Step[] | null {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(raw)) return null;
+  const defaults = defaultSteps();
+  const out: Step[] = [];
+  for (const item of raw as unknown[]) {
+    if (!item || typeof item !== 'object') continue;
+    const { id, enabled, options } = item as Record<string, unknown>;
+    const base = defaults.find((d) => d.id === id);
+    if (!base || out.some((d) => d.id === id)) continue;
+    const opts = options && typeof options === 'object' && !Array.isArray(options) ? sanitizeShare(options as Record<string, unknown>, base.options) : {};
+    out.push({ ...base, enabled: typeof enabled === 'boolean' ? enabled : base.enabled, options: { ...base.options, ...opts } } as Step);
+  }
+  return [...out, ...defaults.filter((d) => !out.some((o) => o.id === d.id))];
+}
+
 export default function TextCleanerPage() {
   const [input, setInput] = useState('');
   const [steps, setSteps] = useState<Step[]>(defaultSteps);
   const text = useDeferredValue(input);
   const result = useMemo(() => cleanText(text, steps), [text, steps]);
+
+  useIncomingText(textCleaner.id, (t) => setInput(t));
+  useShareState({ input, steps: JSON.stringify(steps) }, (r) => {
+    if (r.input !== undefined) setInput(r.input);
+    const restored = r.steps !== undefined && restoreSteps(r.steps);
+    if (restored) setSteps(restored);
+  });
 
   const update = (i: number, patch: Partial<Step>) => setSteps((s) => s.map((st, j) => (j === i ? ({ ...st, ...patch } as Step) : st)));
   const move = (i: number, d: -1 | 1) =>
@@ -197,6 +230,7 @@ export default function TextCleanerPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept={TEXT_FILES} onText={(t) => setInput(t)} />
           <Button variant="ghost" onClick={() => setSteps(defaultSteps())}>
             Reset steps
           </Button>
@@ -244,7 +278,7 @@ export default function TextCleanerPage() {
       </section>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
-        <CodeArea label="Input text" value={input} onChange={(e) => setInput(e.target.value)} rows={16} placeholder="Paste text here" />
+        <CodeArea label="Input text" value={input} onChange={(e) => setInput(e.target.value)} rows={16} placeholder="Paste text here" onFileText={(t) => setInput(t)} />
         <div className="min-w-0 space-y-3">
           <OutputPanel title="Cleaned" icon="text" text={result.output} fileName="cleaned.txt" mime="text/plain" busy={text !== input} />
           <dl aria-label="Stats" className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">

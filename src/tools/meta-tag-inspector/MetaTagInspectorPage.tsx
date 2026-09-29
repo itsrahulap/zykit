@@ -4,6 +4,7 @@ import { Previews } from './components/Previews';
 import { analyze, SAMPLE_HTML, type Analysis, type Level, type LengthCheck } from './features/analyze';
 import { parseHtml } from './features/extract';
 import { Notices, OpenFileButton } from '../../shared/ui/convert';
+import { DropZone } from '../../shared/ui/DropZone';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock } from '../../shared/ui/tool';
@@ -104,18 +105,20 @@ export default function MetaTagInspectorPage() {
       <StatusStrip status={status} tone={counts && !counts.e ? 'good' : 'neutral'} />
 
       <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-        <CodeArea
-          label="Page HTML"
-          hint="The page is never loaded or run"
-          rows={8}
-          value={html}
-          onChange={(e) => {
-            setFileName('');
-            setHtml(e.target.value);
-          }}
-          placeholder={'<!doctype html>\n<html lang="en">\n<head>…'}
-          className="break-all"
-        />
+        <DropZone onFile={onFile}>
+          <CodeArea
+            label="Page HTML"
+            hint="The page is never loaded or run"
+            rows={8}
+            value={html}
+            onChange={(e) => {
+              setFileName('');
+              setHtml(e.target.value);
+            }}
+            placeholder={'<!doctype html>\n<html lang="en">\n<head>…'}
+            className="break-all"
+          />
+        </DropZone>
         <div className="flex flex-wrap gap-3">
           <OpenFileButton accept=".html,.htm,.xhtml,text/html" onFile={onFile} />
           <Button variant="secondary" className="pointer-coarse:min-h-11" onClick={() => setHtml(SAMPLE_HTML)}>

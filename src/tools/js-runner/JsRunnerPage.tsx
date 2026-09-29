@@ -5,12 +5,15 @@ import { compileTypeScript, describeCompileError, type CompileResult } from './f
 import { EXAMPLES, type Language } from './features/examples';
 import { entriesToText, formatTime } from './features/transcript';
 import { useJsRunner, type RunState } from './hooks/useJsRunner';
+import { OpenFileButton } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 
 const STORAGE_KEY = 'zykit-js-runner';
 const LIMITS = [5, 10, 30, 60];
@@ -118,11 +121,6 @@ export default function JsRunnerPage() {
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      runNow();
-      return;
-    }
     if (e.key === 'Escape') {
       escaped.current = true; // the next Tab moves focus instead of indenting
       return;
@@ -147,7 +145,13 @@ export default function JsRunnerPage() {
     setLanguage(ex.language);
   };
 
+  const openFile = (text: string, file: File) => {
+    setCode(text);
+    setLanguage(/\.(ts|tsx|mts|cts)$/i.test(file.name) ? 'ts' : 'js');
+  };
+
   const transcript = entriesToText(entries);
+  useToolShortcuts({ onRun: runNow, getOutput: () => transcript });
 
   return (
     <div className="space-y-8">
@@ -180,6 +184,7 @@ export default function JsRunnerPage() {
               options={EXAMPLES.map((ex) => ({ value: ex.id, label: ex.label }))}
               onChange={loadExample}
             />
+            <OpenFileButton accept=".js,.mjs,.cjs,.jsx,.ts,.mts,.cts,.tsx,text/javascript,application/javascript" onText={openFile} />
           </div>
 
           <CodeArea
@@ -190,6 +195,7 @@ export default function JsRunnerPage() {
             onKeyDown={onKeyDown}
             onBlur={() => (escaped.current = false)}
             rows={18}
+            onFileText={openFile}
             className="min-h-64 whitespace-pre-wrap break-words"
           />
 
@@ -232,6 +238,7 @@ export default function JsRunnerPage() {
                 Timestamps
               </label>
               <CopyButton text={transcript} label="Copy output" />
+              <SendToMenu text={transcript} kind="text" />
               <button
                 type="button"
                 onClick={clear}

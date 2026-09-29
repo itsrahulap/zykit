@@ -113,7 +113,7 @@ export default function UserAgentParserPage() {
       <StatusStrip status={summary} tone={input.trim() ? 'good' : 'neutral'} />
 
       <div className="space-y-1">
-        <CodeArea label="User-Agent" hint={isMine ? 'your browser' : undefined} value={input} onChange={(e) => setInput(e.target.value)} rows={3} placeholder="Mozilla/5.0 (…)" />
+        <CodeArea label="User-Agent" hint={isMine ? 'your browser' : undefined} value={input} onChange={(e) => setInput(e.target.value)} rows={3} placeholder="Mozilla/5.0 (…)" onFileText={(t) => setInput(t.trim())} />
         <div className="flex justify-end">
           <CopyButton text={input} />
         </div>

@@ -5,6 +5,11 @@ import { errorSnippet } from '../../shared/lib/textpos';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
+import { OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Button, Icon } from '../../shared/ui/ui';
 import { formatBytes, pluralize } from '../../shared/utils/format.utils';
 import { downloadText, selectInTextarea } from '../../shared/utils/dom.utils';
@@ -48,6 +53,22 @@ export default function JsonFormatterPage() {
         ? `Valid JSON · ${pluralize(parsed.stats.keys, 'key')} · depth ${parsed.stats.maxDepth}`
         : `Invalid JSON: ${parsed.error.message} (line ${parsed.error.line}, column ${parsed.error.column})`;
 
+  const fileName = action === 'minify' ? 'minified.json' : 'formatted.json';
+  const download = () => downloadText(output, fileName, 'application/json');
+
+  useIncomingText(jsonFormatter.id, (t) => setInput(t));
+  useToolShortcuts({ getOutput: () => output, onDownload: () => output && download() });
+  useShareState(
+    { input, action, indent: indentChoice, sortKeys },
+    (s) => {
+      if (s.input !== undefined) setInput(s.input);
+      if (s.action) setAction(s.action);
+      if (s.indent) setIndentChoice(s.indent);
+      if (s.sortKeys !== undefined) setSortKeys(s.sortKeys);
+    },
+    { action: ['format', 'minify', 'validate'], indent: ['2', '4', 'tab'] },
+  );
+
   const preview = output.length > MAX_PREVIEW_CHARS ? output.slice(0, MAX_PREVIEW_CHARS) : output;
 
   return (
@@ -60,6 +81,7 @@ export default function JsonFormatterPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".json,application/json" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -113,6 +135,7 @@ export default function JsonFormatterPage() {
           rows={18}
           placeholder='{"paste": "your JSON here"}'
           aria-invalid={parsed ? !parsed.ok : undefined}
+          onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
@@ -148,10 +171,11 @@ export default function JsonFormatterPage() {
                     </h2>
                     <div className="flex flex-wrap items-center gap-1">
                       <CopyButton text={output} />
+                      <SendToMenu text={output} kind="json" />
                       <button
                         type="button"
-                        onClick={() => downloadText(output, action === 'minify' ? 'minified.json' : 'formatted.json', 'application/json')}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                        onClick={download}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                       >
                         <Icon name="download" className="h-4 w-4" /> Download .json
                       </button>

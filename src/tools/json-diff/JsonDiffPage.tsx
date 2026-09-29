@@ -4,6 +4,9 @@ import { changesToJson, diffJson, formatPath, parseIgnoreKeys, preview, toJsonPa
 import { errorSnippet } from '../../shared/lib/textpos';
 import { parseJson, type ParseResult } from '../json-formatter/features/json';
 import { Checkbox } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
@@ -263,6 +266,21 @@ export default function JsonDiffPage() {
               : 'The documents are equivalent'
             : 'Paste two JSON documents to compare them.';
 
+  useIncomingText(jsonDiff.id, (t) => setLeft(t));
+  useToolShortcuts({ getOutput: () => summaryJson });
+  useShareState(
+    { left, right, view, ignoreArrayOrder, numericEquality, ignoreKeys: ignoreKeysText },
+    (s) => {
+      if (s.left !== undefined) setLeft(s.left);
+      if (s.right !== undefined) setRight(s.right);
+      if (s.view) setView(s.view);
+      if (s.ignoreArrayOrder !== undefined) setIgnoreArrayOrder(s.ignoreArrayOrder);
+      if (s.numericEquality !== undefined) setNumericEquality(s.numericEquality);
+      if (s.ignoreKeys !== undefined) setIgnoreKeysText(s.ignoreKeys);
+    },
+    { view: ['tree', 'list'] },
+  );
+
   const swap = () => {
     setLeft(right);
     setRight(left);
@@ -323,11 +341,11 @@ export default function JsonDiffPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <div className="min-w-0 space-y-3">
-          <CodeArea label="Left JSON" hint="original" value={left} onChange={(e) => setLeft(e.target.value)} rows={14} placeholder='{"a": 1}' aria-invalid={pa ? !pa.ok : undefined} />
+          <CodeArea label="Left JSON" hint="original" value={left} onChange={(e) => setLeft(e.target.value)} rows={14} placeholder='{"a": 1}' aria-invalid={pa ? !pa.ok : undefined} onFileText={(t) => setLeft(t)} />
           {pa && <SideError side="Left" text={a} parsed={pa} />}
         </div>
         <div className="min-w-0 space-y-3">
-          <CodeArea label="Right JSON" hint="changed" value={right} onChange={(e) => setRight(e.target.value)} rows={14} placeholder='{"a": 2}' aria-invalid={pb ? !pb.ok : undefined} />
+          <CodeArea label="Right JSON" hint="changed" value={right} onChange={(e) => setRight(e.target.value)} rows={14} placeholder='{"a": 2}' aria-invalid={pb ? !pb.ok : undefined} onFileText={(t) => setRight(t)} />
           {pb && <SideError side="Right" text={b} parsed={pb} />}
         </div>
       </div>

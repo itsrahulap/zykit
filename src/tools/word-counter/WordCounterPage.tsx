@@ -1,6 +1,9 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import wordCounter from './index';
 import { computeStats, formatDuration, READING_WPM, SPEAKING_WPM } from './features/count';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { OpenFileButton } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea } from '../../shared/ui/tool';
@@ -16,6 +19,12 @@ const n = (v: number) => v.toLocaleString('en-US');
 export default function WordCounterPage() {
   const [input, setInput] = useState('');
   const [ignoreStopWords, setIgnoreStopWords] = useState(true);
+
+  useIncomingText(wordCounter.id, (t) => setInput(t));
+  useShareState({ input, ignoreStopWords }, (r) => {
+    if (r.input !== undefined) setInput(r.input);
+    if (r.ignoreStopWords !== undefined) setIgnoreStopWords(r.ignoreStopWords);
+  });
 
   // Counting runs on a deferred copy so typing stays responsive on large texts.
   const text = useDeferredValue(input);
@@ -41,6 +50,7 @@ export default function WordCounterPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".txt,.md,.markdown,.html,.csv,.log,text/*" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -61,7 +71,7 @@ export default function WordCounterPage() {
       </dl>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <CodeArea label="Your text" value={input} onChange={(e) => setInput(e.target.value)} rows={16} placeholder="Start typing or paste text…" className="font-sans!" spellCheck />
+        <CodeArea label="Your text" value={input} onChange={(e) => setInput(e.target.value)} rows={16} placeholder="Start typing or paste text…" className="font-sans!" spellCheck onFileText={(t) => setInput(t)} />
 
         <div className="min-w-0 space-y-6">
           <Panel eyebrow="Details" icon="info">

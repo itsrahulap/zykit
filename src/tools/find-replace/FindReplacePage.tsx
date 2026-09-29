@@ -2,7 +2,9 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import findReplace from './index';
 import { MAX_MATCHES, toSegments, type FindOptions, type Rule } from './features/findReplace';
 import { useFindReplace } from './hooks/useFindReplace';
-import { Checkbox, OptionsCard, OutputPanel } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { Checkbox, OpenFileButton, OptionsCard, OutputPanel } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
@@ -14,6 +16,8 @@ const MAX_HIGHLIGHT_CHARS = 200_000;
 const SAMPLE_TEXT = `Order 1042 shipped on 2026-09-14 to Ada Lovelace.
 Order 1043 shipped on 2026-09-15 to Alan Turing.
 Contact: support@example.com`;
+
+const TEXT_FILES = '.txt,.csv,.tsv,.md,.log,.json,.xml,.html,.yaml,.yml,text/*';
 
 const input =
   'w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100';
@@ -63,6 +67,25 @@ export default function FindReplacePage() {
   };
   const opt = (patch: Partial<FindOptions>) => setOptions((o) => ({ ...o, ...patch }));
 
+  useIncomingText(findReplace.id, (t) => setText(t));
+  useShareState(
+    { text, ...options, finds: rules.map((r) => r.find), replaces: rules.map((r) => r.replace), enabled: rules.map((r) => r.enabled) },
+    ({ text: t, finds, replaces, enabled, ...o }) => {
+      if (t !== undefined) setText(t);
+      setOptions((cur) => ({ ...cur, ...o }));
+      const strings = finds?.filter((f): f is string => typeof f === 'string').slice(0, 50);
+      if (!strings?.length) return;
+      const next = strings.map((find, i) => ({
+        id: nextId++,
+        find,
+        replace: typeof replaces?.[i] === 'string' ? replaces[i] : '',
+        enabled: typeof enabled?.[i] === 'boolean' ? enabled[i] : true,
+      }));
+      setRules(next);
+      setActiveId(next[0].id);
+    },
+  );
+
   const totalReplaced = result?.rules.reduce((n, r) => n + (r?.replaced ?? 0), 0) ?? 0;
   const status =
     state.status === 'timeout'
@@ -95,6 +118,7 @@ export default function FindReplacePage() {
           <Button variant="secondary" onClick={loadSample}>
             Try an example
           </Button>
+          <OpenFileButton accept={TEXT_FILES} onText={(t) => setText(t)} />
           <Button variant="ghost" disabled={!text} onClick={() => setText('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -181,7 +205,7 @@ export default function FindReplacePage() {
       </section>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
-        <CodeArea label="Text" value={text} onChange={(e) => setText(e.target.value)} rows={14} placeholder="Paste text here" />
+        <CodeArea label="Text" value={text} onChange={(e) => setText(e.target.value)} rows={14} placeholder="Paste text here" onFileText={(t) => setText(t)} />
 
         <section aria-label="Matches" className="min-w-0 rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-6 dark:border-slate-800">

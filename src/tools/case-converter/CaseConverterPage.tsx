@@ -1,6 +1,8 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import caseConverter from './index';
 import { CASE_FORMATS, convertLines } from './features/case';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -17,6 +19,11 @@ export default function CaseConverterPage() {
   const [input, setInput] = useState('');
   const text = useDeferredValue(input);
   const stale = text !== input;
+
+  useIncomingText(caseConverter.id, (t) => setInput(t));
+  useShareState({ input }, (r) => {
+    if (r.input !== undefined) setInput(r.input);
+  });
 
   const results = useMemo(
     () => (text ? CASE_FORMATS.map((f) => ({ id: f.id, label: f.label, value: convertLines(text, f) })) : []),
@@ -50,6 +57,7 @@ export default function CaseConverterPage() {
         onChange={(e) => setInput(e.target.value)}
         rows={5}
         placeholder="myVariableName or Some Title"
+        onFileText={(t) => setInput(t)}
       />
 
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Conversions">

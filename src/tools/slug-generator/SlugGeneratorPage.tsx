@@ -1,7 +1,11 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import slugGenerator from './index';
 import { DEFAULT_SLUG_OPTIONS, slugifyLines, type Separator } from './features/slug';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Checkbox } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -29,6 +33,17 @@ export default function SlugGeneratorPage() {
   );
   const output = slugs.join('\n');
   const count = slugs.filter(Boolean).length;
+
+  useIncomingText(slugGenerator.id, (t) => setInput(t));
+  useShareState({ input, separator, lowercase, ampersand, removeStopWords, maxLength }, (r) => {
+    if (r.input !== undefined) setInput(r.input);
+    if (r.separator !== undefined) setSeparator(r.separator);
+    if (r.lowercase !== undefined) setLowercase(r.lowercase);
+    if (r.ampersand !== undefined) setAmpersand(r.ampersand);
+    if (r.removeStopWords !== undefined) setRemoveStopWords(r.removeStopWords);
+    if (r.maxLength !== undefined) setMaxLength(r.maxLength);
+  }, { separator: ['-', '_', '.'] as const });
+  useToolShortcuts({ getOutput: () => (count ? output : '') });
 
   const status = !text.trim()
     ? 'Type or paste a title. Each line becomes its own slug.'
@@ -93,6 +108,7 @@ export default function SlugGeneratorPage() {
           onChange={(e) => setInput(e.target.value)}
           rows={10}
           placeholder="My First Blog Post"
+          onFileText={(t) => setInput(t)}
         />
 
         <section aria-label="Slugs" className="min-w-0 rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -100,7 +116,10 @@ export default function SlugGeneratorPage() {
             <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <Icon name="link" className="h-4 w-4" /> Slugs
             </h2>
-            <CopyButton text={output} label={slugs.length > 1 ? 'Copy all' : 'Copy'} />
+            <div className="flex flex-wrap items-center gap-1">
+              <CopyButton text={output} label={slugs.length > 1 ? 'Copy all' : 'Copy'} />
+              <SendToMenu text={count ? output : ''} />
+            </div>
           </header>
           <div className="p-4">
             {count ? (

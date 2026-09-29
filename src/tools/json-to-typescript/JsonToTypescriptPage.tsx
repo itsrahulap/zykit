@@ -3,7 +3,11 @@ import jsonToTypescript from './index';
 import { generateTypes } from './features/typegen';
 import { errorSnippet } from '../../shared/lib/textpos';
 import { parseJson } from '../json-formatter/features/json';
-import { Checkbox } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
@@ -47,6 +51,23 @@ export default function JsonToTypescriptPage() {
     [parsed, rootName, style, exported, readonly],
   );
 
+  const code = result?.code ?? '';
+  const download = () => downloadText(code, 'types.ts', 'text/plain');
+
+  useIncomingText(jsonToTypescript.id, (t) => setInput(t));
+  useToolShortcuts({ getOutput: () => code, onDownload: () => code && download() });
+  useShareState(
+    { input, style, rootName, exported, readonly },
+    (s) => {
+      if (s.input !== undefined) setInput(s.input);
+      if (s.style) setStyle(s.style);
+      if (s.rootName !== undefined) setRootName(s.rootName);
+      if (s.exported !== undefined) setExported(s.exported);
+      if (s.readonly !== undefined) setReadonly(s.readonly);
+    },
+    { style: ['interface', 'type'] },
+  );
+
   const status = tooLarge
     ? 'This input is too large to process here (limit: about 5 MB).'
     : !parsed
@@ -65,6 +86,7 @@ export default function JsonToTypescriptPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".json,application/json" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -109,6 +131,7 @@ export default function JsonToTypescriptPage() {
           rows={18}
           placeholder='{"paste": "your JSON here"}'
           aria-invalid={parsed ? !parsed.ok : undefined}
+          onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
@@ -138,9 +161,10 @@ export default function JsonToTypescriptPage() {
                   </h2>
                   <div className="flex flex-wrap items-center gap-1">
                     <CopyButton text={result.code} />
+                    <SendToMenu text={result.code} kind="code" lang="ts" />
                     <button
                       type="button"
-                      onClick={() => downloadText(result.code, 'types.ts', 'text/plain')}
+                      onClick={download}
                       className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                       <Icon name="download" className="h-4 w-4" /> Download .ts

@@ -3,7 +3,10 @@ import jsonToSql from './index';
 import { collectColumns, DIALECTS, generateSql, type Dialect } from './features/sql';
 import { errorSnippet } from '../../shared/lib/textpos';
 import { parseJson } from '../json-formatter/features/json';
-import { Checkbox } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
@@ -63,6 +66,10 @@ export default function JsonToSqlPage() {
 
   const output = result?.ok ? result.sql : '';
   const preview = output.length > MAX_PREVIEW_CHARS ? output.slice(0, MAX_PREVIEW_CHARS) : output;
+  const download = () => downloadText(output, `${(tableName.trim() || 'my_table').replace(/[^\w.-]+/g, '_')}.sql`, 'application/sql');
+
+  useIncomingText(jsonToSql.id, (t) => setInput(t));
+  useToolShortcuts({ getOutput: () => output, onDownload: () => output && download() });
 
   return (
     <div className="space-y-8">
@@ -74,6 +81,7 @@ export default function JsonToSqlPage() {
           <Button variant="secondary" onClick={() => setInput(SAMPLE)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".json,application/json" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -123,6 +131,7 @@ export default function JsonToSqlPage() {
           rows={18}
           placeholder='[{"id": 1, "name": "Ann"}]'
           aria-invalid={parsed ? !parsed.ok || (result ? !result.ok : false) : undefined}
+          onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
@@ -158,9 +167,10 @@ export default function JsonToSqlPage() {
                   </h2>
                   <div className="flex flex-wrap items-center gap-1">
                     <CopyButton text={output} />
+                    <SendToMenu text={output} kind="sql" />
                     <button
                       type="button"
-                      onClick={() => downloadText(output, `${(tableName.trim() || 'my_table').replace(/[^\w.-]+/g, '_')}.sql`, 'application/sql')}
+                      onClick={download}
                       className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
                       <Icon name="download" className="h-4 w-4" /> Download .sql

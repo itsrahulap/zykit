@@ -19,11 +19,13 @@ import {
   type DurationUnit,
   type KeyPair,
 } from './features/sign';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { sendText } from '../../shared/lib/handoff';
 import { Checkbox, Notices } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 
@@ -131,6 +133,7 @@ export default function JwtGeneratorPage() {
   };
 
   const token = out && 'token' in out ? out.token : '';
+  useToolShortcuts({ getOutput: () => token });
   const options = ALGORITHMS.filter((a) => a !== 'EdDSA' || edOk).map((a) => ({ value: a, label: `${a} · ${describeAlg(a)}` }));
 
   return (
@@ -275,6 +278,7 @@ export default function JwtGeneratorPage() {
           <h2 className="eyebrow text-slate-600 dark:text-slate-400">Signed token</h2>
           <div className="flex flex-wrap items-center gap-1">
             <CopyButton text={token} label="Copy token" />
+            <SendToMenu text={token} kind="jwt" />
             {token && (
               <Link
                 to="/tools/jwt-decoder"

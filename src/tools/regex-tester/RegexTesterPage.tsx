@@ -2,6 +2,11 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import regexTester from './index';
 import { explain, FLAGS, MAX_MATCHES, MAX_TEXT, segments, type Match } from './features/regex';
 import { useRegex } from './hooks/useRegex';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
+import { OpenFileButton } from '../../shared/ui/convert';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
@@ -41,6 +46,10 @@ const KIND_TONE = {
   any: TONES.blue,
   backref: TONES.violet,
 } as const;
+
+const TEXT_FILES = '.txt,.csv,.tsv,.md,.log,.json,.xml,.html,.yaml,.yml,text/*';
+
+const validFlags = (f: string) => FLAGS.map((x) => x.flag).filter((x) => f.includes(x)).join('');
 
 const show = (s: string | undefined) => (s === undefined ? '—' : JSON.stringify(s));
 
@@ -105,6 +114,20 @@ export default function RegexTesterPage() {
                 ? 'No matches'
                 : pluralize(state.result.matches.length, 'match', 'matches');
 
+  useIncomingText(regexTester.id, (t) => {
+    const literal = /^\/(.+)\/([a-z]*)$/s.exec(t.trim());
+    setPattern(literal ? literal[1] : t);
+    if (literal) setFlags(validFlags(literal[2]));
+  });
+  useShareState({ pattern, flags, text, replacement }, (r) => {
+    if (r.pattern !== undefined) setPattern(r.pattern);
+    if (r.flags !== undefined) setFlags(validFlags(r.flags));
+    if (r.text !== undefined) setText(r.text);
+    if (r.replacement !== undefined) setReplacement(r.replacement);
+  });
+  const replaced = result?.ok ? (result.replaced ?? '') : '';
+  useToolShortcuts({ getOutput: () => replaced });
+
   const groupCount = matches.reduce((n, m) => Math.max(n, m.groups.length), 0);
 
   return (
@@ -125,6 +148,7 @@ export default function RegexTesterPage() {
           >
             Try an example
           </Button>
+          <OpenFileButton accept={TEXT_FILES} onText={(t) => setText(t)} />
           <Button
             variant="ghost"
             disabled={!pattern && !text && !replacement}
@@ -203,7 +227,7 @@ export default function RegexTesterPage() {
       </section>
 
       <div className="grid items-start gap-6 lg:grid-cols-2">
-        <CodeArea label="Test text" value={text} onChange={(e) => setText(e.target.value)} rows={12} placeholder="Text to search" />
+        <CodeArea label="Test text" value={text} onChange={(e) => setText(e.target.value)} rows={12} placeholder="Text to search" onFileText={(t) => setText(t)} />
         <div className="min-w-0">
           <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">Matches</span>
           <Highlighted text={tooLarge ? '' : deferredText} matches={matches} />
@@ -283,7 +307,10 @@ export default function RegexTesterPage() {
             <div className="mt-4">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="text-sm text-slate-600 dark:text-slate-400">Result</span>
-                <CopyButton text={result.replaced} />
+                <div className="flex flex-wrap items-center gap-1">
+                  <CopyButton text={result.replaced} />
+                  <SendToMenu text={result.replaced} kind="text" />
+                </div>
               </div>
               <CodeBlock className="max-h-80 overflow-y-auto">{result.replaced}</CodeBlock>
             </div>

@@ -1,7 +1,12 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import urlParser from './index';
 import { defaultPort, hostToUnicode, paramRows, parseUrl, pathSegments, rebuild, safeDecode, type ParamRow } from './features/url';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
+import { DropZone } from '../../shared/ui/DropZone';
 import { Headline, StatusStrip } from '../../shared/ui/page';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -36,6 +41,13 @@ export default function UrlParserPage() {
   const url = parsed?.ok ? parsed.url : null;
   const rows = useMemo(() => (url ? (edits && edits.href === url.href ? edits.rows : paramRows(url)) : []), [url, edits]);
   const rebuilt = url ? rebuild(url, rows) : '';
+
+  useIncomingText(urlParser.id, (t) => setInput(t.trim()));
+  useShareState({ input, base }, (r) => {
+    if (r.input !== undefined) setInput(r.input);
+    if (r.base !== undefined) setBase(r.base);
+  });
+  useToolShortcuts({ getOutput: () => rebuilt });
 
   const setRows = (next: ParamRow[]) => url && setEdits({ href: url.href, rows: next });
   const updateRow = (id: number, patch: Partial<ParamRow>) => setRows(rows.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -92,6 +104,7 @@ export default function UrlParserPage() {
       <StatusStrip status={status} tone={parsed?.ok ? 'good' : 'neutral'} />
 
       <section aria-label="Input" className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <DropZone onText={(t) => setInput(t.trim())}>
         <label className="block">
           <span className="eyebrow mb-2 block text-slate-600 dark:text-slate-400">URL</span>
           <input
@@ -107,6 +120,7 @@ export default function UrlParserPage() {
             className={INPUT}
           />
         </label>
+        </DropZone>
         <label className="block">
           <span className="mb-2 block text-sm text-slate-600 dark:text-slate-400">Base URL (optional, for relative URLs)</span>
           <input
@@ -221,6 +235,7 @@ export default function UrlParserPage() {
                 <span className="eyebrow text-slate-600 dark:text-slate-400">Rebuilt URL</span>
                 <div className="flex flex-wrap items-center gap-1">
                   <CopyButton text={rebuilt} />
+                  <SendToMenu text={rebuilt} kind="url" />
                   <button type="button" className={SMALL_BTN} disabled={rebuilt === url.href} onClick={() => setInput(rebuilt)}>
                     Use as input
                   </button>

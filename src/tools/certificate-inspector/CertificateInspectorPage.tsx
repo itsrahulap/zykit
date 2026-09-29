@@ -5,6 +5,7 @@ import { buildChain, inspectBytes, inspectText, MAX_INPUT_BYTES, verifySignature
 import { SAMPLE_PEM } from './features/sample';
 import type { Certificate } from './features/x509';
 import { Notices, OpenFileButton } from '../../shared/ui/convert';
+import { DropZone } from '../../shared/ui/DropZone';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea } from '../../shared/ui/tool';
@@ -107,18 +108,20 @@ export default function CertificateInspectorPage() {
       <StatusStrip status={status} tone={count ? 'good' : 'neutral'} />
 
       <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-        <CodeArea
-          label="PEM input"
-          hint="One or more blocks"
-          rows={8}
-          value={text}
-          onChange={(e) => {
-            setFile(null);
-            setText(e.target.value);
-          }}
-          placeholder="-----BEGIN CERTIFICATE-----"
-          className="break-all"
-        />
+        <DropZone onFile={onFile}>
+          <CodeArea
+            label="PEM input"
+            hint="One or more blocks"
+            rows={8}
+            value={text}
+            onChange={(e) => {
+              setFile(null);
+              setText(e.target.value);
+            }}
+            placeholder="-----BEGIN CERTIFICATE-----"
+            className="break-all"
+          />
+        </DropZone>
         <div className="flex flex-wrap gap-3">
           <OpenFileButton accept=".pem,.crt,.cer,.der,.csr,.key,.pub,application/x-x509-ca-cert,application/pkix-cert" onFile={onFile} />
           <Button

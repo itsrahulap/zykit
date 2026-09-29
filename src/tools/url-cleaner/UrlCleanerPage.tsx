@@ -1,9 +1,12 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import urlCleaner from './index';
 import { cleanLines, cleanText, DEFAULT_GROUPS, GROUPS, parseNameList, type CleanOptions, type CleanResult } from './features/clean';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
-import { Checkbox } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton } from '../../shared/ui/convert';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
 
@@ -93,6 +96,9 @@ export default function UrlCleanerPage() {
       ? 'No http(s) links found in the text.'
       : `${pluralize(changedCount, 'link')} cleaned of ${results.length} · ${pluralize(removedCount, 'parameter')} removed${invalid ? ` · ${invalid} invalid` : ''}`;
 
+  useIncomingText(urlCleaner.id, (t) => setInput(t));
+  useToolShortcuts({ getOutput: () => output });
+
   const toggle = (id: string, on: boolean) => setGroups((g) => (on ? [...g, id] : g.filter((x) => x !== id)));
 
   return (
@@ -111,6 +117,7 @@ export default function UrlCleanerPage() {
           >
             Try an example
           </Button>
+          <OpenFileButton accept=".txt,.csv,.md,.html,.log,text/*" onText={(t) => setInput(t)} />
           <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
             <Icon name="x" className="h-4 w-4" /> Clear
           </Button>
@@ -137,6 +144,7 @@ export default function UrlCleanerPage() {
             onChange={(e) => setInput(e.target.value)}
             rows={10}
             placeholder={mode === 'lines' ? 'https://example.com/page?utm_source=…' : 'Paste an email, chat message or document…'}
+            onFileText={(t) => setInput(t)}
           />
 
           <section aria-label="Parameters to remove" className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
@@ -172,7 +180,10 @@ export default function UrlCleanerPage() {
               <h2 className="eyebrow flex items-center gap-2 text-slate-600 dark:text-slate-400">
                 <Icon name="check" className="h-4 w-4" /> {mode === 'lines' ? 'Clean URLs' : 'Clean text'}
               </h2>
-              <CopyButton text={output} label="Copy all" />
+              <div className="flex flex-wrap items-center gap-1">
+                <CopyButton text={output} label="Copy all" />
+                <SendToMenu text={output} kind={mode === 'lines' ? 'url' : 'text'} />
+              </div>
             </header>
             <div className="p-4">
               {output ? <CodeBlock className="max-h-[28rem] overflow-y-auto">{output}</CodeBlock> : <p className="p-2 text-sm text-slate-500 dark:text-slate-400">Clean links appear here.</p>}

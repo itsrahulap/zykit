@@ -5,7 +5,9 @@ import { parseJsonText, type TextError } from '../../shared/lib/textpos';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
-import { Checkbox, ErrorPanel, Notices, OptionsCard, OutputPanel } from '../../shared/ui/convert';
+import { Checkbox, ErrorPanel, Notices, OpenFileButton, OptionsCard, OutputPanel } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
 
 type Direction = 'x2j' | 'j2x';
 type JsonIndent = '2' | '4' | 'min';
@@ -79,6 +81,33 @@ export default function XmlJsonPage() {
           ? result.error.message
           : `Invalid ${from}: ${result.error.message} (line ${result.error.line}, column ${result.error.column})`;
 
+  const openText = (t: string, file: File) => {
+    if (/\.json$/i.test(file.name)) setDirection('j2x');
+    else if (/\.(xml|svg|xhtml|rss|atom|plist|xsd|xsl|kml|gpx)$/i.test(file.name)) setDirection('x2j');
+    setInput(t);
+  };
+
+  useIncomingText(xmlJson.id, (t, h) => {
+    if (h.kind === 'json') setDirection('j2x');
+    else if (h.kind === 'xml') setDirection('x2j');
+    setInput(t);
+  });
+  useShareState(
+    { input, direction, alwaysArrays, trim, coerce, comments, jsonIndent, xmlIndent, declaration },
+    (s) => {
+      if (s.input !== undefined) setInput(s.input);
+      if (s.direction) setDirection(s.direction);
+      if (s.alwaysArrays !== undefined) setAlwaysArrays(s.alwaysArrays);
+      if (s.trim !== undefined) setTrim(s.trim);
+      if (s.coerce !== undefined) setCoerce(s.coerce);
+      if (s.comments !== undefined) setComments(s.comments);
+      if (s.jsonIndent) setJsonIndent(s.jsonIndent);
+      if (s.xmlIndent) setXmlIndent(s.xmlIndent);
+      if (s.declaration !== undefined) setDeclaration(s.declaration);
+    },
+    { direction: ['x2j', 'j2x'], jsonIndent: ['2', '4', 'min'], xmlIndent: ['2', '4', 'tab', 'none'] },
+  );
+
   const swap = () => {
     if (result?.ok) setInput(result.output);
     setDirection((d) => (d === 'x2j' ? 'j2x' : 'x2j'));
@@ -94,6 +123,7 @@ export default function XmlJsonPage() {
           <Button variant="secondary" onClick={() => setInput(direction === 'x2j' ? SAMPLE_XML : SAMPLE_JSON)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".xml,.json,application/xml,text/xml,application/json" onText={openText} />
           <Button variant="secondary" onClick={swap}>
             <Icon name="swap" className="h-4 w-4" /> Swap
           </Button>
@@ -159,6 +189,7 @@ export default function XmlJsonPage() {
           rows={18}
           placeholder={direction === 'x2j' ? '<root><item id="1">Hello</item></root>' : '{"root": {"item": {"@id": 1, "#text": "Hello"}}}'}
           aria-invalid={result ? !result.ok : undefined}
+          onFileText={openText}
         />
         <div className="min-w-0 space-y-6">
           {result && !result.ok && (

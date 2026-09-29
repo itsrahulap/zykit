@@ -12,8 +12,10 @@ import {
   type OutputFormat,
   type PresetId,
 } from './features/randomString';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
@@ -77,6 +79,11 @@ export default function RandomStringPage() {
     return alphabet.length ? generateStrings({ alphabet, length, count, prefix, suffix }) : [];
   }, [nonce, alphabet, length, count, prefix, suffix]);
   const output = useMemo(() => formatOutput(values, format), [values, format]);
+  useToolShortcuts({
+    onRun: () => alphabet.length > 0 && setNonce((n) => n + 1),
+    getOutput: () => output,
+    onDownload: () => output && download(output, format),
+  });
   const preview = output.length > MAX_PREVIEW_CHARS ? output.slice(0, MAX_PREVIEW_CHARS) : output;
 
   const bits = stringBits(alphabet.length, length);
@@ -161,6 +168,7 @@ export default function RandomStringPage() {
             </h2>
             <div className="flex flex-wrap items-center gap-1">
               <CopyButton text={output} />
+              <SendToMenu text={output} kind={format === 'json' ? 'json' : 'text'} />
               <button
                 type="button"
                 onClick={() => download(output, format)}

@@ -3,6 +3,7 @@ import mimeLookup from './index';
 import { extensionOf, lookupExtension, MIME_TYPES, searchMime, type Category, type MimeType } from './features/mimeTypes';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
+import { DropZone } from '../../shared/ui/DropZone';
 import { Breadcrumb, CopyButton } from '../../shared/ui/tool';
 import { Badge, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
@@ -56,6 +57,7 @@ function FileCheck() {
   const match = file ? lookupExtension(file.name) : undefined;
   const ext = file ? extensionOf(file.name) : '';
   return (
+    <DropZone onFile={(f) => setFile({ name: f.name, type: f.type })} label="Drop a file to check it">
     <Panel eyebrow="Check a file" icon="file">
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         Only the file&rsquo;s name and the type your browser reports are used. Its contents are not read.
@@ -90,6 +92,7 @@ function FileCheck() {
         </div>
       )}
     </Panel>
+    </DropZone>
   );
 }
 

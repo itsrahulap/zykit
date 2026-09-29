@@ -14,6 +14,7 @@ import {
   type Strength,
 } from './features/password';
 import { WORDS } from './features/words';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { createSampler } from '../../shared/lib/random';
 import { Checkbox } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
@@ -108,6 +109,7 @@ export default function PasswordGeneratorPage() {
   const bits = result.ok ? result.bits : 0;
   const strength = strengthLabel(bits);
   const style = STRENGTH_STYLE[strength];
+  useToolShortcuts({ onRun: () => setNonce((n) => n + 1), getOutput: () => (result.ok ? result.passwords.join('\n') : '') });
 
   return (
     <div className="space-y-8">

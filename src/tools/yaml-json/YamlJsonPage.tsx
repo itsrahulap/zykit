@@ -5,7 +5,9 @@ import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
 import { Select } from '../../shared/ui/Select';
 import { Button, Icon } from '../../shared/ui/ui';
-import { Checkbox, ErrorPanel, Notices, OptionsCard, OutputPanel } from '../../shared/ui/convert';
+import { Checkbox, ErrorPanel, Notices, OpenFileButton, OptionsCard, OutputPanel } from '../../shared/ui/convert';
+import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useShareState } from '../../shared/hooks/useShareState';
 import { pluralize } from '../../shared/utils/format.utils';
 
 type Direction = 'y2j' | 'j2y';
@@ -84,6 +86,31 @@ export default function YamlJsonPage() {
             : 'Converted JSON to YAML'
           : `Invalid ${from}: ${current.error.message} (line ${current.error.line}, column ${current.error.column})`;
 
+  const openText = (t: string, file: File) => {
+    if (/\.ya?ml$/i.test(file.name)) setDirection('y2j');
+    else if (/\.json$/i.test(file.name)) setDirection('j2y');
+    setInput(t);
+  };
+
+  useIncomingText(yamlJson.id, (t, h) => {
+    if (h.kind === 'json') setDirection('j2y');
+    else if (h.kind === 'yaml') setDirection('y2j');
+    setInput(t);
+  });
+  useShareState(
+    { input, direction, indent: indentChoice, allDocuments, yamlIndent, lineWidth, quote },
+    (s) => {
+      if (s.input !== undefined) setInput(s.input);
+      if (s.direction) setDirection(s.direction);
+      if (s.indent) setIndentChoice(s.indent);
+      if (s.allDocuments !== undefined) setAllDocuments(s.allDocuments);
+      if (s.yamlIndent !== undefined) setYamlIndent(s.yamlIndent);
+      if (s.lineWidth !== undefined) setLineWidth(s.lineWidth);
+      if (s.quote) setQuote(s.quote);
+    },
+    { direction: ['y2j', 'j2y'], indent: ['2', '4', 'tab', 'min'], yamlIndent: [2, 4], lineWidth: [80, 120, 0], quote: ['plain', 'single', 'double'] },
+  );
+
   const swap = () => {
     if (current?.ok) setInput(current.output);
     setDirection((d) => (d === 'y2j' ? 'j2y' : 'y2j'));
@@ -99,6 +126,7 @@ export default function YamlJsonPage() {
           <Button variant="secondary" onClick={() => setInput(direction === 'y2j' ? SAMPLE_YAML : SAMPLE_JSON)}>
             Try an example
           </Button>
+          <OpenFileButton accept=".yaml,.yml,.json,application/json,application/yaml" onText={openText} />
           <Button variant="secondary" onClick={swap}>
             <Icon name="swap" className="h-4 w-4" /> Swap
           </Button>
@@ -179,6 +207,7 @@ export default function YamlJsonPage() {
           rows={18}
           placeholder={direction === 'y2j' ? 'key: value\nlist:\n  - one\n  - two' : '{"paste": "your JSON here"}'}
           aria-invalid={current ? !current.ok : undefined}
+          onFileText={openText}
         />
 
         <div className="min-w-0 space-y-6">

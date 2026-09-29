@@ -6,8 +6,10 @@ import { VerifyPanel } from './components/VerifyPanel';
 import { relativeTime, tokenStatus } from './features/claims';
 import { cleanToken, decodeJwt, EXAMPLE_SECRET, EXAMPLE_TOKEN, JwtError, type DecodedJwt } from './features/jwt';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
+import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
+import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 
@@ -28,7 +30,10 @@ function JsonPanel({ title, value, colour }: { title: string; value: object; col
     <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className={`eyebrow ${colour}`}>{title}</h2>
-        <CopyButton text={json} label={`Copy ${title.toLowerCase()}`} />
+        <div className="flex items-center gap-1">
+          <CopyButton text={json} label={`Copy ${title.toLowerCase()}`} />
+          <SendToMenu text={json} kind="json" />
+        </div>
       </div>
       <CodeBlock>{json}</CodeBlock>
     </section>
@@ -53,6 +58,7 @@ export default function JwtDecoderPage() {
   const decoded = useMemo(() => decode(input), [input]);
   const jwt = decoded?.ok ? decoded.jwt : null;
   const isExample = cleanToken(input) === EXAMPLE_TOKEN;
+  useToolShortcuts({ getOutput: () => (jwt ? JSON.stringify(jwt.payload, null, 2) : '') });
 
   let status = 'Paste a JSON Web Token to decode it.';
   let tone: 'neutral' | 'good' = 'neutral';
@@ -83,6 +89,7 @@ export default function JwtDecoderPage() {
           aria-invalid={decoded ? !decoded.ok : undefined}
           aria-describedby={decoded && !decoded.ok ? 'jwt-error' : undefined}
           className="break-all"
+          onFileText={(text) => setInput(text.trim())}
         />
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" onClick={() => setInput(EXAMPLE_TOKEN)}>
