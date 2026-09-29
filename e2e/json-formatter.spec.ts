@@ -8,7 +8,7 @@ test('formats, minifies and sorts JSON, keeping big numbers exact', async ({ pag
   page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text()));
 
   await page.goto('/tools/json-formatter');
-  await expect(page).toHaveTitle(/^JSON Formatter · Zykit$/);
+  await expect(page).toHaveTitle(/^JSON Formatter: .+ · Zykit$/);
   const origin = new URL(page.url()).origin;
 
   await page.getByLabel('Input JSON').fill('{"b":1,"a":{"id":12345678901234567890}}');

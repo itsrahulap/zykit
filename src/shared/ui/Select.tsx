@@ -119,7 +119,7 @@ export function Select<T extends string | number>({
           onBlur={(e) => {
             if (!root.current?.contains(e.relatedTarget as Node)) setOpen(false);
           }}
-          className={`inline-flex min-w-16 items-center justify-between gap-2 rounded-xl border bg-white px-3 py-2 text-left text-slate-900 transition-colors hover:border-slate-300 focus:outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700 ${
+          className={`inline-flex min-w-16 pointer-coarse:min-h-11 items-center justify-between gap-2 rounded-xl border bg-white px-3 py-2 text-left text-slate-900 transition-colors hover:border-slate-300 focus:outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700 ${
             open ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800'
           }`}
         >
@@ -157,7 +157,7 @@ export function Select<T extends string | number>({
                 onPointerDown={(e) => e.preventDefault()}
                 onPointerMove={() => i !== active && setActive(i)}
                 onClick={() => choose(i)}
-                className={`flex cursor-pointer items-center justify-between gap-4 whitespace-nowrap rounded-xl px-3 py-2 ${
+                className={`flex cursor-pointer items-center justify-between gap-4 whitespace-nowrap rounded-xl px-3 py-2 pointer-coarse:py-3 ${
                   i === active ? 'bg-primary text-primary-ink dark:bg-slate-800 dark:text-white' : 'text-slate-700 dark:text-slate-300'
                 } ${isSelected ? 'font-semibold' : ''}`}
               >

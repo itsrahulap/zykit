@@ -81,7 +81,7 @@ export function CopyButton({ text, label = 'Copy', disabled }: { text: string; l
       type="button"
       onClick={copy}
       disabled={disabled || !text}
-      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800"
+      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium pointer-coarse:min-h-11 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800"
     >
       <Icon name={state === 'copied' ? 'check' : 'copy'} className="h-4 w-4" />
       <span aria-live="polite">{state === 'copied' ? 'Copied' : state === 'failed' ? 'Copy failed' : label}</span>
@@ -109,7 +109,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`rounded-lg px-3 py-1.5 font-medium ${
+          className={`rounded-lg px-3 py-1.5 font-medium pointer-coarse:min-h-10 ${
             value === o.value ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
           }`}
         >

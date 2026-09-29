@@ -3,6 +3,7 @@ import diffChecker from './index';
 import { DiffView, type ViewMode } from './components/DiffView';
 import type { DiffResult } from './features/diff';
 import { useDiff } from './hooks/useDiff';
+import { useMediaQuery } from '../../shared/hooks/useMediaQuery';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
 import { Breadcrumb, CodeArea, CopyButton, Segmented } from '../../shared/ui/tool';
@@ -68,6 +69,9 @@ export default function DiffCheckerPage() {
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [mode, setMode] = useState<ViewMode>('split');
+  // Two columns of code don't fit on a phone, so narrow screens always get the unified view.
+  const wide = useMediaQuery('(min-width: 640px)');
+  const shownMode: ViewMode = wide ? mode : 'unified';
   const [collapsed, setCollapsed] = useState(true);
   const [context, setContext] = useState(3);
 
@@ -128,15 +132,17 @@ export default function DiffCheckerPage() {
           <Checkbox label="Ignore case" checked={ignoreCase} onChange={setIgnoreCase} />
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <Segmented<ViewMode>
-            label="View"
-            options={[
-              { value: 'split', label: 'Side by side' },
-              { value: 'unified', label: 'Unified' },
-            ]}
-            value={mode}
-            onChange={setMode}
-          />
+          {wide && (
+            <Segmented<ViewMode>
+              label="View"
+              options={[
+                { value: 'split', label: 'Side by side' },
+                { value: 'unified', label: 'Unified' },
+              ]}
+              value={mode}
+              onChange={setMode}
+            />
+          )}
           <Checkbox label="Collapse unchanged lines" checked={collapsed} onChange={setCollapsed} />
           <Select
             label="Context lines"
@@ -208,7 +214,7 @@ export default function DiffCheckerPage() {
               {ignoreCase || trim || ignoreWhitespace ? 'The texts match when the selected differences are ignored.' : 'Both texts are identical.'}
             </p>
           ) : (
-            <DiffView key={version} lines={result.lines} mode={mode} collapsed={collapsed} context={context} />
+            <DiffView key={version} lines={result.lines} mode={shownMode} collapsed={collapsed} context={context} />
           )}
         </section>
       )}

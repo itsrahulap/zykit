@@ -2,6 +2,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { seoPlugin } from './scripts/seo-plugin.ts'
 
 // Same policy as public/_headers and vercel.json; applied to `vite preview` so e2e tests run under it.
 const CSP =
@@ -10,7 +11,7 @@ const CSP =
   "frame-ancestors 'none'; object-src 'none'"
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), seoPlugin()],
   worker: { format: 'es' },
   preview: { headers: { 'Content-Security-Policy': CSP } },
   test: {

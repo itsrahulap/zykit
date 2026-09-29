@@ -8,7 +8,7 @@ test('compares two texts with word highlights, views and a unified diff', async 
   page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text()));
 
   await page.goto('/tools/diff-checker');
-  await expect(page).toHaveTitle(/^Diff Checker · Zykit$/);
+  await expect(page).toHaveTitle(/^Diff Checker: .+ · Zykit$/);
   const origin = new URL(page.url()).origin;
 
   await page.getByLabel('Original', { exact: true }).fill('alpha\nconst answer = 41;\ngamma\n');
@@ -71,4 +71,15 @@ test('collapses long unchanged regions and expands them on request', async ({ pa
   await result.getByRole('button', { name: 'Show 17 hidden unchanged lines' }).click();
   await expect(result.getByRole('button', { name: /hidden unchanged/ })).toHaveCount(1);
   await expect(result.getByRole('cell', { name: 'line 1', exact: true }).first()).toBeVisible();
+});
+
+test('phones get the unified view and no sideways page scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/tools/diff-checker');
+  await page.getByRole('button', { name: 'Try an example' }).click();
+  const result = page.getByRole('region', { name: 'Differences' });
+  await expect(result.getByText('Added:').first()).toBeAttached();
+  await expect(page.getByRole('group', { name: 'View' })).toHaveCount(0);
+  const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
+  expect(sw).toBeLessThanOrEqual(vw);
 });

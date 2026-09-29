@@ -65,6 +65,10 @@ The page renders inside the site layout (header, footer, `<main>`), so it only n
 
 Start the page with `<Breadcrumb tool={myTool} />` so users can get back to the tool list.
 
+## Search engines and link previews
+
+Nothing to do: `npm run build` writes `dist/tools/<tool-id>.html` with the tool's own title, description, canonical URL, Open Graph tags and JSON-LD, and adds it to `dist/sitemap.xml` (see `scripts/seo-plugin.ts` and `src/config/seo.ts`). Write `tagline` and `description` with the words people search for, since they become the page title and search snippet.
+
 ## Rules every tool follows
 
 - **Local only.** Never send file contents, file names or derived data over the network. The CSP (`connect-src 'self'`) blocks third-party requests, and e2e tests assert that no off-origin or non-GET requests happen.

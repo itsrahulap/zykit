@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router';
+import { homeMeta, toolMeta } from '../config/seo';
 import { SITE } from '../config/site';
 import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
@@ -11,21 +12,37 @@ export interface RouteHandle {
   title?: string;
 }
 
-function usePageTitle() {
-  const matches = useMatches();
-  const handle = [...matches].reverse().find((m) => m.handle)?.handle as RouteHandle | undefined;
-  const title = handle?.tool?.name ?? handle?.title;
-  useEffect(() => {
-    document.title = title ? `${title} · ${SITE.name}` : `${SITE.name} · ${SITE.tagline}`;
-  }, [title]);
+function setMeta(selector: string, content: string) {
+  document.querySelector(selector)?.setAttribute('content', content);
 }
 
-// index.html ships a canonical for "/"; point it at the current route so tool pages aren't treated as duplicates.
-function useCanonical() {
+// index.html (and the per-page HTML written at build time) ships metadata for the page that was loaded;
+// keep it in sync on client-side navigation so rendered pages report their own title, description and canonical.
+function usePageMeta() {
+  const matches = useMatches();
   const { pathname } = useLocation();
+  const handle = [...matches].reverse().find((m) => m.handle)?.handle as RouteHandle | undefined;
+  const tool = handle?.tool;
+  const title = handle?.title;
   useEffect(() => {
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', new URL(pathname, SITE.url).href);
-  }, [pathname]);
+    const meta = tool ? toolMeta(tool) : homeMeta();
+    const url = new URL(pathname, SITE.url).href;
+    document.title = tool || !title ? meta.title : `${title} · ${SITE.name}`;
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', url);
+    setMeta('meta[name="description"]', meta.description);
+    setMeta('meta[property="og:title"]', document.title);
+    setMeta('meta[property="og:description"]', meta.description);
+    setMeta('meta[property="og:url"]', url);
+    // Unknown URLs still return the app with HTTP 200; keep them out of search results.
+    const noindex = !tool && Boolean(title);
+    let robots = document.querySelector('meta[name="robots"]');
+    if (noindex && !robots) {
+      robots = document.createElement('meta');
+      robots.setAttribute('name', 'robots');
+      document.head.append(robots);
+    }
+    robots?.setAttribute('content', noindex ? 'noindex' : 'index, follow');
+  }, [tool, title, pathname]);
 }
 
 function SiteHeader() {
@@ -79,8 +96,7 @@ function SiteFooter() {
 }
 
 export function Layout() {
-  usePageTitle();
-  useCanonical();
+  usePageMeta();
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">

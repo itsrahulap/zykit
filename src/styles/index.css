@@ -96,3 +96,12 @@
   outline: 2px solid #4a8062;
   outline-offset: 2px;
 }
+
+/* iOS Safari zooms the page when a field under 16px gets focus, so phones get 16px fields.
+   Unlayered, so it wins over Tailwind's text-sm utility without !important. */
+@media (max-width: 639px) {
+  input:not([type='checkbox'], [type='radio'], [type='file'], [type='range']),
+  textarea {
+    font-size: 16px;
+  }
+}
