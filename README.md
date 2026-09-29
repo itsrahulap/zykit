@@ -64,11 +64,22 @@ npm run typecheck
 npm run build        # static site in dist/
 ```
 
-Developed with Claude Code and a set of plugins (superpowers, frontend-design, context7, code-review, code-simplifier, claude-mem, context-mode). See [docs/claude-code-plugins.md](docs/claude-code-plugins.md) for what each one does, how to install it and when to use it.
+Developed with Claude Code and a set of plugins (superpowers, frontend-design, context7, code-review, code-simplifier, claude-mem, context-mode). See [docs/claude-code-plugins.md](docs/claude-code-plugins.md) for what each one does, how to install it and when to use it. The same guides are on the site's blog (`/blog`); posts live in `src/blog/posts/` and are registered in `src/blog/registry.ts`.
 
 ## Deployment
 
 `npm run build` produces a fully static `dist/`. Tool pages use client-side routes, so the host must serve `index.html` for unknown paths. That's already configured for Netlify/Cloudflare Pages (`public/_redirects`) and Vercel (`vercel.json`). Keep the security headers from the same files.
+
+## Learn
+
+`/learn` is a software-engineering course migrated from EngineeringWiki: 8 subjects (JavaScript, TypeScript, DSA, Web Fundamentals, Backend, Databases, System Design, Software Architecture), 150 lessons, 151 solved DSA problems and 9 system design case studies. Progress, bookmarks and solved problems are kept in the browser only.
+
+- **Content** lives in `src/learn/content/` as plain TypeScript data (types in `src/learn/types/`). Edit or add lessons there; pages never hard-code content.
+- **Catalog:** `npm run generate:learn` rebuilds `src/learn/data/*.generated.ts` (titles, links, search index, counts). It also runs before every build, and a unit test fails if it's out of date.
+- **Loading:** pages list content from the small catalog and load one subject, problem file or case study at a time (`src/learn/data/index.ts`), so the ~3 MB of lessons never ships up front. Never import `src/learn/content/index.ts` from the app.
+- **Runnable examples** use the JS Runner's worker. Examples that need a real page (`document`, `alert`, `localStorage`…) run in a sandboxed iframe at `/sandbox/dom`, which has its own CSP (see `vercel.json`) and no network access.
+- **SEO:** the build writes a static HTML page with the full text of every lesson, problem and case study, and lists them in `sitemap.xml` (`scripts/learn-pages.ts`, called from `scripts/seo-plugin.ts`).
+- **Tests:** `tests/learn/` (content integrity: unique ids, every cross-link resolves, every item loads) and `e2e/learn-*.spec.ts`.
 
 ## Clean Image
 

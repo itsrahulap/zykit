@@ -118,7 +118,8 @@ test('keyboard users can reach the file picker', async ({ page }) => {
   await page.goto('/tools/clean-image');
   const target = page.getByRole('button', { name: /choose a file/i });
   let reached = false;
-  for (let i = 0; i < 8 && !reached; i++) {
+  // Skip link, logo, three header nav links and the theme toggle come first.
+  for (let i = 0; i < 10 && !reached; i++) {
     await page.keyboard.press('Tab');
     reached = await target.evaluate((el) => el === document.activeElement);
   }

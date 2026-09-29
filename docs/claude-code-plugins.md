@@ -2,7 +2,7 @@
 
 This project is developed with [Claude Code](https://claude.com/claude-code) (terminal CLI or the VS Code extension) plus a set of plugins. Plugins add **skills** (instructions Claude loads when a task matches), **slash commands**, **agents** and **MCP tools**. None of them change the app or its build; they only affect how Claude works on the code.
 
-The same information is on the site at [`/claude-code`](https://zykit.vercel.app/claude-code), generated from `src/pages/claude-code/plugins.ts`. When you add or remove a plugin, update that file, this doc and `.claude/settings.json`.
+The same material is published on the site as a blog series, starting at [`/blog/claude-code-plugins-explained`](https://zykit.vercel.app/blog/claude-code-plugins-explained). The posts are generated from `src/blog/posts/claude-code-plugins.ts`. When you add or remove a plugin, update that file, this doc and `.claude/settings.json`.
 
 | Plugin | Source | Purpose |
 |---|---|---|

@@ -20,11 +20,11 @@ export const router = createBrowserRouter([
       })),
       ...learnRoutes,
       {
-        path: 'claude-code',
+        path: 'blog',
         handle: { pageMeta: true } satisfies RouteHandle,
         children: [
-          { index: true, lazy: async () => ({ Component: (await import('../pages/claude-code/ClaudeCodePage')).default }) },
-          { path: ':pluginId', lazy: async () => ({ Component: (await import('../pages/claude-code/PluginPage')).default }) },
+          { index: true, lazy: async () => ({ Component: (await import('../blog/pages/BlogHomePage')).default }) },
+          { path: ':slug', lazy: async () => ({ Component: (await import('../blog/pages/BlogPostPage')).default }) },
         ],
       },
       { path: '*', element: <NotFoundPage />, handle: { title: 'Not found' } satisfies RouteHandle },
