@@ -129,6 +129,28 @@
     emit('error', 'Uncaught (in promise) ' + errorText(event.reason));
   });
 
+  // Every loop condition in the example calls this (see src/learn/features/loopGuard.ts). If one
+  // synchronous stretch of looping runs too long it throws, so the page can't freeze.
+  var LOOP_LIMIT_MS = 2000;
+  var nativeSetTimeout = window.setTimeout.bind(window);
+  var ticks = 0;
+  var stretchStart = null;
+  Object.defineProperty(window, '__zykitLoopGuard', {
+    value: function () {
+      if ((++ticks & 1023) !== 0) return true;
+      var now = performance.now();
+      if (stretchStart === null) {
+        stretchStart = now;
+        nativeSetTimeout(function () {
+          stretchStart = null; // the current task ended
+        }, 0);
+      } else if (now - stretchStart > LOOP_LIMIT_MS) {
+        throw new Error('Stopped a loop that ran for over ' + LOOP_LIMIT_MS / 1000 + ' s without pausing (it would have frozen the page).');
+      }
+      return true;
+    },
+  });
+
   function clickButtons() {
     // There's no one to click the sample button, so click every button once the code has run.
     document.querySelectorAll('button').forEach(function (button) {

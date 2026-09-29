@@ -70,6 +70,9 @@ function SiteHeader() {
           <NavLink to="/learn" className={navClass}>
             Learn
           </NavLink>
+          <NavLink to={CLAUDE_CODE_PATH} className={navClass}>
+            Claude Code
+          </NavLink>
           <ThemeToggle />
         </nav>
       </div>

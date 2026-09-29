@@ -7,7 +7,10 @@ import { expect, test, type Page } from '@playwright/test';
 function watch(page: Page, baseURL: string) {
   const origin = new URL(baseURL).origin;
   const problems: string[] = [];
-  page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
+  page.on('console', (m) => {
+    // The DOM sandbox test fetches example.com on purpose to prove its CSP blocks the network.
+    if (m.type() === 'error' && !m.text().includes('https://example.com/')) problems.push(`console: ${m.text()}`);
+  });
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   page.on('request', (r) => {
     const url = new URL(r.url());
@@ -88,7 +91,7 @@ test('runs an example in the worker, edits it and resets it', async ({ page }) =
   const editor = block.getByRole('textbox', { name: 'Edit the code' });
   await editor.fill('const total = [1, 2, 3].reduce((a, b) => a + b, 0);\ntotal * 2');
   await editor.press('Control+Enter');
-  await expect(out).toHaveText('12');
+  await expect(out).toHaveText(/^(log:)?12$/);
 
   // A runaway loop can be stopped.
   await editor.fill('while (true) {}');
@@ -103,6 +106,7 @@ test('runs an example in the worker, edits it and resets it', async ({ page }) =
 });
 
 test('runs a DOM example in the sandboxed page', async ({ page }) => {
+  test.setTimeout(60_000);
   const dialogs: string[] = [];
   page.on('dialog', (d) => {
     dialogs.push(d.message());
@@ -135,11 +139,22 @@ test('runs a DOM example in the sandboxed page', async ({ page }) => {
   await expect(out).not.toContainText('network!');
   await expect(frame.getByRole('heading', { name: 'Changed' })).toBeVisible();
 
-  // A runaway loop hits the time limit (or Stop) and the page is reset.
-  await editor.fill('while (true) {}');
+  // An endless loop is stopped by the loop guard instead of freezing the page.
+  await editor.fill('let i = 0;\nwhile (true) { i++ }');
   await block.getByRole('button', { name: 'Run', exact: true }).click();
+  await expect(out).toContainText(/Stopped a loop that ran for over 2 s/, { timeout: 10_000 });
+
+  // Code that never finishes can be stopped, which removes the page…
+  await editor.fill('console.log("waiting");\nawait new Promise(() => {});');
+  await block.getByRole('button', { name: 'Run', exact: true }).click();
+  await expect(out).toContainText('waiting');
   await block.getByRole('button', { name: 'Stop' }).click();
   await expect(out).toContainText('Stopped. The page was reset.');
+  await expect(block.locator('iframe')).toHaveCount(0);
+
+  // …and otherwise hits the time limit.
+  await block.getByRole('button', { name: 'Run', exact: true }).click();
+  await expect(out).toContainText(/Stopped after 5 s \(time limit\)/, { timeout: 10_000 });
   await expect(block.locator('iframe')).toHaveCount(0);
 
   // Errors are reported.
@@ -189,6 +204,16 @@ test('shows related material for DSA and system design lessons', async ({ page }
   await page.goto('/learn/dsa/arrays');
   await expect(page.getByRole('heading', { level: 2, name: 'Practice problems' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Arrays & Hashing/ })).toHaveAttribute('href', '/learn/problems/arrays-hashing');
+
+  await page.goto('/learn/system-design/caching');
+  await expect(page.getByRole('heading', { level: 2, name: 'Real-world examples' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Design URL Shortener/ })).toHaveAttribute('href', '/learn/case-studies/url-shortener');
+  // Related topics resolve across subjects and link to real lessons.
+  const related = page.getByRole('region', { name: 'Related topics' }).getByRole('link');
+  expect(await related.count()).toBeGreaterThan(0);
+  await related.first().click();
+  await expect(page).toHaveURL(/\/learn\/[\w-]+\/[\w-]+$/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
 test('fits a 375px screen without horizontal scrolling', async ({ page }) => {

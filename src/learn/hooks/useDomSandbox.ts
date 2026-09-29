@@ -10,7 +10,8 @@ import { compileTypeScript, describeCompileError } from '../../tools/js-runner/f
 import { createFormatter } from '../../tools/js-runner/features/formatter';
 import type { ConsoleEntry } from '../../tools/js-runner/features/transcript';
 import type { RunState, RunStatus } from '../../tools/js-runner/hooks/useJsRunner';
-import { PARENT_TAG, parseSandboxMessage } from '../features/domSandbox';
+import { LOOP_GUARD, PARENT_TAG, parseSandboxMessage } from '../features/domSandbox';
+import { addLoopGuards } from '../features/loopGuard';
 
 const MAX_ENTRIES = 600;
 
@@ -98,7 +99,7 @@ export function useDomSandbox() {
         }
         js = result.code;
       }
-      pending.current = js;
+      pending.current = addLoopGuards(js, LOOP_GUARD);
       setFrameKey(id);
       setRun((r) => ({ ...r, status: 'running' }));
       timer.current = setTimeout(() => {

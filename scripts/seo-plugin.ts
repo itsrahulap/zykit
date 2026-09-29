@@ -5,7 +5,8 @@
 //                              JSON-LD and readable content (served at /tools/<id>; see vercel.json cleanUrls)
 //   dist/learn/**.html         every Learn page (subjects, lessons, problems, case studies) with its full text
 //                              (see scripts/learn-pages.ts)
-//   dist/claude-code.html      the Claude Code plugins page (src/pages/claude-code/plugins.ts)
+//   dist/claude-code.html      the Claude Code section: overview plus claude-code/<plugin-id>.html per plugin
+//                              (src/pages/claude-code/plugins.ts)
 //   dist/sitemap.xml
 // React replaces the static #root content when it mounts, so users see the normal app.
 
@@ -76,23 +77,54 @@ function toolBody(tool: Tool, tools: Tool[]) {
   );
 }
 
+interface ClaudeCodePlugin {
+  id: string;
+  name: string;
+  tagline: string;
+  marketplace: string;
+  purpose: string;
+  howItWorks: string[];
+  howToUse: string;
+  commands?: string[];
+  prompts: string[];
+  useCases: string[];
+  whenNotToUse: string;
+  caveat?: string;
+}
 interface ClaudeCodeModule {
   CLAUDE_CODE_PATH: string;
-  PLUGINS: { id: string; name: string; marketplace: string; purpose: string; howToUse: string; prompts: string[]; useCases: string[] }[];
+  PLUGINS: ClaudeCodePlugin[];
+  PARTS: { name: string; text: string }[];
+  LIFECYCLE: { step: string; text: string }[];
   installCommands(prefix: string): string[];
+  pluginInstallCommands(p: ClaudeCodePlugin, prefix: string): string[];
+  pluginPath(p: ClaudeCodePlugin): string;
   claudeCodeMeta(): { title: string; description: string };
+  pluginMeta(p: ClaudeCodePlugin): { title: string; description: string };
 }
 
+const list = (items: string[]) => `<ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+
 function claudeCodeBody(cc: ClaudeCodeModule, meta: Meta) {
-  const plugins = cc.PLUGINS.map(
-    (p) =>
-      `<section id="${esc(p.id)}"><h2>${esc(p.name)}</h2><p>${esc(p.purpose)}</p><p>${esc(p.howToUse)}</p>` +
-      `<ul>${p.prompts.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` +
-      `<ul>${p.useCases.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`,
-  ).join('');
+  const plugins = cc.PLUGINS.map((p) => `<li><a href="${cc.pluginPath(p)}">${esc(p.name)}</a>: ${esc(p.tagline)}. ${esc(p.purpose)}</li>`).join('');
   return (
-    `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><p><a href="/">All tools</a></p><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p>` +
-    `<h2>Install</h2><pre>${esc(cc.installCommands('/plugin').join('\n'))}</pre>${plugins}</main>`
+    `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p>` +
+    `<h2>What is a plugin?</h2><ul>${cc.PARTS.map((p) => `<li><strong>${esc(p.name)}</strong>: ${esc(p.text)}</li>`).join('')}</ul>` +
+    `<h2>How it works</h2><ol>${cc.LIFECYCLE.map((l) => `<li><strong>${esc(l.step)}</strong>: ${esc(l.text)}</li>`).join('')}</ol>` +
+    `<h2>Install</h2><pre>${esc(cc.installCommands('/plugin').join('\n'))}</pre>` +
+    `<h2>The plugins</h2><ul>${plugins}</ul></main>`
+  );
+}
+
+function pluginBody(cc: ClaudeCodeModule, p: ClaudeCodePlugin) {
+  return (
+    `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><p><a href="${cc.CLAUDE_CODE_PATH}">Claude Code</a></p>` +
+    `<h1>${esc(p.name)}</h1><p>${esc(p.tagline)}</p><p>${esc(p.purpose)}</p>` +
+    `<h2>How it works</h2>${p.howItWorks.map((x) => `<p>${esc(x)}</p>`).join('')}` +
+    `<h2>Install</h2><pre>${esc(cc.pluginInstallCommands(p, '/plugin').join('\n'))}</pre>` +
+    `<h2>How to use</h2><p>${esc(p.howToUse)}</p>${p.commands ? list(p.commands) : ''}${list(p.prompts)}` +
+    `<h2>Use cases</h2>${list(p.useCases)}<h2>When not to use it</h2><p>${esc(p.whenNotToUse)}</p>` +
+    `${p.caveat ? `<p>${esc(p.caveat)}</p>` : ''}</main>`
   );
 }
 
@@ -126,8 +158,14 @@ export function seoPlugin(): Plugin {
         load<LearnSources['html']>('src/learn/features/richTextHtml.ts'),
       ]);
       const cc = await load<ClaudeCodeModule>('src/pages/claude-code/plugins.ts');
-      const ccMeta: Meta = { title: `${cc.claudeCodeMeta().title} · ${site.SITE.name}`, description: cc.claudeCodeMeta().description, url: `${site.SITE.url}${cc.CLAUDE_CODE_PATH}` };
-      const ccStructuredData = { '@context': 'https://schema.org', '@type': 'TechArticle', headline: ccMeta.title, description: ccMeta.description, url: ccMeta.url };
+      const ccPage = (path: string, m: { title: string; description: string }): Meta => ({
+        title: `${m.title} · ${site.SITE.name}`,
+        description: m.description,
+        url: `${site.SITE.url}${path}`,
+      });
+      const ccMeta = ccPage(cc.CLAUDE_CODE_PATH, cc.claudeCodeMeta());
+      const ccPages = cc.PLUGINS.map((p) => ({ plugin: p, meta: ccPage(cc.pluginPath(p), cc.pluginMeta(p)) }));
+      const techArticle = (m: Meta) => ({ '@context': 'https://schema.org', '@type': 'TechArticle', headline: m.title, description: m.description, url: m.url });
       const learn = learnPages({
         site: site.SITE,
         subjects: content.subjects,
@@ -149,13 +187,17 @@ export function seoPlugin(): Plugin {
           renderPage(template, seo.toolMeta(t), seo.toolStructuredData(t), toolBody(t, tools)),
         ]),
         ...learn.map((p): [string, string] => [p.file, renderPage(template, learnMeta(p), p.structuredData, p.body)]),
-        [`${cc.CLAUDE_CODE_PATH.slice(1)}.html`, renderPage(template, ccMeta, ccStructuredData, claudeCodeBody(cc, ccMeta))],
+        [`${cc.CLAUDE_CODE_PATH.slice(1)}.html`, renderPage(template, ccMeta, techArticle(ccMeta), claudeCodeBody(cc, ccMeta))],
+        ...ccPages.map(({ plugin, meta }): [string, string] => [
+          `${cc.pluginPath(plugin).slice(1)}.html`,
+          renderPage(template, meta, techArticle(meta), pluginBody(cc, plugin)),
+        ]),
       ];
       for (const [file, page] of pages) {
         await mkdir(dirname(join(outDir, file)), { recursive: true });
         await writeFile(join(outDir, file), page);
       }
-      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url), ccMeta.url]));
+      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url), ccMeta.url, ...ccPages.map((p) => p.meta.url)]));
       config.logger.info(`seo: wrote ${pages.length} pages and sitemap.xml`);
     },
   };

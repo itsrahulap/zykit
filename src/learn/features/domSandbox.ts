@@ -5,6 +5,8 @@ import type { LogLevel } from '../../tools/js-runner/features/protocol';
 export const SANDBOX_URL = '/sandbox/dom';
 export const SANDBOX_TAG = 'zykit-dom-sandbox';
 export const PARENT_TAG = 'zykit-learn';
+/** Defined (read-only) by the sandbox page; see loopGuard.ts. */
+export const LOOP_GUARD = '__zykitLoopGuard';
 
 export type SandboxMessage =
   | { source: typeof SANDBOX_TAG; type: 'ready' }

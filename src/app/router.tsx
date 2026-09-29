@@ -22,7 +22,10 @@ export const router = createBrowserRouter([
       {
         path: 'claude-code',
         handle: { pageMeta: true } satisfies RouteHandle,
-        lazy: async () => ({ Component: (await import('../pages/claude-code/ClaudeCodePage')).default }),
+        children: [
+          { index: true, lazy: async () => ({ Component: (await import('../pages/claude-code/ClaudeCodePage')).default }) },
+          { path: ':pluginId', lazy: async () => ({ Component: (await import('../pages/claude-code/PluginPage')).default }) },
+        ],
       },
       { path: '*', element: <NotFoundPage />, handle: { title: 'Not found' } satisfies RouteHandle },
     ],
