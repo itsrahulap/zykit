@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import type { DataKind } from '../../tools/types';
+import { kindFromMime } from '../lib/dataKind';
 import { useToolShortcuts } from '../hooks/useToolShortcuts';
 import { errorSnippet, type TextError } from '../lib/textpos';
 import { MAX_TEXT_FILE_BYTES, readTextFile, TextFileError } from '../lib/textFile';
@@ -71,21 +72,6 @@ export function ErrorPanel({ error, text, inputId, title = 'Syntax error' }: { e
 
 const toolbarButton =
   'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium pointer-coarse:min-h-11 text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800';
-
-/** Best guess at what an output is from its MIME type, for "Send to…". */
-export function kindFromMime(mime: string): DataKind | undefined {
-  const m = mime.toLowerCase();
-  if (m.includes('svg')) return undefined;
-  if (m.includes('json')) return 'json';
-  if (m.includes('csv') || m.includes('tab-separated')) return 'csv';
-  if (m.includes('yaml')) return 'yaml';
-  if (m.includes('xml')) return 'xml';
-  if (m.includes('sql')) return 'sql';
-  if (m.includes('markdown')) return 'markdown';
-  if (m.includes('typescript') || m.includes('javascript')) return 'code';
-  if (m.startsWith('text/plain')) return 'text';
-  return undefined;
-}
 
 /**
  * Output card with copy, "Send to…" and download. Long output is previewed, not rendered in full.

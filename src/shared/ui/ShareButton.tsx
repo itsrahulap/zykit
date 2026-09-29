@@ -21,11 +21,11 @@ export function ShareButton() {
   if (!ctx) return null;
 
   const share = async () => {
-    const get = ctx.share.current;
-    if (!get) return setState('failed');
+    const current = ctx.getShareState();
+    if (!current) return setState('failed');
     try {
       const base = window.location.href.split('#')[0];
-      const link = await buildShareLink(get(), base);
+      const link = await buildShareLink(current, base);
       if (!link.ok) return setState('too-large');
       await navigator.clipboard.writeText(link.url);
       window.history.replaceState(window.history.state, '', link.url);

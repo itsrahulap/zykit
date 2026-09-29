@@ -2,12 +2,10 @@
 // which is fetched the first time it's needed. Other components can open it via the event.
 
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { isTypingTarget } from '../lib/shortcuts';
+import { isTypingTarget, OPEN_SHORTCUTS_EVENT } from '../lib/shortcuts';
 
 const ShortcutsHelp = lazy(() => import('./ShortcutsHelp'));
 
-export const OPEN_SHORTCUTS_EVENT = 'zykit:shortcuts';
-export const openShortcutsHelp = () => document.dispatchEvent(new Event(OPEN_SHORTCUTS_EVENT));
 
 export function ShortcutsHelpHost() {
   const [open, setOpen] = useState(false);

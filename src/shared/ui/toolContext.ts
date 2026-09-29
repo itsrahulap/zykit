@@ -7,8 +7,10 @@ import type { ShareState } from '../lib/share';
 
 export interface ToolContextValue {
   tool: ToolDefinition;
-  /** Set by useShareState: returns the page's current shareable state. */
-  share: { current: (() => ShareState) | null };
+  /** Called by useShareState: registers the page's state getter; returns an unregister function. */
+  registerShare: (get: () => ShareState) => () => void;
+  /** The page's current shareable state, or null if the page registered none. */
+  getShareState: () => ShareState | null;
 }
 
 export const ToolCtx = createContext<ToolContextValue | null>(null);

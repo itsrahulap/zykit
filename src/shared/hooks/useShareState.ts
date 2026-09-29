@@ -19,12 +19,7 @@ export function useShareState<T extends ShareState>(
 
   useEffect(() => {
     if (!ctx) return;
-    const share = ctx.share;
-    const get = () => latest.current.state;
-    share.current = get;
-    return () => {
-      if (share.current === get) share.current = null;
-    };
+    return ctx.registerShare(() => latest.current.state);
   }, [ctx]);
 
   useEffect(() => {

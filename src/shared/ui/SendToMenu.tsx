@@ -4,16 +4,12 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { TOOLS, toolPath } from '../../tools/registry';
+import { toolPath } from '../../tools/registry';
 import type { DataKind, ToolDefinition } from '../../tools/types';
+import { sendTargets } from '../lib/dataKind';
 import { sendText } from '../lib/handoff';
 import { useCurrentTool } from './toolContext';
 import { Icon } from './ui';
-
-/** Tools that take `kind` as input, in registry order, excluding `exclude`. */
-export function sendTargets(kind: DataKind, exclude?: string): ToolDefinition[] {
-  return TOOLS.filter((t) => t.status !== 'coming-soon' && t.id !== exclude && t.accepts?.includes(kind));
-}
 
 export function SendToMenu({ text, kind, disabled, lang }: { text: string; kind?: DataKind; disabled?: boolean; lang?: string }) {
   const ctx = useCurrentTool();

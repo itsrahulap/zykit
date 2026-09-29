@@ -45,3 +45,7 @@ export function shortcutText(combo: string): string {
   if (isApple()) return parts.map((p) => ({ mod: '⌘', shift: '⇧', alt: '⌥' })[p] ?? p).join('') + k;
   return [...parts.map((p) => ({ mod: 'Ctrl', shift: 'Shift', alt: 'Alt' })[p] ?? p), k].join(' ');
 }
+
+/** Opens the keyboard shortcuts dialog (ShortcutsHelpHost listens for it). */
+export const OPEN_SHORTCUTS_EVENT = 'zykit:shortcuts';
+export const openShortcutsHelp = () => document.dispatchEvent(new Event(OPEN_SHORTCUTS_EVENT));

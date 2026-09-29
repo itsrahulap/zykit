@@ -6,7 +6,8 @@ import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
 import { IconTile } from '../shared/ui/page';
 import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPaletteProvider';
-import { openShortcutsHelp, ShortcutsHelpHost } from '../shared/ui/ShortcutsHelpHost';
+import { openShortcutsHelp } from '../shared/lib/shortcuts';
+import { ShortcutsHelpHost } from '../shared/ui/ShortcutsHelpHost';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
 import { Icon } from '../shared/ui/ui';
 
