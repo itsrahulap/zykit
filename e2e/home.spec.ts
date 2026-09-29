@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('home lists the tools and opens one', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Toolstack/);
+  await expect(page).toHaveTitle(/Zykit/);
   await expect(page.getByRole('heading', { name: /useful tools that stay on your device/i })).toBeVisible();
 
   const card = page.getByRole('link', { name: /clean image/i }).first();
@@ -10,7 +10,7 @@ test('home lists the tools and opens one', async ({ page }) => {
   await card.click();
 
   await expect(page).toHaveURL(/\/tools\/clean-image$/);
-  await expect(page).toHaveTitle(/^Clean Image · Toolstack$/);
+  await expect(page).toHaveTitle(/^Clean Image · Zykit$/);
   await expect(page.getByRole('heading', { name: /see what your images reveal/i })).toBeVisible();
 
   // Breadcrumb leads back home

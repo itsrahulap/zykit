@@ -1,4 +1,4 @@
-# Toolstack
+# Zykit
 
 A growing collection of file tools that run **entirely in the browser**. Files are never uploaded. The home page (`/`) lists every tool, and each tool lives at `/tools/<tool-id>`.
 

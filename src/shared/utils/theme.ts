@@ -1,7 +1,7 @@
 // Light by default; dark only when the user picks it. Stored per browser as a convenience.
 
 export type Theme = 'light' | 'dark';
-const KEY = 'toolstack-theme';
+const KEY = 'zykit-theme';
 
 export function getStoredTheme(): Theme {
   try {

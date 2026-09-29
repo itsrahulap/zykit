@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link, NavLink, Outlet, ScrollRestoration, useMatches } from 'react-router';
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router';
 import { SITE } from '../config/site';
 import { TOOLS, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
@@ -18,6 +18,14 @@ function usePageTitle() {
   useEffect(() => {
     document.title = title ? `${title} · ${SITE.name}` : `${SITE.name} · ${SITE.tagline}`;
   }, [title]);
+}
+
+// index.html ships a canonical for "/"; point it at the current route so tool pages aren't treated as duplicates.
+function useCanonical() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', new URL(pathname, SITE.url).href);
+  }, [pathname]);
 }
 
 function SiteHeader() {
@@ -72,6 +80,7 @@ function SiteFooter() {
 
 export function Layout() {
   usePageTitle();
+  useCanonical();
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">
