@@ -65,7 +65,8 @@ export function Button({
 
 export type IconName =
   | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'
-  | 'grid' | 'arrow' | 'image' | 'key' | 'diff' | 'code' | 'braces' | 'hash' | 'swap' | 'copy' | 'play' | 'stop';
+  | 'grid' | 'arrow' | 'image' | 'key' | 'diff' | 'code' | 'braces' | 'hash' | 'swap' | 'copy' | 'play' | 'stop'
+  | 'book' | 'globe' | 'server' | 'database' | 'layers' | 'network' | 'puzzle' | 'building' | 'bookmark' | 'chart' | 'search' | 'menu' | 'chevron-left' | 'chevron-right' | 'lightbulb';
 
 export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; className?: string }) {
   const paths: Record<IconName, ReactNode> = {
@@ -93,6 +94,21 @@ export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; classNam
     copy: <path d="M9 9h11v11H9z M5 15H4V4h11v1" />,
     play: <path d="M7 4.5v15l12-7.5-12-7.5z" />,
     stop: <path d="M6 6h12v12H6z" />,
+    book: <path d="M4 5.5A2.5 2.5 0 016.5 3H20v15H6.5A2.5 2.5 0 004 20.5v-15zM4 20.5A2.5 2.5 0 006.5 23H20v-5M8 7h8" />,
+    globe: <path d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z" />,
+    server: <path d="M4 4h16v6H4zM4 14h16v6H4zM8 7h.01M8 17h.01" />,
+    database: <path d="M12 8c4.4 0 8-1.3 8-3s-3.6-3-8-3-8 1.3-8 3 3.6 3 8 3zM4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />,
+    layers: <path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5" />,
+    network: <path d="M12 8a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM5 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM19 21a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 8v4M12 12l-5.5 4.5M12 12l5.5 4.5" />,
+    puzzle: <path d="M9 4h3a2 2 0 114 0h3v5a2 2 0 110 4v5h-5a2 2 0 10-4 0H5v-5a2 2 0 100-4V4h4z" />,
+    building: <path d="M4 21V5l8-3v19M12 8l8 3v10M3 21h18M7.5 8h1M7.5 12h1M7.5 16h1M15.5 13h1M15.5 17h1" />,
+    bookmark: <path d="M6 3h12v18l-6-4.5L6 21V3z" />,
+    chart: <path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6" />,
+    search: <path d="M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4" />,
+    menu: <path d="M4 6h16M4 12h16M4 18h16" />,
+    'chevron-left': <path d="M15 5l-7 7 7 7" />,
+    'chevron-right': <path d="M9 5l7 7-7 7" />,
+    lightbulb: <path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0012 3z" />,
   };
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

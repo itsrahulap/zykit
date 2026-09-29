@@ -6,7 +6,18 @@ export interface TabDef<T extends string> {
 }
 
 /** Accessible tab bar (arrow keys move between tabs). Panels use id `panel-<id>`. */
-export function Tabs<T extends string>({ tabs, active, onChange }: { tabs: TabDef<T>[]; active: T; onChange: (id: T) => void }) {
+export function Tabs<T extends string>({
+  tabs,
+  active,
+  onChange,
+  label = 'File views',
+}: {
+  tabs: TabDef<T>[];
+  active: T;
+  onChange: (id: T) => void;
+  /** Accessible name of the tab list. */
+  label?: string;
+}) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const onKey = (e: KeyboardEvent, i: number) => {
     const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
@@ -17,7 +28,7 @@ export function Tabs<T extends string>({ tabs, active, onChange }: { tabs: TabDe
     refs.current[next]?.focus();
   };
   return (
-    <div role="tablist" aria-label="File views" className="flex gap-6 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
+    <div role="tablist" aria-label={label} className="flex gap-6 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
       {tabs.map((t, i) => (
         <button
           key={t.id}

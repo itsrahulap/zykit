@@ -3,12 +3,15 @@
 //   dist/index.html            home page metadata, JSON-LD and a static tool list inside #root
 //   dist/tools/<id>.html       one page per tool with its own title, description, canonical, OG tags,
 //                              JSON-LD and readable content (served at /tools/<id>; see vercel.json cleanUrls)
+//   dist/learn/**.html         every Learn page (subjects, lessons, problems, case studies) with its full text
+//                              (see scripts/learn-pages.ts)
 //   dist/sitemap.xml
 // React replaces the static #root content when it mounts, so users see the normal app.
 
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { runnerImport, type Plugin, type ResolvedConfig } from 'vite';
+import { learnPages, type LearnSources } from './learn-pages.ts';
 
 interface Tool {
   id: string;
@@ -90,10 +93,27 @@ export function seoPlugin(): Plugin {
       const root = config.root;
       const outDir = resolve(root, config.build.outDir);
       const opts = { root, configFile: false as const, logLevel: 'error' as const };
-      const [{ module: seo }, { module: registry }] = await Promise.all([
-        runnerImport<SeoModule>(join(root, 'src/config/seo.ts'), opts),
-        runnerImport<{ TOOLS: Tool[] }>(join(root, 'src/tools/registry.ts'), opts),
+      const load = <T>(path: string) => runnerImport<T>(join(root, path), opts).then((r) => r.module);
+      const [seo, registry, site, content, problems, caseStudies, learnSeo, html] = await Promise.all([
+        load<SeoModule>('src/config/seo.ts'),
+        load<{ TOOLS: Tool[] }>('src/tools/registry.ts'),
+        load<{ SITE: LearnSources['site'] }>('src/config/site.ts'),
+        load<{ subjects: LearnSources['subjects'] }>('src/learn/content/index.ts'),
+        load<{ allProblems: LearnSources['problems']; problemCategories: LearnSources['categories'] }>('src/learn/content/problems/index.ts'),
+        load<{ caseStudies: LearnSources['caseStudies'] }>('src/learn/content/case-studies/index.ts'),
+        load<LearnSources['seo']>('src/learn/seo.ts'),
+        load<LearnSources['html']>('src/learn/features/richTextHtml.ts'),
       ]);
+      const learn = learnPages({
+        site: site.SITE,
+        subjects: content.subjects,
+        problems: problems.allProblems,
+        categories: problems.problemCategories,
+        caseStudies: caseStudies.caseStudies,
+        seo: learnSeo,
+        html,
+      });
+      const learnMeta = (p: (typeof learn)[number]): Meta => ({ title: `${p.meta.title} · ${site.SITE.name}`, description: p.meta.description, url: `${site.SITE.url}${p.path}` });
       const tools = registry.TOOLS.filter((t) => t.status !== 'coming-soon');
       const template = await readFile(join(outDir, 'index.html'), 'utf8');
 
@@ -104,12 +124,13 @@ export function seoPlugin(): Plugin {
           `tools/${t.id}.html`,
           renderPage(template, seo.toolMeta(t), seo.toolStructuredData(t), toolBody(t, tools)),
         ]),
+        ...learn.map((p): [string, string] => [p.file, renderPage(template, learnMeta(p), p.structuredData, p.body)]),
       ];
-      for (const [file, html] of pages) {
+      for (const [file, page] of pages) {
         await mkdir(dirname(join(outDir, file)), { recursive: true });
-        await writeFile(join(outDir, file), html);
+        await writeFile(join(outDir, file), page);
       }
-      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url)]));
+      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url)]));
       config.logger.info(`seo: wrote ${pages.length} pages and sitemap.xml`);
     },
   };

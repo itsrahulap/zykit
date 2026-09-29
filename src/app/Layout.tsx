@@ -10,6 +10,8 @@ import { ThemeToggle } from '../shared/ui/ThemeToggle';
 export interface RouteHandle {
   tool?: ToolDefinition;
   title?: string;
+  /** The page sets its own title and description (see useDocumentMeta). */
+  pageMeta?: boolean;
 }
 
 function setMeta(selector: string, content: string) {
@@ -24,7 +26,10 @@ function usePageMeta() {
   const handle = [...matches].reverse().find((m) => m.handle)?.handle as RouteHandle | undefined;
   const tool = handle?.tool;
   const title = handle?.title;
+  const pageMeta = handle?.pageMeta;
   useEffect(() => {
+    // Content pages (e.g. Learn lessons) set their own metadata via useDocumentMeta.
+    if (pageMeta) return;
     const meta = tool ? toolMeta(tool) : homeMeta();
     const url = new URL(pathname, SITE.url).href;
     document.title = tool || !title ? meta.title : `${title} · ${SITE.name}`;
@@ -42,8 +47,11 @@ function usePageMeta() {
       document.head.append(robots);
     }
     robots?.setAttribute('content', noindex ? 'noindex' : 'index, follow');
-  }, [tool, title, pathname]);
+  }, [tool, title, pathname, pageMeta]);
 }
+
+const navClass = ({ isActive }: { isActive: boolean }) =>
+  `eyebrow rounded-lg px-2 py-2 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`;
 
 function SiteHeader() {
   return (
@@ -54,14 +62,11 @@ function SiteHeader() {
           <span>{SITE.name}</span>
         </Link>
         <nav aria-label="Main" className="flex items-center gap-2 sm:gap-4">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `eyebrow rounded-lg px-2 py-2 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`
-            }
-          >
-            All tools
+          <NavLink to="/" end className={navClass}>
+            Tools
+          </NavLink>
+          <NavLink to="/learn" className={navClass}>
+            Learn
           </NavLink>
           <ThemeToggle />
         </nav>

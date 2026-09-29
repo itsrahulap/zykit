@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import { HomePage } from '../pages/HomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { learnRoutes } from '../learn/routes';
 import { TOOLS, toolPath } from '../tools/registry';
 import { Layout, type RouteHandle } from './Layout';
 import { PageLoading, RouteError } from './RouteStates';
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
         handle: { tool } satisfies RouteHandle,
         lazy: async () => ({ Component: (await tool.load()).default }),
       })),
+      ...learnRoutes,
       { path: '*', element: <NotFoundPage />, handle: { title: 'Not found' } satisfies RouteHandle },
     ],
   },
