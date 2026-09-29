@@ -45,7 +45,21 @@ function useNow() {
 }
 
 export default function JwtDecoderPage() {
-  const [input, setInput] = useState('');
+  // A token handed over by the JWT Generator ("Open in JWT Decoder").
+  const [input, setInput] = useState(() => {
+    try {
+      return sessionStorage.getItem('zykit-jwt-handoff') ?? '';
+    } catch {
+      return '';
+    }
+  });
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('zykit-jwt-handoff');
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
   const now = useNow();
   const decoded = useMemo(() => decode(input), [input]);
   const jwt = decoded?.ok ? decoded.jwt : null;

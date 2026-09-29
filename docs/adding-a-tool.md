@@ -48,6 +48,8 @@ import myTool from './my-tool';
 export const TOOLS: ToolDefinition[] = [cleanImage, myTool];
 ```
 
+The home page groups tools by `category` in registry order and searches `name`, `tagline`, `description` and `tags`. Then run `npm run generate:readme` so the README's tool list includes it (a unit test fails until you do).
+
 ## 4. Build the page
 
 The page renders inside the site layout (header, footer, `<main>`), so it only needs its own content. Reuse the shared building blocks:
@@ -60,8 +62,12 @@ The page renders inside the site layout (header, footer, `<main>`), so it only n
 | `src/shared/ui/Tabs.tsx` | accessible `Tabs` |
 | `src/shared/ui/tool.tsx` | `Breadcrumb`, `CodeArea` (monospace textarea), `CodeBlock`, `CopyButton`, `Segmented` |
 | `src/shared/ui/Select.tsx` | styled, keyboard-accessible dropdown. Use it instead of a native `<select>`, whose open menu can't be themed |
-| `src/shared/lib/` | byte readers, CRC-32, bounded inflate, MD5/SHA/Adler checksums, `AppError` |
-| `src/shared/utils/` | `formatBytes`, `pluralize`, theme helpers |
+| `src/shared/ui/convert.tsx` | `Checkbox`, `OptionsCard`, `ErrorPanel` (line/column + caret snippet), `OutputPanel` (copy/download), `Notices`, `OpenFileButton` for input → output converters |
+| `src/shared/hooks/` | `useMediaQuery`, `useDocumentMeta` |
+| `src/shared/lib/` | byte readers, CRC-32, bounded inflate, MD5/SHA/Adler checksums, `AppError`, `csv` (RFC 4180 parse/write), `random` (unbiased sampling from `crypto.getRandomValues`), `textpos` (offset → line/column, error snippets) |
+| `src/shared/utils/` | `formatBytes`, `pluralize`, theme helpers, `downloadText`, `selectInTextarea`, tool search |
+
+Existing tools worth copying from: JSON Formatter (input → output with precise errors), Regex Tester and Diff Checker (work in a worker with a time limit), CSV Viewer (large data, windowed rendering), JWT Decoder (WebCrypto).
 
 Start the page with `<Breadcrumb tool={myTool} />` so users can get back to the tool list.
 
@@ -69,9 +75,17 @@ Start the page with `<Breadcrumb tool={myTool} />` so users can get back to the 
 
 Nothing to do: `npm run build` writes `dist/tools/<tool-id>.html` with the tool's own title, description, canonical URL, Open Graph tags and JSON-LD, and adds it to `dist/sitemap.xml` (see `scripts/seo-plugin.ts` and `src/config/seo.ts`). Write `tagline` and `description` with the words people search for, since they become the page title and search snippet.
 
+## Tests
+
+- **Unit tests** for everything in `features/`: `tests/tools/<tool-id>/*.test.ts` (Vitest, Node environment, so keep DOM-free logic in `features/`).
+- **A browser test** per tool: `e2e/<tool-id>.spec.ts` (Playwright, against the production build under the real CSP). Copy the checks from an existing spec: the main flow, no console errors, only same-origin `GET` requests, and no sideways scrolling at 320 px.
+
 ## Rules every tool follows
 
 - **Local only.** Never send file contents, file names or derived data over the network. The CSP (`connect-src 'self'`) blocks third-party requests, and e2e tests assert that no off-origin or non-GET requests happen.
-- **Heavy work in a worker**, with cancellation.
+- **Heavy work in a worker**, with cancellation. Anything user-controlled that can run away (regular expressions, parsers of large input, code) also gets a time limit that terminates the worker.
+- **No eval.** The CSP forbids `eval` and `new Function`, so parse things yourself. Code execution uses a fresh blob worker (see the JS Runner).
+- **Libraries are the exception, and load lazily.** Prefer writing it yourself; if a library is worth it, check it has no `eval` and few dependencies, and `import()` it inside the tool so it never reaches other pages. List it in the README's "Third-party code" table.
+- **Phones first.** No sideways page scrolling at 320 px (wide tables and code scroll inside their own box), and touch targets use `pointer-coarse:min-h-11`.
 - **Treat file contents as hostile.** Bounds-check every read, cap decompression, render untrusted text as text.
 - **Shared code stays generic.** If something is only useful to one tool, keep it in that tool's folder. Move it to `src/shared/` once a second tool needs it.

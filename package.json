@@ -14,9 +14,12 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc -b",
     "generate:learn": "tsx scripts/generate-learn-catalog.ts",
-    "prebuild": "tsx scripts/generate-learn-catalog.ts"
+    "prebuild": "tsx scripts/generate-learn-catalog.ts",
+    "generate:readme": "tsx scripts/generate-readme-tools.ts"
   },
   "dependencies": {
+    "dompurify": "^3.4.16",
+    "marked": "^16.4.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0",
@@ -38,7 +41,7 @@
     "vite": "^8.3.0",
     "vitest": "^5.0.2"
   },
-  "description": "A growing set of private, in-browser file and developer tools",
+  "description": "Private developer, data, text, web, security and image tools, plus a software-engineering course, that run entirely in the browser",
   "keywords": [
     "developer-tools",
     "privacy",

@@ -30,6 +30,19 @@ import csvJson from './csv-json';
 import csvViewer from './csv-viewer';
 import sqlFormatter from './sql-formatter';
 import curlConverter from './curl-converter';
+import markdownEditor from './markdown-editor';
+import textCleaner from './text-cleaner';
+import findReplace from './find-replace';
+import cronBuilder from './cron-builder';
+import userAgentParser from './user-agent-parser';
+import httpHeaders from './http-headers';
+import jwtGenerator from './jwt-generator';
+import certificateInspector from './certificate-inspector';
+import metaTagInspector from './meta-tag-inspector';
+import utmBuilder from './utm-builder';
+import urlCleaner from './url-cleaner';
+import robotsTxtGenerator from './robots-txt-generator';
+import sitemapGenerator from './sitemap-generator';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -60,6 +73,19 @@ export const TOOLS: ToolDefinition[] = [
   csvViewer,
   sqlFormatter,
   curlConverter,
+  markdownEditor,
+  textCleaner,
+  findReplace,
+  cronBuilder,
+  userAgentParser,
+  httpHeaders,
+  jwtGenerator,
+  certificateInspector,
+  metaTagInspector,
+  utmBuilder,
+  urlCleaner,
+  robotsTxtGenerator,
+  sitemapGenerator,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
