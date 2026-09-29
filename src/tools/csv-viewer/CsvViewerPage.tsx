@@ -10,7 +10,7 @@ import { Select } from '../../shared/ui/Select';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
 import { Checkbox, Notices, OpenFileButton, OptionsCard } from '../../shared/ui/convert';
 import { downloadText } from '../../shared/utils/dom.utils';
-import { formatBytes, pluralize } from '../../shared/utils/format.utils';
+import { formatBytes } from '../../shared/utils/format.utils';
 
 const ROW_H = 36;
 const VIEW_H = 560;
@@ -31,6 +31,7 @@ function makeSample(): string {
 }
 
 const fmt = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+const count = (n: number, one: string) => `${fmt(n)} ${n === 1 ? one : `${one}s`}`;
 
 function statRows(c: ColumnInfo): [string, string][] {
   const rows: [string, string][] = [
@@ -100,7 +101,7 @@ function DataTable({
       ref={box}
       onScroll={onScroll}
       role="region"
-      aria-label="Table"
+      aria-label="Data table"
       tabIndex={0}
       className="relative overflow-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
       style={{ maxHeight: VIEW_H + 90 }}
@@ -179,7 +180,7 @@ function DataTable({
                   onClick={() => copyRow(r)}
                   aria-label={`Copy row ${r + 1}`}
                   title="Copy row"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+                  className="inline-flex h-7 w-7 pointer-coarse:h-9 pointer-coarse:w-9 items-center justify-center rounded-md text-slate-500 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                 >
                   <Icon name={copied === r ? 'check' : 'copy'} className="h-3.5 w-3.5" />
                 </button>
@@ -278,7 +279,7 @@ export default function CsvViewerPage() {
       ? 'Parsing…'
       : !table
         ? 'Open or paste a CSV or TSV file to view it as a table.'
-        : `${indices.length === table.rows.length ? pluralize(table.rows.length, 'row') : `${fmt(indices.length)} of ${pluralize(table.rows.length, 'row')}`} · ${pluralize(table.headers.length, 'column')} · ${DELIMITER_LABELS[table.delimiter].toLowerCase()}-separated`;
+        : `${indices.length === table.rows.length ? count(table.rows.length, 'row') : `${fmt(indices.length)} of ${count(table.rows.length, 'row')}`} · ${count(table.headers.length, 'column')} · ${DELIMITER_LABELS[table.delimiter].toLowerCase()}-separated`;
 
   const bigSource = source.length > MAX_TEXTAREA_CHARS;
   const notices = [

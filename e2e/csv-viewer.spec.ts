@@ -12,7 +12,7 @@ test('shows, sorts, filters and exports a CSV table', async ({ page, context }) 
   const origin = new URL(page.url()).origin;
 
   await page.getByLabel('CSV input').fill('name,age\nAnn,30\nbob,9\nCara,100\nDan,');
-  const table = page.getByRole('region', { name: 'Table' });
+  const table = page.getByRole('region', { name: 'Data table' });
   await expect(page.getByText('4 rows · 2 columns · comma-separated')).toBeVisible();
   const firstCol = () => table.locator('tbody tr:not([aria-hidden]) td:nth-child(3)').allTextContents();
   expect(await firstCol()).toEqual(['Ann', 'bob', 'Cara', 'Dan']);
@@ -28,7 +28,7 @@ test('shows, sorts, filters and exports a CSV table', async ({ page, context }) 
   await expect.poll(firstCol).toEqual(['Cara', 'Ann']);
   await expect(page.getByText('2 of 4 rows · 2 columns · comma-separated')).toBeVisible();
 
-  await table.getByRole('button', { name: 'Copy row 2' }).click();
+  await table.getByRole('button', { name: 'Copy row 1' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('Ann,30');
 
   const downloadPromise = page.waitForEvent('download');
@@ -42,12 +42,10 @@ test('shows, sorts, filters and exports a CSV table', async ({ page, context }) 
   await page.getByRole('checkbox', { name: 'name' }).uncheck();
   await expect(table.getByRole('button', { name: 'name' })).toHaveCount(0);
 
-  const stats = page.getByRole('region', { name: 'Column stats' });
   await expect(page.getByText('Stats cover every row')).toBeVisible();
   await page.getByRole('combobox', { name: 'Column' }).click();
   await page.getByRole('option', { name: 'age' }).click();
   await expect(page.locator('dd', { hasText: /^46\.3333$/ })).toBeVisible();
-  void stats;
 
   for (const r of requests) {
     expect(r.method).toBe('GET');
@@ -62,7 +60,7 @@ test('handles 100k rows from a file without rendering them all', async ({ page }
   for (let i = 0; i < 100_000; i++) lines.push(`${i},${(i * 7919) % 100000},"item ${i}"`);
   await page.getByTestId('file-input').setInputFiles({ name: 'big.csv', mimeType: 'text/csv', buffer: Buffer.from(lines.join('\n')) });
   await expect(page.getByText('100,000 rows · 3 columns · comma-separated')).toBeVisible({ timeout: 15_000 });
-  const table = page.getByRole('region', { name: 'Table' });
+  const table = page.getByRole('region', { name: 'Data table' });
   expect(await table.locator('tbody tr:not([aria-hidden])').count()).toBeLessThan(100);
 
   await table.getByRole('button', { name: 'value' }).click();
@@ -78,6 +76,6 @@ test('has no horizontal scroll at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/tools/csv-viewer');
   await page.getByRole('button', { name: 'Try an example' }).click();
-  await expect(page.getByRole('region', { name: 'Table' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Data table' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });

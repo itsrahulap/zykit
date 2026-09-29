@@ -66,10 +66,96 @@ export function parseJsonText(text: string): JsonParse {
     const pos = /at position (\d+)/.exec(raw);
     if (lc) offset = offsetOf(text, Number(lc[1]), Number(lc[2]));
     else if (pos) offset = Number(pos[1]);
+    else offset = jsonErrorOffset(text);
     const message = raw
+      .replace(/, ".*" is not valid JSON$/s, '')
       .replace(/\s*\(line \d+ column \d+\)/, '')
       .replace(/\s+in JSON at position \d+/, '')
       .replace(/^JSON\.parse: /, '');
     return { ok: false, error: textError(text, offset, message || 'Invalid JSON') };
   }
+}
+
+const JSON_NUMBER = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+
+/** Offset of the first character that makes `s` invalid JSON (s.length if it is only incomplete). */
+export function jsonErrorOffset(s: string): number {
+  const n = s.length;
+  let i = 0;
+  const ws = () => {
+    while (i < n && (s[i] === ' ' || s[i] === '\t' || s[i] === '\n' || s[i] === '\r')) i++;
+  };
+  const str = (): boolean => {
+    i++;
+    while (i < n) {
+      const c = s.charCodeAt(i);
+      if (c === 34) {
+        i++;
+        return true;
+      }
+      if (c === 92) {
+        const e = s[i + 1];
+        if (e === 'u') {
+          if (!/^[0-9a-fA-F]{4}$/.test(s.slice(i + 2, i + 6))) return false;
+          i += 6;
+        } else if (e !== undefined && '"\\/bfnrt'.includes(e)) i += 2;
+        else {
+          i++;
+          return false;
+        }
+      } else if (c < 0x20) return false;
+      else i++;
+    }
+    return false;
+  };
+  const value = (depth: number): boolean => {
+    if (depth > 10_000) return false;
+    ws();
+    const c = s[i];
+    if (c === '{' || c === '[') {
+      const close = c === '{' ? '}' : ']';
+      i++;
+      ws();
+      if (s[i] === close) {
+        i++;
+        return true;
+      }
+      for (;;) {
+        if (c === '{') {
+          ws();
+          if (s[i] !== '"' || !str()) return false;
+          ws();
+          if (s[i] !== ':') return false;
+          i++;
+        }
+        if (!value(depth + 1)) return false;
+        ws();
+        if (s[i] === ',') {
+          i++;
+          continue;
+        }
+        if (s[i] === close) {
+          i++;
+          return true;
+        }
+        return false;
+      }
+    }
+    if (c === '"') return str();
+    for (const lit of ['true', 'false', 'null']) {
+      if (s.startsWith(lit, i)) {
+        i += lit.length;
+        return true;
+      }
+    }
+    JSON_NUMBER.lastIndex = i;
+    if (JSON_NUMBER.test(s)) {
+      i = JSON_NUMBER.lastIndex;
+      return true;
+    }
+    return false;
+  };
+  if (!value(0)) return Math.min(i, n);
+  ws();
+  return i;
 }
