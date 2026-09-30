@@ -138,8 +138,10 @@ test('a Regex Tester share link restores its state in a new page', async ({ page
   expect(requests.some((r) => r.includes('#') || r.includes('s='))).toBe(false);
 
   // A tampered fragment is ignored instead of breaking the page.
-  await other.goto('/tools/regex-tester#s=dNOT-VALID');
-  await expect(other.getByLabel('Pattern', { exact: true })).toHaveValue('');
+  const tampered = await context.newPage();
+  await tampered.goto('/tools/regex-tester#s=dNOT-VALID');
+  await expect(tampered.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(tampered.getByLabel('Pattern', { exact: true })).toHaveValue('');
 });
 
 test('tools that handle secrets have no share button', async ({ page }) => {

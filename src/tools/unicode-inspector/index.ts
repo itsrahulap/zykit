@@ -10,6 +10,9 @@ const unicodeInspector: ToolDefinition = {
   icon: 'text',
   tags: ['Unicode', 'UTF-8', 'Emoji', 'Homoglyph'],
   status: 'available',
+  accepts: ['text'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./UnicodeInspectorPage'),
 };
 

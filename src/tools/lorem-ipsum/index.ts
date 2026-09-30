@@ -10,6 +10,8 @@ const loremIpsum: ToolDefinition = {
   icon: 'text',
   tags: ['Lorem ipsum', 'Placeholder', 'Dummy text'],
   status: 'available',
+  produces: ['text'],
+  shareable: true,
   load: () => import('./LoremIpsumPage'),
 };
 

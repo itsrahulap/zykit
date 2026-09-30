@@ -10,6 +10,7 @@ const unitConverter: ToolDefinition = {
   icon: 'swap',
   tags: ['Units', 'Bytes', 'Convert'],
   status: 'available',
+  shareable: true,
   load: () => import('./UnitConverterPage'),
 };
 

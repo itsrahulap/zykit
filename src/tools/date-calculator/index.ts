@@ -10,6 +10,7 @@ const dateCalculator: ToolDefinition = {
   icon: 'clock',
   tags: ['Date', 'Duration', 'Business days'],
   status: 'available',
+  shareable: true,
   load: () => import('./DateCalculatorPage'),
 };
 

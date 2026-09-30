@@ -16,3 +16,9 @@
   Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; object-src 'none'
   X-Frame-Options: SAMEORIGIN
   X-Robots-Tag: noindex
+
+# The SQLite worker of Query CSV with SQL compiles WebAssembly. A dedicated worker uses the CSP of
+# its own script response, so only this script gets 'wasm-unsafe-eval'; pages never do.
+/assets/sql-worker-*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'

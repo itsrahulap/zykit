@@ -10,6 +10,8 @@ const qrCodeGenerator: ToolDefinition = {
   icon: 'grid',
   tags: ['QR code', 'Wi-Fi', 'vCard'],
   status: 'available',
+  accepts: ['text', 'url'],
+  shareable: true,
   load: () => import('./QrCodeGeneratorPage'),
 };
 

@@ -8,8 +8,10 @@ const csvSql: ToolDefinition = {
     'Load CSV files into an in-browser SQLite database and query, join and aggregate them with SQL. Nothing is uploaded.',
   category: 'Data',
   icon: 'database',
-  tags: ['CSV', 'SQL', 'SQLite', 'Query'],
+  tags: ['CSV', 'TSV', 'SQL', 'SQLite', 'Query', 'Join'],
   status: 'available',
+  accepts: ['csv'],
+  shareable: false,
   load: () => import('./CsvSqlPage'),
 };
 

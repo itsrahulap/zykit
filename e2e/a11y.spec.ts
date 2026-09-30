@@ -18,7 +18,12 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 // Tool ids come from the registry's imports (folder name = tool id), without loading React code.
 const registry = fs.readFileSync(path.join(process.cwd(), 'src/tools/registry.ts'), 'utf8');
-const TOOL_IDS = [...registry.matchAll(/^import \w+ from '\.\/([\w-]+)';$/gm)].map((m) => m[1]);
+// Scaffolded tools (page still has the `accent="TODO"` placeholder headline) are skipped until built.
+const isScaffold = (id: string) => {
+  const dir = path.join(process.cwd(), 'src/tools', id);
+  return fs.existsSync(dir) && fs.readdirSync(dir).some((f) => f.endsWith('Page.tsx') && fs.readFileSync(path.join(dir, f), 'utf8').includes('accent="TODO"'));
+};
+const TOOL_IDS = [...registry.matchAll(/^import \w+ from '\.\/([\w-]+)';$/gm)].map((m) => m[1]).filter((id) => !isScaffold(id));
 
 const ROUTES: string[] = [
   '/',
@@ -122,7 +127,7 @@ test.describe('axe', () => {
     },
     {
       name: 'select-open',
-      url: '/tools/json-formatter',
+      url: '/tools/csv-json',
       act: async (p) => {
         await p.locator('main button[role="combobox"]:visible').first().click({ timeout: 8000 });
         await p.getByRole('listbox').first().waitFor({ timeout: 5000 });
@@ -356,9 +361,16 @@ test.describe('keyboard', () => {
     out.palette = pal;
 
     // Select (select-only combobox) on JSON Formatter.
-    await ready(page, '/tools/json-formatter');
+    let selectUrl = '';
+    for (const u of ['/tools/csv-json', '/tools/random-string', '/tools/diff-checker', '/tools/sitemap-generator']) {
+      await ready(page, u);
+      if (await page.locator('main button[role="combobox"]:visible').count()) {
+        selectUrl = u;
+        break;
+      }
+    }
     const combo = page.locator('main button[role="combobox"]:visible').first();
-    const sel: Record<string, unknown> = { attrs: await combo.evaluate((el) => Object.fromEntries([...el.attributes].map((a) => [a.name, a.value]))) };
+    const sel: Record<string, unknown> = { url: selectUrl, attrs: await combo.evaluate((el) => Object.fromEntries([...el.attributes].map((a) => [a.name, a.value]))) };
     await combo.focus();
     const before = await combo.innerText();
     await page.keyboard.press('ArrowDown');

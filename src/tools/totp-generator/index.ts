@@ -10,6 +10,7 @@ const totpGenerator: ToolDefinition = {
   icon: 'key',
   tags: ['TOTP', '2FA', 'OTP', 'Authenticator'],
   status: 'available',
+  shareable: false,
   load: () => import('./TotpGeneratorPage'),
 };
 

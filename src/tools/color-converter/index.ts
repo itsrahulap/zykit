@@ -10,6 +10,7 @@ const colorConverter: ToolDefinition = {
   icon: 'sparkle',
   tags: ['Color', 'HEX', 'OKLCH', 'Contrast', 'WCAG'],
   status: 'available',
+  shareable: true,
   load: () => import('./ColorConverterPage'),
 };
 

@@ -10,6 +10,7 @@ const chmodCalculator: ToolDefinition = {
   icon: 'lock',
   tags: ['chmod', 'Unix', 'Permissions'],
   status: 'available',
+  shareable: true,
   load: () => import('./ChmodCalculatorPage'),
 };
 

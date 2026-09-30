@@ -10,6 +10,8 @@ const mockDataGenerator: ToolDefinition = {
   icon: 'dice',
   tags: ['Mock data', 'Fake', 'Test data'],
   status: 'available',
+  produces: ['json'],
+  shareable: true,
   load: () => import('./MockDataGeneratorPage'),
 };
 

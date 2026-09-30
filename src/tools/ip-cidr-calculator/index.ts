@@ -10,6 +10,7 @@ const ipCidrCalculator: ToolDefinition = {
   icon: 'network',
   tags: ['IP', 'CIDR', 'Subnet', 'IPv6'],
   status: 'available',
+  shareable: true,
   load: () => import('./IpCidrCalculatorPage'),
 };
 

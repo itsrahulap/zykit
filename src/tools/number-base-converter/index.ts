@@ -10,6 +10,7 @@ const numberBaseConverter: ToolDefinition = {
   icon: 'hash',
   tags: ['Binary', 'Hex', 'Bitwise', 'IEEE-754'],
   status: 'available',
+  shareable: true,
   load: () => import('./NumberBaseConverterPage'),
 };
 

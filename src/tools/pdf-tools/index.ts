@@ -8,8 +8,9 @@ const pdfTools: ToolDefinition = {
     'Combine PDFs, split or extract pages, reorder and rotate them, all in your browser without uploading.',
   category: 'Documents',
   icon: 'file',
-  tags: ['PDF', 'Merge', 'Split'],
+  tags: ['PDF', 'Merge', 'Split', 'Rotate', 'Extract pages', 'Privacy'],
   status: 'available',
+  shareable: false,
   load: () => import('./PdfToolsPage'),
 };
 
