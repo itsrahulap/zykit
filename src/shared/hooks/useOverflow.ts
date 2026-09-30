@@ -3,9 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 /**
  * Tracks whether an element's content overflows it (so it scrolls). Scroll containers use it to
  * become keyboard-focusable only when there is something to scroll (WCAG 2.1.1), which avoids
- * extra Tab stops on short content. `deps` re-measure after content changes that keep the size.
+ * extra Tab stops on short content. `content` re-measures after content changes that keep the size.
  */
-export function useOverflow<T extends HTMLElement>(deps: readonly unknown[] = []) {
+export function useOverflow<T extends HTMLElement>(content?: unknown) {
   const [el, setEl] = useState<T | null>(null);
   const [overflowing, setOverflowing] = useState(false);
   const ref = useCallback((node: T | null) => setEl(node), []);
@@ -19,7 +19,7 @@ export function useOverflow<T extends HTMLElement>(deps: readonly unknown[] = []
     ro.observe(el);
     if (el.firstElementChild) ro.observe(el.firstElementChild);
     return () => ro.disconnect();
-  }, [el, ...deps]);
+  }, [el, content]);
 
   return [ref, overflowing] as const;
 }

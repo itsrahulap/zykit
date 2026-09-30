@@ -97,7 +97,7 @@ export function CodeArea({
  * becomes a focusable, named region (`label`, default "Code") so keyboard users can scroll it.
  */
 export function CodeBlock({ children, className = '', label = 'Code' }: { children: string; className?: string; label?: string }) {
-  const [ref, overflowing] = useOverflow<HTMLPreElement>([children]);
+  const [ref, overflowing] = useOverflow<HTMLPreElement>(children);
   return (
     <pre
       ref={ref}

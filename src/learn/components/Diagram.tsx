@@ -1,12 +1,14 @@
-import { scrollRegionProps, useOverflow } from '../../shared/hooks/useOverflow';
+import { useOverflow } from '../../shared/hooks/useOverflow';
 
 /** Plain-text diagram from lesson content, shown in a scrollable monospace block (focusable when it scrolls). */
 export function Diagram({ text, label = 'Diagram' }: { text: string; label?: string }) {
-  const [ref, overflowing] = useOverflow<HTMLElement>([text]);
+  const [ref, overflowing] = useOverflow<HTMLElement>(text);
   return (
     <figure
       ref={ref}
-      {...scrollRegionProps(overflowing, label)}
+      // Keeps its figure role (named by the caption); focusable only when it scrolls sideways.
+      tabIndex={overflowing ? 0 : undefined}
+      aria-label={label}
       className="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950"
     >
       <figcaption className="sr-only">{label}</figcaption>

@@ -124,7 +124,7 @@ export default function HashGeneratorPage() {
         )}
 
         <div className="space-y-3 border-t border-slate-100 pt-5 dark:border-slate-800">
-          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200">
+          <label className="inline-flex items-center gap-2 text-sm pointer-coarse:min-h-11 font-medium text-slate-800 dark:text-slate-200">
             <input type="checkbox" checked={useHmac} onChange={(e) => setUseHmac(e.target.checked)} className="h-4 w-4 accent-emerald-600" />
             HMAC mode (keyed hash)
           </label>

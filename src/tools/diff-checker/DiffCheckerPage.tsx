@@ -33,7 +33,7 @@ greet("Zykit");
 
 function Checkbox({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <label className={`inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 ${disabled ? 'opacity-50' : ''}`}>
+    <label className={`inline-flex items-center gap-2 text-sm pointer-coarse:min-h-11 text-slate-700 dark:text-slate-300 ${disabled ? 'opacity-50' : ''}`}>
       <input
         type="checkbox"
         checked={checked}

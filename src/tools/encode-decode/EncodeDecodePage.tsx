@@ -82,7 +82,7 @@ export default function EncodeDecodePage() {
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600 dark:text-slate-400">
         <p>{info.hint}</p>
         {codec === 'html' && direction === 'encode' && (
-          <label className="inline-flex items-center gap-2">
+          <label className="inline-flex items-center gap-2 pointer-coarse:min-h-11">
             <input
               type="checkbox"
               checked={htmlAllNonAscii}

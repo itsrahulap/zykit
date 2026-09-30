@@ -1,6 +1,6 @@
-// Accessibility audit (WCAG 2.1 AA). Documents rather than fails: every check writes its findings
+// Accessibility audit (WCAG 2.1 AA). Every check writes its findings
 // to A11Y_OUT (default /private/tmp/claude-501/a11y-raw) and the last worker merges them into
-// a11y-results.json next to it. Set A11Y_STRICT=1 to make the axe scans fail on violations.
+// a11y-results.json next to it. The axe scans fail on violations; set A11Y_STRICT=0 to only record them.
 //
 // Sections: axe scans (every route x light/dark x 1280/375, plus open overlays and an error state),
 // keyboard walks, token contrast, reflow (320px / 640px) and text spacing, touch targets,
@@ -13,7 +13,8 @@ import path from 'node:path';
 
 const OUT = process.env.A11Y_OUT ?? '/private/tmp/claude-501/a11y-raw';
 const SUMMARY = process.env.A11Y_SUMMARY ?? '/private/tmp/claude-501/a11y-results.json';
-const STRICT = process.env.A11Y_STRICT === '1';
+// Strict by default: axe violations fail the scans. A11Y_STRICT=0 records them without failing.
+const STRICT = process.env.A11Y_STRICT !== '0';
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 // Tool ids come from the registry's imports (folder name = tool id), without loading React code.
@@ -193,6 +194,7 @@ test.describe('axe', () => {
         }
       }
       save('axe', `state-${s.name}`, scans);
+      if (STRICT) expect(scans.flatMap((x) => x.violations)).toEqual([]);
     });
   }
 });
@@ -715,7 +717,8 @@ test.describe('structure', () => {
         await ready(page, route);
         const info = await page.evaluate(() => {
           const hs = [...document.querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5,h6')].filter((h) => h.getClientRects().length > 0);
-          const levels = hs.map((h) => Number(h.tagName[1]));
+          const levelOf = (h: HTMLElement) => Number(h.getAttribute('aria-level') ?? h.tagName[1]);
+          const levels = hs.map(levelOf);
           const skips: string[] = [];
           levels.forEach((l, i) => {
             if (i > 0 && l > levels[i - 1] + 1) skips.push(`h${levels[i - 1]}→h${l} "${hs[i].innerText.trim().slice(0, 40)}"`);
@@ -724,7 +727,7 @@ test.describe('structure', () => {
           return {
             title: document.title,
             lang: document.documentElement.lang,
-            h1: hs.filter((h) => h.tagName === 'H1').map((h) => h.innerText.trim().slice(0, 60)),
+            h1: hs.filter((h) => levelOf(h) === 1).map((h) => h.innerText.trim().slice(0, 60)),
             firstHeading: levels[0],
             skips,
             landmarks: { header: count('body header:not(main header):not(section header):not(article header)'), nav: [...document.querySelectorAll('nav')].map((n) => n.getAttribute('aria-label') ?? '(unnamed)'), main: count('main'), footer: count('footer') },

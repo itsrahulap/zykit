@@ -70,7 +70,7 @@ export function VerifyPanel({ jwt, exampleSecret }: { jwt: DecodedJwt; exampleSe
             />
           </label>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <label className="inline-flex items-center gap-2 text-sm pointer-coarse:min-h-11 text-slate-700 dark:text-slate-300">
               <input type="checkbox" checked={base64} onChange={(e) => setBase64(e.target.checked)} className="h-4 w-4 accent-emerald-600" />
               Secret is Base64
             </label>

@@ -117,6 +117,7 @@ test('rejects a non-image file with a friendly message', async ({ page }) => {
 test('keyboard users can reach the file picker', async ({ page }) => {
   await page.goto('/tools/clean-image');
   const target = page.getByRole('button', { name: /choose a file/i });
+  await expect(target).toBeVisible();
   let reached = false;
   // Skip link, logo, three header nav links and the theme toggle come first.
   for (let i = 0; i < 10 && !reached; i++) {
@@ -126,13 +127,13 @@ test('keyboard users can reach the file picker', async ({ page }) => {
   expect(reached).toBe(true);
 });
 
-test('is light by default even when the OS prefers dark, and the toggle persists', async ({ page }) => {
+test('follows the OS colour scheme until the user picks one, and the toggle persists', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/');
   const bg = () => page.evaluate(() => getComputedStyle(document.querySelector('#root > div')!).backgroundColor);
+  expect(await bg()).toBe('rgb(15, 20, 17)');
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
   expect(await bg()).toBe('rgb(246, 246, 242)');
-  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
-  expect(await bg()).not.toBe('rgb(246, 246, 242)');
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Switch to light mode' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toBeVisible();
 });

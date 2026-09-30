@@ -71,7 +71,7 @@ export function SanitizeOptions({ report, onClean, busy }: { report: ImageMetada
       )}
 
       {rotated && (
-        <label className="mt-4 flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
+        <label className="mt-4 flex items-start gap-3 text-sm pointer-coarse:min-h-11 text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={preserveOrientation}

@@ -295,7 +295,7 @@ function PlaygroundShell({
 
 /** One walkthrough line. Long lines scroll sideways, so the box then becomes a focusable, named region. */
 function StepCode({ code }: { code: string }) {
-  const [ref, overflowing] = useOverflow<HTMLElement>([code]);
+  const [ref, overflowing] = useOverflow<HTMLElement>(code);
   return (
     <code
       ref={ref}

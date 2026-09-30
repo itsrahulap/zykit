@@ -58,7 +58,7 @@ const show = (s: string | undefined) => (s === undefined ? '—' : JSON.stringif
 
 function Highlighted({ text, matches }: { text: string; matches: Match[] }) {
   const segs = useMemo(() => segments(text, matches), [text, matches]);
-  const [ref, overflowing] = useOverflow<HTMLPreElement>([segs]);
+  const [ref, overflowing] = useOverflow<HTMLPreElement>(segs);
   // A named region (a bare <pre> can't carry aria-label); focusable when it scrolls, so keyboard users can scroll it.
   return (
     <pre

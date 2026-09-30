@@ -45,6 +45,7 @@ test('category filters by difficulty and solved state', async ({ page, baseURL }
   const problems = watch(page, baseURL);
   await page.goto('/learn/problems/arrays-hashing');
   const list = page.getByRole('list', { name: 'Arrays & Hashing problems' });
+  await expect(list.getByRole('listitem').first()).toBeVisible();
   const total = await list.getByRole('listitem').count();
   expect(total).toBeGreaterThan(3);
   await expect(page.getByRole('link', { name: /Learn the concept|Arrays/ }).first()).toBeVisible();

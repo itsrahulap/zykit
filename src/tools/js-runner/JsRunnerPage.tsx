@@ -211,7 +211,7 @@ export default function JsRunnerPage() {
             )}
             <Select label="Time limit" options={LIMITS.map((n) => ({ value: n, label: `${n} s` }))} value={limit} onChange={setLimit} />
             {language === 'ts' && (
-              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <label className="flex items-center gap-2 text-sm pointer-coarse:min-h-11 text-slate-600 dark:text-slate-400">
                 <input
                   type="checkbox"
                   checked={showCompiled}
@@ -233,7 +233,7 @@ export default function JsRunnerPage() {
               )}
             </h2>
             <div className="flex flex-wrap items-center gap-1">
-              <label className="flex items-center gap-1.5 px-2 text-sm text-slate-600 dark:text-slate-300">
+              <label className="flex items-center gap-1.5 px-2 text-sm pointer-coarse:min-h-11 text-slate-600 dark:text-slate-300">
                 <input type="checkbox" checked={timestamps} onChange={(e) => setTimestamps(e.target.checked)} className="h-4 w-4 accent-emerald-600" />
                 Timestamps
               </label>
