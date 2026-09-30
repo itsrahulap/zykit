@@ -211,7 +211,7 @@ export default function FaviconGeneratorPage() {
                       <span className="truncate">{site.name || 'My site'}</span>
                       <Icon name="x" className="ml-auto h-3 w-3 shrink-0 opacity-60" />
                     </div>
-                    <div className="hidden truncate px-3 py-2 text-sm opacity-60 sm:block">New tab</div>
+                    <div className={`hidden truncate px-3 py-2 text-sm sm:block ${mode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>New tab</div>
                   </div>
                   <div className={`h-3 ${mode === 'light' ? 'bg-white' : 'bg-slate-800'}`} />
                 </div>

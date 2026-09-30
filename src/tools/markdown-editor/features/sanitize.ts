@@ -50,9 +50,12 @@ export function createSanitizer(purify: DOMPurify): Sanitize {
         el.setAttribute('title', src ? `Remote image not loaded: ${src}` : 'Image');
       }
     } else if (tag === 'INPUT') {
-      // Only GFM task-list checkboxes, and read-only.
+      // Only GFM task-list checkboxes, and read-only. Named after the task text so a screen reader
+      // hears "Write docs, checkbox, checked" rather than an unnamed checkbox.
       el.setAttribute('type', 'checkbox');
       el.setAttribute('disabled', '');
+      const task = el.parentElement?.textContent?.replace(/\s+/g, ' ').trim();
+      if (task) el.setAttribute('aria-label', task.slice(0, 200));
     }
     if (el.hasAttribute('id') && !el.getAttribute('id')!.startsWith(ANCHOR_PREFIX)) el.setAttribute('id', ANCHOR_PREFIX + el.getAttribute('id'));
   });

@@ -16,7 +16,7 @@ import {
   type Duration,
   type WeekendPreset,
 } from './features/date-calculator';
-import { civilToMs, formatOffset, isoInZone, localZone, offsetMinutes, timeZones, toDatetimeLocal } from '../timestamp-converter/features/timestamp';
+import { civilToMs, formatInZone, formatOffset, isoInZone, localZone, offsetMinutes, timeZones, toDatetimeLocal } from '../timestamp-converter/features/timestamp';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
@@ -202,7 +202,7 @@ export default function DateCalculatorPage() {
       />
 
       {mode === 'diff' && (
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <Card label="Between" icon="clock">
             <div className="grid gap-4 sm:grid-cols-2">
               <DateTimeField label="Start" value={start} onChange={setStart} onNow={() => setStart(nowLocal())} />
@@ -246,7 +246,7 @@ export default function DateCalculatorPage() {
       )}
 
       {mode === 'add' && (
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <Card label="Start and duration" icon="clock">
             <DateTimeField label="Start" value={start} onChange={setStart} onNow={() => setStart(nowLocal())} />
             <Segmented<'add' | 'sub'>
@@ -270,7 +270,9 @@ export default function DateCalculatorPage() {
           <div className="min-w-0 space-y-6">
             {added?.ok ? (
               <>
-                <Result testId="add-result">{isoInZone(added.ms, zone)}</Result>
+                <Result testId="add-result">
+                  {formatInZone(added.ms, zone)} · {dayInfo(dayOf(added.ms, zone)).weekday}
+                </Result>
                 <div className="flex justify-end">
                   <CopyButton text={isoInZone(added.ms, zone)} />
                 </div>
@@ -300,7 +302,7 @@ export default function DateCalculatorPage() {
       )}
 
       {mode === 'business' && (
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <Card label="Working days" icon="building">
             <div className="grid gap-4 sm:grid-cols-2">
               <DateTimeField dateOnly label="Start date" value={bStart} onChange={setBStart} onNow={() => setBStart(today())} />

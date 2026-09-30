@@ -254,7 +254,7 @@ export default function TotpGeneratorPage() {
       <Notices items={uriWarnings} />
 
       {key?.ok && codes && (
-        <div className="grid items-start gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
           <section aria-label="Current code" className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="eyebrow mb-5 flex items-center gap-2 text-slate-600 dark:text-slate-400">
               <Icon name="clock" className="h-4 w-4" /> Current code

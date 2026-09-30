@@ -254,7 +254,7 @@ export default function UnicodeInspectorPage() {
             </Panel>
           )}
 
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <Panel eyebrow="Scripts and look-alikes" icon="globe">
               <div className="flex flex-wrap gap-2">
                 {a.scripts.map((s) => (

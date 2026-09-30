@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import markdownEditor from './index';
 import { applyEdit, insertTable, link, linePrefix, wrap, type Edit } from './features/editing';
-import { countText, documentTitle, standaloneHtml } from './features/markdown';
+import { countText, documentTitle, previewHtml, standaloneHtml } from './features/markdown';
 import { loadRenderer, type Renderer } from './features/sanitize';
 import { Notices, OpenFileButton } from '../../shared/ui/convert';
 import { DropZone } from '../../shared/ui/DropZone';
@@ -240,7 +240,7 @@ export default function MarkdownEditorPage() {
           </header>
           <div className="h-[32rem] overflow-auto p-4 sm:p-6 lg:h-[40rem]">
             {rendered ? (
-              <div className="md-preview" data-testid="md-preview" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+              <div className="md-preview" data-testid="md-preview" dangerouslySetInnerHTML={{ __html: previewHtml(rendered.html) }} />
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">{error ? 'Preview unavailable.' : 'Loading preview…'}</p>
             )}

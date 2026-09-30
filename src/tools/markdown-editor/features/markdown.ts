@@ -99,3 +99,12 @@ ${sanitizedBody}
 </html>
 `;
 }
+
+/**
+ * For the in-page preview only: the page already has its own <h1>, so the document's headings are
+ * exposed one level down (aria-level) to keep the page outline to a single top-level heading.
+ * Tags and styles stay as written, and exports use the untouched HTML.
+ */
+export function previewHtml(html: string): string {
+  return html.replace(/<h([1-6])(?=[\s>])/g, (_, n: string) => `<h${n} aria-level="${Math.min(6, Number(n) + 1)}"`);
+}

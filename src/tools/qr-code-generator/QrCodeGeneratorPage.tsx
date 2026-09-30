@@ -198,7 +198,7 @@ export default function QrCodeGeneratorPage() {
       <Headline accent="codes">Make QR </Headline>
       <StatusStrip status={status} tone={qr ? 'good' : 'neutral'} />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
         <div className="min-w-0 space-y-6">
           <section aria-label="Content" className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <Segmented<ContentType> label="Content type" options={KINDS} value={kind} onChange={setKind} />

@@ -103,6 +103,9 @@ function isTyping(el: Element | null) {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el as HTMLElement).isContentEditable;
 }
 
+/** The count inside a category chip: a solid muted colour (reduced opacity fell below 4.5:1). */
+const chipCount = (active: boolean) => `tabular-nums ${active ? 'text-emerald-700' : 'text-slate-500 dark:text-slate-400'}`;
+
 const chip = (active: boolean) =>
   `inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium ring-1 ring-inset transition-colors pointer-coarse:min-h-11 motion-reduce:transition-none ${
     active
@@ -237,7 +240,7 @@ export function HomePage() {
 
           <div role="group" aria-label="Categories" className="flex flex-wrap gap-2">
             <button type="button" aria-pressed={!category} onClick={() => setCategory('')} className={chip(!category)}>
-              All <span className="tabular-nums opacity-70">{total}</span>
+              All <span className={chipCount(!category)}>{total}</span>
             </button>
             {counts.map((c) => (
               <button
@@ -247,7 +250,7 @@ export function HomePage() {
                 onClick={() => setCategory(category === c.category ? '' : c.category)}
                 className={chip(category === c.category)}
               >
-                {c.category} <span className="tabular-nums opacity-70">{c.count}</span>
+                {c.category} <span className={chipCount(category === c.category)}>{c.count}</span>
               </button>
             ))}
           </div>

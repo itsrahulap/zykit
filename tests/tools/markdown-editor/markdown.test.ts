@@ -1,7 +1,7 @@
 import * as marked from 'marked';
 import { describe, expect, it } from 'vitest';
 import { applyEdit, insertTable, link, linePrefix, wrap } from '../../../src/tools/markdown-editor/features/editing';
-import { countText, createMarkdownRenderer, documentTitle, slugify, standaloneHtml, stripInlineStyles } from '../../../src/tools/markdown-editor/features/markdown';
+import { countText, createMarkdownRenderer, documentTitle, previewHtml, slugify, standaloneHtml, stripInlineStyles } from '../../../src/tools/markdown-editor/features/markdown';
 import { PURIFY_CONFIG } from '../../../src/tools/markdown-editor/features/sanitize';
 
 const render = createMarkdownRenderer(marked);
@@ -86,5 +86,13 @@ describe('toolbar edits', () => {
   });
   it('inserts a table on its own paragraph', () => {
     expect(applyEdit('text', insertTable('text', 4, 4))).toBe('text\n\n| Column 1 | Column 2 |\n| --- | --- |\n| Cell | Cell |\n');
+  });
+});
+
+describe('previewHtml', () => {
+  it('exposes document headings one level down, keeping tags and attributes', () => {
+    expect(previewHtml('<h1 id="md-a">A</h1><h2>B</h2><h6>C</h6><header>x</header>')).toBe(
+      '<h1 aria-level="2" id="md-a">A</h1><h2 aria-level="3">B</h2><h6 aria-level="6">C</h6><header>x</header>',
+    );
   });
 });

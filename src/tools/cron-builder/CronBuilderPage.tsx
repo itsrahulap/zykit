@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import cronBuilder from './index';
 import {
   builderToField,
@@ -53,6 +53,69 @@ function valueLabel(def: FieldDef, v: number): string {
   return String(v);
 }
 
+/**
+ * The "specific values" picker: one Tab stop for the whole grid (roving tabIndex), with the arrow keys,
+ * Home and End moving between values and Space/Enter toggling. 60 minutes no longer means 60 Tab stops.
+ */
+function ValueGrid({
+  label,
+  values,
+  selected,
+  format,
+  onToggle,
+}: {
+  label: string;
+  values: number[];
+  selected: number[];
+  format: (v: number) => string;
+  onToggle: (v: number, on: boolean) => void;
+}) {
+  const [focusIndex, setFocusIndex] = useState(() => Math.max(0, values.indexOf(selected[0])));
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const current = Math.min(focusIndex, values.length - 1);
+  const move = (i: number) => {
+    const next = (i + values.length) % values.length;
+    setFocusIndex(next);
+    buttons.current[next]?.focus();
+  };
+  const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (step) move(i + step);
+    else if (e.key === 'Home') move(0);
+    else if (e.key === 'End') move(values.length - 1);
+    else return;
+    e.preventDefault();
+  };
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap gap-1.5">
+      {values.map((v, i) => {
+        const on = selected.includes(v);
+        return (
+          <button
+            key={v}
+            ref={(el) => {
+              buttons.current[i] = el;
+            }}
+            type="button"
+            aria-pressed={on}
+            tabIndex={i === current ? 0 : -1}
+            onFocus={() => setFocusIndex(i)}
+            onKeyDown={(e) => onKeyDown(e, i)}
+            onClick={() => onToggle(v, on)}
+            className={`min-w-10 rounded-lg px-2 py-1.5 font-mono text-sm pointer-coarse:min-h-11 pointer-coarse:min-w-11 ${
+              on
+                ? 'bg-emerald-600 text-white dark:bg-emerald-400 dark:text-slate-950'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            {format(v)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function FieldBuilder({ def, text, onChange }: { def: FieldDef; text: string; onChange: (text: string) => void }) {
   const state = fieldToBuilder(text, def);
   const max = def.name === 'dow' ? 6 : def.max;
@@ -86,26 +149,13 @@ function FieldBuilder({ def, text, onChange }: { def: FieldDef; text: string; on
         </p>
       )}
       {state.mode === 'specific' && (
-        <div role="group" aria-label={`${def.label} values`} className="flex flex-wrap gap-1.5">
-          {values.map((v) => {
-            const on = state.values.includes(v);
-            return (
-              <button
-                key={v}
-                type="button"
-                aria-pressed={on}
-                onClick={() => update({ values: on ? state.values.filter((x) => x !== v) : [...state.values, v].sort((a, b) => a - b) })}
-                className={`min-w-10 rounded-lg px-2 py-1.5 font-mono text-sm pointer-coarse:min-h-11 ${
-                  on
-                    ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                }`}
-              >
-                {valueLabel(def, v)}
-              </button>
-            );
-          })}
-        </div>
+        <ValueGrid
+          label={`${def.label} values`}
+          values={values}
+          selected={state.values}
+          format={(v) => valueLabel(def, v)}
+          onToggle={(v, on) => update({ values: on ? state.values.filter((x) => x !== v) : [...state.values, v].sort((a, b) => a - b) })}
+        />
       )}
       {state.mode === 'range' && (
         <div className="flex flex-wrap items-center gap-3">
