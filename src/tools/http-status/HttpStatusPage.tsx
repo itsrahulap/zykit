@@ -29,7 +29,7 @@ function StatusCard({ s, highlighted }: { s: HttpStatus; highlighted: boolean })
       aria-labelledby={`status-${s.code}`}
       data-highlighted={highlighted || undefined}
       className={`scroll-mt-24 rounded-3xl border bg-white p-5 transition-shadow motion-reduce:transition-none sm:p-6 dark:bg-slate-900 ${
-        highlighted ? 'border-emerald-500 ring-4 ring-emerald-500/20 dark:border-emerald-400' : 'border-slate-200 dark:border-slate-800'
+        highlighted ? 'border-emerald-500 ring-4 ring-emerald-500/60 dark:border-emerald-400' : 'border-slate-200 dark:border-slate-800'
       }`}
     >
       <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -137,7 +137,7 @@ export default function HttpStatusPage() {
                 setHighlight(null);
               }}
               placeholder="404, teapot, rate limit, Retry-After…"
-              className="block w-full rounded-xl border border-field-edge bg-white py-2.5 pl-9 pr-3 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100"
+              className="block w-full rounded-xl border border-field-edge bg-white py-2.5 pl-9 pr-3 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100"
             />
           </span>
         </label>

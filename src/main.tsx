@@ -5,7 +5,7 @@ import './styles/index.css'
 import { router } from './app/router'
 import { applyTheme, getStoredTheme } from './shared/utils/theme'
 
-applyTheme(getStoredTheme())
+applyTheme(getStoredTheme(), false)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

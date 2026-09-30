@@ -110,36 +110,37 @@ export default function TotpGeneratorPage() {
   const step = type === 'totp' ? timeCounter(now, period) : counter;
   const remaining = secondsRemaining(now, period);
 
-  const [codes, setCodes] = useState<{ prev: string; cur: string; next: string } | null>(null);
+  // Results are tagged with what they were computed for, so stale ones are never shown.
+  const codeFor = key?.ok ? `${secret}|${algorithm}|${digits}` : '';
+  const [computed, setComputed] = useState<{ for: string; prev: string; cur: string; next: string } | null>(null);
   useEffect(() => {
-    if (!key?.ok) {
-      setCodes(null);
-      return;
-    }
+    if (!key?.ok) return;
     let live = true;
     const p = { algorithm, digits };
+    const tag = `${secret}|${algorithm}|${digits}`;
     void Promise.all([step > 0 ? hotp(key.key, step - 1, p) : Promise.resolve(''), hotp(key.key, step, p), hotp(key.key, step + 1, p)]).then(
-      ([prev, cur, next]) => live && setCodes({ prev, cur, next }),
-      () => live && setCodes(null),
+      ([prev, cur, next]) => live && setComputed({ for: tag, prev, cur, next }),
+      () => undefined,
     );
     return () => {
       live = false;
     };
-  }, [key, step, algorithm, digits]);
+  }, [key, secret, step, algorithm, digits]);
+  const codes = computed && computed.for === codeFor ? computed : null;
 
-  const [verdict, setVerdict] = useState<{ code: string; offset: number | null } | null>(null);
+  const checkCode = check.replace(/\s/g, '');
+  const verdictFor = key?.ok && checkCode ? `${codeFor}|${checkCode}|${windowSize}` : '';
+  const [verified, setVerified] = useState<{ for: string; code: string; offset: number | null } | null>(null);
   useEffect(() => {
-    const c = check.replace(/\s/g, '');
-    if (!key?.ok || !c) {
-      setVerdict(null);
-      return;
-    }
+    if (!key?.ok || !checkCode) return;
     let live = true;
-    void verifyCode(key.key, c, step, windowSize, { algorithm, digits }).then((offset) => live && setVerdict({ code: c, offset }));
+    const tag = `${secret}|${algorithm}|${digits}|${checkCode}|${windowSize}`;
+    void verifyCode(key.key, checkCode, step, windowSize, { algorithm, digits }).then((offset) => live && setVerified({ for: tag, code: checkCode, offset }));
     return () => {
       live = false;
     };
-  }, [key, check, step, windowSize, algorithm, digits]);
+  }, [key, secret, checkCode, step, windowSize, algorithm, digits]);
+  const verdict = verified && verified.for === verdictFor ? verified : null;
 
   const uri = key?.ok ? buildOtpauth({ type, secret, issuer, account, algorithm, digits, period, counter }) : '';
   const stepWord = type === 'totp' ? 'time step' : 'counter';

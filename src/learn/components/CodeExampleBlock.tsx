@@ -15,6 +15,7 @@ import { codeToRun, languageLabel, playgroundPlan, type PlaygroundPlan } from '.
 import { SANDBOX_URL } from '../features/domSandbox';
 import { useDomSandbox } from '../hooks/useDomSandbox';
 import { InlineText } from './RichText';
+import { scrollRegionProps, useOverflow } from '../../shared/hooks/useOverflow';
 
 export interface CodeExampleBlockProps {
   example: CodeExample;
@@ -83,9 +84,7 @@ export function CodeExampleBlock({ example, testCases }: CodeExampleBlockProps) 
           <ol className="space-y-3">
             {example.walkthrough.map((step, i) => (
               <li key={i} className="grid gap-1.5 sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] sm:gap-4">
-                <code className="block max-w-full self-start overflow-x-auto whitespace-pre rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                  {step.code}
-                </code>
+                <StepCode code={step.code} />
                 <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   <InlineText text={step.explanation} />
                 </p>
@@ -246,7 +245,7 @@ function PlaygroundShell({
       <div className="p-3 sm:p-4">
         <CodeArea
           label="Edit the code"
-          hint="Ctrl/⌘ + Enter runs"
+          hint="Tab indents · Esc then Tab leaves · Ctrl/⌘ + Enter runs"
           value={source}
           onChange={(e) => setSource(e.target.value)}
           onKeyDown={onKeyDown}
@@ -291,5 +290,19 @@ function PlaygroundShell({
       </section>
       {page}
     </div>
+  );
+}
+
+/** One walkthrough line. Long lines scroll sideways, so the box then becomes a focusable, named region. */
+function StepCode({ code }: { code: string }) {
+  const [ref, overflowing] = useOverflow<HTMLElement>([code]);
+  return (
+    <code
+      ref={ref}
+      {...scrollRegionProps(overflowing, `Code: ${code.trim().slice(0, 40)}`)}
+      className="block max-w-full self-start overflow-x-auto whitespace-pre rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-xs text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200"
+    >
+      {code}
+    </code>
   );
 }

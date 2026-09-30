@@ -196,7 +196,7 @@ export default function CronBuilderPage() {
             autoCorrect="off"
             aria-invalid={errors.length > 0}
             aria-describedby="cron-description"
-            className="min-w-0 flex-1 basis-60 rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-lg text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100"
+            className="min-w-0 flex-1 basis-60 rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-lg text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-950 dark:text-slate-100"
           />
           <CopyButton text={expression.trim()} />
         </div>

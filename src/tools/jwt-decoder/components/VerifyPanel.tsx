@@ -8,7 +8,7 @@ import { Icon } from '../../../shared/ui/ui';
 type Outcome = { for: string; result: 'valid' | 'invalid' | 'error'; message?: string };
 
 const inputClass =
-  'block w-full rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-sm text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
+  'block w-full rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-sm text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100';
 
 export function VerifyPanel({ jwt, exampleSecret }: { jwt: DecodedJwt; exampleSecret?: string }) {
   const [secret, setSecret] = useState('');

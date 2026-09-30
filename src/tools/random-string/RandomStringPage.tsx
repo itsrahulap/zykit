@@ -25,7 +25,7 @@ import { downloadText } from '../../shared/utils/dom.utils';
 const MAX_PREVIEW_CHARS = 200_000;
 
 const inputClass =
-  'rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100';
+  'rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100';
 
 function download(text: string, format: OutputFormat) {
   const json = format === 'json';

@@ -13,7 +13,7 @@ import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
 
 const INPUT =
-  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
+  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100';
 
 const SAMPLE = 'https://user:s3cret@münchen.example:8443/shop/items/%F0%9F%8D%95?q=pizza&tag=hot&tag=cheap&note=a%20b#reviews';
 

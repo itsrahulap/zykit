@@ -56,6 +56,13 @@ export default function LearnLayout() {
 
   return (
     <div className="lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[17rem_minmax(0,1fr)]">
+      {/* "Skip to content" lands on <main>, which starts with the ~40-link sidebar; this skips it. */}
+      <a
+        href="#lesson"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:font-semibold focus:text-slate-900 focus:shadow-lg dark:focus:bg-slate-900 dark:focus:text-white"
+      >
+        Skip to lesson
+      </a>
       <aside
         aria-label="Learn sidebar"
         className="hidden lg:sticky lg:top-6 lg:block lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pb-6 lg:pr-1"
@@ -78,7 +85,9 @@ export default function LearnLayout() {
           </button>
           <SearchButton className="ml-auto min-w-0 flex-1 sm:max-w-64 sm:flex-none" />
         </div>
-        <Outlet />
+        <div id="lesson">
+          <Outlet />
+        </div>
       </div>
 
       {drawerOpen && <Drawer onClose={() => setDrawer(null)} />}

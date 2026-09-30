@@ -1,6 +1,6 @@
 // Building blocks for text-based tools: breadcrumb, code editor box and copy button.
 
-import { useEffect, useState, type TextareaHTMLAttributes } from 'react';
+import { useEffect, useId, useState, type TextareaHTMLAttributes } from 'react';
 import { Link } from 'react-router';
 import type { ToolDefinition } from '../../tools/types';
 import { DropZone } from './DropZone';
@@ -42,7 +42,8 @@ export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id
 
 /**
  * Monospace textarea for code and text input. Pass `label` for an accessible name, and
- * `onFileText` to accept a dropped text file (with a drop state and size cap).
+ * `onFileText` to accept a dropped text file (with a drop state and size cap). `hint` is shown
+ * next to the label and linked to the field with aria-describedby (a description, not part of the name).
  */
 export function CodeArea({
   label,
@@ -57,12 +58,20 @@ export function CodeArea({
   onFileText?: (text: string, file: File) => void;
   maxFileBytes?: number;
 }) {
+  const autoId = useId();
+  const id = props.id ?? `${autoId}-field`;
+  const hintId = `${id}-hint`;
+  const describedBy = [props['aria-describedby'], hint && hintId].filter(Boolean).join(' ') || undefined;
   const field = (
-    <label className="block">
-      <span className="eyebrow mb-2 flex items-baseline justify-between gap-3 text-slate-600 dark:text-slate-400">
-        {label}
-        {hint && <span className="normal-case tracking-normal font-normal text-slate-500">{hint}</span>}
-      </span>
+    <div>
+      <div className="eyebrow mb-2 flex items-baseline justify-between gap-3 text-slate-600 dark:text-slate-400">
+        <label htmlFor={id}>{label}</label>
+        {hint && (
+          <span id={hintId} className="normal-case tracking-normal font-normal text-slate-500 dark:text-slate-400">
+            {hint}
+          </span>
+        )}
+      </div>
       <textarea
         spellCheck={false}
         autoCapitalize="off"
@@ -70,8 +79,10 @@ export function CodeArea({
         autoCorrect="off"
         className={`block w-full resize-y rounded-2xl border border-field-edge bg-white p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100 ${className}`}
         {...props}
+        id={id}
+        aria-describedby={describedBy}
       />
-    </label>
+    </div>
   );
   if (!onFileText || props.readOnly || props.disabled) return field;
   return (

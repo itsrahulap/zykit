@@ -175,7 +175,7 @@ export function NumberField({
           const n = Math.round(Number(v));
           if (Number.isFinite(n)) onChange(Math.min(max, Math.max(0, n)));
         }}
-        className={`${width} rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100`}
+        className={`${width} rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100`}
       />
     </label>
   );

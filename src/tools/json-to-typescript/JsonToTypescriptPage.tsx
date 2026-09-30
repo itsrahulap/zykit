@@ -115,7 +115,7 @@ export default function JsonToTypescriptPage() {
             value={rootName}
             onChange={(e) => setRootName(e.target.value)}
             spellCheck={false}
-            className="w-32 min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100"
+            className="w-32 min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-950 dark:text-slate-100"
           />
         </label>
         <Checkbox label="export" checked={exported} onChange={setExported} />

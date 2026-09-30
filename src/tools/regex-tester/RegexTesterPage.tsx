@@ -12,12 +12,13 @@ import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
+import { useOverflow } from '../../shared/hooks/useOverflow';
 
 /** Rows shown in the match table; the rest are still highlighted and counted. */
 const TABLE_ROWS = 500;
 
 const INPUT =
-  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
+  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100';
 
 const SAMPLE = {
   pattern: '(?<year>\\d{4})-(?<month>\\d{2})-(\\d{2})',
@@ -49,15 +50,22 @@ const KIND_TONE = {
 
 const TEXT_FILES = '.txt,.csv,.tsv,.md,.log,.json,.xml,.html,.yaml,.yml,text/*';
 
+const PATTERN_ERROR_ID = 'regex-pattern-error';
+
 const validFlags = (f: string) => FLAGS.map((x) => x.flag).filter((x) => f.includes(x)).join('');
 
 const show = (s: string | undefined) => (s === undefined ? '—' : JSON.stringify(s));
 
 function Highlighted({ text, matches }: { text: string; matches: Match[] }) {
   const segs = useMemo(() => segments(text, matches), [text, matches]);
+  const [ref, overflowing] = useOverflow<HTMLPreElement>([segs]);
+  // A named region (a bare <pre> can't carry aria-label); focusable when it scrolls, so keyboard users can scroll it.
   return (
     <pre
+      ref={ref}
+      role="region"
       aria-label="Highlighted matches"
+      tabIndex={overflowing ? 0 : undefined}
       className="max-h-[28rem] overflow-auto whitespace-pre-wrap break-all rounded-2xl bg-slate-100 p-4 font-mono text-sm leading-relaxed text-slate-800 dark:bg-slate-950 dark:text-slate-300"
     >
       {segs.map((s, i) =>
@@ -193,6 +201,7 @@ export default function RegexTesterPage() {
               autoCapitalize="off"
               autoComplete="off"
               aria-invalid={result ? !result.ok : undefined}
+              aria-describedby={result && !result.ok ? PATTERN_ERROR_ID : undefined}
               className={INPUT}
             />
             <span aria-hidden="true" className="whitespace-nowrap">
@@ -200,13 +209,18 @@ export default function RegexTesterPage() {
             </span>
           </span>
         </label>
+        {result && !result.ok && (
+          <p id={PATTERN_ERROR_ID} className="flex items-start gap-1.5 text-sm text-red-700 dark:text-red-400">
+            <Icon name="warn" className="mt-0.5 h-4 w-4 shrink-0" /> <span className="min-w-0 break-words">{result.error}</span>
+          </p>
+        )}
         <fieldset>
           <legend className="eyebrow mb-2 text-slate-600 dark:text-slate-400">Flags</legend>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {FLAGS.map((f) => (
               <label
                 key={f.flag}
-                className="flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 p-3 text-sm has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:border-slate-800 dark:has-[:checked]:border-emerald-700 dark:has-[:checked]:bg-emerald-950/40"
+                className="flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 p-3 text-sm pointer-coarse:min-h-11 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:border-slate-800 dark:has-[:checked]:border-emerald-700 dark:has-[:checked]:bg-emerald-950/40"
               >
                 <input
                   type="checkbox"

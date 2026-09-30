@@ -95,7 +95,7 @@ export default function SlugGeneratorPage() {
             placeholder="None"
             value={maxLength}
             onChange={(e) => setMaxLength(e.target.value)}
-            className="w-24 rounded-lg border border-field-edge bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100"
+            className="w-24 rounded-lg border border-field-edge bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100"
           />
         </label>
       </section>

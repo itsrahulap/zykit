@@ -26,7 +26,7 @@ import { Button, Icon } from '../../shared/ui/ui';
 type UnitChoice = 'auto' | Unit;
 
 const INPUT =
-  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100 dark:[color-scheme:dark]';
+  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100 dark:[color-scheme:dark]';
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(() => Date.now());

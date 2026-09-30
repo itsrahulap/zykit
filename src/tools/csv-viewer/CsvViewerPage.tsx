@@ -365,7 +365,7 @@ export default function CsvViewerPage() {
                 value={global}
                 onChange={(e) => setGlobal(e.target.value)}
                 placeholder="Search all columns…"
-                className="w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100"
+                className="w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100"
               />
             </label>
             <Button variant="secondary" onClick={exportView} disabled={!indices.length || !visible.length}>
