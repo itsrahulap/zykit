@@ -124,8 +124,8 @@ test.describe('axe', () => {
       name: 'select-open',
       url: '/tools/json-formatter',
       act: async (p) => {
-        await p.locator('main button[role="combobox"]').first().click();
-        await p.getByRole('listbox').first().waitFor();
+        await p.locator('main button[role="combobox"]:visible').first().click({ timeout: 8000 });
+        await p.getByRole('listbox').first().waitFor({ timeout: 5000 });
       },
     },
     {
@@ -322,11 +322,11 @@ test.describe('keyboard', () => {
     await search.focus();
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'Search Zykit' });
-    const pal: Record<string, unknown> = { opensWithEnter: await dialog.isVisible().catch(() => false) };
+    const pal: Record<string, unknown> = { opensWithEnter: await dialog.waitFor({ timeout: 3000 }).then(() => true, () => false) };
     if (!pal.opensWithEnter) {
       await page.keyboard.press('Control+k');
     }
-    await dialog.waitFor();
+    await dialog.waitFor({ timeout: 5000 });
     const input = dialog.getByRole('combobox');
     pal.inputFocused = await input.evaluate((el) => el === document.activeElement);
     pal.inputAttrs = await input.evaluate((el) => Object.fromEntries([...el.attributes].map((a) => [a.name, a.value])));
@@ -357,7 +357,7 @@ test.describe('keyboard', () => {
 
     // Select (select-only combobox) on JSON Formatter.
     await ready(page, '/tools/json-formatter');
-    const combo = page.locator('main button[role="combobox"]').first();
+    const combo = page.locator('main button[role="combobox"]:visible').first();
     const sel: Record<string, unknown> = { attrs: await combo.evaluate((el) => Object.fromEntries([...el.attributes].map((a) => [a.name, a.value]))) };
     await combo.focus();
     const before = await combo.innerText();
@@ -642,7 +642,7 @@ test.describe('reflow', () => {
     const out = [];
     for (const route of ['/', '/tools/json-formatter', '/tools/cron-builder', '/tools/image-compressor', '/learn/javascript/what-is-javascript', '/learn/problems/arrays-hashing/contains-duplicate', '/blog/claude-code-plugins-explained']) {
       for (const width of [1280, 375]) {
-        const { context, page } = await open(browser, 'light', width);
+        const { context, page } = await open(browser, 'light', width, { bypassCSP: true });
         await ready(page, route);
         await page.addStyleTag({ content: '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }' });
         await page.waitForTimeout(200);

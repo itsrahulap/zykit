@@ -49,8 +49,8 @@ test('the Send to menu works from the keyboard', async ({ page }) => {
 test('cURL converter → Send to HTTP Headers', async ({ page }) => {
   await page.goto('/tools/curl-converter');
   await page.getByLabel('cURL command').fill(`curl https://api.example.com/items -H 'Content-Type: application/json' -H 'X-Trace: abc'`);
-  await page.getByRole('button', { name: 'Send to…' }).first().click();
-  await page.getByRole('menuitem', { name: 'HTTP Headers' }).click();
+  await page.getByRole('region', { name: 'Request headers' }).getByRole('button', { name: 'Send to…' }).click();
+  await page.getByRole('menuitem', { name: /HTTP Headers/ }).click();
   await expect(page).toHaveURL(/\/tools\/http-headers$/);
   const box = page.getByRole('textbox', { name: /Raw headers/ });
   await expect(box).toHaveValue(/Content-Type: application\/json/);

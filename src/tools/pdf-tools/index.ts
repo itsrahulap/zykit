@@ -1,0 +1,16 @@
+import type { ToolDefinition } from '../types';
+
+const pdfTools: ToolDefinition = {
+  id: 'pdf-tools',
+  name: 'PDF Merge & Split',
+  tagline: 'Merge, split, reorder and rotate PDFs',
+  description:
+    'Combine PDFs, split or extract pages, reorder and rotate them, all in your browser without uploading.',
+  category: 'Documents',
+  icon: 'file',
+  tags: ['PDF', 'Merge', 'Split'],
+  status: 'available',
+  load: () => import('./PdfToolsPage'),
+};
+
+export default pdfTools;

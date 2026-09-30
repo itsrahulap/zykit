@@ -9,7 +9,7 @@ export default defineConfig({
   workers: 6,
   outputDir: '/private/tmp/claude-501/a11y-results',
   reporter: [['list']],
-  use: { baseURL: 'http://localhost:4355' },
+  use: { baseURL: 'http://localhost:4355', actionTimeout: 10_000 },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npx vite preview --outDir /private/tmp/claude-501/a11y-build --port 4355 --strictPort',

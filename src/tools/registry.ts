@@ -49,6 +49,24 @@ import imageConverter from './image-converter';
 import imageBase64 from './image-base64';
 import svgOptimizer from './svg-optimizer';
 import faviconGenerator from './favicon-generator';
+import colorConverter from './color-converter';
+import numberBaseConverter from './number-base-converter';
+import ipCidrCalculator from './ip-cidr-calculator';
+import jsonpathQuery from './jsonpath-query';
+import jsonSchema from './json-schema';
+import semverChecker from './semver-checker';
+import chmodCalculator from './chmod-calculator';
+import envDiff from './env-diff';
+import totpGenerator from './totp-generator';
+import stringEscaper from './string-escaper';
+import unicodeInspector from './unicode-inspector';
+import mockDataGenerator from './mock-data-generator';
+import qrCodeGenerator from './qr-code-generator';
+import loremIpsum from './lorem-ipsum';
+import dateCalculator from './date-calculator';
+import unitConverter from './unit-converter';
+import csvSql from './csv-sql';
+import pdfTools from './pdf-tools';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -98,6 +116,24 @@ export const TOOLS: ToolDefinition[] = [
   imageBase64,
   svgOptimizer,
   faviconGenerator,
+  colorConverter,
+  numberBaseConverter,
+  ipCidrCalculator,
+  jsonpathQuery,
+  jsonSchema,
+  semverChecker,
+  chmodCalculator,
+  envDiff,
+  totpGenerator,
+  stringEscaper,
+  unicodeInspector,
+  mockDataGenerator,
+  qrCodeGenerator,
+  loremIpsum,
+  dateCalculator,
+  unitConverter,
+  csvSql,
+  pdfTools,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

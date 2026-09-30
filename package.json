@@ -21,10 +21,12 @@
   "dependencies": {
     "dompurify": "^3.4.16",
     "marked": "^16.4.2",
+    "pdf-lib": "^1.17.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0",
     "sql-formatter": "^15.9.0",
+    "sql.js": "^1.14.2",
     "sucrase": "^3.35.1",
     "yaml": "^2.9.1"
   },
@@ -35,6 +37,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
