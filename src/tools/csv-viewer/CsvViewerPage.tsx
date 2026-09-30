@@ -162,7 +162,7 @@ function DataTable({
                   placeholder="Filter…"
                   value={filters[c] ?? ''}
                   onChange={(e) => onFilter(c, e.target.value)}
-                  className="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="w-full min-w-0 rounded-lg border border-field-edge bg-white px-2 py-1 text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none dark:bg-slate-900 dark:text-slate-100"
                 />
               </td>
             ))}
@@ -365,7 +365,7 @@ export default function CsvViewerPage() {
                 value={global}
                 onChange={(e) => setGlobal(e.target.value)}
                 placeholder="Search all columns…"
-                className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                className="w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100"
               />
             </label>
             <Button variant="secondary" onClick={exportView} disabled={!indices.length || !visible.length}>

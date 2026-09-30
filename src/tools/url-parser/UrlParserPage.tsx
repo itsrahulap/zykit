@@ -13,7 +13,7 @@ import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
 
 const INPUT =
-  'w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
+  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
 
 const SAMPLE = 'https://user:s3cret@münchen.example:8443/shop/items/%F0%9F%8D%95?q=pizza&tag=hot&tag=cheap&note=a%20b#reviews';
 
@@ -21,7 +21,7 @@ const SMALL_BTN =
   'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800';
 
 function Value({ text, display }: { text: string; display?: ReactNode }) {
-  if (!text) return <span className="text-slate-400 dark:text-slate-500">(none)</span>;
+  if (!text) return <span className="text-slate-500 dark:text-slate-400">(none)</span>;
   return (
     <span className="inline-flex max-w-full flex-wrap items-center justify-end gap-1">
       <span className="break-all font-mono text-sm">{display ?? text}</span>
@@ -178,7 +178,7 @@ export default function UrlParserPage() {
                     <li key={i} className="flex items-baseline gap-3 text-sm">
                       <span className="w-6 shrink-0 text-right text-slate-500">{i + 1}</span>
                       <span className="min-w-0 break-all font-mono text-slate-900 dark:text-slate-100">
-                        {s || <span className="text-slate-400">(empty — trailing slash)</span>}
+                        {s || <span className="text-slate-500 dark:text-slate-400">(empty — trailing slash)</span>}
                       </span>
                     </li>
                   ))}

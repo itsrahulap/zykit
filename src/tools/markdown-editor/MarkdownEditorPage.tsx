@@ -208,7 +208,7 @@ export default function MarkdownEditorPage() {
               rows={24}
               spellCheck
               placeholder="# Start writing…"
-              className="block h-[32rem] w-full resize-y rounded-b-3xl bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100 lg:h-[40rem]"
+              className="block h-[32rem] w-full resize-y rounded-b-3xl bg-transparent p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-slate-100 lg:h-[40rem]"
             />
           </DropZone>
         </section>

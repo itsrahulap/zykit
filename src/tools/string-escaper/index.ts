@@ -10,6 +10,9 @@ const stringEscaper: ToolDefinition = {
   icon: 'code',
   tags: ['Escape', 'JSON', 'SQL', 'Shell'],
   status: 'available',
+  accepts: ['text', 'code'],
+  produces: ['text'],
+  shareable: true,
   load: () => import('./StringEscaperPage'),
 };
 

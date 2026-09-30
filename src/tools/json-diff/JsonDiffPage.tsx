@@ -334,7 +334,7 @@ export default function JsonDiffPage() {
             onChange={(e) => setIgnoreKeysText(e.target.value)}
             placeholder="updatedAt, etag"
             spellCheck={false}
-            className="w-48 min-w-0 max-w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-slate-900 placeholder:text-slate-400 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+            className="w-48 min-w-0 max-w-full rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-slate-900 placeholder:text-slate-500 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100"
           />
         </label>
       </section>

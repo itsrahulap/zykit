@@ -11,7 +11,9 @@
   --color-slate-200: #e2e4dc;
   --color-slate-300: #cdd1c6;
   --color-slate-400: #9ba39a;
-  --color-slate-500: #6e7770;
+  /* Muted text. Darkened from #6e7770 so it reaches 4.5:1 on every light surface (5.33 on slate-50,
+     4.99 on slate-100); dark mode lightens it again below. */
+  --color-slate-500: #5f6861;
   --color-slate-600: #535d56;
   --color-slate-700: #3d4741;
   --color-slate-800: #28312c;
@@ -36,6 +38,10 @@
   --color-primary-edge: #c2cebf;
   --color-primary-soft: #eef2ec;
   --color-primary-ink: #1f3a2d;
+
+  /* Edge of text fields, selects and checkboxes: at least 3:1 against the surface (WCAG 1.4.11).
+     Card borders stay slate-200, since they are decorative. Redefined for dark mode below. */
+  --color-field-edge: #848d85;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -75,6 +81,10 @@
 
 :root.dark {
   color-scheme: dark;
+  /* Dark surfaces need a lighter muted grey: 5.54 on slate-900, 6.34 on slate-950, 4.57 on slate-800. */
+  --color-slate-500: #909991;
+  /* 3.77 on slate-900, 4.31 on slate-950. */
+  --color-field-edge: #737c75;
 }
 
 .dark {

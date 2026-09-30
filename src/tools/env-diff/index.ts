@@ -10,6 +10,7 @@ const envDiff: ToolDefinition = {
   icon: 'diff',
   tags: ['dotenv', '.env', 'Config'],
   status: 'available',
+  shareable: false,
   load: () => import('./EnvDiffPage'),
 };
 

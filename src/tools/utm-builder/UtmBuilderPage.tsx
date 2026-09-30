@@ -24,7 +24,7 @@ import { pluralize } from '../../shared/utils/format.utils';
 type Mode = 'single' | 'bulk';
 
 const inputClass =
-  'block w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100';
+  'block w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100';
 
 function Field({
   label,

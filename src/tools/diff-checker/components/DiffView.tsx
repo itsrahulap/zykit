@@ -9,7 +9,7 @@ const ROW_TONE = {
   del: 'bg-red-50 dark:bg-red-950/40',
   add: 'bg-emerald-50 dark:bg-emerald-950/60',
 };
-const NUM = 'select-none px-2 text-right align-top text-xs leading-6 text-slate-400 tabular-nums dark:text-slate-500';
+const NUM = 'select-none px-2 text-right align-top text-xs leading-6 text-slate-500 dark:text-slate-400 tabular-nums dark:text-slate-500';
 const MARK = 'select-none text-center align-top font-semibold leading-6';
 const TEXT = 'whitespace-pre-wrap break-all px-2 align-top leading-6 text-slate-800 dark:text-slate-200';
 

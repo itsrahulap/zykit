@@ -23,7 +23,7 @@ item2
 `;
 
 const textInput =
-  'min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100';
+  'min-w-0 rounded-lg border border-field-edge bg-white px-2.5 py-1.5 text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100';
 const iconButton =
   'inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 pointer-coarse:h-11 pointer-coarse:w-11 dark:text-slate-400 dark:hover:bg-slate-800';
 
@@ -249,7 +249,7 @@ export default function TextCleanerPage() {
         <ol className="divide-y divide-slate-100 dark:divide-slate-800">
           {steps.map((step, i) => (
             <li key={step.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2.5">
-              <span className="w-5 shrink-0 text-right font-mono text-xs text-slate-400">{i + 1}</span>
+              <span className="w-5 shrink-0 text-right font-mono text-xs text-slate-500 dark:text-slate-400">{i + 1}</span>
               <span className="min-w-0 flex-1 basis-52">
                 <Checkbox label={STEP_LABELS[step.id]} checked={step.enabled} onChange={(enabled) => update(i, { enabled })} />
               </span>

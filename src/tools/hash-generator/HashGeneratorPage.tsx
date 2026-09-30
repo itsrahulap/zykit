@@ -138,7 +138,7 @@ export default function HashGeneratorPage() {
                 spellCheck={false}
                 autoComplete="off"
                 placeholder="Secret key (UTF-8)"
-                className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 font-mono text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                className="block w-full rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-sm text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100"
               />
             </label>
           )}
@@ -178,7 +178,7 @@ export default function HashGeneratorPage() {
           })}
           {useHmac && (
             <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:gap-4">
-              <span className="w-28 shrink-0 text-sm font-semibold text-slate-400 dark:text-slate-500">HMAC-MD5</span>
+              <span className="w-28 shrink-0 text-sm font-semibold text-slate-500 dark:text-slate-400">HMAC-MD5</span>
               <Badge>Not supported</Badge>
             </li>
           )}

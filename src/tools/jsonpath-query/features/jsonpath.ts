@@ -64,7 +64,10 @@ const isNameChar = (c: number) => isNameFirst(c) || isDigit(c);
 
 class Parser {
   i = 0;
-  constructor(readonly s: string) {}
+  readonly s: string;
+  constructor(s: string) {
+    this.s = s;
+  }
 
   fail(message: string, at = this.i): never {
     throw new JsonPathError(message, at);
@@ -472,7 +475,10 @@ function sliceIndexes(len: number, sel: Extract<Selector, { t: 'slice' }>): numb
 class Evaluator {
   produced = 0;
   private regexCache = new Map<string, RegExp | null>();
-  constructor(private readonly root: Node) {}
+  private readonly root: Node;
+  constructor(root: Node) {
+    this.root = root;
+  }
 
   count(n: number) {
     this.produced += n;
@@ -681,6 +687,7 @@ export function normalizedPath(keys: (string | number)[]): string {
   for (const k of keys) {
     if (typeof k === 'number') s += `[${k}]`;
     else {
+      // eslint-disable-next-line no-control-regex -- control characters are exactly what gets escaped
       const esc = k.replace(/[\u0000-\u001f'\\]/g, (c) => {
         const map: Record<string, string> = { '\b': '\\b', '\f': '\\f', '\n': '\\n', '\r': '\\r', '\t': '\\t', "'": "\\'", '\\': '\\\\' };
         return map[c] ?? `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`;

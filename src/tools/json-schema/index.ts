@@ -10,6 +10,9 @@ const jsonSchema: ToolDefinition = {
   icon: 'check',
   tags: ['JSON', 'Schema', 'Validate'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['json'],
+  shareable: true,
   load: () => import('./JsonSchemaPage'),
 };
 

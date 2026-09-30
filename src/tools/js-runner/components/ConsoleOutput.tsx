@@ -56,7 +56,7 @@ export function ConsoleOutput({ entries, timestamps }: { entries: ConsoleEntry[]
               {e.text}
             </span>
             {timestamps && e.at !== undefined && (
-              <span className="shrink-0 font-sans text-xs tabular-nums text-slate-400 dark:text-slate-500">{formatTime(e.at)}</span>
+              <span className="shrink-0 font-sans text-xs tabular-nums text-slate-500 dark:text-slate-400">{formatTime(e.at)}</span>
             )}
           </li>
         );

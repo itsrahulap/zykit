@@ -21,7 +21,7 @@ const LEVELS: { level: Level; label: string; icon: 'x' | 'warn' | 'info' | 'chec
 ];
 
 const Mono = ({ children }: { children: ReactNode }) => <span className="font-mono text-sm break-all">{children}</span>;
-const None = () => <span className="text-slate-400 dark:text-slate-500">Not set</span>;
+const None = () => <span className="text-slate-500 dark:text-slate-400">Not set</span>;
 
 function LengthValue({ c }: { c: LengthCheck }) {
   if (!c.value) return <None key="n" />;
@@ -210,8 +210,8 @@ export default function MetaTagInspectorPage() {
               <ol className="space-y-1 text-sm">
                 {a.headings.map((h, i) => (
                   <li key={i} className={`flex min-w-0 gap-2 text-slate-700 dark:text-slate-300 ${INDENT[Math.min(h.level - 1, 5)]}`}>
-                    <span className="shrink-0 font-mono text-xs text-slate-400">h{h.level}</span>
-                    <span className="min-w-0 break-words">{h.text || <em className="text-slate-400">(empty)</em>}</span>
+                    <span className="shrink-0 font-mono text-xs text-slate-500 dark:text-slate-400">h{h.level}</span>
+                    <span className="min-w-0 break-words">{h.text || <em className="text-slate-500 dark:text-slate-400">(empty)</em>}</span>
                   </li>
                 ))}
               </ol>

@@ -100,7 +100,7 @@ function Subject({ subject }: { subject: SubjectMeta }) {
                         to={topicPath(subject.id, t.id)}
                         className="flex gap-4 px-5 py-4 hover:bg-slate-50 focus-visible:bg-slate-50 dark:hover:bg-slate-800/60 dark:focus-visible:bg-slate-800/60"
                       >
-                        <span className="w-6 shrink-0 pt-0.5 text-sm tabular-nums text-slate-400 dark:text-slate-500">
+                        <span className="w-6 shrink-0 pt-0.5 text-sm tabular-nums text-slate-500 dark:text-slate-400">
                           {String(numberOf.get(t.id)).padStart(2, '0')}
                         </span>
                         <span className="min-w-0 flex-1">

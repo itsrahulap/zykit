@@ -196,7 +196,7 @@ export default function CronBuilderPage() {
             autoCorrect="off"
             aria-invalid={errors.length > 0}
             aria-describedby="cron-description"
-            className="min-w-0 flex-1 basis-60 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-mono text-lg text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+            className="min-w-0 flex-1 basis-60 rounded-2xl border border-field-edge bg-white px-4 py-3 font-mono text-lg text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-950 dark:text-slate-100"
           />
           <CopyButton text={expression.trim()} />
         </div>
@@ -278,7 +278,7 @@ export default function CronBuilderPage() {
                 <ol className="space-y-1 font-mono text-sm text-slate-800 dark:text-slate-200">
                   {runs.runs.map((r, i) => (
                     <li key={r.getTime()} className="flex gap-3 rounded-lg px-2 py-1 odd:bg-slate-50 dark:odd:bg-slate-950">
-                      <span className="w-6 shrink-0 text-right text-slate-400">{i + 1}</span>
+                      <span className="w-6 shrink-0 text-right text-slate-500 dark:text-slate-400">{i + 1}</span>
                       <span className="min-w-0 break-words">{formatRun(r, tz, cron?.hasSeconds ?? false)}</span>
                     </li>
                   ))}

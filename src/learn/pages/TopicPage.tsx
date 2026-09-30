@@ -256,7 +256,7 @@ function TopicView({ subject, topic }: { subject: SubjectMeta; topic: Topic }) {
               {topic.exercises.map((ex, i) => (
                 <li key={i} className={`${cardClass} flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:gap-4`}>
                   <span className="flex shrink-0 items-center gap-2">
-                    <span className="text-sm font-semibold tabular-nums text-slate-400 dark:text-slate-500">{i + 1}.</span>
+                    <span className="text-sm font-semibold tabular-nums text-slate-500 dark:text-slate-400">{i + 1}.</span>
                     <DifficultyBadge difficulty={ex.difficulty} />
                   </span>
                   <p className="min-w-0 leading-relaxed text-slate-700 dark:text-slate-300">

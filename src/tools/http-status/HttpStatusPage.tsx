@@ -137,7 +137,7 @@ export default function HttpStatusPage() {
                 setHighlight(null);
               }}
               placeholder="404, teapot, rate limit, Retry-After…"
-              className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="block w-full rounded-xl border border-field-edge bg-white py-2.5 pl-9 pr-3 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 pointer-coarse:min-h-11 dark:bg-slate-950 dark:text-slate-100"
             />
           </span>
         </label>

@@ -10,6 +10,9 @@ const jsonpathQuery: ToolDefinition = {
   icon: 'braces',
   tags: ['JSON', 'JSONPath', 'Query'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['json'],
+  shareable: true,
   load: () => import('./JsonpathQueryPage'),
 };
 

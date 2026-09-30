@@ -211,7 +211,7 @@ export function HomePage() {
               autoComplete="off"
               spellCheck={false}
               aria-keyshortcuts="/"
-              className="block w-full rounded-2xl border border-slate-200 bg-white py-3.5 pr-14 pl-12 text-base text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
+              className="block w-full rounded-2xl border border-field-edge bg-white py-3.5 pr-14 pl-12 text-base text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
             />
             {query ? (
               <button

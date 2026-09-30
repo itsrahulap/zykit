@@ -119,8 +119,8 @@ export function Select<T extends string | number>({
           onBlur={(e) => {
             if (!root.current?.contains(e.relatedTarget as Node)) setOpen(false);
           }}
-          className={`inline-flex min-w-16 pointer-coarse:min-h-11 items-center justify-between gap-2 rounded-xl border bg-white px-3 py-2 text-left text-slate-900 transition-colors hover:border-slate-300 focus:outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700 ${
-            open ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800'
+          className={`inline-flex min-w-16 pointer-coarse:min-h-11 items-center justify-between gap-2 rounded-xl border bg-white px-3 py-2 text-left text-slate-900 transition-colors hover:border-slate-600 focus:outline-none focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/60 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-400 ${
+            open ? 'border-emerald-500 ring-2 ring-emerald-500/60' : 'border-field-edge'
           }`}
         >
           <span className={selected ? '' : 'text-slate-500 dark:text-slate-400'}>{selected?.label ?? placeholder ?? 'Choose…'}</span>

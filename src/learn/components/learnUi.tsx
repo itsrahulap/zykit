@@ -7,7 +7,7 @@ import { Icon, type IconName } from '../../shared/ui/ui';
 export const primaryLinkClass =
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-ink ring-1 ring-inset ring-primary-edge hover:bg-primary-hover pointer-coarse:min-h-11 sm:text-base';
 export const secondaryLinkClass =
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 pointer-coarse:min-h-11 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800';
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-inset ring-field-edge hover:bg-slate-50 pointer-coarse:min-h-11 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800';
 export const cardClass = 'rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900';
 export const cardLinkClass = `${cardClass} transition-shadow hover:border-primary-edge hover:shadow-lg hover:shadow-slate-900/5 motion-reduce:transition-none dark:hover:border-slate-700`;
 

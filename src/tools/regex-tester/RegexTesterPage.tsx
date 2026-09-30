@@ -17,7 +17,7 @@ import { pluralize } from '../../shared/utils/format.utils';
 const TABLE_ROWS = 500;
 
 const INPUT =
-  'w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
+  'w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 font-mono text-sm text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
 
 const SAMPLE = {
   pattern: '(?<year>\\d{4})-(?<month>\\d{2})-(\\d{2})',

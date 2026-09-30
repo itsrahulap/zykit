@@ -34,7 +34,7 @@ export default function BlogHomePage() {
             <ol className="mt-6 grid gap-x-8 gap-y-2 sm:grid-cols-2">
               {posts.map((p, i) => (
                 <li key={p.slug} className="flex gap-3">
-                  <span className="w-6 shrink-0 text-right font-mono text-sm text-slate-400">{i + 1}</span>
+                  <span className="w-6 shrink-0 text-right font-mono text-sm text-slate-500 dark:text-slate-400">{i + 1}</span>
                   <Link to={postPath(p)} className="text-slate-800 hover:text-emerald-700 hover:underline dark:text-slate-200 dark:hover:text-emerald-400">
                     {p.title}
                   </Link>

@@ -67,7 +67,7 @@ export function CodeArea({
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
-        className={`block w-full resize-y rounded-2xl border border-slate-200 bg-white p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${className}`}
+        className={`block w-full resize-y rounded-2xl border border-field-edge bg-white p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100 ${className}`}
         {...props}
       />
     </label>

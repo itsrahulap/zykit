@@ -20,7 +20,7 @@ function SeriesNav({ series, current }: { series: BlogSeries; current: BlogPost 
       <ol className="mt-3 space-y-1.5 text-sm">
         {seriesPosts(series.id).map((p, i) => (
           <li key={p.slug} className="flex gap-2">
-            <span className="w-4 shrink-0 text-right font-mono text-slate-400">{i + 1}</span>
+            <span className="w-4 shrink-0 text-right font-mono text-slate-500 dark:text-slate-400">{i + 1}</span>
             {p.slug === current.slug ? (
               <span aria-current="page" className="font-semibold text-emerald-700 dark:text-emerald-400">
                 {p.title}

@@ -160,6 +160,8 @@ Everything else is written from scratch. These libraries are each loaded only wh
 | `yaml` | YAML ↔ JSON |
 | `sql-formatter` | SQL Formatter |
 | `marked` + `dompurify` | Markdown Editor (every preview is sanitized) |
+| `sql.js` | Query CSV with SQL (SQLite compiled to WebAssembly; only its worker may compile WebAssembly, see `vercel.json`) |
+| `pdf-lib` | PDF Merge & Split (runs in a worker) |
 
 ## Privacy
 

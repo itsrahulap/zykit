@@ -175,7 +175,9 @@ class SchemaIndex {
   anchors = new Map<string, unknown>();
   keywords = new Set<string>();
 
-  constructor(root: unknown, readonly draft: Draft) {
+  readonly draft: Draft;
+  constructor(root: unknown, draft: Draft) {
+    this.draft = draft;
     this.walk(root, '#', DEFAULT_BASE, true);
   }
 
@@ -251,11 +253,14 @@ class SchemaIndex {
 
 class Validator {
   private regexes = new Map<string, RegExp | null>();
-  constructor(
-    private readonly index: SchemaIndex,
-    private readonly draft: Draft,
-    private readonly assertFormat: boolean,
-  ) {}
+  private readonly index: SchemaIndex;
+  private readonly draft: Draft;
+  private readonly assertFormat: boolean;
+  constructor(index: SchemaIndex, draft: Draft, assertFormat: boolean) {
+    this.index = index;
+    this.draft = draft;
+    this.assertFormat = assertFormat;
+  }
 
   regex(p: string): RegExp | null {
     if (this.regexes.has(p)) return this.regexes.get(p)!;

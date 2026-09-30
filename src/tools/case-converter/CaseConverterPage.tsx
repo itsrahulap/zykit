@@ -75,7 +75,7 @@ export default function CaseConverterPage() {
                 {r.value ? (
                   r.value.length > MAX_PREVIEW_CHARS ? `${r.value.slice(0, MAX_PREVIEW_CHARS)}…` : r.value
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-500">—</span>
+                  <span className="text-slate-500 dark:text-slate-400">—</span>
                 )}
               </pre>
             </section>

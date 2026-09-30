@@ -139,7 +139,7 @@ function CategoryView({ category }: { category: ProblemCategory }) {
                   to={problemPath(category.id, p.id)}
                   className="group flex items-center gap-3 px-4 py-4 hover:bg-slate-50 sm:gap-4 sm:px-6 dark:hover:bg-slate-800/60"
                 >
-                  <span className="w-7 shrink-0 font-mono text-sm tabular-nums text-slate-400 dark:text-slate-500">{String(p.number).padStart(2, '0')}</span>
+                  <span className="w-7 shrink-0 font-mono text-sm tabular-nums text-slate-500 dark:text-slate-400">{String(p.number).padStart(2, '0')}</span>
                   <span className="min-w-0 flex-1 font-medium text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
                     {p.title}
                   </span>

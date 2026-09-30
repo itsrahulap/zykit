@@ -179,7 +179,7 @@ export default function HttpHeadersPage() {
           <ul className="space-y-1 font-mono text-sm break-all text-slate-600 dark:text-slate-400">
             {parsed.invalid.slice(0, 50).map((l) => (
               <li key={l.line}>
-                <span className="text-slate-400">{l.line}:</span> {l.text}
+                <span className="text-slate-500 dark:text-slate-400">{l.line}:</span> {l.text}
               </li>
             ))}
           </ul>

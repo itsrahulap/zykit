@@ -35,7 +35,7 @@ export function ClaimsPanel({ payload, now }: { payload: JsonObject; now: number
                 {r.time ? (
                   <p className="text-sm text-slate-900 dark:text-slate-100">
                     {r.time.date} <span className="text-slate-500 dark:text-slate-400">({r.time.relative})</span>
-                    <span className="ml-2 font-mono text-xs text-slate-400">{r.value}</span>
+                    <span className="ml-2 font-mono text-xs text-slate-500 dark:text-slate-400">{r.value}</span>
                   </p>
                 ) : (
                   <p className="break-all font-mono text-sm text-slate-900 dark:text-slate-100">{r.value}</p>

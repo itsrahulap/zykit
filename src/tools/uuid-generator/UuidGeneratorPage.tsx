@@ -12,7 +12,7 @@ import { pluralize } from '../../shared/utils/format.utils';
 import { downloadText } from '../../shared/utils/dom.utils';
 
 const INPUT =
-  'rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100';
+  'rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100';
 
 export default function UuidGeneratorPage() {
   const [version, setVersion] = useState<UuidVersion>(4);

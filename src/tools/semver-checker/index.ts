@@ -10,6 +10,8 @@ const semverChecker: ToolDefinition = {
   icon: 'layers',
   tags: ['Semver', 'npm', 'Version'],
   status: 'available',
+  accepts: ['text'],
+  shareable: true,
   load: () => import('./SemverCheckerPage'),
 };
 
