@@ -193,7 +193,7 @@ export default function XmlJsonPage() {
         />
         <div className="min-w-0 space-y-6">
           {result && !result.ok && (
-            <ErrorPanel error={result.error} text={text} inputId={result.title === 'Cannot convert' ? undefined : INPUT_ID} title={result.title} />
+            <ErrorPanel error={result.error} text={text} inputId={result.title === 'Cannot convert' ? undefined : INPUT_ID} fieldId={INPUT_ID} title={result.title} />
           )}
           {result?.ok && (
             <>

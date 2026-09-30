@@ -7,6 +7,7 @@ import { DropZone } from './DropZone';
 import { FavoriteButton } from './FavoriteButton';
 import { ShareButton } from './ShareButton';
 import { useCurrentTool } from './toolContext';
+import { scrollRegionProps, useOverflow } from '../hooks/useOverflow';
 import { Icon } from './ui';
 
 /** "All tools / <Tool name>" trail shown at the top of every tool page, with the favorite star. */
@@ -16,12 +17,12 @@ export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id
     <nav aria-label="Breadcrumb" className="min-w-0 text-sm text-slate-500 dark:text-slate-400">
       <ol className="flex flex-wrap items-center gap-2">
         <li>
-          <Link to="/" className="hover:text-slate-900 hover:underline dark:hover:text-white">
+          <Link to="/" className="inline-flex items-center hover:text-slate-900 hover:underline pointer-coarse:min-h-11 dark:hover:text-white">
             All tools
           </Link>
         </li>
         <li aria-hidden="true">/</li>
-        <li aria-current="page" className="font-medium text-slate-900 dark:text-slate-100">
+        <li id={tool.id ? `crumb-${tool.id}` : undefined} aria-current="page" className="font-medium text-slate-900 dark:text-slate-100">
           {tool.name}
         </li>
       </ol>
@@ -33,7 +34,7 @@ export function Breadcrumb({ tool }: { tool: Pick<ToolDefinition, 'name'> & { id
       {trail}
       <div className="flex shrink-0 items-center gap-1">
         {ctx?.tool.id === tool.id && ctx.tool.shareable && <ShareButton />}
-        <FavoriteButton tool={{ id: tool.id, name: tool.name }} />
+        <FavoriteButton tool={{ id: tool.id, name: tool.name }} describedBy={`crumb-${tool.id}`} />
       </div>
     </div>
   );
@@ -67,7 +68,7 @@ export function CodeArea({
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
-        className={`block w-full resize-y rounded-2xl border border-field-edge bg-white p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:bg-slate-900 dark:text-slate-100 ${className}`}
+        className={`block w-full resize-y rounded-2xl border border-field-edge bg-white p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100 ${className}`}
         {...props}
       />
     </label>
@@ -80,10 +81,16 @@ export function CodeArea({
   );
 }
 
-/** Read-only monospace output block. Content is always rendered as text. */
-export function CodeBlock({ children, className = '' }: { children: string; className?: string }) {
+/**
+ * Read-only monospace output block. Content is always rendered as text. When it overflows it
+ * becomes a focusable, named region (`label`, default "Code") so keyboard users can scroll it.
+ */
+export function CodeBlock({ children, className = '', label = 'Code' }: { children: string; className?: string; label?: string }) {
+  const [ref, overflowing] = useOverflow<HTMLPreElement>([children]);
   return (
     <pre
+      ref={ref}
+      {...scrollRegionProps(overflowing, label)}
       className={`overflow-x-auto whitespace-pre-wrap break-all rounded-2xl bg-slate-100 p-4 font-mono text-sm leading-relaxed text-slate-800 dark:bg-slate-950 dark:text-slate-300 ${className}`}
     >
       {children}
@@ -140,7 +147,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`rounded-lg px-3 py-1.5 font-medium pointer-coarse:min-h-10 ${
+          className={`rounded-lg px-3 py-1.5 font-medium pointer-coarse:min-h-11 ${
             value === o.value ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'
           }`}
         >

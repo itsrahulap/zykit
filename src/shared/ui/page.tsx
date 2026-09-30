@@ -32,8 +32,9 @@ export function StatusStrip({ status, tone = 'neutral' }: { status: string; tone
     good: 'bg-primary text-primary-ink',
   }[tone];
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-200 py-5 dark:border-slate-800" aria-live="polite">
-      <p className={`rounded-xl px-4 py-2.5 text-sm sm:text-base ${pill}`}>{status}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-y border-slate-200 py-5 dark:border-slate-800">
+      {/* Only the status text is a live region; the "Local processing" label never changes. */}
+      <p aria-live="polite" className={`rounded-xl px-4 py-2.5 text-sm sm:text-base ${pill}`}>{status}</p>
       <p className="eyebrow flex items-center gap-2 text-slate-500 dark:text-slate-400">
         <Icon name="lock" className="h-3.5 w-3.5" /> Local processing
       </p>

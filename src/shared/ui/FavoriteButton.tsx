@@ -11,8 +11,10 @@ export function StarIcon({ filled, className = 'h-5 w-5' }: { filled: boolean; c
 }
 
 /**
- * The accessible name is always "Add to favorites" (state via aria-pressed), so it never collides
- * with a tool's own buttons; pass `describedBy` to name the tool when several stars share a page.
+ * A toggle button named "Favorite": the state comes from aria-pressed ("Favorite, toggle button,
+ * pressed"), not from a verb that would contradict it. The short name never collides with a tool's
+ * own buttons; `describedBy` points at the tool's name (card title or breadcrumb) so each star is
+ * told apart ("Favorite, pressed, JSON Formatter").
  */
 export function FavoriteButton({ tool, className = '', describedBy }: { tool: { id: string; name: string }; className?: string; describedBy?: string }) {
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -21,7 +23,7 @@ export function FavoriteButton({ tool, className = '', describedBy }: { tool: { 
     <button
       type="button"
       aria-pressed={on}
-      aria-label="Add to favorites"
+      aria-label="Favorite"
       aria-describedby={describedBy}
       title={on ? `Remove ${tool.name} from favorites` : `Add ${tool.name} to favorites`}
       onClick={(e) => {
@@ -33,7 +35,7 @@ export function FavoriteButton({ tool, className = '', describedBy }: { tool: { 
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset transition-colors pointer-coarse:h-11 pointer-coarse:w-11 motion-reduce:transition-none ${
         on
           ? 'bg-amber-50 text-amber-500 ring-amber-200 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-400 dark:ring-amber-900'
-          : 'bg-white text-slate-400 ring-slate-200 hover:text-slate-700 dark:bg-slate-900 dark:text-slate-500 dark:ring-slate-700 dark:hover:text-slate-200'
+          : 'bg-white text-slate-500 ring-slate-200 hover:text-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-700 dark:hover:text-slate-200'
       } ${className}`}
     >
       <StarIcon filled={on} />

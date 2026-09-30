@@ -83,7 +83,7 @@ test('home page has no horizontal scroll at 320px', async ({ page }) => {
 
 test('favorite and recently used tools show above the directory', async ({ page }) => {
   await page.goto('/tools/json-formatter');
-  const star = page.getByRole('button', { name: 'Add to favorites' });
+  const star = page.getByRole('button', { name: 'Favorite', exact: true });
   await expect(star).toHaveAttribute('aria-pressed', 'false');
   await star.click();
   await expect(star).toHaveAttribute('aria-pressed', 'true');
@@ -104,7 +104,7 @@ test('favorite and recently used tools show above the directory', async ({ page 
   await page.getByRole('searchbox', { name: 'Search tools' }).fill('');
 
   // Unstar from the home card.
-  const cardStar = page.getByRole('button', { name: 'Add to favorites', pressed: true });
+  const cardStar = page.getByRole('button', { name: 'Favorite', exact: true, pressed: true });
   await expect(cardStar).toHaveCount(1);
   await cardStar.click();
   await expect(favorites).toBeHidden();

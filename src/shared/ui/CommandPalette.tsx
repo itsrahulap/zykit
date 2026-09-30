@@ -195,7 +195,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
           Search Zykit
         </h2>
         <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-          <Icon name="search" className="h-5 w-5 shrink-0 text-slate-400" />
+          <Icon name="search" className="h-5 w-5 shrink-0 text-slate-500" />
           <input
             ref={input}
             type="search"
@@ -242,6 +242,8 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
                   id={optionId(i)}
                   role="option"
                   aria-selected={i === current}
+                  aria-labelledby={`${optionId(i)}-title`}
+                  aria-describedby={[item.group !== 'Actions' && `${optionId(i)}-meta`, item.description && `${optionId(i)}-desc`].filter(Boolean).join(' ') || undefined}
                   onClick={() => run(item)}
                   onMouseMove={() => i !== current && setActive(i)}
                   className={`flex cursor-pointer items-start gap-3 rounded-2xl px-3 py-2.5 ${
@@ -252,11 +254,11 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
                     <Icon name={item.icon} className="h-4 w-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    {item.group !== 'Actions' && <span className="eyebrow block text-[0.65rem] text-slate-500 dark:text-slate-400">{item.label}</span>}
-                    <span className="block font-semibold text-slate-900 dark:text-white">
+                    {item.group !== 'Actions' && <span id={`${optionId(i)}-meta`} className="eyebrow block text-[0.65rem] text-slate-500 dark:text-slate-400">{item.label}</span>}
+                    <span id={`${optionId(i)}-title`} className="block font-semibold text-slate-900 dark:text-white">
                       <Highlighted text={item.title} query={query} />
                     </span>
-                    {item.description && <span className="mt-0.5 line-clamp-1 block text-sm text-slate-500 dark:text-slate-400">{item.description}</span>}
+                    {item.description && <span id={`${optionId(i)}-desc`} className="mt-0.5 line-clamp-1 block text-sm text-slate-500 dark:text-slate-400">{item.description}</span>}
                   </span>
                 </div>
               ))}

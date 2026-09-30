@@ -22,6 +22,13 @@ const GROUPS: { title: string; rows: [string, string][] }[] = [
       [shortcutText('mod+s'), 'Download the main output'],
     ],
   },
+  {
+    title: 'In a code editor',
+    rows: [
+      ['Tab', 'Indent (the editor keeps Tab)'],
+      ['Esc, then Tab', 'Leave the code editor'],
+    ],
+  },
 ];
 
 export default function ShortcutsHelp({ onClose }: { onClose: () => void }) {

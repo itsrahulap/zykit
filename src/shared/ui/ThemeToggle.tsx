@@ -20,7 +20,7 @@ export function ThemeToggle() {
       }}
       aria-label={`Switch to ${next} mode`}
       title={`Switch to ${next} mode`}
-      className="rounded-xl p-2.5 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-white dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-900"
+      className="inline-flex items-center justify-center rounded-xl p-2.5 text-slate-600 pointer-coarse:h-11 pointer-coarse:w-11 ring-1 ring-inset ring-slate-200 hover:bg-white dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-900"
     >
       <Icon name={theme === 'dark' ? 'sun' : 'moon'} className="h-5 w-5" />
     </button>

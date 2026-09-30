@@ -1,6 +1,6 @@
 // Building blocks shared by the data-conversion tools (YAML, XML, CSV ↔ JSON, CSV viewer).
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { DataKind } from '../../tools/types';
 import { kindFromMime } from '../lib/dataKind';
 import { useToolShortcuts } from '../hooks/useToolShortcuts';
@@ -41,20 +41,54 @@ export function OptionsCard({ label, children }: { label: string; children: Reac
   );
 }
 
+/** Adds `token` to the element's aria-describedby while mounted, keeping any ids already there. */
+function useDescribedBy(fieldId: string | undefined, token: string) {
+  useEffect(() => {
+    const el = fieldId ? document.getElementById(fieldId) : null;
+    if (!el) return;
+    const ids = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean);
+    if (!ids.includes(token)) el.setAttribute('aria-describedby', [...ids, token].join(' '));
+    return () => {
+      const rest = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((t) => t && t !== token);
+      if (rest.length) el.setAttribute('aria-describedby', rest.join(' '));
+      else el.removeAttribute('aria-describedby');
+    };
+  }, [fieldId, token]);
+}
+
 /**
  * Syntax error with a caret snippet and a "jump to error" link. Without `inputId` the
  * error has no position (e.g. the input parsed but can't be converted): only the message shows.
+ * The message is linked to the field (`inputId`, or `fieldId` when there's no position) with
+ * aria-describedby, so a screen reader hears it together with "invalid entry" on the field.
  */
-export function ErrorPanel({ error, text, inputId, title = 'Syntax error' }: { error: TextError; text: string; inputId?: string; title?: string }) {
+export function ErrorPanel({
+  error,
+  text,
+  inputId,
+  fieldId = inputId,
+  title = 'Syntax error',
+}: {
+  error: TextError;
+  text: string;
+  inputId?: string;
+  fieldId?: string;
+  title?: string;
+}) {
+  const reactId = useId();
+  const messageId = fieldId ? `${fieldId}-error` : `${reactId}-error`;
+  useDescribedBy(fieldId, messageId);
   return (
     <Panel eyebrow={title} icon="warn" className="border-red-200 dark:border-red-900">
-      <p className="font-medium break-words text-red-800 dark:text-red-300">{error.message}</p>
+      <p id={messageId} className="font-medium break-words text-red-800 dark:text-red-300">
+        {error.message}
+      </p>
       {inputId && (
         <>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Line {error.line}, column {error.column}
           </p>
-          <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, error)}</CodeBlock>
+          <CodeBlock label="Error location" className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, error)}</CodeBlock>
         </>
       )}
       {inputId && (

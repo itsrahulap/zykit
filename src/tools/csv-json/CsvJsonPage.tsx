@@ -262,6 +262,7 @@ export default function CsvJsonPage() {
               error={result.error}
               text={text}
               inputId={result.located ? INPUT_ID : undefined}
+              fieldId={INPUT_ID}
               title={result.located ? 'Syntax error' : 'Cannot convert'}
             />
           )}

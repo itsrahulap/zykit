@@ -54,7 +54,7 @@ export function SearchButton({ className = '', compact = false }: { className?: 
       aria-keyshortcuts="Meta+K Control+K"
       aria-haspopup="dialog"
       aria-label={compact ? 'Search' : undefined}
-      className={`flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 hover:border-slate-300 hover:text-slate-900 pointer-coarse:min-h-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-white ${
+      className={`flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-500 hover:border-slate-300 hover:text-slate-900 pointer-coarse:min-h-11 pointer-coarse:min-w-11 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-white ${
         compact ? 'p-2.5 sm:px-3 sm:py-2' : 'px-3 py-2'
       } ${className}`}
     >

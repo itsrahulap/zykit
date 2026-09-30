@@ -55,7 +55,7 @@ function usePageMeta() {
 }
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  `eyebrow rounded-lg px-1.5 py-2 sm:px-2 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`;
+  `eyebrow inline-flex items-center rounded-lg px-1.5 py-2 pointer-coarse:min-h-11 sm:px-2 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`;
 
 function SiteHeader() {
   return (
@@ -80,6 +80,16 @@ function SiteHeader() {
         </nav>
       </div>
     </header>
+  );
+}
+
+/** Marks a link that opens in a new tab: a small arrow, plus the words for screen readers. */
+function NewTab() {
+  return (
+    <>
+      <span aria-hidden="true"> ↗</span>
+      <span className="sr-only"> (opens in a new tab)</span>
+    </>
   );
 }
 
@@ -130,6 +140,7 @@ function SiteFooter() {
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 font-medium text-slate-800 hover:border-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500"
             >
               <GitHubMark className="h-4 w-4" /> Star on GitHub
+              <NewTab />
             </a>
           </div>
 
@@ -175,11 +186,13 @@ function SiteFooter() {
                 <li>
                   <a href={`${SITE.repo}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noreferrer" className={footerLink}>
                     Contribute
+                    <NewTab />
                   </a>
                 </li>
                 <li>
                   <a href={`${SITE.repo}/issues/new/choose`} target="_blank" rel="noreferrer" className={footerLink}>
                     Report an issue
+                    <NewTab />
                   </a>
                 </li>
               </ul>
@@ -192,6 +205,7 @@ function SiteFooter() {
             © {YEAR} {SITE.name} ·{' '}
             <a href={`${SITE.repo}/blob/main/LICENSE`} target="_blank" rel="noreferrer" className="hover:text-slate-900 hover:underline dark:hover:text-white">
               MIT licensed
+              <NewTab />
             </a>
           </p>
           <button type="button" onClick={openShortcutsHelp} aria-keyshortcuts="?" className="self-start hover:text-slate-900 hover:underline pointer-coarse:min-h-11 sm:self-auto dark:hover:text-white">
@@ -211,7 +225,10 @@ export function Layout() {
   return (
     <CommandPaletteProvider>
       <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:font-semibold focus:text-slate-900 focus:shadow-lg dark:focus:bg-slate-900 dark:focus:text-white"
+        >
           Skip to content
         </a>
         <SiteHeader />

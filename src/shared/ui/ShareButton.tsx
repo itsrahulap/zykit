@@ -37,21 +37,25 @@ export function ShareButton() {
 
   const text = { idle: 'Share', copied: 'Link copied', 'too-large': 'Too large to share', failed: 'Copy failed' }[state];
   return (
-    <button
-      type="button"
-      onClick={share}
-      title={TIP}
-      aria-label={state === 'idle' ? 'Copy share link' : undefined}
-      className={`inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sm font-medium ring-1 ring-inset transition-colors pointer-coarse:h-11 motion-reduce:transition-none ${
-        state === 'too-large' || state === 'failed'
-          ? 'text-amber-800 ring-amber-300 dark:text-amber-300 dark:ring-amber-800'
-          : 'text-slate-600 ring-slate-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:ring-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'
-      }`}
-    >
-      <Icon name={state === 'copied' ? 'check' : 'link'} className="h-4 w-4" />
-      <span aria-live="polite" className={state === 'idle' ? 'hidden sm:inline' : ''}>
-        {text}
+    <>
+      <button
+        type="button"
+        onClick={share}
+        title={TIP}
+        aria-label={state === 'idle' ? 'Copy share link' : undefined}
+        className={`inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sm font-medium ring-1 ring-inset transition-colors pointer-coarse:h-11 pointer-coarse:min-w-11 motion-reduce:transition-none ${
+          state === 'too-large' || state === 'failed'
+            ? 'text-amber-800 ring-amber-300 dark:text-amber-300 dark:ring-amber-800'
+            : 'text-slate-600 ring-slate-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:ring-slate-800 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`}
+      >
+        <Icon name={state === 'copied' ? 'check' : 'link'} className="h-4 w-4" />
+        <span className={state === 'idle' ? 'hidden sm:inline' : ''}>{text}</span>
+      </button>
+      {/* Always mounted, and only ever holds the result, so "Share" itself is never announced. */}
+      <span aria-live="polite" className="sr-only">
+        {state === 'idle' ? '' : text}
       </span>
-    </button>
+    </>
   );
 }

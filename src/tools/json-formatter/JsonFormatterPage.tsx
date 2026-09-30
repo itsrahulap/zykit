@@ -114,7 +114,7 @@ export default function JsonFormatterPage() {
           />
         )}
         {action !== 'validate' && (
-          <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
             <input
               type="checkbox"
               checked={sortKeys}
@@ -135,21 +135,24 @@ export default function JsonFormatterPage() {
           rows={18}
           placeholder='{"paste": "your JSON here"}'
           aria-invalid={parsed ? !parsed.ok : undefined}
+          aria-describedby={parsed && !parsed.ok ? `${INPUT_ID}-error` : undefined}
           onFileText={(t) => setInput(t)}
         />
 
         <div className="min-w-0 space-y-6">
           {parsed && !parsed.ok && (
             <Panel eyebrow="Syntax error" icon="warn" className="border-red-200 dark:border-red-900">
-              <p className="font-medium text-red-800 dark:text-red-300">{parsed.error.message}</p>
+              <p id={`${INPUT_ID}-error`} className="font-medium text-red-800 dark:text-red-300">
+                {parsed.error.message}
+              </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 Line {parsed.error.line}, column {parsed.error.column}
               </p>
-              <CodeBlock className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, parsed.error)}</CodeBlock>
+              <CodeBlock label="Error location" className="mt-4 whitespace-pre! break-normal! overflow-x-auto">{errorSnippet(text, parsed.error)}</CodeBlock>
               <button
                 type="button"
                 onClick={() => selectInTextarea(INPUT_ID, parsed.error.offset)}
-                className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
+                className="mt-4 text-sm font-semibold text-emerald-700 underline-offset-4 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400"
               >
                 Jump to error in input
               </button>
@@ -182,7 +185,7 @@ export default function JsonFormatterPage() {
                     </div>
                   </header>
                   <div className="p-4">
-                    <CodeBlock className="max-h-[36rem] overflow-y-auto">{preview}</CodeBlock>
+                    <CodeBlock label={action === 'minify' ? 'Minified JSON' : 'Formatted JSON'} className="max-h-[36rem] overflow-y-auto">{preview}</CodeBlock>
                     {preview.length < output.length && (
                       <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
                         Showing the first {formatBytes(MAX_PREVIEW_CHARS)} of the output. Copy or download to get all of it.
