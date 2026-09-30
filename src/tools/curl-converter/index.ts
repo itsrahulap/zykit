@@ -12,7 +12,7 @@ const curlConverter: ToolDefinition = {
   status: 'available',
   accepts: ['curl'],
   produces: ['code', 'headers'],
-  shareable: true,
+  shareable: false, // cURL commands often carry Authorization headers or cookies
   load: () => import('./CurlConverterPage'),
 };
 

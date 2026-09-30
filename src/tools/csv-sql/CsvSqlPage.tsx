@@ -158,14 +158,16 @@ export default function CsvSqlPage() {
   const examples = useMemo(() => exampleQueries(db.tables), [db.tables]);
   const busy = db.busy !== null;
 
-  // Suggest a first query once there's a table and the editor is empty.
-  useEffect(() => {
-    if (suggested.current || !db.tables.length) return;
-    suggested.current = true;
-    if (!sql) setSql(examples[0].sql);
-  }, [db.tables.length, examples, sql]);
+  /** Add tables; the first time there are tables and the editor is empty, suggest a query. */
+  const addTables = async (items: Parameters<typeof db.add>[0]) => {
+    const tables = await db.add(items);
+    if (tables?.length && !suggested.current) {
+      suggested.current = true;
+      setSql((s) => s || exampleQueries(tables)[0].sql);
+    }
+  };
 
-  useIncomingText(csvSql.id, (text) => void db.add([{ data: text, source: 'pasted.csv' }]));
+  useIncomingText(csvSql.id, (text) => void addTables([{ data: text, source: 'pasted.csv' }]));
 
   const run = () => {
     if (db.busy || !sql.trim()) return;
@@ -175,7 +177,7 @@ export default function CsvSqlPage() {
 
   const addFiles = (files: FileList | File[]) => {
     const list = Array.from(files);
-    if (list.length) void db.add(list.map((f) => ({ data: f, source: f.name })));
+    if (list.length) void addTables(list.map((f) => ({ data: f, source: f.name })));
   };
 
   const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes('Files');
@@ -276,7 +278,7 @@ export default function CsvSqlPage() {
             variant="ghost"
             disabled={busy}
             onClick={() =>
-              void db.add([
+              void addTables([
                 { data: SAMPLE_CUSTOMERS, source: 'customers.csv' },
                 { data: SAMPLE_ORDERS, source: 'orders.csv' },
               ])
@@ -305,7 +307,7 @@ export default function CsvSqlPage() {
                 variant="secondary"
                 disabled={!paste.trim() || busy}
                 onClick={() => {
-                  void db.add([{ data: paste, source: pasteName.trim() || 'pasted' }]);
+                  void addTables([{ data: paste, source: pasteName.trim() || 'pasted' }]);
                   setPaste('');
                   setShowPaste(false);
                 }}

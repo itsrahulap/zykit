@@ -83,6 +83,11 @@ describe('which tools can be shared', () => {
     'http-headers',
     'js-runner',
     'meta-tag-inspector',
+    'curl-converter',
+    'env-diff',
+    'totp-generator',
+    'csv-sql',
+    'pdf-tools',
   ];
 
   it('never offers share links for tools that handle secrets', () => {

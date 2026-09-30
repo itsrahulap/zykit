@@ -62,6 +62,7 @@ function uniqueName(name: string, taken: Iterable<string>): string {
 export function columnNames(header: readonly string[]): string[] {
   const out: string[] = [];
   header.forEach((raw, i) => {
+    // oxlint-disable-next-line no-control-regex
     const name = raw.trim().replace(/[\u0000-\u001f]/g, '') || `column_${i + 1}`;
     out.push(uniqueName(name, out));
   });

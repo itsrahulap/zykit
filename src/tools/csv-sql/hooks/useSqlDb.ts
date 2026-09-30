@@ -13,6 +13,7 @@ export interface SqlDbState {
 }
 
 type Pending = { resolve: (r: SqlResponse) => void };
+type Req = SqlRequest extends infer R ? (R extends SqlRequest ? Omit<R, 'id'> : never) : never;
 
 interface Source extends TableSource {
   bytes: number;
@@ -51,7 +52,7 @@ export function useSqlDb(allText: boolean) {
   }, []);
 
   const send = useCallback(
-    (req: Omit<SqlRequest, 'id'>) =>
+    (req: Req) =>
       new Promise<SqlResponse>((resolve) => {
         const id = ++nextId.current;
         pending.current.set(id, { resolve });
@@ -74,10 +75,10 @@ export function useSqlDb(allText: boolean) {
       const res = await send({ type: 'load', tables: tables.map(({ name, data, source, tab }) => ({ name, data, source, tab })), allText: allTextRef.current });
       if (res.type === 'loaded') {
         setState((s) => ({ ...s, busy: null, tables: res.tables, notices: reset ? s.notices : res.notices }));
-        return true;
+        return res.tables;
       }
       setState((s) => ({ ...s, busy: null, error: res.type === 'error' ? res.message : 'Loading failed.' }));
-      return false;
+      return null;
     },
     [send],
   );
@@ -92,7 +93,7 @@ export function useSqlDb(allText: boolean) {
           ...s,
           error: `That's too much data: the tool holds up to ${formatBytes(MAX_TOTAL_BYTES)} of CSV in total (${formatBytes(used)} already loaded, ${formatBytes(bytes)} added).`,
         }));
-        return;
+        return null;
       }
       const taken = new Set([...sourcesRef.current.map((s) => s.name), ...state.tables.map((t) => t.name)]);
       const added: Source[] = items.map((i) => {
@@ -100,7 +101,9 @@ export function useSqlDb(allText: boolean) {
         taken.add(name);
         return { ...i, name, bytes: typeof i.data === 'string' ? i.data.length : i.data.size, tab: /\.(tsv|tab)$/i.test(i.source) };
       });
-      if (await load(added)) sourcesRef.current = [...sourcesRef.current, ...added];
+      const tables = await load(added);
+      if (tables) sourcesRef.current = [...sourcesRef.current, ...added];
+      return tables;
     },
     [load, state.tables],
   );
