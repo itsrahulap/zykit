@@ -2383,6 +2383,73 @@ export const catalog: LearnCatalog = {
           ]
         },
         {
+          "id": "analytics-services",
+          "title": "AWS Analytics Services",
+          "level": "intermediate",
+          "description": "Athena, Kinesis, Glue, QuickSight, EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
+          "prerequisites": [
+            "block-file-object-storage",
+            "aws-databases"
+          ],
+          "relatedTopics": [
+            "block-file-object-storage",
+            "aws-databases",
+            "messaging-sqs-sns",
+            "application-integration",
+            "cloud-practitioner-exam"
+          ]
+        },
+        {
+          "id": "application-integration",
+          "title": "Application Integration Services",
+          "level": "intermediate",
+          "description": "EventBridge, Step Functions, SNS and SQS recap, API Gateway, SES and Amazon Connect - connecting applications and people.",
+          "prerequisites": [
+            "messaging-sqs-sns",
+            "serverless-and-containers"
+          ],
+          "relatedTopics": [
+            "messaging-sqs-sns",
+            "serverless-and-containers",
+            "analytics-services",
+            "developer-and-end-user-tools"
+          ]
+        },
+        {
+          "id": "developer-and-end-user-tools",
+          "title": "Developer and End-User Tools",
+          "level": "intermediate",
+          "description": "CloudShell, Cloud9, the Code* CI/CD suite, X-Ray, AppConfig, Amplify, AppSync, Device Farm, WorkSpaces, AppStream 2.0 and IoT.",
+          "prerequisites": [
+            "interacting-with-aws",
+            "serverless-and-containers"
+          ],
+          "relatedTopics": [
+            "interacting-with-aws",
+            "serverless-and-containers",
+            "application-integration",
+            "monitoring-and-auditing",
+            "governance-and-management"
+          ]
+        },
+        {
+          "id": "governance-and-management",
+          "title": "Governance and Management Services",
+          "level": "intermediate",
+          "description": "Config, Control Tower, Systems Manager, Service Catalog, License Manager, Compute Optimizer, Resource Groups, Launch Wizard, Health and Audit Manager.",
+          "prerequisites": [
+            "monitoring-and-auditing",
+            "security-services"
+          ],
+          "relatedTopics": [
+            "monitoring-and-auditing",
+            "security-services",
+            "pricing-and-billing",
+            "developer-and-end-user-tools",
+            "support-and-partner-resources"
+          ]
+        },
+        {
           "id": "security-services",
           "title": "AWS Security Services",
           "level": "advanced",
@@ -2451,10 +2518,25 @@ export const catalog: LearnCatalog = {
           ]
         },
         {
+          "id": "support-and-partner-resources",
+          "title": "Support Plans and Partner Resources",
+          "level": "advanced",
+          "description": "Support plans, Support Center, re:Post, Knowledge Center, Partner Network, Marketplace, Professional Services, Solutions Architects, IQ, AMS and Activate.",
+          "prerequisites": [
+            "pricing-and-billing"
+          ],
+          "relatedTopics": [
+            "pricing-and-billing",
+            "governance-and-management",
+            "migration-and-innovation",
+            "cloud-practitioner-exam"
+          ]
+        },
+        {
           "id": "cloud-practitioner-exam",
           "title": "AWS Cloud Practitioner Exam (CLF-C02)",
           "level": "advanced",
-          "description": "Exam format and domains, a study plan, question strategies, and a 15-question practice set.",
+          "description": "Exam format and domains, a study plan, question strategies, and a task-statement map, and a 25-question practice set.",
           "prerequisites": [
             "well-architected-framework",
             "pricing-and-billing"

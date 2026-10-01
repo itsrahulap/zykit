@@ -5,7 +5,7 @@ Private tools and learning material that run **entirely in the browser**: develo
 Live at [zykit.vercel.app](https://zykit.vercel.app).
 
 - **Tools** (`/`, `/tools/<tool-id>`): the list below. The home page has search (press `/`) and category filters.
-- **Learn** (`/learn`): 9 subjects, 171 lessons with runnable examples, 151 solved DSA problems and 9 system design case studies. See [Learn](#learn).
+- **Learn** (`/learn`): 9 subjects, 176 lessons with runnable examples, 151 solved DSA problems and 9 system design case studies. See [Learn](#learn).
 - **Blog** (`/blog`): guides, including the Claude Code plugins used to build the site.
 
 ## Tools
@@ -196,7 +196,7 @@ On Vercel, `vercel.json` maps clean URLs (`/tools/jwt-decoder`) to the pre-rende
 
 ## Learn
 
-`/learn` is a software-engineering course migrated from EngineeringWiki: 9 subjects (JavaScript, TypeScript, DSA, Web Fundamentals, Backend, Databases, System Design, Software Architecture, AWS Cloud), 171 lessons, 151 solved DSA problems and 9 system design case studies. Progress, bookmarks and solved problems are kept in the browser only.
+`/learn` is a software-engineering course migrated from EngineeringWiki: 9 subjects (JavaScript, TypeScript, DSA, Web Fundamentals, Backend, Databases, System Design, Software Architecture, AWS Cloud), 176 lessons, 151 solved DSA problems and 9 system design case studies. Progress, bookmarks and solved problems are kept in the browser only.
 
 - **Content** lives in `src/learn/content/` as plain TypeScript data (types in `src/learn/types/`). Edit or add lessons there; pages never hard-code content.
 - **Catalog:** `npm run generate:learn` rebuilds `src/learn/data/*.generated.ts` (titles, links, search index, counts). It also runs before every build, and a unit test fails if it's out of date.

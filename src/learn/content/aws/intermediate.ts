@@ -206,6 +206,9 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
       "**Containers** package an app with its dependencies so it runs the same everywhere.",
       "- **Amazon ECS**: AWS's own container orchestrator, simple and tightly integrated.\n- **Amazon EKS**: managed Kubernetes, for teams that want the Kubernetes API and ecosystem.\n- **AWS Fargate**: a serverless compute engine for containers; you define CPU and memory and it runs the tasks without you managing EC2 hosts (works with ECS and EKS).\n- **Amazon ECR**: a registry to store container images.",
       "Choosing compute: EC2 for maximum control, containers for portable packaged services, Lambda for event-driven short tasks.",
+      "**More compute options**",
+      "- **AWS Batch**: runs batch jobs at any scale. You submit jobs; Batch provisions the right amount of EC2 or Fargate capacity (including Spot) and queues them, so you do not manage a scheduler.\n- **Amazon Lightsail**: simple virtual servers, containers, databases, storage and static IPs with predictable monthly pricing and a friendly console; a good fit for small websites, blogs and learning projects.\n- **Amazon ECR** (Elastic Container Registry): a managed registry for storing, scanning and sharing container images used by ECS, EKS and Fargate.\n- **AWS Outposts**: AWS infrastructure and services running in your own data center for hybrid needs.",
+      "**Choosing compute**: EC2 for full control of virtual servers, containers (ECS/EKS/Fargate) for packaged applications, Lambda for short event-driven code, Elastic Beanstalk for deploying web apps without managing the infrastructure details, and Lightsail for a simple fixed-price start.",
     ),
     analogy:
       "EC2 is renting a whole kitchen: full control, but you clean and maintain it. Containers are meal-prep boxes that can be reheated in any kitchen. Lambda is ordering a single dish from a ghost kitchen - it appears when you ask and you pay just for that dish.",
@@ -283,6 +286,7 @@ Containers but no hosts to patch                 Fargate`,
       "Ignoring cold-start impact on latency-sensitive paths.",
       "Choosing Kubernetes for a handful of services without needing it.",
       "Forgetting that unbounded Lambda concurrency can overwhelm a downstream database.",
+      "Using Batch for a latency-sensitive web request path; it is for queued, asynchronous jobs.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Run the handler example here and change the event to include a different name." },
@@ -296,10 +300,12 @@ Containers but no hosts to patch                 Fargate`,
       { question: "What does Fargate remove?", answer: "The need to provision and manage the underlying servers for your containers." },
       { question: "Exam-style: A company wants to run code without managing servers, only when an event occurs. Which service? ", answer: "AWS Lambda." },
       { question: "Exam-style: Which service stores Docker container images?", answer: "Amazon Elastic Container Registry (ECR)." },
+      { question: "Exam-style: Which service is best for a small business that wants a simple WordPress site with predictable monthly cost?", answer: "Amazon Lightsail." },
+      { question: "Which service runs queued batch computing jobs without you managing a scheduler?", answer: "AWS Batch." },
     ],
     prerequisites: ["ec2-basics", "iam-basics"],
     relatedTopics: ["messaging-sqs-sns", "auto-scaling-and-load-balancing", "migration-and-innovation", "scalability"],
-    keywords: ["lambda", "serverless", "ecs", "eks", "fargate", "ecr", "container", "kubernetes", "cold start", "event driven"],
+    keywords: ["lambda", "serverless", "ecs", "eks", "fargate", "ecr", "container", "kubernetes", "cold start", "event driven", "aws batch", "lightsail", "ecr", "outposts", "elastic beanstalk"],
   },
 
   {
@@ -584,6 +590,8 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       "**S3 storage classes** trade retrieval speed and access frequency for price:",
       "- **S3 Standard**: frequent access.\n- **S3 Express One Zone**: very low latency in a single AZ, for performance-critical data.\n- **S3 Intelligent-Tiering**: moves objects between tiers automatically when patterns are unknown.\n- **S3 Standard-IA** and **One Zone-IA**: infrequent access, lower storage price, retrieval fee.\n- **S3 Glacier Instant Retrieval**: archive with millisecond access.\n- **S3 Glacier Flexible Retrieval**: archive, retrieval in minutes to hours.\n- **S3 Glacier Deep Archive**: cheapest, retrieval within hours (long-term retention).",
       "**Lifecycle rules** move or expire objects automatically. S3 has high **durability** (designed for eleven nines, 99.999999999%, meaning data is very unlikely to be lost), which is different from **availability** (how often you can read it right now), which varies by class.",
+      "**More storage and data-protection services**",
+      "- **Amazon FSx**: fully managed third-party file systems: FSx for Windows File Server (SMB), FSx for Lustre (high-performance computing), FSx for NetApp ONTAP and FSx for OpenZFS.\n- **AWS Storage Gateway**: a hybrid service that connects on-premises apps to AWS storage using File, Volume or Tape Gateway types, with local caching.\n- **AWS Backup**: a central service to define backup policies and schedules across EC2, EBS, RDS, DynamoDB, EFS, FSx and more, with cross-Region and cross-account copy.\n- **AWS Elastic Disaster Recovery (DRS)**: continuously replicates servers to a low-cost staging area in AWS and launches them quickly after a disaster.\n- **AWS Transfer Family**: managed SFTP, FTPS and FTP endpoints that read and write to S3 or EFS, so partners keep using file-transfer clients.",
     ),
     analogy:
       "EBS is a personal hard drive on your desk - fast, yours, but one desk at a time. EFS is a shared network folder the whole office can open. S3 is a giant warehouse with labeled boxes: you hand over a box and get a ticket, you never edit a box in place. Glacier is the deep archive basement: cheap shelves, but fetching a box takes a while.",
@@ -659,6 +667,7 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
       "Forgetting EBS volumes and snapshots keep costing after instances are deleted.",
       "Moving small objects to cold classes where minimum size or duration charges outweigh savings.",
       "Using One Zone classes for data you cannot recreate.",
+      "Using Storage Gateway when a one-time bulk move is needed - that is DataSync or Snow Family territory.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Classify each as block, file, or object: EBS, EFS, S3, instance store." },
@@ -672,10 +681,13 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
       { question: "What happens to instance store data when the instance stops?", answer: "It is lost." },
       { question: "Exam-style: Which S3 class is cheapest for long-term archives retrieved rarely?", answer: "S3 Glacier Deep Archive." },
       { question: "Exam-style: Which feature automatically moves objects between storage classes over time?", answer: "S3 Lifecycle rules (or S3 Intelligent-Tiering for unpredictable access)." },
+      { question: "Exam-style: Which service gives on-premises applications access to cloud storage with local caching?", answer: "AWS Storage Gateway." },
+      { question: "Which service centralises backup policies across many AWS services?", answer: "AWS Backup." },
+      { question: "Which service provides managed SFTP into Amazon S3?", answer: "AWS Transfer Family." },
     ],
     prerequisites: ["ec2-basics", "iam-basics"],
     relatedTopics: ["aws-databases", "dns-and-cdn", "security-services", "pricing-and-billing", "migration-and-innovation"],
-    keywords: ["s3", "ebs", "efs", "instance store", "glacier", "storage class", "lifecycle", "snapshot", "durability", "object storage", "express one zone"],
+    keywords: ["s3", "ebs", "efs", "instance store", "glacier", "storage class", "lifecycle", "snapshot", "durability", "object storage", "express one zone", "fsx", "storage gateway", "aws backup", "elastic disaster recovery", "transfer family", "sftp"],
   },
 
   {
@@ -688,6 +700,8 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
       "- **Amazon RDS**: managed relational databases (MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2). AWS handles backups, patching, and failover (Multi-AZ); you manage schema and queries.\n- **Amazon Aurora**: AWS's cloud-built relational engine compatible with MySQL and PostgreSQL, with storage replicated across AZs and fast failover.\n- **Amazon DynamoDB**: serverless key-value and document NoSQL database with single-digit-millisecond performance at nearly any scale.\n- **Amazon Redshift**: data warehouse for analytic SQL over large datasets.\n- **Amazon ElastiCache**: managed in-memory cache (Redis-compatible and Memcached) to speed up reads. **DAX** is an in-memory cache specifically for DynamoDB.\n- **Amazon MemoryDB**: a durable, Redis-compatible in-memory database for use as a primary store.\n- **Amazon DocumentDB**: MongoDB-compatible document database.\n- **Amazon Neptune**: graph database for highly connected data.\n- **Amazon Keyspaces**: managed Cassandra-compatible database.\n- **Amazon Timestream**: time-series data.",
       "Migration helpers: **AWS Database Migration Service (DMS)** moves data between databases, often with little downtime, and **AWS Schema Conversion Tool (SCT)** helps convert schemas and code when changing engines (for example Oracle to PostgreSQL).",
       "Note: Amazon QLDB (ledger database) was announced for end of support, so treat it as retired and look at alternatives when you meet it in older material. Service lineups change - verify in current docs.",
+      "**EC2-hosted vs managed databases**: you can install a database engine on an EC2 instance, but then you handle patching, backups, high availability, replication and scaling yourself. A managed service such as RDS, Aurora or DynamoDB automates those tasks. Self-hosting is chosen only for unsupported engines, full OS access or special licensing.",
+      "**In-memory caching**: **Amazon ElastiCache** (Redis OSS/Valkey and Memcached) caches hot data to cut latency and database load; **Amazon MemoryDB** is a durable Redis-compatible database that can be the primary store; DAX caches DynamoDB reads. **AWS Database Migration Service** moves the data and the **Schema Conversion Tool / DMS Schema Conversion** converts schema and code when engines differ, for example Oracle to Aurora PostgreSQL.",
     ),
     analogy:
       "Choosing a database is like choosing storage furniture. A relational database is a filing cabinet with labeled, linked folders and strict forms. DynamoDB is a wall of numbered lockers - blazing fast to open by number, not for complicated questions. Redshift is a library's reading room set up for analysts to compare thousands of books at once. A cache is the sticky note on your monitor.",
@@ -748,6 +762,7 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       "Skipping backup and retention settings review.",
       "Leaving a database publicly accessible.",
       "Treating DMS as a schema converter (that is SCT's job).",
+      "Installing a database on EC2 'to save money' and forgetting the staff time for backups, patching and failover.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Match each to a database: shopping-cart sessions with millisecond reads, a monthly sales report across years of data, a friend-of-friend recommendation." },
@@ -761,10 +776,12 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       { question: "What does ElastiCache provide?", answer: "A managed in-memory cache (Redis-compatible/Memcached) to cut read latency and database load." },
       { question: "Exam-style: Which service is a petabyte-scale data warehouse?", answer: "Amazon Redshift." },
       { question: "Exam-style: Which service converts a database schema when migrating between engines?", answer: "AWS Schema Conversion Tool (SCT)." },
+      { question: "Exam-style: Which service reduces read latency with an in-memory cache in front of a database?", answer: "Amazon ElastiCache." },
+      { question: "Exam-style: What is the main advantage of RDS over a database on EC2?", answer: "AWS automates patching, backups, replication and failover, reducing operational overhead." },
     ],
     prerequisites: ["vpc-networking", "block-file-object-storage"],
     relatedTopics: ["migration-and-innovation", "security-services", "serverless-and-containers", "caching", "databases"],
-    keywords: ["rds", "aurora", "dynamodb", "redshift", "elasticache", "dax", "memorydb", "documentdb", "neptune", "dms", "sct", "nosql"],
+    keywords: ["rds", "aurora", "dynamodb", "redshift", "elasticache", "dax", "memorydb", "documentdb", "neptune", "dms", "sct", "nosql", "elasticache", "memorydb", "self-managed database", "sct", "dms"],
   },
 
   {
@@ -855,5 +872,351 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
     prerequisites: ["iam-basics", "ec2-basics"],
     relatedTopics: ["security-services", "pricing-and-billing", "well-architected-framework", "monitoring-and-observability"],
     keywords: ["cloudwatch", "cloudtrail", "config", "trusted advisor", "alarm", "metrics", "logs", "audit", "dashboard", "insights"],
+  },
+
+  {
+    id: "analytics-services",
+    title: "AWS Analytics Services",
+    level: "intermediate",
+    description: "Athena, Kinesis, Glue, QuickSight, EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
+    explanation: md(
+      "**Analytics** is turning raw data into answers. AWS offers a managed service for each stage: collecting and streaming data, storing and transforming it, querying it, and visualising it. Most services here are *managed*, so you do not run the servers.",
+      "- **Amazon Athena**: run standard SQL directly on files in S3 with no servers to manage; you pay per amount of data scanned.\n- **Amazon Kinesis**: collect and process real-time streaming data. *Data Streams* ingests and stores streams, *Data Firehose* delivers streams to S3, Redshift or OpenSearch, and *Managed Service for Apache Flink* analyses streams with SQL or code.\n- **Amazon MSK** (Managed Streaming for Apache Kafka): a managed Kafka cluster for teams already using Kafka.\n- **AWS Glue**: serverless ETL (extract, transform, load) with a **Data Catalog** that stores table definitions so Athena, Redshift and EMR can find your data.\n- **Amazon EMR**: managed big data clusters running Apache Spark, Hadoop, Hive and Presto for large batch processing.\n- **Amazon Redshift**: a managed data warehouse for fast SQL analytics over large structured data, using columnar storage.\n- **Amazon OpenSearch Service**: search, log analytics and dashboards on top of OpenSearch.\n- **Amazon QuickSight**: business intelligence; build interactive dashboards and charts, with ML insights and pay-per-session pricing for readers.\n- **AWS Data Exchange**: find, subscribe to and use third-party datasets in the cloud.",
+      "A common pattern is a **data lake**: raw data lands in S3, Glue catalogs and transforms it, Athena or Redshift queries it, and QuickSight visualises the results.",
+    ),
+    analogy:
+      "Think of a city water system. Kinesis is the river carrying a constant flow, S3 is the reservoir, Glue is the treatment plant labelling and cleaning the water, Athena is a tap you open to take a glass now, Redshift is a bottled-water warehouse built for fast big orders, and QuickSight is the dashboard in the control room showing levels.",
+    examples: [
+      {
+        title: "Query CSV files in S3 with Athena",
+        language: "sql",
+        code: `-- Describe the files once (a table over an S3 prefix)
+CREATE EXTERNAL TABLE sales (
+  order_id string,
+  country  string,
+  amount   double
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+LOCATION 's3://my-analytics-bucket/sales/';
+
+-- Then ask a question with plain SQL
+SELECT country, SUM(amount) AS revenue
+FROM sales
+GROUP BY country
+ORDER BY revenue DESC
+LIMIT 5;`,
+        explanation: "No cluster to launch: Athena reads the files in place and bills for the bytes scanned, so compressing or partitioning data lowers the cost.",
+      },
+      {
+        title: "Match the need to the service",
+        language: "text",
+        code: `Need                                   Service
+-------------------------------------  ---------------------
+SQL on files in S3, no servers         Athena
+Real-time clickstream ingestion        Kinesis Data Streams
+Load a stream into S3 automatically    Kinesis Data Firehose
+Existing Kafka applications            MSK
+Serverless ETL + data catalog          Glue
+Spark/Hadoop on big datasets           EMR
+Data warehouse for BI queries          Redshift
+Log search and dashboards              OpenSearch Service
+Business dashboards                    QuickSight
+Buy third-party datasets               Data Exchange`,
+      },
+    ],
+    howItWorks: md(
+      "Analytics systems separate **storage** from **compute** where they can. Data sits cheaply in S3; compute services (Athena, EMR, Redshift Spectrum) read it when needed. Streaming services buffer records in shards or partitions so consumers can read them in order and at their own pace.",
+      "**Glue crawlers** scan data, infer its schema and write table metadata to the Data Catalog. **Redshift** stores data by column and distributes it across nodes, which is why aggregations over billions of rows are fast. **QuickSight** connects to these sources (and SPICE, its in-memory engine) to render dashboards.",
+    ),
+    diagram: `  sources        ingest            store & prepare      analyse         visualise
+ +--------+   +-----------+     +-------------+   +-----------+   +-----------+
+ | apps / |-->| Kinesis / |---->| S3 data lake|-->| Athena    |-->| QuickSight|
+ | logs / |   | MSK /     |     |  + Glue ETL |   | Redshift  |   +-----------+
+ | IoT    |   | Firehose  |     |  + Catalog  |   | EMR       |
+ +--------+   +-----------+     +-------------+   | OpenSearch|
+                                                  +-----------+`,
+    whyItExists: md(
+      "Companies generate far more data than a single database can usefully hold or query. Building and operating a Hadoop cluster, a Kafka cluster and a warehouse by hand needs specialist staff. Managed analytics services let a small team ask questions of large data without that operating burden.",
+    ),
+    whenToUse: md(
+      "Use Athena for occasional SQL over S3 data, Redshift for heavy repeated BI workloads, Kinesis or MSK for real-time ingestion, Glue for ETL and cataloging, EMR for Spark/Hadoop jobs, OpenSearch for search and log exploration, QuickSight for dashboards, and Data Exchange when you need an external dataset.",
+    ),
+    whenNotToUse: md(
+      "Do not use Athena or Redshift as the transactional database behind an application (use RDS or DynamoDB). Do not use EMR for tiny jobs that Lambda or Glue could do, and do not stand up Redshift for a one-off query that Athena can answer.",
+    ),
+    commonMistakes: [
+      "Using a data warehouse as an application database.",
+      "Storing Athena input as large uncompressed CSV, which makes each query scan (and cost) more than needed.",
+      "Confusing Kinesis Data Streams (ingest and hold records) with Firehose (deliver them to a destination).",
+      "Forgetting QuickSight is for visualisation, not for storing or transforming data.",
+      "Picking EMR when a serverless option would remove cluster management.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Write a one-line purpose for each of the nine services in this lesson without looking." },
+      { difficulty: "Medium", prompt: "Sketch a data pipeline for website clickstream data that ends in a daily dashboard, naming each AWS service in order." },
+      { difficulty: "Medium", prompt: "Explain why partitioning or compressing files lowers Athena cost." },
+      { difficulty: "Hard", prompt: "A team already runs Kafka producers and consumers on-premises. Compare moving them to MSK versus rewriting for Kinesis." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which service lets you run SQL queries directly on data in S3 without provisioning servers?", answer: "Amazon Athena." },
+      { question: "Exam-style: Which service is used to build business intelligence dashboards?", answer: "Amazon QuickSight." },
+      { question: "Exam-style: Which service is a managed data warehouse?", answer: "Amazon Redshift." },
+      { question: "Exam-style: Which service performs serverless ETL and maintains a data catalog?", answer: "AWS Glue." },
+      { question: "Exam-style: Which service ingests and processes real-time streaming data?", answer: "Amazon Kinesis (Data Streams, Firehose, Managed Service for Apache Flink)." },
+      { question: "Exam-style: Which service lets you find and subscribe to third-party datasets?", answer: "AWS Data Exchange." },
+      { question: "Exam-style: Which service runs managed Apache Spark and Hadoop clusters?", answer: "Amazon EMR." },
+      { question: "Exam-style: A company already uses Apache Kafka and wants a managed service. Which one?", answer: "Amazon MSK." },
+    ],
+    prerequisites: ["block-file-object-storage", "aws-databases"],
+    relatedTopics: ["block-file-object-storage", "aws-databases", "messaging-sqs-sns", "application-integration", "cloud-practitioner-exam"],
+    keywords: ["athena", "kinesis", "glue", "quicksight", "emr", "opensearch", "msk", "kafka", "data exchange", "redshift", "data lake", "etl", "data warehouse", "analytics"],
+  },
+
+  {
+    id: "application-integration",
+    title: "Application Integration Services",
+    level: "intermediate",
+    description: "EventBridge, Step Functions, SNS and SQS recap, API Gateway, SES and Amazon Connect - connecting applications and people.",
+    explanation: md(
+      "Modern applications are made of many small parts. **Application integration** services connect those parts so they stay loosely coupled: one piece can fail, slow down or change without breaking the others.",
+      "- **Amazon EventBridge**: a serverless event bus. Applications, AWS services and SaaS partners publish *events*; *rules* match them and route them to targets such as Lambda or SQS. It also provides scheduled rules (cron-style) and a scheduler.\n- **AWS Step Functions**: visual workflows (state machines) that coordinate several steps such as Lambda functions, with retries, branching, parallel work and error handling.\n- **Amazon SQS** (recap): a queue that holds messages until a consumer processes them; decouples producers and consumers.\n- **Amazon SNS** (recap): publish/subscribe notifications that fan one message out to many subscribers (email, SMS, SQS, Lambda, HTTP).\n- **Amazon API Gateway**: creates, publishes and secures REST, HTTP and WebSocket APIs in front of Lambda or other backends, with throttling, caching and authorization.\n- **Amazon SES** (Simple Email Service): send bulk and transactional email, such as receipts and newsletters, at low cost.\n- **Amazon Connect**: a cloud contact center. Customers call or chat and agents answer through a browser, with routing, IVR menus and analytics, paid per use.",
+      "Rule of thumb: **SQS** when one consumer pulls work at its own pace, **SNS** when many subscribers all need the message, **EventBridge** when you route events by content from many sources, and **Step Functions** when order and state of steps matter.",
+    ),
+    analogy:
+      "A restaurant has a ticket rail (SQS) where orders wait for the cook, a loudspeaker (SNS) announcing 'table 4 is ready' to everyone, a switchboard (EventBridge) sending each kind of message to the right station, a head chef following the recipe step by step (Step Functions), a front door with a host who checks reservations (API Gateway), a mailing desk (SES) and a phone line for customers (Connect).",
+    examples: [
+      {
+        title: "An EventBridge rule that matches an event",
+        language: "json",
+        code: `{
+  "source": ["my.orders.app"],
+  "detail-type": ["OrderPlaced"],
+  "detail": { "amount": [{ "numeric": [">", 100] }] }
+}`,
+        explanation: "The rule pattern matches only OrderPlaced events over 100 and can send them to a target such as a Lambda function for review.",
+      },
+      {
+        title: "A tiny Step Functions workflow",
+        language: "json",
+        code: `{
+  "StartAt": "ChargeCard",
+  "States": {
+    "ChargeCard": { "Type": "Task", "Resource": "arn:aws:lambda:...:charge", "Next": "SendReceipt",
+      "Retry": [{ "ErrorEquals": ["States.ALL"], "MaxAttempts": 2 }] },
+    "SendReceipt": { "Type": "Task", "Resource": "arn:aws:lambda:...:receipt", "End": true }
+  }
+}`,
+        explanation: "Each state is a step; Step Functions tracks progress and retries failures so you do not hand-code that logic.",
+      },
+    ],
+    howItWorks: md(
+      "**Event-driven design**: a producer emits an event and does not know who consumes it. EventBridge evaluates rules against each event and invokes matching targets. **Queues** store messages durably until deleted, giving buffering during spikes. **SNS topics** push to every subscriber at once. **Step Functions** persists the state of each execution, so a long workflow survives individual failures.",
+      "**API Gateway** receives the HTTP request, authenticates it (IAM, Cognito or a Lambda authorizer), applies throttling and optional caching, and forwards it to the backend.",
+    ),
+    diagram: `  Producer --event--> EventBridge --rule A--> Lambda
+                          |--rule B--> SQS --> worker
+  User --> API Gateway --> Lambda --> SNS --> email / SMS / SQS
+  Step Functions:  [Validate] -> [Charge] -> [Ship] -> [Notify]`,
+    whyItExists: md(
+      "Tightly coupled systems fail together and are hard to change. Messaging, events and workflows isolate failures, absorb spikes and let teams change parts independently.",
+    ),
+    whenToUse: md(
+      "Use these services when you decouple microservices, process orders asynchronously, expose APIs, orchestrate multi-step business processes, send notification emails, or run a customer support line without hardware.",
+    ),
+    whenNotToUse: md(
+      "Do not add queues and workflows to a simple synchronous app that needs only one function call. Do not use SES for personal inboxes (it is for sending and receiving application email), or Step Functions for sub-millisecond logic.",
+    ),
+    commonMistakes: [
+      "Using SNS when you need messages to wait for a slow consumer (that is SQS).",
+      "Writing retry and branching logic by hand inside Lambda instead of using Step Functions.",
+      "Exposing a Lambda or backend directly to the internet when API Gateway would add auth and throttling.",
+      "Thinking Amazon Connect is a telephone hardware product; it is a cloud service.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Match each service to its job: EventBridge, Step Functions, API Gateway, SES, Connect." },
+      { difficulty: "Medium", prompt: "Design an order flow where one 'order placed' event triggers inventory, billing and email independently." },
+      { difficulty: "Medium", prompt: "Explain the difference between SQS and SNS using a real example." },
+      { difficulty: "Hard", prompt: "Model a refund approval process with a manual approval and a timeout as a state machine on paper." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which service coordinates multiple AWS services into a visual serverless workflow?", answer: "AWS Step Functions." },
+      { question: "Exam-style: Which service routes events from AWS services and SaaS applications to targets using rules?", answer: "Amazon EventBridge." },
+      { question: "Exam-style: Which service creates and secures REST APIs?", answer: "Amazon API Gateway." },
+      { question: "Exam-style: Which service sends transactional or marketing email?", answer: "Amazon SES." },
+      { question: "Exam-style: Which service provides a cloud-based contact center?", answer: "Amazon Connect." },
+      { question: "When do you choose SNS over SQS?", answer: "When one message must reach many subscribers at once; SQS is for a queue consumed by workers." },
+    ],
+    prerequisites: ["messaging-sqs-sns", "serverless-and-containers"],
+    relatedTopics: ["messaging-sqs-sns", "serverless-and-containers", "analytics-services", "developer-and-end-user-tools"],
+    keywords: ["eventbridge", "step functions", "sns", "sqs", "api gateway", "ses", "connect", "event driven", "decoupling", "workflow", "contact center"],
+  },
+
+  {
+    id: "developer-and-end-user-tools",
+    title: "Developer and End-User Tools",
+    level: "intermediate",
+    description: "CloudShell, Cloud9, the Code* CI/CD suite, X-Ray, AppConfig, Amplify, AppSync, Device Farm, WorkSpaces, AppStream 2.0 and IoT.",
+    explanation: md(
+      "Besides core infrastructure, AWS offers tools for developers who build and ship software, and services that deliver desktops and applications to end users. **Availability note:** AWS sometimes stops accepting new customers for a service or retires it (for example Cloud9 and parts of the Code* suite have been closed to new customers). Always **check current availability** before choosing a service, but know them for the exam.",
+      "**Developer tools**",
+      "- **AWS CloudShell**: a browser-based shell with the AWS CLI preinstalled, signed in with your console credentials.\n- **AWS Cloud9**: a browser-based IDE for writing and debugging code.\n- **AWS CodeCommit** (Git repositories), **CodeBuild** (compile and test), **CodeDeploy** (deploy to EC2, Lambda, on-premises), **CodePipeline** (automate the release stages), **CodeArtifact** (store packages) and **CodeStar** (project templates) form a CI/CD suite.\n- **AWS X-Ray**: traces requests through a distributed application to find slow or failing components.\n- **AWS AppConfig** (part of Systems Manager): deploy application configuration and feature flags safely, with validation and gradual rollout.\n- **AWS Amplify**: build, host and connect web and mobile front ends to backends such as authentication and storage.\n- **AWS AppSync**: managed GraphQL (and pub/sub) APIs that connect to data sources.\n- **AWS Device Farm**: test web and mobile apps on real phones and browsers.",
+      "**End-user computing**",
+      "- **Amazon WorkSpaces Family**: managed virtual desktops (Windows or Linux) for staff, billed monthly or hourly; **WorkSpaces Secure Browser** (formerly WorkSpaces Web) gives a secure, isolated browser for internal web apps.\n- **Amazon AppStream 2.0**: streams a desktop *application* to a browser instead of a whole desktop.",
+      "**Internet of Things**",
+      "- **AWS IoT Core**: connects devices securely and routes their messages. **AWS IoT Greengrass** extends AWS to the device edge so it can run code and make decisions locally, even offline.",
+    ),
+    analogy:
+      "Building software is like running a factory. CloudShell and Cloud9 are the workbench, the Code* services are the assembly line from source to shipping dock, X-Ray is the tracking label that shows where a parcel got stuck, AppConfig is the switchboard for turning features on gradually, and WorkSpaces/AppStream deliver a ready workstation or a single tool to any employee's door.",
+    examples: [
+      {
+        title: "A buildspec for CodeBuild",
+        language: "yaml",
+        code: `version: 0.2
+phases:
+  install:
+    commands:
+      - npm ci
+  build:
+    commands:
+      - npm test
+      - npm run build
+artifacts:
+  files:
+    - "dist/**/*"`,
+        explanation: "CodeBuild reads this file, runs each phase in a fresh container, and saves the dist files as the build output for CodePipeline to deploy.",
+      },
+      {
+        title: "CloudShell: no setup required",
+        language: "bash",
+        code: `# Open CloudShell from the console toolbar, then:
+aws sts get-caller-identity
+aws s3 ls
+# Your home folder (1 GB) persists between sessions in that Region`,
+        explanation: "CloudShell removes the need to install and configure the CLI locally for quick tasks.",
+      },
+    ],
+    howItWorks: md(
+      "**CI/CD**: a commit triggers **CodePipeline**, which pulls source, calls **CodeBuild** to build and test, then **CodeDeploy** to roll the new version out (in place, rolling or blue/green). **X-Ray** adds a trace ID to a request and collects segments from every service it touches, producing a service map.",
+      "**WorkSpaces** runs a desktop in AWS and streams pixels to a client, so data stays in the cloud rather than on a laptop. **IoT Core** uses MQTT messages and a rules engine to route device data to other AWS services.",
+    ),
+    diagram: `  Source -> Build -> Test -> Deploy        (CodePipeline orchestrates)
+  [Git]    [CodeBuild]      [CodeDeploy] -> EC2 / Lambda / on-prem
+  Running app --> X-Ray traces --> service map of slow calls
+  Staff laptop <== pixels == WorkSpaces desktop in AWS`,
+    whyItExists: md(
+      "Teams want to ship quickly and safely without running their own build servers, and organisations want to give staff secure desktops without managing physical PCs. Managed tools remove that undifferentiated work.",
+    ),
+    whenToUse: md(
+      "Use the CI/CD tools to automate releases, X-Ray to debug microservices, AppConfig for gradual feature rollouts, Amplify for quick front-end hosting, Device Farm for device testing, WorkSpaces for remote staff desktops, AppStream 2.0 for delivering one application, and IoT Core for connected devices.",
+    ),
+    whenNotToUse: md(
+      "Do not build new work on a service that is closed to new customers; pick the current alternative (the AWS docs name it). Do not use WorkSpaces when you only need one application (AppStream 2.0), and do not use X-Ray for metrics and alarms (CloudWatch).",
+    ),
+    commonMistakes: [
+      "Assuming every service is still open to new customers.",
+      "Confusing CodeDeploy (deployment) with CodePipeline (orchestration) or CodeBuild (build/test).",
+      "Mixing up X-Ray (tracing requests) with CloudTrail (API audit) and CloudWatch (metrics/logs).",
+      "Choosing WorkSpaces when AppStream 2.0 would stream just one app.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "List which Code* service builds, which deploys and which orchestrates." },
+      { difficulty: "Medium", prompt: "A slow API call crosses five microservices. Explain how X-Ray would help find the bottleneck." },
+      { difficulty: "Medium", prompt: "Pick WorkSpaces, WorkSpaces Secure Browser or AppStream 2.0 for three different scenarios." },
+      { difficulty: "Hard", prompt: "Design a release pipeline with a manual approval step and blue/green deployment, naming each AWS service." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which service traces requests across a distributed application?", answer: "AWS X-Ray." },
+      { question: "Exam-style: Which service automates the release process from source to deployment?", answer: "AWS CodePipeline." },
+      { question: "Exam-style: Which service provides virtual desktops in the cloud?", answer: "Amazon WorkSpaces." },
+      { question: "Exam-style: Which service streams a single desktop application to a web browser?", answer: "Amazon AppStream 2.0." },
+      { question: "Exam-style: Which service tests mobile apps on real devices?", answer: "AWS Device Farm." },
+      { question: "Exam-style: Which service lets you run code on devices locally and connect them to AWS?", answer: "AWS IoT Greengrass (with IoT Core for cloud connectivity)." },
+      { question: "Exam-style: Which service provides a browser-based CLI?", answer: "AWS CloudShell." },
+    ],
+    prerequisites: ["interacting-with-aws", "serverless-and-containers"],
+    relatedTopics: ["interacting-with-aws", "serverless-and-containers", "application-integration", "monitoring-and-auditing", "governance-and-management"],
+    keywords: ["cloudshell", "cloud9", "codecommit", "codebuild", "codedeploy", "codepipeline", "x-ray", "appconfig", "amplify", "appsync", "device farm", "workspaces", "appstream", "iot core", "greengrass", "ci/cd"],
+  },
+
+  {
+    id: "governance-and-management",
+    title: "Governance and Management Services",
+    level: "intermediate",
+    description: "Config, Control Tower, Systems Manager, Service Catalog, License Manager, Compute Optimizer, Resource Groups, Launch Wizard, Health and Audit Manager.",
+    explanation: md(
+      "As accounts and resources multiply, you need to keep them compliant, tidy and efficient. These services help you **govern** (set and check rules) and **manage** (operate and optimise) your environment. They complement CloudWatch, CloudTrail and Trusted Advisor from the monitoring lesson.",
+      "- **AWS Config**: records resource configuration over time and evaluates it against rules (for example 'all S3 buckets must be encrypted').\n- **AWS Control Tower**: sets up and governs a secure multi-account environment (a *landing zone*) with guardrails built on Organizations and SCPs.\n- **AWS Systems Manager**: operations hub for fleets - Session Manager (shell without opening SSH), Patch Manager, Run Command, Parameter Store and Inventory.\n- **AWS Service Catalog**: a catalog of pre-approved products (CloudFormation templates) that users can launch without broad permissions.\n- **AWS License Manager**: tracks software licenses and enforces usage limits across AWS and on-premises.\n- **AWS Compute Optimizer**: analyses utilisation and recommends right-sized EC2, EBS, Lambda and other resources.\n- **AWS Resource Groups and Tag Editor**: group resources by tags and bulk-edit tags across Regions.\n- **AWS Launch Wizard**: guided deployment of enterprise workloads such as SQL Server or SAP on AWS following best practices.\n- **AWS Health Dashboard**: personal view of events affecting *your* resources (plus the **AWS Health API** to integrate alerts) and a service-health view of AWS overall.\n- **AWS Audit Manager**: continuously collects evidence to help prepare for audits against frameworks.\n- **IAM access reports**: last-accessed data and credential reports that show unused permissions.",
+      "Remember the split: **CloudTrail** answers *who did what*, **Config** answers *what does it look like and was it compliant*, **CloudWatch** answers *how is it performing*.",
+    ),
+    analogy:
+      "Running many AWS accounts is like managing an apartment building. Control Tower is the building code, Config is the inspector comparing each flat to it, Systems Manager is the maintenance crew with master keys, Service Catalog is the approved furniture list, Compute Optimizer suggests which flats are too big for their tenants, and Health Dashboard is the notice board of repairs affecting your floor.",
+    examples: [
+      {
+        title: "A Config rule check from the CLI",
+        language: "bash",
+        code: `# Which resources break the managed rule that requires S3 encryption?
+aws configservice get-compliance-details-by-config-rule \\
+  --config-rule-name s3-bucket-server-side-encryption-enabled \\
+  --compliance-types NON_COMPLIANT`,
+        explanation: "Config keeps a history, so you can see not only the current state but also when a resource drifted out of compliance.",
+      },
+      {
+        title: "Tag standard that Resource Groups can use",
+        language: "text",
+        code: `Key            Value
+-------------  ------------------
+Environment    prod | staging | dev
+CostCenter     4213
+Owner          payments-team
+Application    checkout`,
+        explanation: "Consistent tags let Resource Groups, Tag Editor and cost allocation reports slice resources the same way.",
+      },
+    ],
+    howItWorks: md(
+      "**Config** takes a snapshot of a resource whenever it changes, stores it as a configuration item, and runs managed or custom rules against it, optionally triggering remediation. **Control Tower** applies preventive guardrails (SCPs) and detective guardrails (Config rules) to accounts it provisions. **Systems Manager** uses an agent on instances (or managed nodes) so you can patch and run commands without inbound ports.",
+      "**Compute Optimizer** reads CloudWatch utilisation metrics and uses machine learning to suggest cheaper or better-fitting resource types. **Health Dashboard** pushes events (maintenance, outages) that affect your own resources, and the Health API can feed them to chat or ticketing tools.",
+    ),
+    diagram: `  Organizations ── Control Tower (landing zone + guardrails)
+        |
+   accounts ── Config (what changed / compliant?) ── Audit Manager (evidence)
+        |
+   fleets ──── Systems Manager (patch, run, session, parameters)
+        |
+   cost/size ─ Compute Optimizer, License Manager, tags + Resource Groups
+   alerts ──── Health Dashboard / Health API`,
+    whyItExists: md(
+      "Manual checks do not scale across hundreds of resources and many accounts. These services automate compliance checking, standard setup, patching and optimisation so governance is continuous instead of an annual scramble.",
+    ),
+    whenToUse: md(
+      "Use Config for compliance rules and change history, Control Tower to start a multi-account setup, Systems Manager to patch and administer instances, Service Catalog to offer approved stacks, Compute Optimizer to rightsize, License Manager to track licenses, and Health Dashboard to stay ahead of events affecting you.",
+    ),
+    whenNotToUse: md(
+      "Do not use Config as a performance monitor (CloudWatch) or as an API audit log (CloudTrail). Do not use Control Tower for a single small account where plain Organizations or IAM rules suffice.",
+    ),
+    commonMistakes: [
+      "Confusing Config (resource configuration and compliance) with CloudTrail (API activity).",
+      "Opening SSH ports for administration when Systems Manager Session Manager avoids it.",
+      "Believing Compute Optimizer changes resources for you - it only recommends.",
+      "Not tagging resources, which makes Resource Groups and cost allocation weak.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "For each of the eleven services, write one sentence on its job." },
+      { difficulty: "Medium", prompt: "Explain how Config, CloudTrail and CloudWatch each help investigate an unexpectedly open S3 bucket." },
+      { difficulty: "Medium", prompt: "Define a tagging standard for a company and say which services benefit from it." },
+      { difficulty: "Hard", prompt: "Plan a landing zone for production, development and security accounts using Control Tower guardrails." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which service evaluates resource configurations against desired rules and records changes over time?", answer: "AWS Config." },
+      { question: "Exam-style: Which service sets up a governed multi-account environment with guardrails?", answer: "AWS Control Tower." },
+      { question: "Exam-style: Which service lets administrators patch and run commands on many instances without SSH?", answer: "AWS Systems Manager." },
+      { question: "Exam-style: Which service provides recommendations to rightsize EC2 instances?", answer: "AWS Compute Optimizer." },
+      { question: "Exam-style: Which service lets administrators offer approved, pre-configured products to users?", answer: "AWS Service Catalog." },
+      { question: "Exam-style: Which service shows events that affect your specific AWS resources?", answer: "AWS Health Dashboard (Personal Health)." },
+      { question: "Exam-style: Which service helps collect evidence for audits?", answer: "AWS Audit Manager." },
+      { question: "Exam-style: Which service tracks software license usage?", answer: "AWS License Manager." },
+    ],
+    prerequisites: ["monitoring-and-auditing", "security-services"],
+    relatedTopics: ["monitoring-and-auditing", "security-services", "pricing-and-billing", "developer-and-end-user-tools", "support-and-partner-resources"],
+    keywords: ["config", "control tower", "systems manager", "service catalog", "license manager", "compute optimizer", "resource groups", "tag editor", "launch wizard", "health dashboard", "audit manager", "landing zone", "governance"],
   },
 ];

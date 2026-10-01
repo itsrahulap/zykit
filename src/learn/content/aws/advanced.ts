@@ -17,6 +17,9 @@ export const awsAdvancedTopics: Topic[] = [
       "- **AWS KMS** (Key Management Service): create and control encryption keys. **Encryption at rest** protects stored data (S3, EBS, RDS); **encryption in transit** protects data moving over the network with TLS. Related: Secrets Manager and Parameter Store for secrets, CloudHSM for dedicated hardware modules.\n- **Amazon Macie**: uses machine learning to discover sensitive data (like personal information) in S3.",
       "**Detecting threats and weaknesses**",
       "- **Amazon Inspector**: scans workloads such as EC2, containers and Lambda for software vulnerabilities and unintended exposure.\n- **Amazon GuardDuty**: threat detection that analyses logs and network activity for suspicious behavior.\n- **AWS Security Hub**: aggregates and prioritises findings from GuardDuty, Inspector, Macie and others in one place and checks against standards.\n- **Amazon Detective** helps investigate the root cause of findings.",
+      "**More security services**",
+      "- **AWS Secrets Manager**: stores and automatically rotates secrets such as database passwords and API keys.\n- **AWS Certificate Manager (ACM)**: provisions, manages and renews public and private TLS certificates for services like CloudFront and load balancers.\n- **AWS CloudHSM**: single-tenant hardware security modules you control, for strict key-control requirements.\n- **Amazon Cognito**: sign-up, sign-in and access control for your web and mobile app users (customer identity), as opposed to IAM for your workforce.\n- **AWS Directory Service**: managed Microsoft Active Directory in AWS, plus AD Connector and Simple AD options.\n- **AWS Network Firewall**: managed stateful firewall and intrusion prevention for VPCs.\n- **AWS Firewall Manager**: centrally configures WAF, Shield Advanced, Network Firewall and security groups across accounts in Organizations.\n- **AWS Resource Access Manager (RAM)**: shares resources such as subnets or Transit Gateways with other accounts without copying them.\n- **Amazon Detective** builds a graph of related logs to find the root cause of a finding; **AWS Security Hub** collects findings; **Amazon Macie** finds sensitive data in S3; **Amazon Inspector** scans for vulnerabilities.",
+      "**Security resources**: AWS Trusted Advisor security checks, the AWS Knowledge Center, security blogs, whitepapers and AWS Marketplace security products, plus the Artifact portal for compliance reports.",
     ),
     analogy:
       "Securing an account is like running a museum. Organizations and SCPs are the museum-wide rules no gallery manager can override. Shield and WAF are the barriers and bag checks at the entrance. KMS is the locksmith who keeps the keys to the vitrines. Inspector checks the locks and windows for weaknesses, GuardDuty is the camera system spotting odd behavior, Macie finds valuables left unlabeled on tables, and Security Hub is the control room with one screen of all alerts.",
@@ -99,6 +102,8 @@ See all findings in one dashboard?                    Security Hub`,
       "Enabling detection services but never reading or routing findings.",
       "Confusing Inspector (vulnerabilities in workloads), GuardDuty (threat detection), and Macie (sensitive data).",
       "Assuming Shield Advanced is required to get basic DDoS protection.",
+      "Mixing up Cognito (your app's customers) with IAM Identity Center (your workforce).",
+      "Hard-coding database passwords instead of using Secrets Manager.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Match each to its job: Artifact, KMS, WAF, Macie, GuardDuty, Inspector." },
@@ -112,10 +117,13 @@ See all findings in one dashboard?                    Security Hub`,
       { question: "What does KMS do?", answer: "Creates, stores and controls cryptographic keys used to encrypt data in AWS services and applications." },
       { question: "Exam-style: Which service finds sensitive data such as PII in S3?", answer: "Amazon Macie." },
       { question: "Exam-style: Where can a customer download AWS compliance reports?", answer: "AWS Artifact." },
+      { question: "Exam-style: Which service rotates database credentials automatically?", answer: "AWS Secrets Manager." },
+      { question: "Exam-style: Which service manages TLS certificates for a CloudFront distribution?", answer: "AWS Certificate Manager." },
+      { question: "Exam-style: Which service enforces WAF rules across all accounts in an organization?", answer: "AWS Firewall Manager." },
     ],
     prerequisites: ["iam-basics", "network-security", "shared-responsibility-model"],
     relatedTopics: ["monitoring-and-auditing", "pricing-and-billing", "well-architected-framework", "block-file-object-storage"],
-    keywords: ["organizations", "scp", "shield", "waf", "kms", "inspector", "guardduty", "security hub", "macie", "artifact", "encryption", "ddos"],
+    keywords: ["organizations", "scp", "shield", "waf", "kms", "inspector", "guardduty", "security hub", "macie", "artifact", "encryption", "ddos", "secrets manager", "acm", "cloudhsm", "cognito", "detective", "firewall manager", "network firewall", "ram", "directory service", "active directory"],
   },
 
   {
@@ -130,6 +138,9 @@ See all findings in one dashboard?                    Security Hub`,
       "**Consolidated billing** in AWS Organizations combines the charges of all member accounts into one bill, shares volume-discount tiers and commitment discounts, and keeps per-account detail.",
       "**Support plans**: **Basic** (included; documentation, forums, account and billing support, limited Trusted Advisor checks), **Developer** (business-hours technical support by email), **Business** (24/7 phone/chat/email, full Trusted Advisor checks, faster response), **Enterprise On-Ramp** (adds a pool of Technical Account Managers and a guided path), **Enterprise** (adds a designated **Technical Account Manager (TAM)**, the fastest response for critical issues, and proactive guidance). Verify features and response times on the current pricing page.",
       "**AWS Marketplace** is a catalog of third-party software you can buy and deploy, billed on your AWS invoice.",
+      "**Data transfer costs**: data coming *into* AWS from the internet is generally free; data going *out* to the internet is charged per GB (with a small free monthly allowance); transfer between Regions is charged; transfer between AZs in a Region is charged at a lower rate; and traffic within the same AZ using private IPs is free. Putting resources in the same AZ or using CloudFront can lower transfer bills, but cross-AZ placement is still right for availability.",
+      "**Billing tools in more detail**: **cost allocation tags** (user-defined and AWS-generated) must be activated in the Billing console before they show up in Cost Explorer and the **Cost and Usage Report (CUR)**, the most detailed billing data delivered to S3. **AWS Billing Conductor** lets you create custom billing groups and pro-forma rates, useful for resellers and chargeback or showback inside a company. **Consolidated billing** in Organizations combines usage for volume discounts, and **AWS Budgets** alerts or can trigger actions when cost or usage crosses a threshold.",
+      "**Other pricing models**: pay as you go, save when you reserve (RIs, Savings Plans), pay less as you use more (tiered pricing, for example S3), and save through volume discounts. Some services have a Free Tier: always-free, 12-months-free for new accounts, and short trials.",
     ),
     analogy:
       "AWS billing resembles a utility bill with extra dashboards: Pricing Calculator is the quote you ask for before moving into a house, Cost Explorer is the monthly usage chart, Budgets is the alarm that rings when you are on track to overspend, tags are the room labels that show which room used the most electricity, and a support plan is the level of repair-service contract you bought.",
@@ -197,6 +208,8 @@ Large critical estate, designated TAM             Enterprise`,
       "Leaving idle resources (unattached volumes, unused IPs, forgotten instances).",
       "Confusing Budgets (alerts on thresholds) with Cost Explorer (analysis).",
       "Assuming Free Tier lasts forever or covers every service.",
+      "Forgetting to activate cost allocation tags, then wondering why they are missing from reports.",
+      "Ignoring data transfer out and cross-Region replication in cost estimates.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "State which tool: estimate a new architecture, alert at 80% of spend, analyse last quarter's costs by service." },
@@ -210,10 +223,12 @@ Large critical estate, designated TAM             Enterprise`,
       { question: "Which plan includes a designated Technical Account Manager?", answer: "Enterprise (Enterprise On-Ramp offers a pool of TAMs)." },
       { question: "Exam-style: Which tool estimates the cost of planned AWS resources? (A) Cost Explorer (B) Budgets (C) Pricing Calculator (D) Trusted Advisor", answer: "C." },
       { question: "Exam-style: Which tool sends alerts when costs exceed a threshold?", answer: "AWS Budgets." },
+      { question: "Exam-style: Which AWS service lets you define custom billing groups with custom rates?", answer: "AWS Billing Conductor." },
+      { question: "Is data transfer into AWS from the internet charged?", answer: "Generally no; data transfer out to the internet is charged." },
     ],
     prerequisites: ["ec2-pricing", "monitoring-and-auditing"],
     relatedTopics: ["well-architected-framework", "migration-and-innovation", "security-services", "block-file-object-storage"],
-    keywords: ["billing", "free tier", "cost explorer", "budgets", "pricing calculator", "tags", "consolidated billing", "support plan", "tam", "marketplace"],
+    keywords: ["billing", "free tier", "cost explorer", "budgets", "pricing calculator", "tags", "consolidated billing", "support plan", "tam", "marketplace", "data transfer", "billing conductor", "cur", "cost allocation tags", "tiered pricing", "free tier"],
   },
 
   {
@@ -229,6 +244,8 @@ Large critical estate, designated TAM             Enterprise`,
       "- **AWS Snow Family** (Snowball Edge devices): ruggedised appliances to move large amounts of data or run edge compute when networks are slow. Snowmobile (the truck-sized option) has been retired, and some smaller Snow devices have been discontinued for new customers, so check availability.\n- **AWS DataSync**: automates online transfers between on-premises storage and AWS storage.\n- **AWS Application Migration Service (MGN)**: replicates servers into AWS for rehosting. **Database Migration Service** handles databases.",
       "**Innovation with AI/ML**",
       "- **Amazon SageMaker**: build, train and deploy your own machine learning models.\n- **Amazon Bedrock**: access to foundation models through an API to build generative AI applications.\n- **Amazon Lex**: conversational chatbots.\n- **Amazon Transcribe**: speech to text.\n- **Amazon Polly**: text to speech.\n- **Amazon Comprehend**: text analysis (sentiment, entities).\n- **Amazon Textract**: extract text and structure from scanned documents.\n- **Amazon Rekognition**: image and video analysis.\n- **Amazon Translate**: language translation.\n- **Amazon Kendra** and similar services: intelligent search.",
+      "**Benefits of the CAF**: following its perspectives brings more reliable cloud migrations, higher business value, lower risk, better alignment between business and IT, and clearer skills and roles across the organisation.",
+      "**Discovery and tracking tools**: **AWS Application Discovery Service** collects server inventory, utilisation and dependencies from on-premises data centers; **AWS Migration Hub** gives one place to track migration progress across tools; **AWS Application Migration Service (MGN)** performs the lift-and-shift replication; **AWS Transfer Family** moves files over SFTP/FTPS; **DataSync**, **DMS** and the **Snow Family** move data. Use the **AWS Migration Evaluator** to build a business case.",
     ),
     analogy:
       "Migrating is like relocating a large household. Retire is donating the broken lamp, retain is keeping the piano in the old house for now, rehost is moving the sofa exactly as it is, replatform is swapping the heavy fridge for a built-in one, repurchase is buying a rental subscription instead of a washing machine, and refactor is redesigning the kitchen. Snowball is the container you fill and have shipped when the moving van would take forever.",
@@ -294,6 +311,7 @@ Detect objects in photos                         Rekognition`,
       "Ignoring data gravity: apps move easily, databases and data do not.",
       "Forgetting security and governance in the migration plan.",
       "Mixing up Textract (documents), Transcribe (audio) and Comprehend (text analysis).",
+      "Starting a migration without discovery - hidden dependencies cause outages.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "List the six CAF perspectives and group them into business and technical capabilities." },
@@ -307,10 +325,13 @@ Detect objects in photos                         Rekognition`,
       { question: "When would you use a Snowball Edge?", answer: "To move large datasets or process data at the edge when network transfer is too slow, expensive or unavailable." },
       { question: "Exam-style: Which service lets you build generative AI apps using foundation models through an API?", answer: "Amazon Bedrock." },
       { question: "Exam-style: Which service extracts text and tables from scanned documents?", answer: "Amazon Textract." },
+      { question: "Exam-style: Which service collects on-premises server utilisation and dependency data to plan a migration?", answer: "AWS Application Discovery Service." },
+      { question: "Exam-style: Which service provides a single dashboard to track migrations?", answer: "AWS Migration Hub." },
+      { question: "Name the six CAF perspectives.", answer: "Business, People, Governance, Platform, Security, Operations." },
     ],
     prerequisites: ["aws-databases", "block-file-object-storage", "vpc-networking"],
     relatedTopics: ["well-architected-framework", "pricing-and-billing", "serverless-and-containers", "security-services"],
-    keywords: ["migration", "caf", "7 rs", "rehost", "replatform", "refactor", "snowball", "datasync", "sagemaker", "bedrock", "textract", "transcribe"],
+    keywords: ["migration", "caf", "7 rs", "rehost", "replatform", "refactor", "snowball", "datasync", "sagemaker", "bedrock", "textract", "transcribe", "caf", "application discovery service", "migration hub", "mgn", "transfer family", "migration evaluator"],
   },
 
   {
@@ -414,15 +435,106 @@ Sustainability          Are we maximising utilisation and removing idle resource
   },
 
   {
+    id: "support-and-partner-resources",
+    title: "Support Plans and Partner Resources",
+    level: "advanced",
+    description: "Support plans, Support Center, re:Post, Knowledge Center, Partner Network, Marketplace, Professional Services, Solutions Architects, IQ, AMS and Activate.",
+    explanation: md(
+      "AWS offers paid support plans and many free and paid resources to help you learn, solve problems and find expert partners.",
+      "**Support plans** (all include 24/7 access to customer service, documentation, whitepapers, support forums, Health Dashboard and core Trusted Advisor checks):",
+      "- **Basic**: free; account and billing support, and a limited set of Trusted Advisor checks.\n- **Developer**: business-hours email access to Cloud Support Associates; for testing and early development.\n- **Business**: 24/7 phone, chat and email with Cloud Support Engineers, full Trusted Advisor checks, and 1-hour response for production system impaired cases (newer Business Support+ adds faster responses and AI-assisted help).\n- **Enterprise On-Ramp**: adds a pool of Technical Account Managers, a Well-Architected review, and faster response (30 minutes for business-critical issues) for important workloads.\n- **Enterprise**: a designated TAM, infrastructure event management, concierge for billing and the fastest response (15 minutes for business-critical system down).\nPlan names, prices and response times change, so verify on the AWS Support page.",
+      "**Where to get help**",
+      "- **AWS Support Center**: open and manage cases.\n- **AWS re:Post**: community Q&A, the successor to the AWS forums.\n- **AWS Knowledge Center**: answers to frequently asked support questions.\n- **AWS Prescriptive Guidance**: strategies, guides and patterns for migration and modernization.\n- **AWS Trust & Safety**: report abuse of AWS resources such as spam, malware or DDoS originating from AWS.\n- **Documentation, whitepapers, blogs, Well-Architected resources and AWS Skill Builder** for self-paced training.",
+      "**Partners and professional help**",
+      "- **AWS Partner Network (APN)**: companies that build on or resell AWS. **Independent software vendors (ISVs)** offer software on AWS; **systems integrators (SIs)** and consulting partners design and implement solutions. Partner benefits include training, technical support, co-marketing, and sales support; partners can earn tiers and **competencies** that signal expertise.\n- **AWS Marketplace**: digital catalog of third-party software, data and services. Features: pay-as-you-go or subscription pricing, charges on your AWS bill, free trials, private offers, and quick deployment (AMIs, SaaS, containers).\n- **AWS Professional Services**: AWS consultants who help deliver specific outcomes. **Solutions Architects** give free architecture guidance. **AWS IQ** connects you with certified freelance experts. **AWS Managed Services (AMS)** operates your AWS infrastructure for you. **AWS Activate** gives startups credits, training and support.",
+    ),
+    analogy:
+      "Support plans are like roadside-assistance memberships: Basic is the free emergency number, Developer a weekday helpline, Business a 24/7 mechanic, and Enterprise your own named mechanic who knows your car. Partners are the garages and dealers, Marketplace is the accessory shop, and Professional Services is a consultant who comes to your driveway.",
+    examples: [
+      {
+        title: "Which plan fits?",
+        language: "text",
+        code: `Situation                                          Plan
+-------------------------------------------------  ---------------------
+Learning on a personal account                     Basic
+Testing a prototype, business-hours help is fine   Developer
+Production workload needs 24/7 engineers           Business
+Critical workloads, wants a pool of TAMs           Enterprise On-Ramp
+Mission-critical, wants a designated TAM           Enterprise`,
+        explanation: "Match urgency and operational criticality: the higher the stakes, the faster the response and the more proactive the help.",
+      },
+      {
+        title: "Open a support case from the CLI",
+        language: "bash",
+        code: `# Requires a Business or higher plan
+aws support create-case \\
+  --subject "Production RDS failover question" \\
+  --service-code amazon-rds --severity-code high \\
+  --communication-body "Describe what happened and when." \\
+  --language en`,
+        explanation: "The Support API is available only with Business, Enterprise On-Ramp or Enterprise plans.",
+      },
+    ],
+    howItWorks: md(
+      "Support plans differ in **who answers** (associate vs engineer vs TAM), **how fast** (response times by severity), **what is included** (Trusted Advisor checks, architecture reviews, event management), and **price** (a monthly minimum or percentage of usage). Upgrade for a month when you need help, then downgrade, because plans bill monthly with no long-term contract.",
+      "Partners join the APN through requirements such as training and validated customer success. Marketplace sellers publish listings; buyers subscribe, and AWS bills the charges alongside regular AWS usage.",
+    ),
+    diagram: `  Self-service (free)       Paid help               Experts
+  re:Post, Knowledge        Support plans:          Partners (ISV, SI)
+  Center, docs, Skill       Basic < Developer <     Professional Services
+  Builder, Prescriptive     Business < On-Ramp <    Solutions Architects
+  Guidance                  Enterprise (TAM)        IQ, AMS, Marketplace`,
+    whyItExists: md(
+      "Cloud adoption needs guidance. Some customers want only documentation; others need engineers on call or a partner to design a whole migration. A tiered offering lets each pay for the level of help that matches their risk.",
+    ),
+    whenToUse: md(
+      "Choose a support plan based on production criticality. Use re:Post and Knowledge Center first for common questions, Partners or Professional Services for large projects, Marketplace to buy ready-made software, IQ for short expert tasks, AMS when you want AWS to operate your environment, and Activate when you are a startup.",
+    ),
+    whenNotToUse: md(
+      "Do not run business-critical production on Basic or Developer expecting 24/7 engineer help. Do not rely on Trust & Safety for account or billing problems - that is Support or Customer Service.",
+    ),
+    commonMistakes: [
+      "Believing Basic includes technical support cases (it covers billing and account issues).",
+      "Confusing a TAM (Enterprise) with an AWS Solutions Architect (free pre-sales guidance).",
+      "Treating AWS Marketplace as free software - you pay the vendor's price through AWS billing.",
+      "Reporting abuse through a support case instead of the Trust & Safety team.",
+      "Forgetting that plan features and response times can change; check current AWS documentation.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Order the five support plans from least to most support and name one feature that appears at each step." },
+      { difficulty: "Medium", prompt: "A startup runs a production app and has one engineer on call. Recommend a plan and justify it." },
+      { difficulty: "Medium", prompt: "List four benefits of buying software through AWS Marketplace." },
+      { difficulty: "Hard", prompt: "A company is migrating hundreds of servers. Describe which partner and AWS resources you would use at each phase." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which support plan first provides a designated Technical Account Manager?", answer: "Enterprise Support (Enterprise On-Ramp offers a pool of TAMs)." },
+      { question: "Exam-style: Which plan is the cheapest to include 24/7 access to Cloud Support Engineers?", answer: "Business Support." },
+      { question: "Exam-style: Where do you report an AWS resource being used to send spam?", answer: "AWS Trust & Safety." },
+      { question: "Exam-style: Which resource is a community-driven Q&A site for AWS questions?", answer: "AWS re:Post." },
+      { question: "Exam-style: Which AWS service lets you find and buy third-party software with charges on your AWS bill?", answer: "AWS Marketplace." },
+      { question: "Exam-style: Which offering operates a customer's AWS infrastructure for them?", answer: "AWS Managed Services (AMS)." },
+      { question: "Exam-style: Which program helps startups with credits and training?", answer: "AWS Activate." },
+      { question: "What does an ISV do versus an SI in the AWS Partner Network?", answer: "An ISV builds software products that run on AWS; a systems integrator designs and implements solutions for customers." },
+    ],
+    prerequisites: ["pricing-and-billing"],
+    relatedTopics: ["pricing-and-billing", "governance-and-management", "migration-and-innovation", "cloud-practitioner-exam"],
+    keywords: ["support plans", "developer support", "business support", "enterprise on-ramp", "enterprise support", "tam", "support center", "re:post", "knowledge center", "prescriptive guidance", "trust and safety", "apn", "isv", "marketplace", "professional services", "solutions architect", "iq", "ams", "activate"],
+  },
+
+  {
     id: "cloud-practitioner-exam",
     title: "AWS Cloud Practitioner Exam (CLF-C02)",
     level: "advanced",
-    description: "Exam format and domains, a study plan, question strategies, and a 15-question practice set.",
+    description: "Exam format and domains, a study plan, question strategies, and a task-statement map, and a 25-question practice set.",
     explanation: md(
       "The **AWS Certified Cloud Practitioner** exam (code **CLF-C02**) validates foundational cloud knowledge. It is meant for people from technical and non-technical roles alike, and no prior AWS experience is required.",
-      "**Format**: 65 questions, 90 minutes, multiple choice (one correct answer) and multiple response (two or more correct answers). Some questions are unscored items used to evaluate future questions. The result is a **scaled score from 100 to 1,000** and the **passing score is 700**.",
+      "**Format**: 65 questions in 90 minutes: **50 are scored and 15 are unscored** items AWS uses to evaluate future questions, and you cannot tell which is which, so answer every question. Question types are **multiple choice** (one correct answer out of four options) and **multiple response** (two or more correct answers out of five or more options). There is **no penalty for guessing**: an unanswered question counts as incorrect, so never leave one blank.",
+      "**Scoring**: the exam is pass/fail. Results are reported as a **scaled score from 100 to 1,000** and the **minimum passing score is 700**. Scoring is **compensatory**: you pass by your overall score, not by passing each domain, so a weak area can be offset by strength elsewhere.",
+      "**Version and audience**: **CLF-C02 replaced CLF-C01 on 19 September 2023** and added a new task statement on the AWS Cloud Adoption Framework (CAF). The target candidate has up to **6 months of exposure to AWS Cloud** in any role, and people from non-IT backgrounds (sales, finance, management, project roles) are welcome. **Out of scope**: coding, designing cloud architecture, troubleshooting, implementation, and load or performance testing.",
       "**Domains and weights**",
       "- **Cloud Concepts**: 24%\n- **Security and Compliance**: 30%\n- **Cloud Technology and Services**: 34%\n- **Billing, Pricing, and Support**: 12%",
+      "**Task-statement map** (official exam guide numbering to the lessons that cover it):",
+      "- **1.1** Benefits of the AWS Cloud: what-is-cloud-computing\n- **1.2** Design principles: well-architected-framework\n- **1.3** Migration benefits and strategies (including CAF): migration-and-innovation\n- **1.4** Cloud economics: what-is-cloud-computing, ec2-pricing, pricing-and-billing\n- **2.1** Shared responsibility model: shared-responsibility-model\n- **2.2** Security, governance and compliance concepts: security-services, monitoring-and-auditing, governance-and-management\n- **2.3** Access management: iam-basics\n- **2.4** Security components and resources: security-services, network-security\n- **3.1** Deploying and operating methods: interacting-with-aws, developer-and-end-user-tools, governance-and-management\n- **3.2** Global infrastructure: aws-global-infrastructure\n- **3.3** Compute: ec2-basics, auto-scaling-and-load-balancing, serverless-and-containers\n- **3.4** Databases: aws-databases\n- **3.5** Networking: vpc-networking, network-security, dns-and-cdn\n- **3.6** Storage: block-file-object-storage\n- **3.7** AI/ML and analytics: migration-and-innovation, analytics-services\n- **3.8** Other in-scope services (integration, end-user, developer, IoT): application-integration, messaging-sqs-sns, developer-and-end-user-tools\n- **4.1** Pricing models: ec2-pricing, pricing-and-billing\n- **4.2** Billing, budget and cost management: pricing-and-billing\n- **4.3** Technical resources and support options: support-and-partner-resources, monitoring-and-auditing",
       "Check the official exam guide before booking: details, languages and fees can change, and the AWS site is the authority.",
       "**Study plan** (adapt to your time):",
       "- Week 1: Cloud concepts, global infrastructure, shared responsibility, IAM.\n- Week 2: Compute, storage, databases, networking.\n- Week 3: Security services, monitoring, pricing, support, Well-Architected, migration.\n- Week 4: Hands-on in a free account, then timed practice sets, then review your weak areas.",
@@ -464,14 +576,14 @@ aws cloudtrail lookup-events --max-results 3
     howItWorks: md(
       "**Question strategies**",
       "- Read the last sentence first to see what is being asked, then the scenario.\n- Look for keywords: 'lowest cost', 'least operational overhead', 'highly available', 'compliance report', 'decouple'.\n- Eliminate options that are clearly wrong - often two of four are easy to rule out.\n- For multiple-response questions, the prompt states how many answers to choose.\n- Do not leave anything blank; flag hard questions and return.\n- Remember the shared-responsibility split when a question asks 'who is responsible'.",
-      "Use the practice set below (in the interview questions) as a timed quiz: answer each before opening it.",
+      "Use the 25-question practice set below (in the interview questions) as a timed quiz: answer each before opening it.",
     ),
     diagram: `  Domains by weight
   Cloud Technology & Services  34% ################
   Security & Compliance        30% ##############
   Cloud Concepts               24% ###########
   Billing, Pricing, Support    12% #####
-  Format: 65 questions | 90 minutes | pass 700 of 1000`,
+  Format: 65 questions (50 scored) | 90 minutes | pass 700 of 1000`,
     whyItExists: md(
       "A certification gives a structured path through a huge catalogue of services and a credential that tells employers you share the common vocabulary. The exam only samples the basics, so it also doubles as a map for deeper study.",
     ),
@@ -495,7 +607,7 @@ aws cloudtrail lookup-events --max-results 3
       { difficulty: "Hard", prompt: "Write five original exam-style questions (with distractors and explanations) for the Security domain." },
     ],
     interviewQuestions: [
-      { question: "How many questions, how long, and what is the pass mark for CLF-C02?", answer: "65 questions in 90 minutes; scaled score 100-1,000 with 700 required to pass." },
+      { question: "How many questions, how long, and what is the pass mark for CLF-C02?", answer: "65 questions in 90 minutes (50 scored, 15 unscored); scaled score 100-1,000 with 700 required to pass; no guessing penalty." },
       { question: "Which domain has the highest weight?", answer: "Cloud Technology and Services at 34%." },
       { question: "Practice 1: Which Region factor is considered first when data must stay in a country by law?", answer: "Compliance." },
       { question: "Practice 2: Which AWS service distributes traffic across multiple EC2 instances?", answer: "Elastic Load Balancing." },
@@ -512,7 +624,17 @@ aws cloudtrail lookup-events --max-results 3
       { question: "Practice 13: Which migration strategy moves an application as is to EC2 with no changes?", answer: "Rehost (lift and shift)." },
       { question: "Practice 14: Which service sends one message to many subscribers?", answer: "Amazon SNS." },
       { question: "Practice 15: Which support plan first includes a designated Technical Account Manager?", answer: "Enterprise (Enterprise On-Ramp has a pool of TAMs)." },
-    ],
+
+      { question: "Practice 16: Which service provides a dedicated private network connection from a data center to AWS?", answer: "AWS Direct Connect." },
+      { question: "Practice 17: Which service runs SQL queries on data in S3 without servers?", answer: "Amazon Athena." },
+      { question: "Practice 18: A company wants to cut idle cost by choosing smaller instance types after reviewing usage. What is this called?", answer: "Rightsizing (AWS Compute Optimizer can recommend it)." },
+      { question: "Practice 19: Which service enables single sign-on across multiple AWS accounts for workforce users?", answer: "AWS IAM Identity Center." },
+      { question: "Practice 20: Which service records configuration changes and evaluates compliance against rules?", answer: "AWS Config." },
+      { question: "Practice 21: Which AWS Support resource is a community Q&A site?", answer: "AWS re:Post." },
+      { question: "Practice 22: Which design principle is described by 'treat servers as disposable and automate everything'?", answer: "Automation and loosely coupled design (a Well-Architected design principle)." },
+      { question: "Practice 23: Which feature lets you set a spending threshold and be alerted?", answer: "AWS Budgets." },
+      { question: "Practice 24: Which service provides managed SFTP endpoints into Amazon S3?", answer: "AWS Transfer Family." },
+      { question: "Practice 25: Which CAF perspective covers identity, compliance and data protection?", answer: "The Security perspective." },    ],
     prerequisites: ["well-architected-framework", "pricing-and-billing"],
     relatedTopics: ["what-is-cloud-computing", "shared-responsibility-model", "iam-basics", "security-services", "migration-and-innovation"],
     keywords: ["clf-c02", "cloud practitioner", "certification", "exam", "study plan", "practice questions", "domains"],
