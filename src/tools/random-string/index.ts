@@ -11,6 +11,7 @@ const randomString: ToolDefinition = {
   tags: ['Random', 'Token', 'Hex', 'API key'],
   status: 'available',
   load: () => import('./RandomStringPage'),
+  docs: () => import('./docs'),
 };
 
 export default randomString;

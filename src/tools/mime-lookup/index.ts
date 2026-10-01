@@ -11,6 +11,7 @@ const mimeLookup: ToolDefinition = {
   tags: ['MIME', 'Content-Type', 'Extensions'],
   status: 'available',
   load: () => import('./MimeLookupPage'),
+  docs: () => import('./docs'),
 };
 
 export default mimeLookup;

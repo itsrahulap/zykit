@@ -14,6 +14,7 @@ const jsonpathQuery: ToolDefinition = {
   produces: ['json'],
   shareable: true,
   load: () => import('./JsonpathQueryPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonpathQuery;

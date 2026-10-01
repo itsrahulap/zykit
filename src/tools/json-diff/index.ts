@@ -13,6 +13,7 @@ const jsonDiff: ToolDefinition = {
   accepts: ['json'],
   shareable: true,
   load: () => import('./JsonDiffPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonDiff;

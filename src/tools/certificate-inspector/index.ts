@@ -11,6 +11,7 @@ const certificateInspector: ToolDefinition = {
   tags: ['PEM', 'X.509', 'SSL', 'TLS'],
   status: 'available',
   load: () => import('./CertificateInspectorPage'),
+  docs: () => import('./docs'),
 };
 
 export default certificateInspector;

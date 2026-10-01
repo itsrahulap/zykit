@@ -11,6 +11,7 @@ const timestampConverter: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./TimestampConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default timestampConverter;

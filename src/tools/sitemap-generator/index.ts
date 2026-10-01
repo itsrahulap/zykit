@@ -11,6 +11,7 @@ const sitemapGenerator: ToolDefinition = {
   tags: ['Sitemap', 'XML', 'SEO'],
   status: 'available',
   load: () => import('./SitemapGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default sitemapGenerator;

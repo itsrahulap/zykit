@@ -12,6 +12,7 @@ const totpGenerator: ToolDefinition = {
   status: 'available',
   shareable: false,
   load: () => import('./TotpGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default totpGenerator;

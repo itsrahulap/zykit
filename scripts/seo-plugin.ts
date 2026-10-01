@@ -9,6 +9,7 @@
 //   dist/sitemap.xml
 // React replaces the static #root content when it mounts, so users see the normal app.
 
+import { existsSync } from 'node:fs';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { runnerImport, type Plugin, type ResolvedConfig } from 'vite';
@@ -28,11 +29,23 @@ interface Meta {
   description: string;
   url: string;
 }
+/** Mirrors ToolDocs in src/tools/types.ts (not imported: that file pulls in .tsx UI types). */
+interface ToolDocsData {
+  howToUse: string[];
+  howItWorks: string;
+  limits: string[];
+  privacy: string;
+  faqs: { question: string; answer: string }[];
+}
+interface DocsHtmlModule {
+  toolDocsHtml(name: string, docs: ToolDocsData): string;
+}
 interface SeoModule {
   homeMeta(): Meta;
   toolMeta(tool: Tool): Meta;
   homeStructuredData(tools: Tool[]): unknown;
   toolStructuredData(tool: Tool): unknown;
+  toolPageStructuredData(tool: Tool, docs?: ToolDocsData): unknown;
 }
 
 const esc = (s: string) =>
@@ -66,13 +79,13 @@ function homeBody(tools: Tool[], meta: Meta) {
   return `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p>${toolLinks(tools)}</main>`;
 }
 
-function toolBody(tool: Tool, tools: Tool[]) {
+function toolBody(tool: Tool, tools: Tool[], docsHtml = '') {
   const others = tools.filter((t) => t.id !== tool.id);
   return (
     `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><p><a href="/">All tools</a></p>` +
     `<h1>${esc(tool.name)}</h1><p>${esc(tool.tagline)}</p><p>${esc(tool.description)}</p>` +
     `<ul>${tool.tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` +
-    `<h2>More tools</h2>${toolLinks(others)}</main>`
+    `${docsHtml}<h2>More tools</h2>${toolLinks(others)}</main>`
   );
 }
 
@@ -135,6 +148,16 @@ export function seoPlugin(): Plugin {
         config.logger.warn('seo: dist/index.html not found (did the build fail?), skipping page generation');
         return;
       }
+      // Each tool's user docs (src/tools/<id>/docs.ts), for its static page and FAQ structured data.
+      const docsHtml = await load<DocsHtmlModule>('src/tools/docsHtml.ts');
+      const docs = new Map<string, ToolDocsData>();
+      for (const t of tools) {
+        if (existsSync(join(root, 'src/tools', t.id, 'docs.ts'))) docs.set(t.id, (await load<{ default: ToolDocsData }>(`src/tools/${t.id}/docs.ts`)).default);
+      }
+      const docsFor = (t: Tool) => {
+        const d = docs.get(t.id);
+        return d ? docsHtml.toolDocsHtml(t.name, d) : '';
+      };
       const [blog, blogSeo] = await Promise.all([load<BlogModule>('src/blog/html.ts'), load<BlogSeoModule>('src/blog/seo.ts')]);
       const blogPages = blog.blogPages().map((b) => {
         const m = b.post ? blogSeo.postMeta(b.post) : blogSeo.blogHomeMeta();
@@ -150,7 +173,7 @@ export function seoPlugin(): Plugin {
         ['index.html', renderPage(template, home, seo.homeStructuredData(tools), homeBody(tools, home))],
         ...tools.map((t): [string, string] => [
           `tools/${t.id}.html`,
-          renderPage(template, seo.toolMeta(t), seo.toolStructuredData(t), toolBody(t, tools)),
+          renderPage(template, seo.toolMeta(t), seo.toolPageStructuredData(t, docs.get(t.id)), toolBody(t, tools, docsFor(t))),
         ]),
         ...learn.map((p): [string, string] => [p.file, renderPage(template, learnMeta(p), p.structuredData, p.body)]),
         ...blogPages.map((b): [string, string] => [b.file, b.html]),

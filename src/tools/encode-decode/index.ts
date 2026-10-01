@@ -13,6 +13,7 @@ const encodeDecode: ToolDefinition = {
   accepts: ['text', 'url', 'jwt'],
   produces: ['text'],
   load: () => import('./EncodeDecodePage'),
+  docs: () => import('./docs'),
 };
 
 export default encodeDecode;

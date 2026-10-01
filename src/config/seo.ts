@@ -1,7 +1,8 @@
 // Page metadata (title, description, canonical URL, structured data), shared by the running app
 // (src/app/Layout.tsx) and the build step that writes a static HTML file per page (scripts/seo-plugin.ts).
 
-import type { ToolDefinition } from '../tools/types';
+import { plain } from '../tools/docsHtml';
+import type { ToolDefinition, ToolDocs } from '../tools/types';
 import { SITE } from './site';
 
 export interface PageMeta {
@@ -42,6 +43,31 @@ export function toolStructuredData(tool: ToolInfo) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     keywords: tool.tags.join(', '),
     isPartOf: { '@type': 'WebSite', name: SITE.name, url: `${SITE.url}/` },
+  };
+}
+
+/**
+ * JSON-LD for a tool page with docs: the WebApplication plus an FAQPage built from the FAQs that
+ * are visible on the page (ToolDocsSection) and in its static HTML, so the markup matches the content.
+ */
+export function toolPageStructuredData(tool: ToolInfo, docs?: ToolDocs) {
+  const app = toolStructuredData(tool);
+  if (!docs?.faqs.length) return app;
+  const { '@context': context, ...appNode } = app;
+  return {
+    '@context': context,
+    '@graph': [
+      appNode,
+      {
+        '@type': 'FAQPage',
+        url: toolUrl(tool),
+        mainEntity: docs.faqs.map((f) => ({
+          '@type': 'Question',
+          name: plain(f.question),
+          acceptedAnswer: { '@type': 'Answer', text: plain(f.answer) },
+        })),
+      },
+    ],
   };
 }
 

@@ -12,6 +12,7 @@ const csvViewer: ToolDefinition = {
   status: 'available',
   accepts: ['csv'],
   load: () => import('./CsvViewerPage'),
+  docs: () => import('./docs'),
 };
 
 export default csvViewer;

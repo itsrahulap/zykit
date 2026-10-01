@@ -12,6 +12,7 @@ const regexTester: ToolDefinition = {
   accepts: ['regex'],
   shareable: true,
   load: () => import('./RegexTesterPage'),
+  docs: () => import('./docs'),
 };
 
 export default regexTester;

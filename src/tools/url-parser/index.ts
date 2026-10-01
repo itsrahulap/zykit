@@ -12,6 +12,7 @@ const urlParser: ToolDefinition = {
   accepts: ['url'],
   shareable: true,
   load: () => import('./UrlParserPage'),
+  docs: () => import('./docs'),
 };
 
 export default urlParser;

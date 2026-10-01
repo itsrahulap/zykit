@@ -6,15 +6,16 @@ import { useEffect, useMemo, useRef, type ComponentType } from 'react';
 import type { ShareState } from '../shared/lib/share';
 import { recordToolVisit } from '../shared/lib/toolPrefs';
 import { ToolCtx, type ToolContextValue } from '../shared/ui/toolContext';
-import type { ToolDefinition } from '../tools/types';
+import type { ToolDefinition, ToolDocs } from '../tools/types';
 
 export interface ToolRouteProps {
   tool: ToolDefinition;
+  docs?: ToolDocs;
   Page: ComponentType;
-  Extras: ComponentType<{ tool: ToolDefinition }>;
+  Extras: ComponentType<{ tool: ToolDefinition; docs?: ToolDocs }>;
 }
 
-export function ToolRoute({ tool, Page, Extras }: ToolRouteProps) {
+export function ToolRoute({ tool, docs, Page, Extras }: ToolRouteProps) {
   useEffect(() => recordToolVisit(tool.id), [tool.id]);
   const share = useRef<(() => ShareState) | null>(null);
   const ctx = useMemo<ToolContextValue>(
@@ -33,7 +34,7 @@ export function ToolRoute({ tool, Page, Extras }: ToolRouteProps) {
   return (
     <ToolCtx.Provider value={ctx}>
       <Page />
-      <Extras tool={tool} />
+      <Extras tool={tool} docs={docs} />
     </ToolCtx.Provider>
   );
 }

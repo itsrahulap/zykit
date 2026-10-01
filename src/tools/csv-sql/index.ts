@@ -13,6 +13,7 @@ const csvSql: ToolDefinition = {
   accepts: ['csv'],
   shareable: false,
   load: () => import('./CsvSqlPage'),
+  docs: () => import('./docs'),
 };
 
 export default csvSql;

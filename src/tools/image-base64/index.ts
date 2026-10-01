@@ -11,6 +11,7 @@ const imageBase64: ToolDefinition = {
   tags: ['Base64', 'Data URI', 'CSS', 'HTML'],
   status: 'available',
   load: () => import('./ImageBase64Page'),
+  docs: () => import('./docs'),
 };
 
 export default imageBase64;

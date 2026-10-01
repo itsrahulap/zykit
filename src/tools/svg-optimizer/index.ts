@@ -11,6 +11,7 @@ const svgOptimizer: ToolDefinition = {
   tags: ['SVG', 'Minify', 'Sanitize', 'Inkscape', 'Illustrator', 'Figma'],
   status: 'available',
   load: () => import('./SvgOptimizerPage'),
+  docs: () => import('./docs'),
 };
 
 export default svgOptimizer;

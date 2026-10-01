@@ -12,6 +12,7 @@ const jwtGenerator: ToolDefinition = {
   status: 'available',
   produces: ['jwt'],
   load: () => import('./JwtGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default jwtGenerator;

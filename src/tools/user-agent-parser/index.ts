@@ -11,6 +11,7 @@ const userAgentParser: ToolDefinition = {
   tags: ['User-Agent', 'Browser', 'Bot'],
   status: 'available',
   load: () => import('./UserAgentParserPage'),
+  docs: () => import('./docs'),
 };
 
 export default userAgentParser;

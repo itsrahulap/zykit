@@ -13,6 +13,7 @@ const semverChecker: ToolDefinition = {
   accepts: ['text'],
   shareable: true,
   load: () => import('./SemverCheckerPage'),
+  docs: () => import('./docs'),
 };
 
 export default semverChecker;

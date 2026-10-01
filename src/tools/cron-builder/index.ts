@@ -12,6 +12,7 @@ const cronBuilder: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./CronBuilderPage'),
+  docs: () => import('./docs'),
 };
 
 export default cronBuilder;

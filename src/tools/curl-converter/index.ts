@@ -14,6 +14,7 @@ const curlConverter: ToolDefinition = {
   produces: ['code', 'headers'],
   shareable: false, // cURL commands often carry Authorization headers or cookies
   load: () => import('./CurlConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default curlConverter;

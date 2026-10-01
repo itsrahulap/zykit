@@ -13,6 +13,7 @@ const urlCleaner: ToolDefinition = {
   accepts: ['url'],
   produces: ['url'],
   load: () => import('./UrlCleanerPage'),
+  docs: () => import('./docs'),
 };
 
 export default urlCleaner;

@@ -12,6 +12,7 @@ const httpStatus: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./HttpStatusPage'),
+  docs: () => import('./docs'),
 };
 
 export default httpStatus;

@@ -13,6 +13,7 @@ const wordCounter: ToolDefinition = {
   accepts: ['text', 'markdown'],
   shareable: true,
   load: () => import('./WordCounterPage'),
+  docs: () => import('./docs'),
 };
 
 export default wordCounter;

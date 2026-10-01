@@ -11,6 +11,7 @@ const cleanImage: ToolDefinition = {
   tags: ['JPEG', 'PNG', 'WebP', 'EXIF', 'Privacy'],
   status: 'available',
   load: () => import('./CleanImagePage'),
+  docs: () => import('./docs'),
 };
 
 export default cleanImage;

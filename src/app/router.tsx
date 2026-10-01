@@ -8,10 +8,14 @@ import { PageLoading, RouteError } from './RouteStates';
 import { ToolRoute } from './ToolRoute';
 import type { ToolDefinition } from '../tools/types';
 
-/** Route `lazy` for a tool: loads its page and the shared extras (related tools, Learn links) in parallel. */
+/** Route `lazy` for a tool: loads its page, its docs and the shared extras (docs, related tools, Learn links) in parallel. */
 async function loadToolRoute(tool: ToolDefinition) {
-  const [{ default: Page }, { default: Extras }] = await Promise.all([tool.load(), import('../tools/ToolPageExtras')]);
-  return { Component: () => <ToolRoute tool={tool} Page={Page} Extras={Extras} /> };
+  const [{ default: Page }, { default: Extras }, docs] = await Promise.all([
+    tool.load(),
+    import('../tools/ToolPageExtras'),
+    tool.docs?.().then((m) => m.default),
+  ]);
+  return { Component: () => <ToolRoute tool={tool} docs={docs} Page={Page} Extras={Extras} /> };
 }
 
 export const router = createBrowserRouter([

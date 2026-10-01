@@ -13,6 +13,7 @@ const mockDataGenerator: ToolDefinition = {
   produces: ['json'],
   shareable: true,
   load: () => import('./MockDataGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default mockDataGenerator;

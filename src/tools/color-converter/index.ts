@@ -12,6 +12,7 @@ const colorConverter: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./ColorConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default colorConverter;

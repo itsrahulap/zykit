@@ -12,6 +12,7 @@ const jsRunner: ToolDefinition = {
   status: 'available',
   accepts: ['code'],
   load: () => import('./JsRunnerPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsRunner;

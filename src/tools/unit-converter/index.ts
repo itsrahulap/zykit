@@ -12,6 +12,7 @@ const unitConverter: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./UnitConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default unitConverter;

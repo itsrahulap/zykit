@@ -14,6 +14,7 @@ const textCleaner: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./TextCleanerPage'),
+  docs: () => import('./docs'),
 };
 
 export default textCleaner;

@@ -11,6 +11,7 @@ const faviconGenerator: ToolDefinition = {
   tags: ['Favicon', 'ICO', 'PNG', 'Emoji', 'Manifest'],
   status: 'available',
   load: () => import('./FaviconGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default faviconGenerator;

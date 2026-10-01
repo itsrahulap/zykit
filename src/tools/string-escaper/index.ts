@@ -14,6 +14,7 @@ const stringEscaper: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./StringEscaperPage'),
+  docs: () => import('./docs'),
 };
 
 export default stringEscaper;

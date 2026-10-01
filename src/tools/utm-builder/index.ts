@@ -12,6 +12,7 @@ const utmBuilder: ToolDefinition = {
   status: 'available',
   produces: ['url'],
   load: () => import('./UtmBuilderPage'),
+  docs: () => import('./docs'),
 };
 
 export default utmBuilder;

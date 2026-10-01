@@ -147,7 +147,7 @@ scripts/
 public/sandbox/              sandboxed page that runs lesson examples needing a real DOM
 tests/                       unit tests (Vitest): tests/tools/<tool-id>/, tests/learn/, tests/shared/
 e2e/                         browser tests (Playwright): one spec per tool, plus home and learn-*
-docs/                        adding-a-tool.md, search-console.md, claude-code-plugins.md, docs/tools/<tool-id>/
+docs/                        adding-a-tool.md, search-console.md, claude-code-plugins.md (per-tool docs live in src/tools/<tool-id>/)
 ```
 
 ## Third-party code
@@ -213,7 +213,7 @@ On Vercel, `vercel.json` maps clean URLs (`/tools/jwt-decoder`) to the pre-rende
 - **Verifies** the output by re-parsing it, diffing the metadata, checking dimensions and image-data identity, and test-decoding it in the browser.
 - **Doesn't touch pixels**, so it doesn't remove invisible watermarks (e.g. SynthID) and doesn't change AI-detector results.
 
-Docs: [architecture](docs/tools/clean-image/architecture.md) · [supported formats](docs/tools/clean-image/supported-formats.md) · [privacy](docs/tools/clean-image/privacy.md)
+Developer docs (architecture, what is removed and kept, how privacy is enforced): [src/tools/clean-image/README.md](src/tools/clean-image/README.md).
 
 ## Contributing
 

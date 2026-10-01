@@ -12,6 +12,7 @@ const httpHeaders: ToolDefinition = {
   status: 'available',
   accepts: ['headers'],
   load: () => import('./HttpHeadersPage'),
+  docs: () => import('./docs'),
 };
 
 export default httpHeaders;

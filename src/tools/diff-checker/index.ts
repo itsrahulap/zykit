@@ -13,6 +13,7 @@ const diffChecker: ToolDefinition = {
   accepts: ['text', 'code'],
   shareable: true,
   load: () => import('./DiffCheckerPage'),
+  docs: () => import('./docs'),
 };
 
 export default diffChecker;

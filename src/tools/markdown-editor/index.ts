@@ -14,6 +14,7 @@ const markdownEditor: ToolDefinition = {
   produces: ['markdown'],
   shareable: true,
   load: () => import('./MarkdownEditorPage'),
+  docs: () => import('./docs'),
 };
 
 export default markdownEditor;

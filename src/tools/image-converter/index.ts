@@ -11,6 +11,7 @@ const imageConverter: ToolDefinition = {
   tags: ['PNG', 'JPEG', 'WebP', 'AVIF', 'Convert', 'Batch'],
   status: 'available',
   load: () => import('./ImageConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default imageConverter;

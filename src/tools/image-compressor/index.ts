@@ -11,6 +11,7 @@ const imageCompressor: ToolDefinition = {
   tags: ['JPEG', 'WebP', 'AVIF', 'Compress', 'Batch'],
   status: 'available',
   load: () => import('./ImageCompressorPage'),
+  docs: () => import('./docs'),
 };
 
 export default imageCompressor;

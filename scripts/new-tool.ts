@@ -58,6 +58,7 @@ const ${camel}: ToolDefinition = {
   tags: [${tags.map(q).join(', ')}],
   status: 'available',
   load: () => import('./${page}'),
+  docs: () => import('./docs'),
 };
 
 export default ${camel};
@@ -102,6 +103,61 @@ export default function ${page}() {
 export function transform(input: string): string {
   return input;
 }
+`,
+  ],
+  [
+    `src/tools/${id}/docs.ts`,
+    `// User docs for ${name}, shown under the tool and in its SEO page. Write them from the code:
+// real limits, formats and privacy behaviour only. tests/tools/docs.test.ts rejects any TODO left here.
+import type { ToolDocs } from '../types';
+
+const docs: ToolDocs = {
+  howToUse: ['TODO: first step', 'TODO: second step', 'TODO: third step'],
+  howItWorks: 'TODO: what actually happens when ${name.replace(/'/g, "\\'")} runs: the algorithm, standard or browser API, and where it runs.',
+  limits: ['TODO: real input limits, unsupported formats and edge cases'],
+  privacy: 'TODO: where data is processed, and whether anything is stored or leaves the device.',
+  faqs: [
+    { question: 'TODO: first question?', answer: 'TODO' },
+    { question: 'TODO: second question?', answer: 'TODO' },
+    { question: 'TODO: third question?', answer: 'TODO' },
+  ],
+};
+
+export default docs;
+`,
+  ],
+  [
+    `src/tools/${id}/README.md`,
+    `# ${name}
+
+## Purpose
+
+TODO: what this tool does. User-facing docs live in [\`docs.ts\`](docs.ts).
+
+## File Structure
+
+| File | Responsibility |
+|---|---|
+| \`index.ts\` | Tool definition |
+| \`${page}.tsx\` | Page |
+| \`features/${id}.ts\` | Pure logic |
+
+## Core Logic
+
+TODO: where the main processing happens and how it works.
+
+## Limits
+
+TODO: important technical limits.
+
+## Tests
+
+- Unit: \`tests/tools/${id}/${id}.test.ts\`. \`npm test -- ${id}\`
+- E2E: \`e2e/${id}.spec.ts\`. \`npm run test:e2e -- ${id}\`
+
+## Known Gaps
+
+TODO: known issues or missing functionality.
 `,
   ],
   [
@@ -165,4 +221,4 @@ writeFileSync(registryPath, registry);
 console.log('registered in src/tools/registry.ts');
 
 execFileSync('npx', ['tsx', 'scripts/generate-readme-tools.ts'], { cwd: root, stdio: 'inherit' });
-console.log(`\nNext: build the page in src/tools/${id}/, then run npm test and the e2e spec. Open http://localhost:5173/tools/${id}`);
+console.log(`\nNext: build the page in src/tools/${id}/, fill in docs.ts and README.md, then run npm test and the e2e spec. Open http://localhost:5173/tools/${id}`);

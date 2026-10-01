@@ -14,6 +14,7 @@ const csvJson: ToolDefinition = {
   produces: ['json', 'csv'],
   shareable: true,
   load: () => import('./CsvJsonPage'),
+  docs: () => import('./docs'),
 };
 
 export default csvJson;

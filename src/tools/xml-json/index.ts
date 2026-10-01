@@ -14,6 +14,7 @@ const xmlJson: ToolDefinition = {
   produces: ['json', 'xml'],
   shareable: true,
   load: () => import('./XmlJsonPage'),
+  docs: () => import('./docs'),
 };
 
 export default xmlJson;

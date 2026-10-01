@@ -14,6 +14,7 @@ const findReplace: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./FindReplacePage'),
+  docs: () => import('./docs'),
 };
 
 export default findReplace;

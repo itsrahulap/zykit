@@ -12,6 +12,7 @@ const ipCidrCalculator: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./IpCidrCalculatorPage'),
+  docs: () => import('./docs'),
 };
 
 export default ipCidrCalculator;

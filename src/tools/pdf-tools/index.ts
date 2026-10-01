@@ -12,6 +12,7 @@ const pdfTools: ToolDefinition = {
   status: 'available',
   shareable: false,
   load: () => import('./PdfToolsPage'),
+  docs: () => import('./docs'),
 };
 
 export default pdfTools;

@@ -14,6 +14,7 @@ const jsonFormatter: ToolDefinition = {
   produces: ['json'],
   shareable: true,
   load: () => import('./JsonFormatterPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonFormatter;

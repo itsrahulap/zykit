@@ -12,6 +12,7 @@ const envDiff: ToolDefinition = {
   status: 'available',
   shareable: false,
   load: () => import('./EnvDiffPage'),
+  docs: () => import('./docs'),
 };
 
 export default envDiff;

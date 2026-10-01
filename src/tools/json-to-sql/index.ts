@@ -13,6 +13,7 @@ const jsonToSql: ToolDefinition = {
   accepts: ['json'],
   produces: ['sql'],
   load: () => import('./JsonToSqlPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonToSql;

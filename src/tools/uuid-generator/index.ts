@@ -10,6 +10,7 @@ const uuidGenerator: ToolDefinition = {
   tags: ['UUID', 'v4', 'v7', 'GUID'],
   status: 'available',
   load: () => import('./UuidGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default uuidGenerator;

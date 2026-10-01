@@ -12,6 +12,7 @@ const hashGenerator: ToolDefinition = {
   status: 'available',
   accepts: ['text'],
   load: () => import('./HashGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default hashGenerator;

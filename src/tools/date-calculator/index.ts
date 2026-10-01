@@ -12,6 +12,7 @@ const dateCalculator: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./DateCalculatorPage'),
+  docs: () => import('./docs'),
 };
 
 export default dateCalculator;

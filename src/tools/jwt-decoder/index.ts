@@ -12,6 +12,7 @@ const jwtDecoder: ToolDefinition = {
   status: 'available',
   accepts: ['jwt'],
   load: () => import('./JwtDecoderPage'),
+  docs: () => import('./docs'),
 };
 
 export default jwtDecoder;

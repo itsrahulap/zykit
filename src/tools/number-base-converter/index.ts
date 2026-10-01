@@ -12,6 +12,7 @@ const numberBaseConverter: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./NumberBaseConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default numberBaseConverter;

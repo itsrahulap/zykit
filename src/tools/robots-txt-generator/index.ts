@@ -11,6 +11,7 @@ const robotsTxtGenerator: ToolDefinition = {
   tags: ['robots.txt', 'SEO', 'Crawlers'],
   status: 'available',
   load: () => import('./RobotsTxtGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default robotsTxtGenerator;

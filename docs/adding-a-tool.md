@@ -1,6 +1,6 @@
 # Adding a new tool
 
-**Quick start:** `npm run new:tool -- my-tool --name "My Tool" --category Developer --icon code` creates the definition, page, feature module, unit test and e2e spec below, registers the tool and updates the README. Then build the page.
+**Quick start:** `npm run new:tool -- my-tool --name "My Tool" --category Developer --icon code` creates the definition, page, feature module, docs, README, unit test and e2e spec below, registers the tool and updates the README. Then build the page.
 
 Every tool lives in its own folder and registers itself in one place. The home page, routing, page titles and footer links are all generated from the registry.
 
@@ -10,6 +10,8 @@ Every tool lives in its own folder and registers itself in one place. The home p
 src/tools/<tool-id>/
 ├── index.ts            ToolDefinition (name, tagline, icon, tags, lazy page)  ← required
 ├── <Name>Page.tsx      default-exported page component                        ← required
+├── docs.ts             user docs: how to use, how it works, limits, privacy, FAQs ← required
+├── README.md           developer notes: files, core logic, limits, tests, gaps   ← required
 ├── components/         UI used only by this tool
 ├── features/           the tool's logic (pure TypeScript, testable without a browser)
 ├── hooks/              React state for the tool
@@ -18,10 +20,9 @@ src/tools/<tool-id>/
 └── utils/
 tests/tools/<tool-id>/  unit tests + fixtures
 e2e/<tool-id>.spec.ts   browser tests
-docs/tools/<tool-id>/   tool-specific docs
 ```
 
-Only `index.ts` and the page are required; add the other folders as the tool needs them.
+Only `index.ts`, the page, `docs.ts` and `README.md` are required; add the other folders as the tool needs them.
 
 ## 2. Describe the tool — `src/tools/<tool-id>/index.ts`
 
@@ -104,6 +105,20 @@ useShareState({ input, mode }, (s) => { if (s.input !== undefined) setInput(s.in
 - **`accepts` / `produces`** use the kinds in `DataKind` (`json`, `csv`, `yaml`, `xml`, `text`, `code`, `sql`, `url`, `jwt`, `headers`, `markdown`, `regex`, `curl`). A tool's "Send to…" menu lists every other tool whose `accepts` includes the output's kind. `OutputPanel` shows it automatically (kind guessed from `mime`, or pass `kind`); a custom output puts `<SendToMenu text={output} />` right after its Copy button.
 - **`shareable`**: never for tools that handle secrets (tokens, keys, passwords, cookies, certificates) or run code. `tests/shared/share.test.ts` keeps a list of tools that must stay unshareable; add yours if it handles secrets.
 - **Keyboard**: plain-key shortcuts ("?" help, "/" search) never fire while typing in a field; the modifier ones do. The "?" dialog lists them (`src/shared/ui/ShortcutsHelp.tsx`).
+
+## Document it — `docs.ts` and `README.md`
+
+`docs.ts` default-exports a `ToolDocs` object (`src/tools/types.ts`), and `index.ts` points at it with `docs: () => import('./docs')`. It renders under the tool page (`ToolDocsSection`, via `ToolPageExtras`) and in the tool's static SEO page, with an FAQPage in its JSON-LD. Write it from the code, not the tool's name:
+
+- **howToUse**: 3–5 steps using the page's real labels.
+- **howItWorks**: what actually happens: the algorithm, standard or browser API, and where it runs (main thread or worker).
+- **limits**: real numbers from the code (sizes, counts, supported formats), unsupported inputs and edge cases.
+- **privacy**: what stays in the browser, what is stored (localStorage, sessionStorage for Send to…, share links in the URL `#` fragment), and anything that leaves the device. Only claim what the code does.
+- **faqs**: at least 3 questions specific to this tool.
+
+`README.md` is short and for contributors: Purpose, File Structure, Core Logic, Limits, Tests, Known Gaps. Don't repeat the user docs there.
+
+`tests/tools/docs.test.ts` fails if either file is missing, a section is empty, or a `TODO` from the scaffold is left.
 
 ## Search engines and link previews
 

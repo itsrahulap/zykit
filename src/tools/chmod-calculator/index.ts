@@ -12,6 +12,7 @@ const chmodCalculator: ToolDefinition = {
   status: 'available',
   shareable: true,
   load: () => import('./ChmodCalculatorPage'),
+  docs: () => import('./docs'),
 };
 
 export default chmodCalculator;

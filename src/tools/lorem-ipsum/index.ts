@@ -13,6 +13,7 @@ const loremIpsum: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./LoremIpsumPage'),
+  docs: () => import('./docs'),
 };
 
 export default loremIpsum;

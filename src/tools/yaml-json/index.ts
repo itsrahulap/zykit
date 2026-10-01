@@ -14,6 +14,7 @@ const yamlJson: ToolDefinition = {
   produces: ['json', 'yaml'],
   shareable: true,
   load: () => import('./YamlJsonPage'),
+  docs: () => import('./docs'),
 };
 
 export default yamlJson;

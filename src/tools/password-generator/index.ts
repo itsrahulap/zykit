@@ -11,6 +11,7 @@ const passwordGenerator: ToolDefinition = {
   tags: ['Password', 'Passphrase', 'Entropy'],
   status: 'available',
   load: () => import('./PasswordGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default passwordGenerator;

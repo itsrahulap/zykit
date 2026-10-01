@@ -14,6 +14,7 @@ const jsonSchema: ToolDefinition = {
   produces: ['json'],
   shareable: true,
   load: () => import('./JsonSchemaPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonSchema;

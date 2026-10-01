@@ -14,6 +14,7 @@ const unicodeInspector: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./UnicodeInspectorPage'),
+  docs: () => import('./docs'),
 };
 
 export default unicodeInspector;

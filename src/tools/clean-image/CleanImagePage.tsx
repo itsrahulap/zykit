@@ -2,7 +2,6 @@ import { useState } from 'react';
 import cleanImage from './index';
 import { useImageProcessor } from './hooks/useImageProcessor';
 import { BeforeAfter } from './components/BeforeAfter';
-import { Faq } from './components/Faq';
 import { FileDetails } from './components/FileDetails';
 import { ImageUploader } from './components/ImageUploader';
 import { MetadataSummary } from './components/MetadataSummary';
@@ -234,7 +233,6 @@ export default function CleanImagePage() {
           );
         })()}
 
-      <Faq />
       <p className="text-sm text-slate-500 dark:text-slate-400">
         {cleanImage.name} removes supported embedded metadata from image files. It does not alter pixels, so it doesn&rsquo;t remove
         invisible watermarks and doesn&rsquo;t make an image &ldquo;undetectable&rdquo;. C2PA signatures are detected but not verified.

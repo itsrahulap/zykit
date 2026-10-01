@@ -11,6 +11,7 @@ const metaTagInspector: ToolDefinition = {
   tags: ['SEO', 'Open Graph', 'Meta tags'],
   status: 'available',
   load: () => import('./MetaTagInspectorPage'),
+  docs: () => import('./docs'),
 };
 
 export default metaTagInspector;

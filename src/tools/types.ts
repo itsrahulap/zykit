@@ -30,4 +30,27 @@ export interface ToolDefinition {
   shareable?: boolean;
   /** Lazily loaded page component, so each tool is its own code-split bundle. */
   load: () => Promise<{ default: ComponentType }>;
+  /**
+   * Lazily loaded user documentation (./docs.ts), rendered under the tool page and in its static
+   * SEO page. Lazy so 60+ tools' docs never reach the home page bundle. Required by tests/tools/docs.test.ts.
+   */
+  docs?: () => Promise<{ default: ToolDocs }>;
+}
+
+/**
+ * User-facing documentation for a tool. Written from the implementation, not the tool's name:
+ * every limit, format and privacy statement must be true of the code. Text fields accept the
+ * Learn light markup for inline `code`, **bold** and *italic*.
+ */
+export interface ToolDocs {
+  /** 3–5 short, practical steps. */
+  howToUse: string[];
+  /** What actually happens: the algorithm, standard or browser API used. Paragraphs separated by a blank line. */
+  howItWorks: string;
+  /** Real input limits, unsupported formats and edge cases. */
+  limits: string[];
+  /** Where data is processed and whether anything leaves the device or is stored. */
+  privacy: string;
+  /** At least 3 questions specific to this tool. */
+  faqs: { question: string; answer: string }[];
 }

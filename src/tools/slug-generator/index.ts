@@ -14,6 +14,7 @@ const slugGenerator: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./SlugGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default slugGenerator;

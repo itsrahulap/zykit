@@ -14,6 +14,7 @@ const caseConverter: ToolDefinition = {
   produces: ['text'],
   shareable: true,
   load: () => import('./CaseConverterPage'),
+  docs: () => import('./docs'),
 };
 
 export default caseConverter;

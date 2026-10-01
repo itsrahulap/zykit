@@ -14,6 +14,7 @@ const sqlFormatter: ToolDefinition = {
   produces: ['sql'],
   shareable: true,
   load: () => import('./SqlFormatterPage'),
+  docs: () => import('./docs'),
 };
 
 export default sqlFormatter;

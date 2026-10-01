@@ -14,6 +14,7 @@ const jsonToTypescript: ToolDefinition = {
   produces: ['code'],
   shareable: true,
   load: () => import('./JsonToTypescriptPage'),
+  docs: () => import('./docs'),
 };
 
 export default jsonToTypescript;

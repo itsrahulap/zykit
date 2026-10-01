@@ -11,6 +11,7 @@ const imageResizer: ToolDefinition = {
   tags: ['Resize', 'Scale', 'JPEG', 'PNG', 'WebP', 'Batch'],
   status: 'available',
   load: () => import('./ImageResizerPage'),
+  docs: () => import('./docs'),
 };
 
 export default imageResizer;

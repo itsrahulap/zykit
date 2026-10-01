@@ -13,6 +13,7 @@ const qrCodeGenerator: ToolDefinition = {
   accepts: ['text', 'url'],
   shareable: true,
   load: () => import('./QrCodeGeneratorPage'),
+  docs: () => import('./docs'),
 };
 
 export default qrCodeGenerator;
