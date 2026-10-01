@@ -1,4 +1,7 @@
 ## Accessibility Audit: Zykit
+
+> **Status (2026-09-30):** the findings below were fixed in commit `124654e` (shared tokens, skip link, focusable scroll regions, error descriptions, labels, touch targets, focus rings) plus a follow-up for the Number Base Converter's scroll boxes. `e2e/a11y.spec.ts` now runs in strict mode (axe WCAG 2.1 A/AA) on every route, in light and dark, at 1280 and 375 px, and passes. Manual testing with VoiceOver and NVDA is still outstanding.
+
 **Standard:** WCAG 2.1 AA | **Date:** 2026-09-30
 
 **Scope and method.** Production build (`vite build`), served by `vite preview`, driven by Playwright (Chromium) and `@axe-core/playwright` 4.13 with the tags `wcag2a, wcag2aa, wcag21a, wcag21aa`. The harness is `e2e/a11y.spec.ts`. It writes the machine-readable summary to `/private/tmp/claude-501/a11y-results.json`.

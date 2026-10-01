@@ -102,7 +102,9 @@ export function seoPlugin(): Plugin {
     configResolved(c) {
       config = c;
     },
-    async closeBundle() {
+    async closeBundle(error?: Error) {
+      // If the bundle failed there's no dist/index.html; skip so Vite reports the real error instead of an ENOENT.
+      if (error) return;
       const root = config.root;
       const outDir = resolve(root, config.build.outDir);
       const opts = { root, configFile: false as const, logLevel: 'error' as const };
@@ -128,7 +130,11 @@ export function seoPlugin(): Plugin {
       });
       const learnMeta = (p: (typeof learn)[number]): Meta => ({ title: `${p.meta.title} · ${site.SITE.name}`, description: p.meta.description, url: `${site.SITE.url}${p.path}` });
       const tools = registry.TOOLS.filter((t) => t.status !== 'coming-soon');
-      const template = await readFile(join(outDir, 'index.html'), 'utf8');
+      const template = await readFile(join(outDir, 'index.html'), 'utf8').catch(() => null);
+      if (template === null) {
+        config.logger.warn('seo: dist/index.html not found (did the build fail?), skipping page generation');
+        return;
+      }
       const [blog, blogSeo] = await Promise.all([load<BlogModule>('src/blog/html.ts'), load<BlogSeoModule>('src/blog/seo.ts')]);
       const blogPages = blog.blogPages().map((b) => {
         const m = b.post ? blogSeo.postMeta(b.post) : blogSeo.blogHomeMeta();
