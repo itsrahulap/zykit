@@ -16,7 +16,7 @@ test('generates TypeScript types from JSON', async ({ page, context }) => {
   const expected =
     'export interface Root {\n  users: User[];\n}\n\nexport interface User {\n  id: number;\n  email: string | null;\n  at?: string;\n}\n';
   await expect(output.locator('pre')).toHaveText(expected);
-  await expect(page.getByText(/typed as/)).toBeVisible();
+  await expect(page.getByText(/typed as/).first()).toBeVisible();
 
   await page.getByRole('group', { name: 'Declaration style' }).getByRole('button', { name: 'type alias' }).click();
   await page.getByLabel('export').uncheck();

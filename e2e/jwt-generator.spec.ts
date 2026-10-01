@@ -47,7 +47,7 @@ test('explains invalid JSON and bad keys', async ({ page }) => {
   await page.getByRole('combobox', { name: 'Algorithm' }).click();
   await page.getByRole('option', { name: /^RS256/ }).click();
   await page.getByRole('textbox', { name: /Private key/ }).fill('-----BEGIN RSA PRIVATE KEY-----\nAAAA\n-----END RSA PRIVATE KEY-----');
-  await expect(page.getByText(/Convert it to PKCS#8/)).toBeVisible();
+  await expect(page.getByText(/Convert it to PKCS#8/).first()).toBeVisible();
 });
 
 test('no horizontal scroll at 320px', async ({ page }) => {

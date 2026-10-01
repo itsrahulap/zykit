@@ -45,7 +45,7 @@ test('QR Code Generator encodes content and downloads PNG and SVG', async ({ pag
   await expect(page.getByText('Enter the network name (SSID).').first()).toBeVisible();
   await page.getByLabel('Network name (SSID)').fill('Home;Net');
   await page.getByLabel('Password').fill('secret');
-  await page.getByText('Encoded text').click();
+  await page.getByText('Encoded text').first().click();
   await expect(page.getByText(String.raw`WIFI:T:WPA;S:Home\;Net;P:••••••;;`)).toBeVisible();
 
   await page.getByTestId('logo-input').setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: PNG });

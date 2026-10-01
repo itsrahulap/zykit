@@ -10,9 +10,9 @@ export const docsHeading = 'eyebrow mb-4 border-b border-slate-200 pb-3 text-sla
 
 export function ToolDocsSection({ name, docs }: { name: string; docs: ToolDocs }) {
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 [overflow-wrap:anywhere]">
       <div className="grid gap-12 lg:grid-cols-2">
-        <section aria-labelledby="how-to-use">
+        <section aria-label="How to use">
           <h2 id="how-to-use" className={docsHeading}>
             How to use {name}
           </h2>
@@ -20,7 +20,7 @@ export function ToolDocsSection({ name, docs }: { name: string; docs: ToolDocs }
             {docs.howToUse.map((step, i) => (
               <li key={i} className="flex gap-3 text-slate-700 dark:text-slate-300">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-ink">{i + 1}</span>
-                <span className="pt-0.5">
+                <span className="min-w-0 pt-0.5">
                   <InlineText text={step} />
                 </span>
               </li>
@@ -36,7 +36,7 @@ export function ToolDocsSection({ name, docs }: { name: string; docs: ToolDocs }
             {docs.limits.map((limit, i) => (
               <li key={i} className="flex gap-2">
                 <Icon name="info" className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
-                <span>
+                <span className="min-w-0">
                   <InlineText text={limit} />
                 </span>
               </li>
@@ -54,7 +54,7 @@ export function ToolDocsSection({ name, docs }: { name: string; docs: ToolDocs }
 
       <section aria-labelledby="privacy" className="flex gap-3 rounded-2xl bg-primary-soft p-5 text-primary-ink dark:bg-slate-800/60 dark:text-slate-200">
         <Icon name="lock" className="mt-0.5 h-5 w-5 shrink-0" />
-        <div>
+        <div className="min-w-0">
           <h2 id="privacy" className="font-semibold">
             Privacy
           </h2>
@@ -72,7 +72,7 @@ export function ToolDocsSection({ name, docs }: { name: string; docs: ToolDocs }
           {docs.faqs.map((f, i) => (
             <details key={i} className="group p-4 sm:px-5">
               <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-semibold text-slate-900 dark:text-white [&::-webkit-details-marker]:hidden">
-                <span>
+                <span className="min-w-0">
                   <InlineText text={f.question} />
                 </span>
                 <Icon name="chevron-right" className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90 motion-reduce:transition-none" />

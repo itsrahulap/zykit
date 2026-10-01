@@ -51,7 +51,7 @@ test('shows errors with position and warnings for non-JSON features', async ({ p
 
   await page.getByLabel('Input YAML').fill('200: ok\nv: !custom x\n---\nb: 2\n');
   await expect(page.getByText(/1 non-string key became JSON strings/)).toBeVisible();
-  await expect(page.getByText(/Custom tags .* !custom/)).toBeVisible();
+  await expect(page.getByText(/Custom tags .* !custom/).first()).toBeVisible();
   await expect(page.getByRole('region', { name: 'Output' }).locator('pre')).toContainText('"b": 2');
 });
 

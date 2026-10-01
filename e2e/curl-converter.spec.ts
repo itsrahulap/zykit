@@ -52,7 +52,7 @@ console.log(data);
 test('flags credentials, warnings and errors', async ({ page }) => {
   await page.goto('/tools/curl-converter');
   await page.getByLabel('cURL command').fill('curl -u ann:pw --frobnicate https://a.example');
-  await expect(page.getByText('Contains credentials')).toBeVisible();
+  await expect(page.getByText('Contains credentials').first()).toBeVisible();
   await expect(page.getByRole('region', { name: 'Warnings' })).toContainText('Unknown option ignored: --frobnicate.');
   await expect(page.getByRole('region', { name: 'Output' }).locator('pre')).toContainText("Authorization: 'Basic YW5uOnB3',");
 
@@ -77,7 +77,7 @@ test('loads examples and has no horizontal scroll at 320px', async ({ page }) =>
   await page.goto('/tools/curl-converter');
   await page.getByRole('button', { name: 'Try an example' }).click();
   await expect(page.getByRole('region', { name: 'Output' }).locator('pre')).toContainText('JSON.stringify');
-  await expect(page.getByText('Contains credentials')).toBeVisible();
+  await expect(page.getByText('Contains credentials').first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.getByRole('group', { name: 'Direction' }).getByRole('button', { name: 'fetch → cURL' }).click();
   await page.getByRole('button', { name: 'Try an example' }).click();

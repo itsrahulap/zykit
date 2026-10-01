@@ -6,7 +6,7 @@ test('converts PNG to JPEG and WebP, flags files the browser cannot decode', asy
   const w = watch(page);
   await page.goto('/tools/image-converter');
   await expect(page).toHaveTitle(/Image Converter/);
-  await expect(page.getByText(/removes metadata such as EXIF and GPS/)).toBeVisible();
+  await expect(page.getByText(/removes metadata such as EXIF and GPS/).first()).toBeVisible();
 
   const png = await canvasImage(page, 'image/png', 200, 100, true);
   await page.locator('input[type=file]').first().setInputFiles([

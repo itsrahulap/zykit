@@ -28,7 +28,7 @@ test('explains malformed and encrypted tokens', async ({ page }) => {
   const input = page.getByRole('textbox', { name: /encoded token/i });
 
   await input.fill('abc.def');
-  await expect(page.getByText(/three segments/)).toBeVisible();
+  await expect(page.getByText(/three segments/).first()).toBeVisible();
   await input.fill('a.b.c.d.e');
   await expect(page.getByText(/encrypted token/)).toBeVisible();
   await input.fill('eyJhbGciOiJub25lIn0.eyJzdWIiOiJ4In0.');

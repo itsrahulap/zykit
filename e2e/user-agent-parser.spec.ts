@@ -12,7 +12,7 @@ test('parses the current browser by default and sample user agents', async ({ pa
 
   const ua = await page.evaluate(() => navigator.userAgent);
   await expect(page.getByLabel('User-Agent')).toHaveValue(ua);
-  await expect(page.getByText('Client Hints (this browser)')).toBeVisible();
+  await expect(page.getByText('Client Hints (this browser)').first()).toBeVisible();
 
   await page.getByRole('combobox', { name: 'Samples' }).click();
   await page.getByRole('option', { name: 'Safari on iPhone' }).click();
@@ -23,7 +23,7 @@ test('parses the current browser by default and sample user agents', async ({ pa
   await expect(parsed).toContainText('Microsoft Edge 129.0.0.0');
   await expect(parsed).toContainText('Blink 129');
   await expect(parsed).toContainText('Windows 10 or 11');
-  await expect(page.getByText(/Windows 10 and 11 both send/)).toBeVisible();
+  await expect(page.getByText(/Windows 10 and 11 both send/).first()).toBeVisible();
 
   await page.getByLabel('User-Agent').fill('Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)');
   await expect(page.getByRole('region', { name: 'Bot' })).toContainText('ClaudeBot 1.0');

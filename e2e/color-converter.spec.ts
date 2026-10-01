@@ -39,7 +39,7 @@ test('Color Converter works locally', async ({ page }) => {
   await page.getByRole('group', { name: 'Harmony' }).getByRole('button', { name: 'Triadic' }).click();
   await page.getByRole('button', { name: /^Use harmony colour #/ }).nth(1).click();
   await expect(page.locator('[data-format="hex"]')).not.toHaveText('#10b981');
-  await expect(page.getByText('Deuteranopia')).toBeVisible();
+  await expect(page.getByText('Deuteranopia').first()).toBeVisible();
   expect(errors.filter((e) => /Content Security Policy/i.test(e))).toEqual([]);
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);
