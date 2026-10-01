@@ -10,4 +10,5 @@ export const SUBJECT_ICONS: Record<SubjectId, IconName> = {
   databases: 'database',
   'system-design': 'building',
   'software-architecture': 'layers',
+  aws: 'server',
 };

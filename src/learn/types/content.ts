@@ -10,7 +10,8 @@ export type SubjectId =
   | "web-fundamentals"
   | "backend"
   | "databases"
-  | "software-architecture";
+  | "software-architecture"
+  | "aws";
 
 export type TopicLevel = "beginner" | "intermediate" | "advanced";
 

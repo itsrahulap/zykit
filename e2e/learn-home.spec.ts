@@ -31,7 +31,7 @@ test.describe('Learn home and shell', () => {
 
     const main = page.locator('#main');
     const subjects = main.getByRole('region', { name: 'Subjects' });
-    await expect(subjects.getByRole('link')).toHaveCount(8);
+    await expect(subjects.getByRole('link')).toHaveCount(9);
     await subjects.getByRole('link', { name: /^JavaScript/ }).click();
 
     await expect(page).toHaveURL(/\/learn\/javascript$/);

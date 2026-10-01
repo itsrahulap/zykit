@@ -2,6 +2,14 @@
 // pages. Keys are "subjectId/topicId" (see catalog.generated.ts); values are tool ids.
 
 export const TOPIC_TOOLS: Record<string, string[]> = {
+  'aws/vpc-networking': ['ip-cidr-calculator'],
+  'aws/network-security': ['ip-cidr-calculator'],
+  'aws/iam-basics': ['json-formatter', 'json-schema'],
+  'aws/interacting-with-aws': ['yaml-json', 'curl-converter'],
+  'aws/dns-and-cdn': ['http-headers'],
+  'aws/block-file-object-storage': ['unit-converter'],
+  'aws/migration-and-innovation': ['unit-converter'],
+  'aws/monitoring-and-auditing': ['cron-builder'],
   'javascript/json': ['json-formatter', 'json-diff', 'json-to-typescript', 'yaml-json'],
   'javascript/string-methods': ['case-converter', 'find-replace', 'regex-tester', 'slug-generator'],
   'javascript/closures': ['js-runner'],

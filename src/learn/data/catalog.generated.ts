@@ -2122,6 +2122,352 @@ export const catalog: LearnCatalog = {
           ]
         }
       ]
+    },
+    {
+      "id": "aws",
+      "title": "AWS Cloud",
+      "description": "Cloud fundamentals and the core Amazon Web Services, from first principles to the Cloud Practitioner exam.",
+      "topics": [
+        {
+          "id": "what-is-cloud-computing",
+          "title": "What is Cloud Computing?",
+          "level": "beginner",
+          "description": "Renting computing resources over the internet, on demand, and paying only for what you use.",
+          "prerequisites": [],
+          "relatedTopics": [
+            "aws-global-infrastructure",
+            "shared-responsibility-model",
+            "ec2-basics",
+            "scalability"
+          ]
+        },
+        {
+          "id": "aws-global-infrastructure",
+          "title": "AWS Global Infrastructure",
+          "level": "beginner",
+          "description": "Regions, Availability Zones, edge locations, and how to pick where your workload runs.",
+          "prerequisites": [
+            "what-is-cloud-computing"
+          ],
+          "relatedTopics": [
+            "ec2-basics",
+            "dns-and-cdn",
+            "vpc-networking",
+            "well-architected-framework",
+            "cdn",
+            "scalability"
+          ]
+        },
+        {
+          "id": "interacting-with-aws",
+          "title": "Interacting with AWS",
+          "level": "beginner",
+          "description": "Everything is an API call: the Console, CLI, SDKs, and infrastructure as code with CloudFormation.",
+          "prerequisites": [
+            "what-is-cloud-computing"
+          ],
+          "relatedTopics": [
+            "iam-basics",
+            "aws-global-infrastructure",
+            "serverless-and-containers",
+            "monitoring-and-auditing"
+          ]
+        },
+        {
+          "id": "ec2-basics",
+          "title": "Amazon EC2 Basics",
+          "level": "beginner",
+          "description": "Virtual servers in the cloud: instances, AMIs, instance types, and how the hypervisor shares hardware.",
+          "prerequisites": [
+            "what-is-cloud-computing",
+            "aws-global-infrastructure"
+          ],
+          "relatedTopics": [
+            "ec2-pricing",
+            "shared-responsibility-model",
+            "auto-scaling-and-load-balancing",
+            "block-file-object-storage",
+            "scalability"
+          ]
+        },
+        {
+          "id": "ec2-pricing",
+          "title": "EC2 Pricing Options",
+          "level": "beginner",
+          "description": "On-Demand, Savings Plans, Reserved Instances, Spot, Dedicated Hosts and Capacity Reservations - and when each fits.",
+          "prerequisites": [
+            "ec2-basics"
+          ],
+          "relatedTopics": [
+            "pricing-and-billing",
+            "auto-scaling-and-load-balancing",
+            "well-architected-framework"
+          ]
+        },
+        {
+          "id": "shared-responsibility-model",
+          "title": "The Shared Responsibility Model",
+          "level": "beginner",
+          "description": "Who secures what: AWS secures the cloud itself, you secure what you put in it.",
+          "prerequisites": [
+            "what-is-cloud-computing",
+            "ec2-basics"
+          ],
+          "relatedTopics": [
+            "iam-basics",
+            "network-security",
+            "security-services",
+            "well-architected-framework"
+          ]
+        },
+        {
+          "id": "iam-basics",
+          "title": "IAM Basics",
+          "level": "beginner",
+          "description": "Identity and Access Management: users, groups, roles, policies, MFA, and least privilege.",
+          "prerequisites": [
+            "shared-responsibility-model"
+          ],
+          "relatedTopics": [
+            "security-services",
+            "network-security",
+            "monitoring-and-auditing",
+            "interacting-with-aws"
+          ]
+        },
+        {
+          "id": "auto-scaling-and-load-balancing",
+          "title": "Auto Scaling and Load Balancing",
+          "level": "intermediate",
+          "description": "Add and remove EC2 capacity automatically and spread traffic across it with Elastic Load Balancing.",
+          "prerequisites": [
+            "ec2-basics",
+            "aws-global-infrastructure"
+          ],
+          "relatedTopics": [
+            "vpc-networking",
+            "monitoring-and-auditing",
+            "ec2-pricing",
+            "well-architected-framework",
+            "load-balancing",
+            "scalability"
+          ]
+        },
+        {
+          "id": "messaging-sqs-sns",
+          "title": "Messaging: SQS, SNS and EventBridge",
+          "level": "intermediate",
+          "description": "Decouple components with queues and publish/subscribe topics so one failure does not cascade.",
+          "prerequisites": [
+            "ec2-basics"
+          ],
+          "relatedTopics": [
+            "serverless-and-containers",
+            "auto-scaling-and-load-balancing",
+            "queues",
+            "scalability"
+          ]
+        },
+        {
+          "id": "serverless-and-containers",
+          "title": "Serverless and Containers",
+          "level": "intermediate",
+          "description": "Lambda, ECS, EKS and Fargate: running code without managing servers, and choosing the right compute.",
+          "prerequisites": [
+            "ec2-basics",
+            "iam-basics"
+          ],
+          "relatedTopics": [
+            "messaging-sqs-sns",
+            "auto-scaling-and-load-balancing",
+            "migration-and-innovation",
+            "scalability"
+          ]
+        },
+        {
+          "id": "vpc-networking",
+          "title": "VPC Networking",
+          "level": "intermediate",
+          "description": "Your private network in AWS: subnets, internet and NAT gateways, VPN, and Direct Connect.",
+          "prerequisites": [
+            "aws-global-infrastructure",
+            "ec2-basics"
+          ],
+          "relatedTopics": [
+            "network-security",
+            "dns-and-cdn",
+            "auto-scaling-and-load-balancing",
+            "aws-databases"
+          ]
+        },
+        {
+          "id": "network-security",
+          "title": "Network Security: Security Groups and NACLs",
+          "level": "intermediate",
+          "description": "Two firewall layers in a VPC: stateful security groups on resources and stateless network ACLs on subnets.",
+          "prerequisites": [
+            "vpc-networking"
+          ],
+          "relatedTopics": [
+            "iam-basics",
+            "security-services",
+            "shared-responsibility-model",
+            "ec2-basics"
+          ]
+        },
+        {
+          "id": "dns-and-cdn",
+          "title": "DNS and CDN: Route 53 and CloudFront",
+          "level": "intermediate",
+          "description": "Translate names to addresses with Route 53, and serve content from edge locations with CloudFront.",
+          "prerequisites": [
+            "aws-global-infrastructure",
+            "vpc-networking"
+          ],
+          "relatedTopics": [
+            "block-file-object-storage",
+            "security-services",
+            "auto-scaling-and-load-balancing",
+            "cdn",
+            "caching"
+          ]
+        },
+        {
+          "id": "block-file-object-storage",
+          "title": "Block, File and Object Storage",
+          "level": "intermediate",
+          "description": "Instance store, EBS, EFS and S3: choosing a storage type, S3 classes, lifecycle rules, durability and availability.",
+          "prerequisites": [
+            "ec2-basics",
+            "iam-basics"
+          ],
+          "relatedTopics": [
+            "aws-databases",
+            "dns-and-cdn",
+            "security-services",
+            "pricing-and-billing",
+            "migration-and-innovation"
+          ]
+        },
+        {
+          "id": "aws-databases",
+          "title": "AWS Database Services",
+          "level": "intermediate",
+          "description": "RDS, Aurora, DynamoDB, Redshift and the specialised and migration database services.",
+          "prerequisites": [
+            "vpc-networking",
+            "block-file-object-storage"
+          ],
+          "relatedTopics": [
+            "migration-and-innovation",
+            "security-services",
+            "serverless-and-containers",
+            "caching",
+            "databases"
+          ]
+        },
+        {
+          "id": "monitoring-and-auditing",
+          "title": "Monitoring and Auditing",
+          "level": "intermediate",
+          "description": "CloudWatch for performance, CloudTrail for who-did-what, Config for resource state, and Trusted Advisor for advice.",
+          "prerequisites": [
+            "iam-basics",
+            "ec2-basics"
+          ],
+          "relatedTopics": [
+            "security-services",
+            "pricing-and-billing",
+            "well-architected-framework",
+            "monitoring-and-observability"
+          ]
+        },
+        {
+          "id": "security-services",
+          "title": "AWS Security Services",
+          "level": "advanced",
+          "description": "Organizations and SCPs, Artifact, Shield, WAF, KMS, Inspector, GuardDuty, Security Hub and Macie.",
+          "prerequisites": [
+            "iam-basics",
+            "network-security",
+            "shared-responsibility-model"
+          ],
+          "relatedTopics": [
+            "monitoring-and-auditing",
+            "pricing-and-billing",
+            "well-architected-framework",
+            "block-file-object-storage"
+          ]
+        },
+        {
+          "id": "pricing-and-billing",
+          "title": "Pricing, Billing and Support",
+          "level": "advanced",
+          "description": "How AWS charges, cost tools (Calculator, Budgets, Cost Explorer), consolidated billing, tags, support plans and Marketplace.",
+          "prerequisites": [
+            "ec2-pricing",
+            "monitoring-and-auditing"
+          ],
+          "relatedTopics": [
+            "well-architected-framework",
+            "migration-and-innovation",
+            "security-services",
+            "block-file-object-storage"
+          ]
+        },
+        {
+          "id": "migration-and-innovation",
+          "title": "Migration and Innovation",
+          "level": "advanced",
+          "description": "CAF perspectives, the 7 Rs of migration, data transfer tools, and AWS AI/ML services.",
+          "prerequisites": [
+            "aws-databases",
+            "block-file-object-storage",
+            "vpc-networking"
+          ],
+          "relatedTopics": [
+            "well-architected-framework",
+            "pricing-and-billing",
+            "serverless-and-containers",
+            "security-services"
+          ]
+        },
+        {
+          "id": "well-architected-framework",
+          "title": "The Well-Architected Framework",
+          "level": "advanced",
+          "description": "The six pillars, their design principles, the Well-Architected Tool, and a multi-AZ example.",
+          "prerequisites": [
+            "aws-global-infrastructure",
+            "auto-scaling-and-load-balancing",
+            "security-services"
+          ],
+          "relatedTopics": [
+            "pricing-and-billing",
+            "monitoring-and-auditing",
+            "migration-and-innovation",
+            "scalability",
+            "cloud-practitioner-exam"
+          ]
+        },
+        {
+          "id": "cloud-practitioner-exam",
+          "title": "AWS Cloud Practitioner Exam (CLF-C02)",
+          "level": "advanced",
+          "description": "Exam format and domains, a study plan, question strategies, and a 15-question practice set.",
+          "prerequisites": [
+            "well-architected-framework",
+            "pricing-and-billing"
+          ],
+          "relatedTopics": [
+            "what-is-cloud-computing",
+            "shared-responsibility-model",
+            "iam-basics",
+            "security-services",
+            "migration-and-innovation"
+          ]
+        }
+      ]
     }
   ],
   "problems": [
