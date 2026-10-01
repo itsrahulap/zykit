@@ -5,7 +5,7 @@ const urlParser: ToolDefinition = {
   name: 'URL Parser',
   tagline: 'Break a URL into its parts',
   description: 'Inspect protocol, host, path, query parameters and fragment, edit parameters and rebuild the URL.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'link',
   tags: ['URL', 'Query string', 'Params'],
   status: 'available',

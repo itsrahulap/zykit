@@ -6,7 +6,7 @@ const ipCidrCalculator: ToolDefinition = {
   tagline: 'Subnets, masks and IP ranges for IPv4 and IPv6',
   description:
     'Calculate network and broadcast addresses, masks, host ranges and counts for any CIDR, and check whether an IP is in a range.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'network',
   tags: ['IP', 'CIDR', 'Subnet', 'IPv6'],
   status: 'available',

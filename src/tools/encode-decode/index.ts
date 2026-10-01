@@ -6,7 +6,7 @@ const encodeDecode: ToolDefinition = {
   tagline: 'Base64, URL, HTML entity and hex',
   description:
     'Convert text to and from Base64, Base64URL, URL encoding, HTML entities and hex, with full Unicode support.',
-  category: 'Developer',
+  category: 'Converters',
   icon: 'swap',
   tags: ['Base64', 'URL', 'HTML', 'Hex'],
   status: 'available',

@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { SITE } from '../config/site';
 import { Headline, IconTile } from '../shared/ui/page';
 import { Icon } from '../shared/ui/ui';
-import { TOOLS, toolPath } from '../tools/registry';
+import { TOOLS, toolCategories, toolPath } from '../tools/registry';
 import { learnStats } from '../learn/data/stats.generated';
 import type { ToolDefinition } from '../tools/types';
 import { categoryCounts, filterTools } from '../shared/utils/toolSearch';
@@ -116,7 +116,7 @@ const chip = (active: boolean) =>
 export function HomePage() {
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState(() => params.get('q') ?? '');
-  const categories = useMemo(() => [...new Set(TOOLS.map((t) => t.category))], []);
+  const categories = useMemo(() => toolCategories(), []);
   const urlCategory = params.get('category') ?? '';
   const category = categories.includes(urlCategory) ? urlCategory : '';
   const searchRef = useRef<HTMLInputElement>(null);

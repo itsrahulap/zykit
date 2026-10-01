@@ -6,7 +6,7 @@ const jwtDecoder: ToolDefinition = {
   tagline: 'Decode and verify JSON Web Tokens',
   description:
     "Read a JWT's header, payload and claims, check expiry, and verify HMAC, RSA or ECDSA signatures with your key.",
-  category: 'Developer',
+  category: 'Security',
   icon: 'key',
   tags: ['JWT', 'JWS', 'HS256', 'RS256', 'ES256'],
   status: 'available',

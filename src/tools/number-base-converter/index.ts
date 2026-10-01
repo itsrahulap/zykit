@@ -6,7 +6,7 @@ const numberBaseConverter: ToolDefinition = {
   tagline: 'Binary, octal, decimal, hex and float bits',
   description:
     'Convert numbers between bases, see two\'s complement and IEEE-754 float bits, and run bitwise operations.',
-  category: 'Developer',
+  category: 'Converters',
   icon: 'hash',
   tags: ['Binary', 'Hex', 'Bitwise', 'IEEE-754'],
   status: 'available',

@@ -6,7 +6,7 @@ const semverChecker: ToolDefinition = {
   tagline: 'Check versions against semver ranges',
   description:
     'Test whether versions satisfy npm-style ranges like ^1.2.0 or ~2.x, compare and sort versions, and see ranges explained.',
-  category: 'Developer',
+  category: 'Code',
   icon: 'layers',
   tags: ['Semver', 'npm', 'Version'],
   status: 'available',

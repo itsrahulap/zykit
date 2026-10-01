@@ -6,7 +6,7 @@ const unitConverter: ToolDefinition = {
   tagline: 'Convert bytes, lengths, weights, temperatures and more',
   description:
     'Convert between units of data size (KB/KiB), length, mass, temperature, time, speed, area and more.',
-  category: 'Developer',
+  category: 'Converters',
   icon: 'swap',
   tags: ['Units', 'Bytes', 'Convert'],
   status: 'available',

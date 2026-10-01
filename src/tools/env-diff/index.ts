@@ -6,7 +6,7 @@ const envDiff: ToolDefinition = {
   tagline: 'Compare and validate .env files',
   description:
     'Compare two .env files to find missing, extra and changed keys, catch duplicates and syntax problems, with values masked.',
-  category: 'Developer',
+  category: 'DevOps & Config',
   icon: 'diff',
   tags: ['dotenv', '.env', 'Config'],
   status: 'available',

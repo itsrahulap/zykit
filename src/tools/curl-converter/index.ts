@@ -6,7 +6,7 @@ const curlConverter: ToolDefinition = {
   tagline: 'Convert cURL commands to fetch and back',
   description:
     'Turn a cURL command into JavaScript fetch, Node, axios or Python requests code, and convert fetch calls back into cURL.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'code',
   tags: ['cURL', 'fetch', 'HTTP', 'axios'],
   status: 'available',

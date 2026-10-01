@@ -6,7 +6,7 @@ const mimeLookup: ToolDefinition = {
   tagline: 'File extension ↔ MIME type',
   description:
     'Find the MIME type for a file extension or the extensions for a MIME type, from a built-in list of common types.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'file',
   tags: ['MIME', 'Content-Type', 'Extensions'],
   status: 'available',

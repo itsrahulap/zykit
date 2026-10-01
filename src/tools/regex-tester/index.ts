@@ -5,7 +5,7 @@ const regexTester: ToolDefinition = {
   name: 'Regex Tester',
   tagline: 'Test regular expressions live',
   description: 'Write a JavaScript regex, see every match and capture group highlighted, try replacements and get flags explained.',
-  category: 'Developer',
+  category: 'Code',
   icon: 'regex',
   tags: ['Regex', 'RegExp', 'Match', 'Replace'],
   status: 'available',

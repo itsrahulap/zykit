@@ -6,7 +6,7 @@ const chmodCalculator: ToolDefinition = {
   tagline: 'Unix permissions: rwx ↔ octal',
   description:
     'Convert Unix file permissions between symbolic (rwxr-xr-x) and octal (755), including setuid, setgid and sticky bits.',
-  category: 'Developer',
+  category: 'DevOps & Config',
   icon: 'lock',
   tags: ['chmod', 'Unix', 'Permissions'],
   status: 'available',

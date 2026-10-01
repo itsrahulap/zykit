@@ -6,7 +6,7 @@ const stringEscaper: ToolDefinition = {
   tagline: 'Escape and unescape strings for any language',
   description:
     'Escape or unescape text for JSON, JavaScript, SQL, regex, shell, C, CSV, XML and URL contexts.',
-  category: 'Developer',
+  category: 'Code',
   icon: 'code',
   tags: ['Escape', 'JSON', 'SQL', 'Shell'],
   status: 'available',

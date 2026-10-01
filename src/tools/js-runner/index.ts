@@ -6,7 +6,7 @@ const jsRunner: ToolDefinition = {
   tagline: 'Run JavaScript and TypeScript in your browser',
   description:
     'Write or paste code and run it in an isolated worker with console output, a time limit and no network access.',
-  category: 'Developer',
+  category: 'Code',
   icon: 'code',
   tags: ['JavaScript', 'TypeScript', 'Console', 'Playground'],
   status: 'available',

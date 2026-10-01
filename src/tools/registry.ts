@@ -139,3 +139,11 @@ export const TOOLS: ToolDefinition[] = [
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
 
 export const getTool = (id: string) => TOOLS.find((t) => t.id === id);
+
+/** Display order of categories (home page, footer, README). Unknown categories go last, alphabetically. */
+export const CATEGORY_ORDER = ['Images', 'Data', 'Code', 'Converters', 'Network & HTTP', 'DevOps & Config', 'Security', 'Text', 'Web', 'Documents'];
+
+export function toolCategories(tools: Pick<ToolDefinition, 'category'>[] = TOOLS): string[] {
+  const rank = (c: string) => (CATEGORY_ORDER.includes(c) ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length);
+  return [...new Set(tools.map((t) => t.category))].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+}

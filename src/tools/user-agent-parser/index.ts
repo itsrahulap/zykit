@@ -6,7 +6,7 @@ const userAgentParser: ToolDefinition = {
   tagline: 'Identify browser, OS and device from a user agent',
   description:
     'Parse a User-Agent string into browser, engine, operating system and device, including bots and crawlers.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'globe',
   tags: ['User-Agent', 'Browser', 'Bot'],
   status: 'available',

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router';
 import { homeMeta, toolMeta } from '../config/seo';
 import { SITE } from '../config/site';
-import { TOOLS, toolPath } from '../tools/registry';
+import { TOOLS, toolCategories, toolPath } from '../tools/registry';
 import type { ToolDefinition } from '../tools/types';
 import { IconTile } from '../shared/ui/page';
 import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPaletteProvider';
@@ -107,7 +107,7 @@ function GitHubMark({ className }: { className: string }) {
 /** Tool links grouped by category: big categories get their own column, small ones share one. */
 function toolColumns() {
   const tools = TOOLS.filter((t) => t.status !== 'coming-soon');
-  const groups = [...new Set(tools.map((t) => t.category))].map((category) => ({ category, tools: tools.filter((t) => t.category === category) }));
+  const groups = toolCategories(tools).map((category) => ({ category, tools: tools.filter((t) => t.category === category) }));
   const big = groups.filter((g) => g.tools.length > 4);
   const small = groups.filter((g) => g.tools.length <= 4);
   return [...big.map((g) => [g]), ...(small.length ? [small] : [])];

@@ -20,10 +20,14 @@ export function homeMeta(): PageMeta {
   return { title: `${SITE.name} · ${SITE.tagline}`, description: SITE.description, url: `${SITE.url}/` };
 }
 
+const PRIVACY_NOTE = ' Runs in your browser; nothing is uploaded.';
+
 export function toolMeta(tool: ToolInfo): PageMeta {
+  // Search results show about 160 characters, so the privacy note is only added when it still fits.
+  const withNote = `${tool.description}${PRIVACY_NOTE}`;
   return {
     title: `${tool.name}: ${tool.tagline} · ${SITE.name}`,
-    description: `${tool.description} Runs in your browser; nothing is uploaded.`,
+    description: withNote.length <= 160 ? withNote : tool.description,
     url: toolUrl(tool),
   };
 }
@@ -36,7 +40,9 @@ export function toolStructuredData(tool: ToolInfo) {
     name: tool.name,
     description: tool.description,
     url: toolUrl(tool),
-    applicationCategory: tool.category === 'Developer' ? 'DeveloperApplication' : 'UtilitiesApplication',
+    applicationCategory: ['Code', 'Data', 'Network & HTTP', 'DevOps & Config', 'Security', 'Converters'].includes(tool.category)
+      ? 'DeveloperApplication'
+      : 'UtilitiesApplication',
     operatingSystem: 'Any (runs in a web browser)',
     browserRequirements: 'Requires JavaScript',
     isAccessibleForFree: true,
@@ -47,28 +53,33 @@ export function toolStructuredData(tool: ToolInfo) {
 }
 
 /**
- * JSON-LD for a tool page with docs: the WebApplication plus an FAQPage built from the FAQs that
- * are visible on the page (ToolDocsSection) and in its static HTML, so the markup matches the content.
+ * JSON-LD for a tool page: the WebApplication, a breadcrumb (Zykit › tool) and, when the tool has docs,
+ * an FAQPage built from the FAQs that are visible on the page (ToolDocsSection) and in its static HTML,
+ * so the markup always matches the content.
  */
 export function toolPageStructuredData(tool: ToolInfo, docs?: ToolDocs) {
-  const app = toolStructuredData(tool);
-  if (!docs?.faqs.length) return app;
-  const { '@context': context, ...appNode } = app;
-  return {
-    '@context': context,
-    '@graph': [
-      appNode,
-      {
-        '@type': 'FAQPage',
-        url: toolUrl(tool),
-        mainEntity: docs.faqs.map((f) => ({
-          '@type': 'Question',
-          name: plain(f.question),
-          acceptedAnswer: { '@type': 'Answer', text: plain(f.answer) },
-        })),
-      },
+  const { '@context': context, ...appNode } = toolStructuredData(tool);
+  const breadcrumb = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: SITE.name, item: `${SITE.url}/` },
+      { '@type': 'ListItem', position: 2, name: tool.name, item: toolUrl(tool) },
     ],
   };
+  const faq = docs?.faqs.length
+    ? [
+        {
+          '@type': 'FAQPage',
+          url: toolUrl(tool),
+          mainEntity: docs.faqs.map((f) => ({
+            '@type': 'Question',
+            name: plain(f.question),
+            acceptedAnswer: { '@type': 'Answer', text: plain(f.answer) },
+          })),
+        },
+      ]
+    : [];
+  return { '@context': context, '@graph': [appNode, breadcrumb, ...faq] };
 }
 
 /** schema.org JSON-LD for the home page: the site plus the list of tools. */

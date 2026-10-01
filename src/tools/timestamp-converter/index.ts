@@ -5,7 +5,7 @@ const timestampConverter: ToolDefinition = {
   name: 'Timestamp Converter',
   tagline: 'Unix time ↔ human dates',
   description: 'Convert Unix seconds or milliseconds to dates in any time zone and back, with ISO 8601, RFC 2822 and relative times.',
-  category: 'Developer',
+  category: 'Converters',
   icon: 'clock',
   tags: ['Unix', 'Epoch', 'ISO 8601', 'Time zone'],
   status: 'available',

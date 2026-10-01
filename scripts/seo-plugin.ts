@@ -101,9 +101,10 @@ interface BlogSeoModule {
   postStructuredData(post: unknown): unknown;
 }
 
+// No <lastmod>: the build date would mark every page as changed on every deploy, and Google
+// ignores lastmod values that aren't accurate. Crawlers find changes through the pages themselves.
 function sitemap(urls: string[]) {
-  const lastmod = new Date().toISOString().slice(0, 10);
-  const entries = urls.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
+  const entries = urls.map((u) => `  <url><loc>${esc(u)}</loc></url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
 }
 

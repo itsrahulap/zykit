@@ -6,7 +6,7 @@ const dateCalculator: ToolDefinition = {
   tagline: 'Date differences, business days and durations',
   description:
     'Find the time between two dates, add or subtract durations, and count business days with optional holidays.',
-  category: 'Developer',
+  category: 'Converters',
   icon: 'clock',
   tags: ['Date', 'Duration', 'Business days'],
   status: 'available',

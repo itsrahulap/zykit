@@ -6,7 +6,7 @@ const diffChecker: ToolDefinition = {
   tagline: 'Compare two texts line by line',
   description:
     'See what changed between two versions of text or code, with word-level highlights, side-by-side or unified.',
-  category: 'Developer',
+  category: 'Code',
   icon: 'diff',
   tags: ['Diff', 'Compare', 'Text', 'Code'],
   status: 'available',

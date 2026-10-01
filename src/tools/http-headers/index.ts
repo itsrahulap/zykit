@@ -6,7 +6,7 @@ const httpHeaders: ToolDefinition = {
   tagline: 'Paste response headers and get them explained',
   description:
     'Paste raw HTTP headers to see what each one does, check security and caching headers and spot common mistakes.',
-  category: 'Developer',
+  category: 'Network & HTTP',
   icon: 'server',
   tags: ['HTTP', 'Headers', 'Security', 'Cache'],
   status: 'available',

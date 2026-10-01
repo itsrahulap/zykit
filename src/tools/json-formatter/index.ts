@@ -6,7 +6,7 @@ const jsonFormatter: ToolDefinition = {
   tagline: 'Format, validate and minify JSON',
   description:
     'Pretty-print or compact JSON, sort keys, and find the exact line and column of syntax errors.',
-  category: 'Developer',
+  category: 'Data',
   icon: 'braces',
   tags: ['JSON', 'Validate', 'Minify', 'Pretty print'],
   status: 'available',

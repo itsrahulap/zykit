@@ -6,7 +6,7 @@ const cronBuilder: ToolDefinition = {
   tagline: 'Build and explain cron schedules',
   description:
     'Build cron expressions visually, get them explained in plain English and see the next run times.',
-  category: 'Developer',
+  category: 'DevOps & Config',
   icon: 'clock',
   tags: ['Cron', 'Crontab', 'Schedule'],
   status: 'available',
