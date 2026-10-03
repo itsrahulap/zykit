@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { cloneElement, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactElement } from 'react';
 import ogImageGenerator from './index';
 import { FacebookCard, LinkedInCard, SlackCard, XCard } from './components/Cards';
 import { applyTheme, clipEmoji, DEFAULT_DESIGN, FONTS, THEMES, type BgKind, type Design, type FontId, type PatternId } from './features/design';
@@ -18,12 +18,15 @@ import { downloadBlob } from '../../shared/utils/dom.utils';
 const INPUT =
   'block w-full rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 placeholder:text-slate-500 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100';
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactElement<{ id?: string }> }) {
+  const id = useId();
   return (
-    <label className="block min-w-0 text-sm font-medium text-slate-800 dark:text-slate-200">
-      <span className="mb-1 block">{label}</span>
-      {children}
-    </label>
+    <div className="min-w-0">
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-800 dark:text-slate-200">
+        {label}
+      </label>
+      {cloneElement(children, { id })}
+    </div>
   );
 }
 
