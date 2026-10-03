@@ -77,6 +77,15 @@ import emailHeaderAnalyzer from './email-header-analyzer';
 import jsonToCode from './json-to-code';
 import dockerComposeConverter from './docker-compose-converter';
 import colorPaletteExtractor from './color-palette-extractor';
+import passwordStrengthChecker from './password-strength-checker';
+import emailDnsRecords from './email-dns-records';
+import kubernetesYamlChecker from './kubernetes-yaml-checker';
+import gitignoreGenerator from './gitignore-generator';
+import cspBuilder from './csp-builder';
+import jsonLdGenerator from './json-ld-generator';
+import ogImageGenerator from './og-image-generator';
+import cssGenerator from './css-generator';
+import timezonePlanner from './timezone-planner';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -154,6 +163,15 @@ export const TOOLS: ToolDefinition[] = [
   jsonToCode,
   dockerComposeConverter,
   colorPaletteExtractor,
+  passwordStrengthChecker,
+  emailDnsRecords,
+  kubernetesYamlChecker,
+  gitignoreGenerator,
+  cspBuilder,
+  jsonLdGenerator,
+  ogImageGenerator,
+  cssGenerator,
+  timezonePlanner,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
