@@ -52,8 +52,8 @@ export function ColorField({ label, color, alpha, onColor, onAlpha }: { label: s
       </label>
       {onAlpha && alpha !== undefined && (
         <label className="inline-flex items-center gap-2">
-          {label} opacity
-          <input type="range" min={0} max={1} step={0.01} value={alpha} onChange={(e) => onAlpha(Number(e.target.value))} className="w-24 accent-emerald-600 pointer-coarse:min-h-11" />
+          Opacity
+          <input type="range" aria-label={`${label} opacity`} min={0} max={1} step={0.01} value={alpha} onChange={(e) => onAlpha(Number(e.target.value))} className="w-20 accent-emerald-600 pointer-coarse:min-h-11" />
           <span className="w-10 font-mono tabular-nums text-slate-900 dark:text-slate-100">{alpha}</span>
         </label>
       )}

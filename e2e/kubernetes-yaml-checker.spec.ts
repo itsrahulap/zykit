@@ -18,7 +18,7 @@ test('Kubernetes YAML Checker works locally', async ({ page }) => {
   await expect(page.getByText(/at 02:30|2:30/).first()).toBeVisible();
   await page.getByRole('button', { name: /^Errors/ }).click();
   await expect(page.getByText('Selector does not match')).toHaveCount(0);
-  await expect(page.getByText(/no port|is not in this paste/).first()).toBeVisible();
+  await expect(page.getByText(/was removed/).first()).toBeVisible();
 
   await page.getByLabel('Kubernetes YAML').fill('apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: ok\ndata:\n  a: b\n');
   await expect(page.getByText('No problems found.')).toBeVisible();

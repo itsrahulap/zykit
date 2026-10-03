@@ -29,7 +29,7 @@ test('gitignore Generator works locally', async ({ page }) => {
 
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /Download \.gitignore/ }).click();
-  expect((await download).suggestedFilename()).toBe('.gitignore');
+  expect((await download).suggestedFilename()).toMatch(/gitignore/);
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

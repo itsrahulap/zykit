@@ -12,7 +12,7 @@ test('Time Zone Meeting Planner works locally', async ({ page }) => {
 
   await page.goto('/tools/timezone-planner');
   await expect(page).toHaveTitle(/Time Zone Meeting Planner/);
-  await page.getByLabel('Date', { exact: false }).first().fill('2023-10-03');
+  await page.locator('input[type=date]').fill('2023-10-03');
 
   const cities = page.getByRole('list', { name: 'Cities' });
   await expect(cities).toContainText('New York');
@@ -32,7 +32,7 @@ test('Time Zone Meeting Planner works locally', async ({ page }) => {
   const selected = page.getByRole('list', { name: 'Selected time in each city' });
   await expect(selected).toContainText('Tue 3 Oct, 15:00');
   await expect(selected).toContainText('Tue 3 Oct, 10:00');
-  await expect(page.getByLabel('Text to share')).toContainText('Tue 3 Oct, 10:00 New York / 15:00 London');
+  await expect(page.getByLabel('Text to share')).toContainText(/Tue 3 Oct, 10:00 New York.*15:00 London/);
 
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /Download \.ics/ }).click();

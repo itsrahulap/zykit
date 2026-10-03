@@ -24,9 +24,9 @@ export function ReportView({ r }: { r: Report }) {
   const clean = !r.missingRequired.length && !r.invalid.length;
   return (
     <div className="space-y-3">
-      <Block title="Missing required" items={r.missingRequired} tone="text-red-600 dark:text-red-400" icon="x" />
-      <Block title="Invalid values" items={r.invalid} tone="text-red-600 dark:text-red-400" icon="x" />
-      <Block title="Missing recommended" items={r.missingRecommended} tone="text-amber-600 dark:text-amber-400" icon="warn" />
+      <Block title="Missing required" items={r.missingRequired} tone="text-red-700 dark:text-red-400" icon="x" />
+      <Block title="Invalid values" items={r.invalid} tone="text-red-700 dark:text-red-400" icon="x" />
+      <Block title="Missing recommended" items={r.missingRecommended} tone="text-amber-700 dark:text-amber-400" icon="warn" />
       {clean && !r.missingRecommended.length && (
         <p className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
           <Icon name="check" className="h-4 w-4" /> All required and recommended properties are present.

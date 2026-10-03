@@ -157,7 +157,7 @@ function ShadowTab<T extends BoxShadow | TextShadow>({
   kind: string;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <ul className="space-y-3">
         {layers.map((l, i) => (
           <li key={i} className="space-y-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
