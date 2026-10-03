@@ -67,6 +67,16 @@ import dateCalculator from './date-calculator';
 import unitConverter from './unit-converter';
 import csvSql from './csv-sql';
 import pdfTools from './pdf-tools';
+import pdfMetadataCleaner from './pdf-metadata-cleaner';
+import officeMetadataCleaner from './office-metadata-cleaner';
+import imagesToPdf from './images-to-pdf';
+import imageEditor from './image-editor';
+import textEncryption from './text-encryption';
+import sshKeyGenerator from './ssh-key-generator';
+import emailHeaderAnalyzer from './email-header-analyzer';
+import jsonToCode from './json-to-code';
+import dockerComposeConverter from './docker-compose-converter';
+import colorPaletteExtractor from './color-palette-extractor';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -134,6 +144,16 @@ export const TOOLS: ToolDefinition[] = [
   unitConverter,
   csvSql,
   pdfTools,
+  pdfMetadataCleaner,
+  officeMetadataCleaner,
+  imagesToPdf,
+  imageEditor,
+  textEncryption,
+  sshKeyGenerator,
+  emailHeaderAnalyzer,
+  jsonToCode,
+  dockerComposeConverter,
+  colorPaletteExtractor,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

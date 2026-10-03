@@ -21,12 +21,12 @@ export interface TypegenResult {
 
 type Prim = 'string' | 'number' | 'boolean' | 'null';
 
-interface Field {
+export interface Field {
   shape: Shape;
   optional: boolean;
 }
 
-interface Shape {
+export interface Shape {
   prims: Set<Prim>;
   /** Merged shape of every object seen at this position. */
   obj: Map<string, Field> | null;
@@ -34,6 +34,8 @@ interface Shape {
   arr: { item: Shape | null } | null;
   /** Too deep to describe — rendered as `unknown`. */
   unknown?: boolean;
+  /** A number with a fraction or exponent was seen (otherwise numbers here are integers). */
+  float?: boolean;
 }
 
 /** Nesting deeper than this is typed `unknown` (keeps recursion bounded). */
@@ -63,6 +65,7 @@ function infer(node: JsonNode, depth: number, dates: { found: boolean }): Shape 
       break;
     case 'number':
       s.prims.add('number');
+      if (!/^-?\d+$/.test(node.raw)) s.float = true;
       break;
     case 'literal':
       s.prims.add(node.raw === 'null' ? 'null' : 'boolean');
@@ -86,9 +89,15 @@ function infer(node: JsonNode, depth: number, dates: { found: boolean }): Shape 
   return s;
 }
 
+/** The merged shape of a parsed JSON tree, for generators targeting other languages. */
+export function inferShape(root: JsonNode): Shape {
+  return infer(root, 0, { found: false });
+}
+
 /** Combines two shapes seen at the same position (mutates and returns `a`). */
 function merge(a: Shape, b: Shape): Shape {
   if (b.unknown) a.unknown = true;
+  if (b.float) a.float = true;
   for (const p of b.prims) a.prims.add(p);
   if (b.obj) {
     if (!a.obj) a.obj = b.obj;
