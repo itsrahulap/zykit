@@ -43,8 +43,8 @@
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.2"
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
   },
   "description": "Private developer, data, text, web, security and image tools, plus a software-engineering course, that run entirely in the browser",
   "keywords": [
