@@ -18,7 +18,7 @@ test('a series post shows its sections, series contents and next post', async ({
     await expect(page.getByRole('heading', { level: 2, name: heading })).toBeVisible();
   }
   const series = page.getByRole('navigation', { name: 'Series' });
-  await expect(series.getByRole('listitem')).toHaveCount(9);
+  await expect(series.getByRole('listitem')).toHaveCount(12);
 
   await page.getByRole('navigation', { name: 'Previous and next posts' }).getByRole('link', { name: /Next/ }).click();
   await expect(page).toHaveURL(/\/blog\/install-and-manage-claude-code-plugins$/);

@@ -6,7 +6,7 @@ import type { BlogPost, BlogSeries, PostBlock } from '../types';
 export const claudeCodeSeries: BlogSeries = {
   id: 'claude-code-plugins',
   title: 'Claude Code plugins',
-  description: 'What Claude Code plugins are, how they work, and practical guides to seven useful ones.',
+  description: 'What Claude Code plugins are, how they work, and practical guides to the plugins and skills worth installing.',
 };
 
 const DATE = '2026-09-29';
@@ -21,6 +21,10 @@ const MARKETPLACES: Record<string, Marketplace> = {
   official: { id: 'claude-plugins-official', repo: 'anthropics/claude-plugins-official' },
   thedotmack: { id: 'thedotmack', repo: 'thedotmack/claude-mem' },
   contextMode: { id: 'context-mode', repo: 'mksglu/context-mode' },
+  ponytail: { id: 'ponytail', repo: 'DietrichGebert/ponytail' },
+  addy: { id: 'addy-agent-skills', repo: 'addyosmani/agent-skills' },
+  /** Not a plugin marketplace: Graphify installs as a CLI plus a skill (see its `install`). */
+  graphify: { id: 'graphify', repo: 'safishamsi/graphify' },
 };
 
 interface PluginGuide {
@@ -41,7 +45,14 @@ interface PluginGuide {
   useCases: string[];
   whenNotToUse: string;
   caveat?: string;
-  onZykit: string;
+  /** How Zykit uses it; omitted when there's nothing specific to say. */
+  onZykit?: string;
+  /** Publication date when it differs from the series launch. */
+  date?: string;
+  /** Install steps for tools that aren't installed with /plugin. */
+  install?: PostBlock[];
+  /** URL slug when `<id>-claude-code-plugin` would be wrong (e.g. a skill, not a plugin). */
+  slug?: string;
 }
 
 const PLUGINS: PluginGuide[] = [
@@ -178,9 +189,105 @@ const PLUGINS: PluginGuide[] = [
     caveat: 'Third-party code that runs hooks and a background process on your machine. `ctx purge` permanently wipes its knowledge base.',
     onZykit: 'Keeps Playwright runs (`npm run test:e2e`) and builds that write hundreds of pages from flooding the conversation.',
   },
+  {
+    id: 'ponytail',
+    name: 'ponytail',
+    tagline: 'make Claude write the least code that works',
+    marketplace: MARKETPLACES.ponytail,
+    official: false,
+    parts: ['skills', 'slash commands', 'hooks'],
+    date: '2026-10-09',
+    summary:
+      'ponytail is a "lazy senior developer" mode for Claude: before writing code it checks whether the code needs to exist at all, then picks the smallest change that fully solves the task. How it works, its levels and its commands.',
+    whatItDoes:
+      'AI assistants tend to over-build: a helper class where one line would do, a new dependency where the standard library already has it. ponytail makes Claude behave like the senior developer who replaces fifty lines with one, while never cutting validation, error handling, security or accessibility.',
+    howItWorks:
+      'ponytail is essentially one prompt, `skills/ponytail/SKILL.md`. Before writing code, Claude reads the code the change touches, then climbs a "ladder" and stops at the first rung that holds:\n\n- Does this need to exist at all?\n- Is it already in this codebase?\n- Does the standard library do it?\n- Is there a native platform feature?\n- Does an installed dependency do it?\n- Can it be one line?\n- Only then: the minimum that works, plus one small test if it has logic.\n\nLogic with a branch, a loop, a parser, money or security leaves a small test behind, and every reply ends with what was skipped or not checked. **Hooks** switch the mode on at session start (and for subagents) and track level changes, and a session-start map lists the project\u2019s existing functions and exports so "reuse first" doesn\u2019t cost a search.',
+    howToUse:
+      'Once installed it is on by default at the `full` level. Switch levels with `/ponytail lite`, `/ponytail full` or `/ponytail ultra`, or turn it off with `/ponytail off` (or say "stop ponytail"). The default level can also be set with the `PONYTAIL_DEFAULT_MODE` environment variable.',
+    commands: ['/ponytail [lite|full|ultra|off]', '/ponytail-review', '/ponytail-audit', '/ponytail-debt', '/ponytail-gain', '/ponytail-help'],
+    prompts: ['Add CSV export to the report page, ponytail', '/ponytail-review', 'This feels over-engineered. Simplest solution that still works?'],
+    useCases: [
+      'Keeping AI-written changes small and easy to review',
+      'Reviewing a diff for bugs, risky code without tests and code to cut (`/ponytail-review`), or the whole repo (`/ponytail-audit`)',
+      'Tracking deliberate shortcuts: it marks them with `shortcut:` comments, and `/ponytail-debt` collects them into a ledger',
+    ],
+    whenNotToUse:
+      'Prototypes where you want Claude to explore broadly, or when you have explicitly asked for a full abstraction. You can still insist on more code; ponytail will build it.',
+    caveat:
+      'Third-party plugin whose hooks run on every session start, subagent start and prompt. It overlaps with other workflow plugins such as superpowers, so expect them to pull in different directions on small tasks. The benchmark numbers in its README are the author\u2019s own.',
+  },
+  {
+    id: 'agent-skills',
+    name: 'agent-skills',
+    tagline: '25 engineering skills from spec to ship',
+    marketplace: MARKETPLACES.addy,
+    official: false,
+    parts: ['skills', 'slash commands', 'agents'],
+    date: '2026-10-09',
+    summary:
+      'Addy Osmani\u2019s agent-skills plugin gives Claude 25 skills and 9 commands that follow the software lifecycle: spec, plan, build, test, review and ship. What is inside and how to use it.',
+    whatItDoes:
+      'agent-skills packages the habits of a careful engineering team as skills an agent follows: write a spec before code, break work into small tasks, build one slice at a time, prove it with tests, review before merging and ship safely.',
+    howItWorks:
+      'The plugin ships **25 skills** grouped by phase: Define (spec-driven development, idea refinement, interviewing you), Plan (task breakdown), Build (incremental implementation, frontend UI, API design, test-driven development), Verify (debugging, browser testing with DevTools), Review (code review, security hardening, performance, code simplification) and Ship (CI/CD, git workflow, documentation and ADRs, shipping and launch). A meta-skill, `using-agent-skills`, maps a task to the right skill.\n\nEvery skill has the same shape: when to use it, a step-by-step process, a table of common excuses for skipping steps with rebuttals, red flags, and the evidence required before calling it done. Four **agent personas** (code reviewer, test engineer, security auditor, web performance auditor) run focused reviews.',
+    howToUse:
+      'Skills activate on their own when a task matches, for example designing an API or building UI. Or drive the lifecycle with the slash commands. If another plugin defines a command with the same name, use the namespaced form, such as `/agent-skills:review`.',
+    commands: ['/spec', '/plan', '/build', '/build auto', '/test', '/constraints', '/review', '/webperf', '/code-simplify', '/ship'],
+    prompts: ['/spec a CSV to JSON converter tool', '/plan', 'Review this change like a staff engineer would'],
+    useCases: [
+      'Starting a feature from a written spec, then a plan of small tasks',
+      'Running `/build auto` to implement an approved plan in one pass',
+      'Security, performance or test-coverage reviews with the matching persona',
+    ],
+    whenNotToUse:
+      'Quick fixes and throwaway scripts, where spec and plan steps are overhead. It also overlaps heavily with superpowers, so installing both gives Claude two sets of similar instructions.',
+    caveat:
+      'Third-party plugin. Its optional hooks (a session-start meta-skill injector and a docs cache) are not switched on by installing it; each needs manual setup in your settings and `jq`.',
+  },
+  {
+    id: 'graphify',
+    slug: 'graphify-claude-code-skill',
+    name: 'Graphify',
+    tagline: 'turn a codebase into a queryable knowledge graph',
+    marketplace: MARKETPLACES.graphify,
+    official: false,
+    parts: ['a skill', 'a Python CLI'],
+    date: '2026-10-09',
+    summary:
+      'Graphify turns a codebase (and its docs, papers and videos) into a knowledge graph that Claude can query instead of grepping files. How it works, how to install it, and what stays on your machine.',
+    whatItDoes:
+      'On a large codebase, Claude spends much of its context reading files just to find out how things connect. Graphify builds that map once: a graph of files, functions, classes and their relationships, plus a plain-language report of the most connected parts and surprising links between modules.',
+    howItWorks:
+      'Code is parsed locally with **tree-sitter** (37 grammars, about 40 languages), so calls, imports and inheritance are resolved across files without any AI model. Docs, PDFs and images go through a semantic pass using your assistant\u2019s model, and audio and video are transcribed locally. Every edge is tagged `EXTRACTED` (explicit in the source), `INFERRED` (resolved by Graphify) or `AMBIGUOUS`, so you can tell what was read from what was guessed.\n\nThe output goes to `graphify-out/`: an interactive HTML graph, GraphRAG-ready JSON and a `GRAPH_REPORT.md` with "god nodes" (the most-connected concepts), community clusters and suggested questions. The `/graphify` skill tells Claude to query this graph first when you ask about the codebase.',
+    howToUse:
+      'Run `/graphify .` in Claude Code to build the graph for the current folder, then ask questions in plain language or use the query commands. `--update` re-extracts only changed files.',
+    commands: ['/graphify .', '/graphify query "…"', '/graphify path "A" "B"', '/graphify explain "X"', '/graphify . --update'],
+    prompts: ['/graphify .', '/graphify query "what connects auth to the database?"', 'Which modules depend on the payment service?'],
+    useCases: [
+      'Getting oriented in a large or unfamiliar codebase',
+      'Answering "what calls what" and "what breaks if I change this" without reading every file',
+      'Exporting architecture to Obsidian, Neo4j or a wiki for documentation',
+    ],
+    whenNotToUse:
+      'Small projects that fit comfortably in Claude\u2019s context, where reading the files directly is simpler than building and maintaining a graph.',
+    caveat:
+      'Third-party tool. Code never leaves your machine, but docs, PDFs and images are sent to your assistant\u2019s model (or a configured API) for extraction; use `--code-only` to skip them. Every query is logged locally to `~/.cache/graphify-queries.log`.',
+    install: [
+      {
+        type: 'code',
+        caption: 'In a terminal (needs Python 3.10+ and uv)',
+        code: 'uv tool install graphifyy   # the graphify CLI\ngraphify install            # registers the /graphify skill with Claude Code',
+      },
+      {
+        type: 'text',
+        text: 'Graphify isn\u2019t a `/plugin` marketplace plugin: it is a Python CLI plus a skill. If your shell says `graphify: command not found`, run `uv tool update-shell` and open a new terminal (`pipx install graphifyy` also works). `graphify install` also adds a short note to `~/.claude/CLAUDE.md` so Claude knows the skill exists.\n\nOptional, per project: `graphify claude install` adds a Graphify section to the project\u2019s CLAUDE.md and a hook that steers Claude to the graph before it searches files. `graphify hook install` adds git hooks that rebuild the graph on each commit.',
+      },
+    ],
+  },
 ];
 
-const slugFor = (p: PluginGuide) => `${p.id}-claude-code-plugin`;
+const slugFor = (p: PluginGuide) => p.slug ?? `${p.id}-claude-code-plugin`;
 export const OVERVIEW_SLUG = 'claude-code-plugins-explained';
 export const INSTALL_SLUG = 'install-and-manage-claude-code-plugins';
 
@@ -195,7 +302,7 @@ function pluginPost(p: PluginGuide): BlogPost {
     slug: slugFor(p),
     title: `${p.name}: ${p.tagline}`,
     summary: p.summary,
-    date: DATE,
+    date: p.date ?? DATE,
     tags: [...TAGS, p.name],
     series: claudeCodeSeries.id,
     intro: `${p.whatItDoes}\n\n**What’s inside:** ${p.parts.join(', ')}. **Published by:** ${p.official ? 'Anthropic, in the official marketplace' : `a third party, \`${p.marketplace.repo}\``}.`,
@@ -203,7 +310,7 @@ function pluginPost(p: PluginGuide): BlogPost {
       { heading: 'How it works', blocks: [{ type: 'text', text: p.howItWorks }] },
       {
         heading: 'Install',
-        blocks: [
+        blocks: p.install ?? [
           installBlock(p),
           {
             type: 'text',
@@ -224,7 +331,7 @@ function pluginPost(p: PluginGuide): BlogPost {
         heading: 'When not to use it',
         blocks: [{ type: 'text', text: p.whenNotToUse }, ...(p.caveat ? [{ type: 'callout', tone: 'warn', title: 'Worth knowing', text: p.caveat } as PostBlock] : [])],
       },
-      { heading: 'How we use it on Zykit', blocks: [{ type: 'callout', tone: 'info', text: p.onZykit }] },
+      ...(p.onZykit ? [{ heading: 'How we use it on Zykit', blocks: [{ type: 'callout', tone: 'info', text: p.onZykit } as PostBlock] }] : []),
     ],
   };
 }
@@ -237,7 +344,7 @@ const overview: BlogPost = {
   tags: TAGS,
   series: claudeCodeSeries.id,
   intro:
-    'Claude Code is Anthropic’s AI coding assistant. It runs in your terminal, in VS Code and JetBrains, and on the web. Out of the box it can read your code, run commands and make changes. **Plugins** let you extend it: teach it a workflow, give it new tools, or have it react automatically to events.\n\nThis post explains what a plugin actually is and how it works. The rest of the series covers installing plugins and seven that are worth knowing.',
+    'Claude Code is Anthropic’s AI coding assistant. It runs in your terminal, in VS Code and JetBrains, and on the web. Out of the box it can read your code, run commands and make changes. **Plugins** let you extend it: teach it a workflow, give it new tools, or have it react automatically to events.\n\nThis post explains what a plugin actually is and how it works. The rest of the series covers installing plugins, then the plugins and skills worth knowing, one per post.',
   sections: [
     {
       heading: 'What is a plugin?',
