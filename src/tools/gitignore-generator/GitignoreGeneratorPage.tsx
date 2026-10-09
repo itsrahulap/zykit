@@ -118,7 +118,13 @@ export default function GitignoreGeneratorPage() {
 
         <div className="min-w-0">
           {merged.text ? (
-            <OutputPanel title=".gitignore" icon="code" text={merged.text} fileName=".gitignore" mime="text/plain" kind="text" />
+            <div className="space-y-3">
+              <OutputPanel title=".gitignore" icon="code" text={merged.text} fileName=".gitignore" mime="application/octet-stream" kind="text" />
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Browsers drop the leading dot from downloads, so the file may save as <code>gitignore</code>. Rename it to{' '}
+                <code>.gitignore</code> in your project root.
+              </p>
+            </div>
           ) : (
             <p className={`${card} text-sm text-slate-600 dark:text-slate-400`}>Your .gitignore will appear here.</p>
           )}
