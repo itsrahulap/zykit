@@ -8,9 +8,10 @@ import { LEVEL_LABELS, useBookmarks, useProgress } from '../hooks/useLearnState'
 import type { TopicLevel } from '../types/content';
 import { Icon, type IconName } from '../../shared/ui/ui';
 import { StatusDot } from './status';
+import { examPath } from '../exams';
 
 const LEVELS: TopicLevel[] = ['beginner', 'intermediate', 'advanced'];
-const RESERVED = new Set(['problems', 'case-studies', 'progress', 'bookmarks']);
+const RESERVED = new Set(['problems', 'case-studies', 'progress', 'bookmarks', 'exams']);
 
 /** The subject id in the current URL (/learn/:subjectId/...), if any. */
 function currentSubjectId(pathname: string): string | undefined {
@@ -124,6 +125,7 @@ export function LearnNav() {
         <ul className="space-y-0.5">
           <NavItem to={problemsPath} icon="puzzle" label="Problems" />
           <NavItem to={caseStudiesPath} icon="building" label="Case studies" />
+          <NavItem to={examPath('aws-cloud-practitioner')} icon="check" label="AWS exam practice" />
         </ul>
       </div>
       <div>

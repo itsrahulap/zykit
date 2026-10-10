@@ -25,6 +25,7 @@ export const learnRoutes: RouteObject[] = [
       { path: 'problems/:categoryId/:problemId', ...page(() => import('./pages/ProblemPage')) },
       { path: 'case-studies', ...page(() => import('./pages/CaseStudiesPage')) },
       { path: 'case-studies/:caseStudyId', ...page(() => import('./pages/CaseStudyPage')) },
+      { path: 'exams/:examId', ...page(() => import('./exams/ExamPage')) },
       { path: ':subjectId', ...page(() => import('./pages/SubjectPage')) },
       { path: ':subjectId/:topicId', ...page(() => import('./pages/TopicPage')) },
     ],

@@ -86,6 +86,16 @@ import jsonLdGenerator from './json-ld-generator';
 import ogImageGenerator from './og-image-generator';
 import cssGenerator from './css-generator';
 import timezonePlanner from './timezone-planner';
+import harViewer from './har-viewer';
+import logViewer from './log-viewer';
+import tomlJson from './toml-json';
+import htmlToMarkdown from './html-to-markdown';
+import markdownTable from './markdown-table';
+import graphqlFormatter from './graphql-formatter';
+import protobufDecoder from './protobuf-decoder';
+import bcryptGenerator from './bcrypt-generator';
+import imageDiff from './image-diff';
+import keyboardEventViewer from './keyboard-event-viewer';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -172,6 +182,16 @@ export const TOOLS: ToolDefinition[] = [
   ogImageGenerator,
   cssGenerator,
   timezonePlanner,
+  harViewer,
+  logViewer,
+  tomlJson,
+  htmlToMarkdown,
+  markdownTable,
+  graphqlFormatter,
+  protobufDecoder,
+  bcryptGenerator,
+  imageDiff,
+  keyboardEventViewer,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

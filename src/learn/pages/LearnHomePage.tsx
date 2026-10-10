@@ -8,6 +8,8 @@ import { Icon } from '../../shared/ui/ui';
 import { ProgressBar } from '../components/ProgressBar';
 import { StatusBadge } from '../components/status';
 import { cardClass, cardLinkClass, SectionHeading, StatTile } from '../components/learnUi';
+import { examPath } from '../exams';
+import { awsCloudPractitioner } from '../exams/aws-clf-c02/exam';
 import { caseStudies, caseStudiesPath, getSubjectMeta, getTopicMeta, problemCategories, problems, problemsPath, progressPath, subjectPath, subjects, topicPath } from '../data';
 import { SUBJECT_ICONS } from '../data/subjectIcons';
 import { levelSpread, splitTopicKey } from '../features/progress';
@@ -148,7 +150,7 @@ export default function LearnHomePage() {
 
       <section aria-labelledby="practice">
         <SectionHeading id="practice">Practice</SectionHeading>
-        <ul className="grid gap-5 md:grid-cols-2">
+        <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           <li>
             <Link to={problemsPath} className={`${cardLinkClass} flex h-full flex-col p-6`}>
               <IconTile icon="puzzle" />
@@ -178,6 +180,18 @@ export default function LearnHomePage() {
               </p>
               <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-semibold text-emerald-700 dark:text-emerald-400">
                 Read case studies <Icon name="arrow" className="h-4 w-4" />
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link to={examPath(awsCloudPractitioner.id)} className={`${cardLinkClass} flex h-full flex-col p-6`}>
+              <IconTile icon="check" />
+              <h3 className="mt-4 text-lg font-bold tracking-tight text-slate-900 dark:text-white">AWS Cloud Practitioner exam</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                Practice questions and timed {awsCloudPractitioner.questionCount}-question mock tests for {awsCloudPractitioner.code}, with an explanation for every answer.
+              </p>
+              <span className="mt-auto inline-flex items-center gap-1.5 pt-5 font-semibold text-emerald-700 dark:text-emerald-400">
+                Start practicing <Icon name="arrow" className="h-4 w-4" />
               </span>
             </Link>
           </li>
