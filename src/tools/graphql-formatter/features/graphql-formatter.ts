@@ -123,6 +123,9 @@ class Parser {
   describe(t: Token) {
     return t.t === 'eof' ? '<EOF>' : t.t === 'name' ? `Name "${t.v}"` : t.t === 'punct' ? `"${t.v}"` : `${t.t === 'block' ? 'String' : t.t[0].toUpperCase() + t.t.slice(1)} ${t.v.length > 20 ? t.v.slice(0, 20) + '…' : t.v}`;
   }
+  eof() {
+    return this.tok.t === 'eof';
+  }
   is(v: string) {
     return this.tok.t === 'punct' && this.tok.v === v;
   }
@@ -146,9 +149,9 @@ class Parser {
   }
 
   document(): { defs: Node[]; end: string[] } {
-    if (this.tok.t === 'eof') this.fail('Unexpected <EOF>, expected a definition');
+    if (this.eof()) this.fail('Unexpected <EOF>, expected a definition');
     const defs: Node[] = [];
-    while (this.tok.t !== 'eof') defs.push(this.definition());
+    while (!this.eof()) defs.push(this.definition());
     return { defs, end: this.tok.comments };
   }
 

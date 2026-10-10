@@ -67,9 +67,13 @@ const splitRow = (line: string): string[] => {
   const out: string[] = [];
   let cur = '';
   for (let i = 0; i < t.length; i++) {
-    if (t[i] === '\\' && t[i + 1] === '|') (cur += '\\|'), i++;
-    else if (t[i] === '|') (out.push(cur.trim()), (cur = ''));
-    else cur += t[i];
+    if (t[i] === '\\' && t[i + 1] === '|') {
+      cur += '\\|';
+      i++;
+    } else if (t[i] === '|') {
+      out.push(cur.trim());
+      cur = '';
+    } else cur += t[i];
   }
   out.push(cur.trim());
   return out;

@@ -9,6 +9,8 @@ const protobufDecoder: ToolDefinition = {
   category: 'Code',
   icon: 'hash',
   tags: ['Protobuf', 'gRPC', 'Decode'],
+  accepts: ['text'],
+  shareable: true,
   status: 'available',
   load: () => import('./ProtobufDecoderPage'),
   docs: () => import('./docs'),

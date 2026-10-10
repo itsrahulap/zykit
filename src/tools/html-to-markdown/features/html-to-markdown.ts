@@ -20,7 +20,7 @@ const BLOCK = new Set(
   'p div h1 h2 h3 h4 h5 h6 ul ol li blockquote pre table hr section article header footer nav main aside figure figcaption details summary dl dt dd form fieldset address body html'.split(' '),
 );
 const SKIP = new Set(['script', 'style', 'head', 'template', 'noscript', 'title', 'meta', 'link']);
-const BR = '\u0000';
+const BR = '\uE000'; // private-use marker for <br> until the paragraph is tidied
 const kids = (n: HNode) => Array.from(n.childNodes);
 const tag = (n: HNode) => (n.nodeType === 1 ? n.nodeName.toLowerCase() : '');
 const attr = (n: HNode, a: string) => n.getAttribute?.(a) ?? '';
@@ -86,7 +86,7 @@ function inline(n: HNode): string {
 
 function tidy(run: string): string {
   const t = run
-    .replace(/ *\u0000 */g, '  \n')
+    .replace(/ *\uE000 */g, '  \n')
     .replace(/ +\n/g, (m) => (m.length >= 3 ? '  \n' : '\n'))
     .trim();
   // Keep text that merely looks like block syntax from becoming it.

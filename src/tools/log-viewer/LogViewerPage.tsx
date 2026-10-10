@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type UIEvent } from 'react';
 import logViewer from './index';
-import { detectFields, EMPTY_FILTER, filterLog, LEVELS, levelCounts, parseLog, parseTime, prettyEntry, toNdjson, type Level } from './features/log';
+import { detectFields, filterLog, LEVELS, levelCounts, parseLog, parseTime, prettyEntry, toNdjson, type Level } from './features/log';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
@@ -198,7 +198,7 @@ export default function LogViewerPage() {
                     aria-expanded={open === k}
                     aria-controls="log-detail"
                     onClick={() => setOpen(open === k ? null : k)}
-                    style={{ position: 'absolute', top: (start + n) * ROW_H, height: ROW_H }}
+                    style={{ position: 'absolute', left: 0, top: (start + n) * ROW_H, height: ROW_H }}
                     className={`flex w-full items-center gap-3 border-b border-slate-100 px-3 text-left font-mono text-xs pointer-coarse:min-h-11 hover:bg-emerald-50/60 dark:border-slate-800 dark:hover:bg-emerald-950/40 ${open === k ? 'bg-emerald-50 dark:bg-emerald-950/40' : ''}`}
                   >
                     <span className="w-10 shrink-0 text-right text-slate-500">{k + 1}</span>
