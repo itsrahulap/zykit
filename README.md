@@ -27,7 +27,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**Favicon Generator**](https://zykit.vercel.app/tools/favicon-generator) | Generate a multi-size favicon.ico, PNG favicons, an Apple touch icon, Android icons, a web manifest and the HTML link tags from an image, text or emoji. Download everything as a ZIP. | [README](src/tools/favicon-generator/README.md) |
 | [**Image Editor**](https://zykit.vercel.app/tools/image-editor) | Crop, rotate, flip, resize, sharpen and adjust brightness, contrast, saturation and colour, then export as PNG, JPEG or WebP. | [README](src/tools/image-editor/README.md) |
 | [**Color Palette Extractor**](https://zykit.vercel.app/tools/color-palette-extractor) | Extract 3 to 12 dominant colours from an image with k-means in OKLab or median cut, see each colour’s share and WCAG contrast, and copy them as CSS variables, SCSS, a Tailwind theme or JSON. | [README](src/tools/color-palette-extractor/README.md) |
-| [**Image Diff**](https://zykit.vercel.app/tools/image-diff) | Overlay, slide or highlight the differences between two images, with a changed-pixel count and a tolerance setting. | [README](src/tools/image-diff/README.md) |
+| [**Image Diff**](https://zykit.vercel.app/tools/image-diff) | Compare two images side by side, with a slider, onion skin, blink or a difference heatmap. Set a tolerance, ignore anti-aliasing, see the changed pixel count and download the diff as PNG. Nothing is uploaded. | [README](src/tools/image-diff/README.md) |
 
 ### Data (15)
 
@@ -62,7 +62,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**CSS Generator**](https://zykit.vercel.app/tools/css-generator) | Visually build CSS gradients, box and text shadows, border radius, clamp() fluid sizes and cubic-bezier easings, and copy the code. | [README](src/tools/css-generator/README.md) |
 | [**GraphQL Formatter**](https://zykit.vercel.app/tools/graphql-formatter) | Pretty-print or minify GraphQL queries and schemas, with syntax errors shown at the exact line and column. | [README](src/tools/graphql-formatter/README.md) |
 | [**Protobuf Decoder**](https://zykit.vercel.app/tools/protobuf-decoder) | Decode Protocol Buffers wire-format messages from hex or Base64 without a .proto file, showing field numbers, types and nested messages. | [README](src/tools/protobuf-decoder/README.md) |
-| [**Keyboard Event Viewer**](https://zykit.vercel.app/tools/keyboard-event-viewer) | Press keys to see KeyboardEvent key, code, location, modifiers and repeat, with a history to copy for bug reports. | [README](src/tools/keyboard-event-viewer/README.md) |
+| [**Keyboard Event Viewer**](https://zykit.vercel.app/tools/keyboard-event-viewer) | Press keys and inspect each keydown and keyup: key, code, legacy keyCode, location, modifiers, Caps Lock, repeat and composition. Copy the history as JSON or Markdown. Nothing is sent anywhere. | [README](src/tools/keyboard-event-viewer/README.md) |
 
 ### Converters (7)
 
@@ -118,7 +118,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**Email Header Analyzer**](https://zykit.vercel.app/tools/email-header-analyzer) | Paste raw email headers to see every hop and delay, the SPF, DKIM and DMARC results, and warning signs of spoofing. | [README](src/tools/email-header-analyzer/README.md) |
 | [**Password Strength Checker**](https://zykit.vercel.app/tools/password-strength-checker) | Estimate a password's strength and crack time, and spot weak patterns like dictionary words, dates and keyboard runs, without it leaving your browser. | [README](src/tools/password-strength-checker/README.md) |
 | [**CSP Builder**](https://zykit.vercel.app/tools/csp-builder) | Build a Content-Security-Policy header directive by directive, get warnings for risky settings, and copy it for your server or meta tag. | [README](src/tools/csp-builder/README.md) |
-| [**Bcrypt Generator**](https://zykit.vercel.app/tools/bcrypt-generator) | Generate bcrypt hashes with a chosen cost and check a password against an existing hash, entirely in your browser. | [README](src/tools/bcrypt-generator/README.md) |
+| [**Bcrypt Generator**](https://zykit.vercel.app/tools/bcrypt-generator) | Generate bcrypt hashes with a chosen cost and check a password against an existing hash. It runs in a Web Worker in your browser and nothing is uploaded or saved. | [README](src/tools/bcrypt-generator/README.md) |
 
 ### Text (10)
 

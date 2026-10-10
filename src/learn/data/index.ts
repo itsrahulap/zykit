@@ -75,6 +75,7 @@ const subjectModules: Record<SubjectId, () => Promise<Subject>> = {
   'system-design': () => import('../content/system-design').then((m) => m.systemDesignSubject),
   'software-architecture': () => import('../content/software-architecture').then((m) => m.softwareArchitectureSubject),
   aws: () => import('../content/aws').then((m) => m.awsSubject),
+  'ai-engineering': () => import('../content/ai-engineering').then((m) => m.aiEngineeringSubject),
 };
 
 const problemModules = import.meta.glob<Record<string, unknown>>(['../content/problems/*.ts', '!**/index.ts', '!**/categories.ts']);
