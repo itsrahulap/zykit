@@ -200,7 +200,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     question: 'Which are benefits of consolidated billing in AWS Organizations? (Choose two.)',
     options: [
       'Each member account receives its own Technical Account Manager',
-      'Member accounts automatically receive the Business Support plan',
+      'Member accounts automatically receive the Business Support+ plan',
       'Combined usage across accounts can qualify for volume pricing tiers',
       'Data transfer between accounts in the organization is no longer charged',
       'The organization receives one bill for multiple AWS accounts',
@@ -292,7 +292,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: [
       'Activate the tag as a cost allocation tag in the Billing and Cost Management console',
       'Turn on AWS CloudTrail in every Region',
-      'Upgrade to the Business Support plan',
+      'Upgrade to the Business Support+ plan',
       'Create a separate VPC for each department',
     ],
     answer: [0],
@@ -344,40 +344,40 @@ export const billingSupportQuestions: ExamQuestion[] = [
     domain: 'billing-support',
     question:
       'A company wants access to the full set of AWS Trusted Advisor checks at the lowest cost. Which AWS Support plan should it choose?',
-    options: ['Basic', 'Developer', 'Enterprise On-Ramp', 'Business'],
+    options: ['Basic', 'Enterprise Support', 'Unified Operations', 'Business Support+'],
     answer: [3],
     explanation:
-      'The full set of Trusted Advisor checks is included with **Business**, Enterprise On-Ramp and Enterprise Support, and **Business** is the lowest-cost of these. Basic and Developer include only a core set of checks, and Enterprise On-Ramp costs more than Business.',
+      'The full set of Trusted Advisor checks needs a **paid** support plan, and **Business Support+** is the lowest-cost paid plan. Basic includes only a core set of checks, and Enterprise Support and Unified Operations include the full set at a higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
   },
   {
     id: 'bill-028',
     domain: 'billing-support',
     question:
-      'A large company wants a designated Technical Account Manager (TAM) who knows its environment and works with it proactively. Which AWS Support plan provides this?',
-    options: ['Enterprise', 'Enterprise On-Ramp', 'Business', 'Developer'],
+      'A large company wants a designated Technical Account Manager (TAM) who knows its environment and works with it proactively, at the lowest cost. Which AWS Support plan should it choose?',
+    options: ['Enterprise Support', 'Business Support+', 'Basic', 'Unified Operations'],
     answer: [0],
     explanation:
-      '**Enterprise Support** includes a **designated** Technical Account Manager. Enterprise On-Ramp gives access to a **pool** of TAMs rather than a designated one, and Business and Developer plans do not include a TAM.',
+      '**Enterprise Support** is the lowest-cost plan with a **designated** TAM. Unified Operations also includes one but sits above Enterprise at a higher cost, and Business Support+ and Basic do not include a TAM. The retired Enterprise On-Ramp plan offered a *pool* of TAMs rather than a designated one.',
   },
   {
     id: 'bill-029',
     domain: 'billing-support',
     question:
-      'A growing company wants proactive guidance from a pool of Technical Account Managers and access to the AWS Support Concierge team, but does not need a designated TAM. Which AWS Support plan fits best?',
-    options: ['Enterprise', 'Enterprise On-Ramp', 'Business', 'Developer'],
-    answer: [1],
+      'A study guide written before December 2025 recommends Developer Support for a team that needs to open technical support cases at the lowest cost. Which plan should a new customer choose today?',
+    options: ['Business Support+', 'Developer Support', 'Enterprise On-Ramp', 'Basic'],
+    answer: [0],
     explanation:
-      '**Enterprise On-Ramp** includes access to a **pool of TAMs** and the Concierge Support team. Enterprise also includes Concierge but adds a designated TAM at a higher cost, while Business and Developer include neither TAMs nor Concierge.',
+      'Developer Support and Business Support stopped accepting new subscriptions in December 2025, and **Business Support+** is now the lowest-cost plan with technical support cases. Enterprise On-Ramp is also being retired, and Basic does not include technical support cases.',
   },
   {
     id: 'bill-030',
     domain: 'billing-support',
     question:
       'Which AWS Support plan includes customer service for account and billing questions, documentation and AWS re:Post, but does not allow technical support cases to be opened?',
-    options: ['Developer', 'Business', 'Basic', 'Enterprise On-Ramp'],
+    options: ['Business Support+', 'Enterprise Support', 'Basic', 'Unified Operations'],
     answer: [2],
     explanation:
-      '**Basic Support** is included for all AWS customers and covers account and billing help, documentation, re:Post, the AWS Health Dashboard and core Trusted Advisor checks, but not technical support cases. Developer, Business and Enterprise On-Ramp all allow technical cases to be opened.',
+      '**Basic Support** is included for all AWS customers and covers account and billing help, documentation, re:Post, the AWS Health Dashboard and core Trusted Advisor checks, but not technical support cases. Business Support+, Enterprise Support and Unified Operations all include technical support.',
   },
   {
     id: 'bill-031',
@@ -392,68 +392,66 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      'All customers, including those on **Basic Support**, get the **AWS Health Dashboard** and a **core set of Trusted Advisor checks**. Technical support cases need Developer or higher, TAMs come only with Enterprise On-Ramp and Enterprise, and the AWS Support API needs Business or higher.',
+      'All customers, including those on **Basic Support**, get the **AWS Health Dashboard** and a **core set of Trusted Advisor checks**. Technical support cases need a paid plan (Business Support+ or higher), a TAM comes only with Enterprise Support and Unified Operations, and the AWS Support API needs a paid plan.',
   },
   {
     id: 'bill-032',
     domain: 'billing-support',
-    question:
-      'A small team is experimenting with AWS in non-production environments. It wants to be able to email technical questions to AWS Support during business hours, at the lowest cost. Which AWS Support plan should it choose?',
-    options: ['Basic', 'Enterprise On-Ramp', 'Business', 'Developer'],
-    answer: [3],
+    question: 'Which AWS Support plans include a designated Technical Account Manager (TAM)? (Choose two.)',
+    options: ['Basic', 'Business Support+', 'Enterprise Support', 'Unified Operations', 'AWS re:Post'],
+    answer: [2, 3],
     explanation:
-      '**Developer Support** is the lowest-cost plan that offers technical support, through business-hours email access, and is aimed at testing and early development. Basic has no technical support cases, and Business and Enterprise On-Ramp add 24/7 support for production workloads at higher cost.',
+      '**Enterprise Support** and **Unified Operations** both include a designated TAM; Unified Operations is the higher tier. Basic and Business Support+ do not include a TAM, and AWS re:Post is a community Q&A site, not a support plan. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
   },
   {
     id: 'bill-033',
     domain: 'billing-support',
     question:
-      'A company runs production workloads on AWS and needs 24/7 access to Cloud Support Engineers by phone, chat and email, at the lowest cost. It does not need a Technical Account Manager. Which AWS Support plan should it choose?',
-    options: ['Business', 'Developer', 'Enterprise', 'Basic'],
+      'A company runs production workloads on AWS and needs 24/7 access to AWS Support by phone, web and chat, at the lowest cost. It does not need a Technical Account Manager. Which AWS Support plan should it choose?',
+    options: ['Business Support+', 'Basic', 'Enterprise Support', 'Unified Operations'],
     answer: [0],
     explanation:
-      '**Business Support** is the lowest-cost plan with 24/7 phone, chat and email access to Cloud Support Engineers, and it is recommended for production workloads. Developer offers business-hours email only, Enterprise adds a designated TAM at a much higher cost, and Basic has no technical support.',
+      '**Business Support+** is the lowest-cost plan with 24/7 phone, web and chat access to AWS Support. Basic has no technical support, and Enterprise Support and Unified Operations add a designated TAM at a much higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
   },
   {
     id: 'bill-034',
     domain: 'billing-support',
     question:
-      'An Enterprise Support customer wants a team of billing and account experts to act as its primary contact for billing and account questions. Which AWS resource provides this?',
+      'A company wants to read AWS Health events programmatically through the AWS Health API instead of only viewing them in the console. What does it need?',
     options: [
-      'AWS Trust & Safety team',
-      'AWS Support Concierge',
-      'AWS Professional Services',
-      'AWS Managed Services',
+      'A paid AWS Support plan, such as Business Support+',
+      'Nothing extra; the AWS Health API is free for every account',
+      'An AWS Organizations management account',
+      'A subscription in AWS Marketplace',
     ],
-    answer: [1],
+    answer: [0],
     explanation:
-      'The **AWS Support Concierge** team, included with Enterprise On-Ramp and Enterprise Support, are billing and account experts who handle these questions. Trust & Safety handles abuse reports, Professional Services helps deliver projects, and AWS Managed Services operates infrastructure for you.',
+      'The **AWS Health Dashboard** is free for everyone, but programmatic access through the **AWS Health API** requires a **paid support plan**. AWS Organizations can aggregate Health events across accounts, but it does not replace the support plan requirement, and Marketplace is unrelated.',
   },
   {
     id: 'bill-035',
     domain: 'billing-support',
     question:
-      'Which AWS Support plan offers the fastest response time target when a business-critical system is down?',
-    options: ['Business', 'Enterprise On-Ramp', 'Enterprise', 'Developer'],
-    answer: [2],
+      'An organization already has Enterprise Support and wants the highest level of AWS Support available. Which plan sits above Enterprise Support?',
+    options: ['Business Support+', 'Unified Operations', 'Enterprise On-Ramp', 'Basic'],
+    answer: [1],
     explanation:
-      '**Enterprise Support** has the fastest response target for a business-critical system down case. Enterprise On-Ramp also supports this severity but with a slower target, Business has the production-system-down severity as its fastest level, and Developer handles only general and system-impaired cases.',
+      '**Unified Operations** is the top AWS Support plan, above Enterprise Support. Business Support+ and Basic are lower tiers, and Enterprise On-Ramp was a lower tier than Enterprise that AWS is retiring.',
   },
   {
     id: 'bill-036',
     domain: 'billing-support',
-    question:
-      'Which features are included in the AWS Business Support plan but NOT in the Developer Support plan? (Choose two.)',
+    question: 'Which of the following require a paid AWS Support plan rather than Basic Support? (Choose two.)',
     options: [
-      'A designated Technical Account Manager',
-      'Access to AWS documentation and AWS re:Post',
-      'The AWS Support Concierge team',
+      'The AWS Health Dashboard',
       'The full set of AWS Trusted Advisor checks',
-      '24/7 phone, chat and email access to Cloud Support Engineers',
+      'AWS documentation and AWS re:Post',
+      'Programmatic access through the AWS Support API',
+      'Customer service for account and billing questions',
     ],
-    answer: [3, 4],
+    answer: [1, 3],
     explanation:
-      'Moving from Developer to **Business** adds the **full set of Trusted Advisor checks** and **24/7 phone, chat and email** technical support. A designated TAM is only in Enterprise, Concierge is only in the Enterprise tiers, and documentation and re:Post are available to everyone.',
+      'The **full set of Trusted Advisor checks** and the **AWS Support API** need a paid plan such as Business Support+. The Health Dashboard, documentation, re:Post and account and billing customer service are available to every customer on Basic.',
   },
   {
     id: 'bill-037',
@@ -723,10 +721,10 @@ export const billingSupportQuestions: ExamQuestion[] = [
     domain: 'billing-support',
     question:
       'A company wants to create and manage support cases programmatically through the AWS Support API. Which is the lowest-cost AWS Support plan that allows this?',
-    options: ['Basic', 'Developer', 'Business', 'Enterprise'],
+    options: ['Basic', 'Enterprise Support', 'Business Support+', 'Unified Operations'],
     answer: [2],
     explanation:
-      'The **AWS Support API** is available with **Business**, Enterprise On-Ramp and Enterprise Support, so Business is the lowest-cost option. Basic and Developer do not include Support API access, and Enterprise includes it but costs much more.',
+      'The **AWS Support API** needs a paid plan, and **Business Support+** is the lowest-cost one. Basic does not include Support API access, and Enterprise Support and Unified Operations include it at a higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
   },
   {
     id: 'bill-056',

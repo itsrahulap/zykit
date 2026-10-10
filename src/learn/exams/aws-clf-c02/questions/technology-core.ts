@@ -910,7 +910,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Route the upload through AWS Global Accelerator',
     ],
     answer: [0],
-    explanation: 'The **AWS Snow Family**, such as **Snowball Edge** devices, moves large amounts of data offline by physically shipping rugged storage devices to AWS, avoiding a slow, limited network link. A VPN, Transfer Acceleration and Global Accelerator all still send the data over the limited internet connection, which could take far longer for hundreds of terabytes.',
+    explanation: 'The **AWS Snow Family**, such as **Snowball Edge** devices, moves large amounts of data offline by physically shipping rugged storage devices to AWS, avoiding a slow, limited network link. A VPN, Transfer Acceleration and Global Accelerator all still send the data over the limited internet connection, which could take far longer for hundreds of terabytes. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
   },
   {
     id: 'tech-070',

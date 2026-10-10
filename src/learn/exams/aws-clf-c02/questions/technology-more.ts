@@ -74,7 +74,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon QuickSight', 'Amazon CloudWatch', 'AWS Glue', 'Amazon EMR'],
     answer: [0],
     explanation:
-      '**Amazon QuickSight** is a serverless business intelligence (BI) service for building and sharing interactive dashboards from many data sources, including Redshift and Athena. CloudWatch dashboards show operational metrics, not business analytics. AWS Glue prepares and catalogs data, and Amazon EMR processes big data; neither is a BI visualization tool.',
+      '**Amazon QuickSight** is a serverless business intelligence (BI) service for building and sharing interactive dashboards from many data sources, including Redshift and Athena. CloudWatch dashboards show operational metrics, not business analytics. AWS Glue prepares and catalogs data, and Amazon EMR processes big data; neither is a BI visualization tool. (AWS renamed QuickSight to Amazon Quick Suite in October 2025, later shortened to Amazon Quick; the exam guide still says QuickSight.)',
   },
   {
     id: 'tech-108',

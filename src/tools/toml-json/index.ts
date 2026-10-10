@@ -10,6 +10,9 @@ const tomlJson: ToolDefinition = {
   icon: 'swap',
   tags: ['TOML', 'JSON', 'Config'],
   status: 'available',
+  accepts: ['json'],
+  produces: ['json'],
+  shareable: true,
   load: () => import('./TomlJsonPage'),
   docs: () => import('./docs'),
 };

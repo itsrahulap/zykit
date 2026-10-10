@@ -37,7 +37,9 @@ export default function ExamPage() {
   useEffect(() => {
     entry?.load().then(setBank, () => setFailed(true));
   }, [entry]);
-  useEffect(() => window.scrollTo(0, 0), [view.name]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view.name]);
 
   if (!entry) return <NotFoundState what="exam" />;
   if (failed) return <LoadError />;

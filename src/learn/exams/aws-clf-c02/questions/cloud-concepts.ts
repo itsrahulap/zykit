@@ -738,7 +738,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'The **AWS Snow Family** provides physical devices that are shipped to the customer, loaded with data, and returned to AWS, which avoids slow or limited networks for very large transfers. S3 Transfer Acceleration and Site-to-Site VPN still depend on the limited internet connection, and AWS DMS migrates databases over the network.',
+      'The **AWS Snow Family** provides physical devices that are shipped to the customer, loaded with data, and returned to AWS, which avoids slow or limited networks for very large transfers. S3 Transfer Acceleration and Site-to-Site VPN still depend on the limited internet connection, and AWS DMS migrates databases over the network. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
   },
   {
     id: 'cc-060',
@@ -748,7 +748,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Outposts', 'AWS Local Zones', 'AWS Snow Family', 'Amazon CloudFront'],
     answer: [2],
     explanation:
-      '**AWS Snow Family** devices provide storage and compute for edge locations with little or no connectivity, and the data can be shipped to AWS later. AWS Outposts needs a connection to its AWS Region, Local Zones are AWS-operated locations in metro areas, and CloudFront is a content delivery network.',
+      '**AWS Snow Family** devices provide storage and compute for edge locations with little or no connectivity, and the data can be shipped to AWS later. AWS Outposts needs a connection to its AWS Region, Local Zones are AWS-operated locations in metro areas, and CloudFront is a content delivery network. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
   },
   {
     id: 'cc-061',

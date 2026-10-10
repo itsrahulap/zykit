@@ -10,6 +10,7 @@ const harViewer: ToolDefinition = {
   icon: 'chart',
   tags: ['HAR', 'Network', 'Waterfall', 'Performance'],
   status: 'available',
+  shareable: false,
   load: () => import('./HarViewerPage'),
   docs: () => import('./docs'),
 };

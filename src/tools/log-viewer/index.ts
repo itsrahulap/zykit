@@ -10,6 +10,7 @@ const logViewer: ToolDefinition = {
   icon: 'search',
   tags: ['Logs', 'NDJSON', 'JSON Lines'],
   status: 'available',
+  shareable: false,
   load: () => import('./LogViewerPage'),
   docs: () => import('./docs'),
 };

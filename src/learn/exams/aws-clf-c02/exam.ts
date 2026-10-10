@@ -21,5 +21,6 @@ export const awsCloudPractitioner: Exam = {
     'Two question types: multiple choice (one correct answer out of four) and multiple response (two or more correct out of five or more).',
     'Scored from 100 to 1,000; you need **700** to pass. Unanswered questions count as wrong, so never leave one blank.',
     'Mock tests here use the same format and domain weights, and pass at 70% correct as a rough match for 700.',
+    'AWS changed its Support plans in December 2025 (now Basic, Business Support+, Enterprise Support and Unified Operations). Questions here use the current plans and explain the older names, which the exam may still use.',
   ],
 };

@@ -3,13 +3,14 @@ import type { ToolDefinition } from '../types';
 const keyboardEventViewer: ToolDefinition = {
   id: 'keyboard-event-viewer',
   name: 'Keyboard Event Viewer',
-  tagline: 'See key, code and modifiers for any key press',
+  tagline: 'See key, code, keyCode and modifiers for every keypress',
   description:
-    'Press keys to see KeyboardEvent key, code, location, modifiers and repeat, with a history to copy for bug reports.',
-  category: 'Code',
+    'Press keys and inspect each keydown and keyup: key, code, legacy keyCode, location, modifiers, Caps Lock, repeat and composition. Copy the history as JSON or Markdown. Nothing is sent anywhere.',
+  category: 'Web',
   icon: 'code',
-  tags: ['Keyboard', 'KeyboardEvent', 'keycode'],
+  tags: ['Keyboard', 'Key code', 'Events', 'Debug'],
   status: 'available',
+  shareable: false,
   load: () => import('./KeyboardEventViewerPage'),
   docs: () => import('./docs'),
 };

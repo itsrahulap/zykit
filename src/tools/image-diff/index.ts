@@ -3,13 +3,14 @@ import type { ToolDefinition } from '../types';
 const imageDiff: ToolDefinition = {
   id: 'image-diff',
   name: 'Image Diff',
-  tagline: 'Compare two images pixel by pixel',
+  tagline: 'Compare two images and see what changed',
   description:
-    'Overlay, slide or highlight the differences between two images, with a changed-pixel count and a tolerance setting.',
+    'Compare two images side by side, with a slider, onion skin, blink or a difference heatmap. Set a tolerance, ignore anti-aliasing, see the changed pixel count and download the diff as PNG. Nothing is uploaded.',
   category: 'Images',
   icon: 'diff',
-  tags: ['Diff', 'Compare', 'Image'],
+  tags: ['Image', 'Diff', 'Compare', 'Visual regression'],
   status: 'available',
+  shareable: false,
   load: () => import('./ImageDiffPage'),
   docs: () => import('./docs'),
 };
