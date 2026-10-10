@@ -23,7 +23,7 @@ test('Keyboard Event Viewer shows keys, modifiers and history', async ({ page })
   const rows = page.getByRole('region', { name: 'History' }).locator('tbody tr');
   await expect(rows.filter({ hasText: 'ArrowLeft' }).filter({ hasText: 'Shift' })).toHaveCount(2); // keydown and keyup both carry Shift
   await expect(rows).toHaveCount(6); // keydown+keyup for a, then Shift down, ArrowLeft down/up, Shift up
-  await expect(page.locator('p[aria-live=polite]')).toBeAttached();
+  await expect(page.locator('p.sr-only[aria-live=polite]')).toBeAttached();
 
   await page.getByRole('button', { name: 'Clear' }).click();
   await expect(rows).toHaveCount(0);

@@ -2,23 +2,23 @@
 
 ## Purpose
 
-TODO: what this tool does. User-facing docs live in [`docs.ts`](docs.ts).
+Schema-less decoder for protobuf wire format from hex, Base64, Base64URL or a binary file, with optional gRPC framing. User-facing docs live in [`docs.ts`](docs.ts).
 
 ## File Structure
 
 | File | Responsibility |
 |---|---|
-| `index.ts` | Tool definition |
-| `ProtobufDecoderPage.tsx` | Page |
+| `index.ts` | Tool definition (`shareable: true`) |
+| `ProtobufDecoderPage.tsx` | Page: options, input, output, share state |
 | `features/protobuf-decoder.ts` | Pure logic |
 
 ## Core Logic
 
-TODO: where the main processing happens and how it works.
+`features/protobuf-decoder.ts`: `bytesFromText`, `decodeMessage` (recursive `parse` with BigInt varints, nested-message trial with rollback, string/bytes fallbacks, packed alternatives), `decodeGrpc`, `fieldsToText`. Limits are in `LIMITS`. The page renders the tree with native `<details>`.
 
 ## Limits
 
-TODO: important technical limits.
+Depth 16, 50,000 fields, 8 MB file, 10 MB text. Groups unsupported; compressed gRPC frames are not inflated.
 
 ## Tests
 
@@ -27,4 +27,4 @@ TODO: important technical limits.
 
 ## Known Gaps
 
-TODO: known issues or missing functionality.
+No `.proto` import, no map/enum naming, no gzip frame decompression.

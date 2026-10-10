@@ -47,7 +47,7 @@ export default function KeyboardEventViewerPage() {
     <div className="space-y-8">
       <Breadcrumb tool={keyboardEventViewer} />
       <Headline accent="keys">See every press </Headline>
-      <StatusStrip status={last ? `Last event: ${last.type} ${keyLabel(last.key)}.` : 'Click the box below, then press a key.'} tone={last ? 'good' : 'neutral'} />
+      <StatusStrip status={last ? 'Capturing keys. Details are below.' : 'Click the box below, then press a key.'} tone={last ? 'good' : 'neutral'} />
 
       <section className={card} aria-label="Capture">
         <div

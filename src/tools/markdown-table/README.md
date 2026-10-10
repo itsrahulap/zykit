@@ -2,23 +2,23 @@
 
 ## Purpose
 
-TODO: what this tool does. User-facing docs live in [`docs.ts`](docs.ts).
+Builds GFM tables from CSV/TSV, JSON, a grid editor, or reformats an existing table. User-facing docs live in [`docs.ts`](docs.ts).
 
 ## File Structure
 
 | File | Responsibility |
 |---|---|
-| `index.ts` | Tool definition |
-| `MarkdownTablePage.tsx` | Page |
+| `index.ts` | Tool definition (`shareable: true`) |
+| `MarkdownTablePage.tsx` | Page: options, input, output, share state |
 | `features/markdown-table.ts` | Pure logic |
 
 ## Core Logic
 
-TODO: where the main processing happens and how it works.
+`features/markdown-table.ts`: `cellWidth` (wide-character aware), `escapeCell`, `formatTable(rows, aligns, {padded, escaped})`, `rowsFromJson`, `parseMarkdownTable`. CSV uses `src/shared/lib/csv.ts`. Per-column alignment overrides the alignment detected from an existing table.
 
 ## Limits
 
-TODO: important technical limits.
+Input 5 MB, 20,000 CSV rows; first row is always the header; padding is exact only in monospace fonts.
 
 ## Tests
 
@@ -27,4 +27,4 @@ TODO: important technical limits.
 
 ## Known Gaps
 
-TODO: known issues or missing functionality.
+No spreadsheet-style paste into the grid, no multi-table formatting, emoji sequences may measure wrong.
