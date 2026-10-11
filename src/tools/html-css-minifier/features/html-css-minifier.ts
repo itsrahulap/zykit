@@ -76,7 +76,7 @@ export function minifyCss(css: string, keepAllComments = false): string {
       continue;
     }
     if (c === '(') paren++;
-    if (c === '}' && out.endsWith(';') && !out.endsWith('\;') && !out.endsWith(':;')) out = out.slice(0, -1);
+    if (c === '}' && out.endsWith(';') && !out.endsWith('\\;') && !out.endsWith(':;')) out = out.slice(0, -1);
     if (c === ')') {
       put(c);
       if (paren > 0) paren--;
@@ -343,7 +343,7 @@ export function beautifyHtml(html: string, unit = '  ', o: HtmlOptions = {}): st
     cur = '';
     hold = null;
   };
-  const isBlockTag = (t: Tok): t is Extract<Tok, { t: 'tag' }> => t.t === 'tag' && BLOCK.has(t.name);
+  const isBlockTag = (t: Tok) => t.t === 'tag' && BLOCK.has(t.name);
   for (let k = 0; k < toks.length; k++) {
     const t = toks[k];
     if (t.t === 'text' || t.t === 'raw') cur += t.v;
@@ -351,7 +351,7 @@ export function beautifyHtml(html: string, unit = '  ', o: HtmlOptions = {}): st
       flush();
       cur = t.v;
       flush();
-    } else if (!isBlockTag(t)) cur += t.v;
+    } else if (t.t !== 'tag' || !BLOCK.has(t.name)) cur += t.v;
     else if (t.kind === 'close') {
       flush();
       const at = stack.lastIndexOf(t.name);

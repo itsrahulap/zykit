@@ -25,7 +25,7 @@ test('nginx Config Generator works locally', async ({ page, context }) => {
   await expect(pre).toContainText('server 127.0.0.1:8001;');
   await expect(pre).toContainText('proxy_set_header Upgrade $http_upgrade;');
 
-  await page.getByRole('button', { name: 'Copy' }).first().click();
+  await page.getByRole('region', { name: 'Output' }).getByRole('button', { name: 'Copy' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('proxy_pass http://app_test_backend;');
   const dl = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download .conf' }).click();

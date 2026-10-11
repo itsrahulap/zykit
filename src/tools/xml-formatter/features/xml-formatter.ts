@@ -17,6 +17,9 @@ export interface XmlFormatOptions {
 
 const isBlank = (n: XmlNode) => n.type === 'text' && !n.cdata && n.value.trim() === '';
 
+/** Elements with real text (or xml:space="preserve") keep every character; others ignore blank text between children. */
+const isMixed = (el: El) => el.attrs.some(([k, v]) => k === 'xml:space' && v === 'preserve') || el.children.some((c) => c.type === 'text' && !isBlank(c));
+
 function inline(n: XmlNode, comments: boolean): string {
   switch (n.type) {
     case 'text':
@@ -27,7 +30,8 @@ function inline(n: XmlNode, comments: boolean): string {
       return `<?${n.target}${n.data ? ' ' + n.data : ''}?>`;
     case 'element': {
       const open = `<${n.name}${n.attrs.map(([k, v]) => ` ${k}="${escapeAttr(v)}"`).join('')}`;
-      return n.children.length ? `${open}>${n.children.map((c) => inline(c, comments)).join('')}</${n.name}>` : `${open}/>`;
+      const kids = isMixed(n) ? n.children : n.children.filter((c) => !isBlank(c));
+      return kids.length ? `${open}>${kids.map((c) => inline(c, comments)).join('')}</${n.name}>` : `${open}/>`;
     }
   }
 }
@@ -35,9 +39,7 @@ function inline(n: XmlNode, comments: boolean): string {
 function pretty(el: El, depth: number, unit: string, comments: boolean, out: string[]) {
   const pad = unit.repeat(depth);
   const kids = el.children.filter((c) => !isBlank(c) && (comments || c.type !== 'comment'));
-  const preserve = el.attrs.some(([k, v]) => k === 'xml:space' && v === 'preserve');
-  const mixed = preserve || el.children.some((c) => c.type === 'text' && (c.cdata || c.value.trim() !== ''));
-  if (!kids.length || mixed) {
+  if (!kids.length || isMixed(el)) {
     out.push(pad + inline(el, comments));
     return;
   }
