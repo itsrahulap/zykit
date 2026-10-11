@@ -382,7 +382,7 @@ function Preview({ inv, money, totals }: { inv: Invoice; money: (n: number) => s
           </div>
         ))}
       </div>
-      <div className="overflow-x-auto">
+      <div tabIndex={0} role="region" aria-label="Invoice line items" className="overflow-x-auto">
         <table className="w-full min-w-[30rem] text-left">
           <thead className="text-xs text-slate-500">
             <tr>
