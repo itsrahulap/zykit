@@ -80,20 +80,20 @@ export default function PercentageCalculatorPage() {
     </div>
   );
   const need = 'Enter valid numbers.';
-  const nn = (...xs: (number | null)[]): xs is number[] => xs.every((x) => x !== null);
+  const ok = (x: number | null): x is number => x !== null;
 
   const [ofX, ofY, isX, isY, chA, chB, adY, adX, rvF, rvX, diP, mgC, mgV, txA, txR, ppA, ppB] = [
     N('of_x'), N('of_y'), N('is_x'), N('is_y'), N('ch_a'), N('ch_b'), N('ad_y'), N('ad_x'), N('rv_f'), N('rv_x'), N('di_p'), N('mg_c'), N('mg_v'), N('tx_a'), N('tx_r'), N('pp_a'), N('pp_b'),
   ];
   const discounts = v.di_d.split(/[,\s]+/).filter(Boolean).map(pc.parseNum);
-  const change = nn(chA, chB) ? pc.percentChange(chA, chB) : null;
-  const ad = nn(adY, adX) ? (v.ad_dir === 'add' ? pc.addPercent(adY, adX) : pc.subtractPercent(adY, adX)) : null;
-  const rv = nn(rvF, rvX) ? pc.reversePercent(rvF, rvX, v.rv_dir as 'increase' | 'decrease') : null;
-  const dis = nn(diP) && discounts.length > 0 && discounts.every((d) => d !== null) ? pc.discount(diP, discounts as number[]) : null;
-  const mm = nn(mgC, mgV) ? pc.marginMarkup(mgC, mgV) : null;
-  const mgPrice = nn(mgC, mgV) ? (v.mg_mode === 'cm' ? pc.priceFromMargin(mgC, mgV) : pc.priceFromMarkup(mgC, mgV)) : null;
-  const tx = nn(txA, txR) ? pc.tax(txA, txR, v.tx_exc === 'exc') : null;
-  const pp = nn(ppA, ppB) ? pc.pointsVsPercent(ppA, ppB) : null;
+  const change = (ok(chA) && ok(chB)) ? pc.percentChange(chA, chB) : null;
+  const ad = (ok(adY) && ok(adX)) ? (v.ad_dir === 'add' ? pc.addPercent(adY, adX) : pc.subtractPercent(adY, adX)) : null;
+  const rv = (ok(rvF) && ok(rvX)) ? pc.reversePercent(rvF, rvX, v.rv_dir as 'increase' | 'decrease') : null;
+  const dis = (ok(diP)) && discounts.length > 0 && discounts.every((d) => d !== null) ? pc.discount(diP, discounts as number[]) : null;
+  const mm = (ok(mgC) && ok(mgV)) ? pc.marginMarkup(mgC, mgV) : null;
+  const mgPrice = (ok(mgC) && ok(mgV)) ? (v.mg_mode === 'cm' ? pc.priceFromMargin(mgC, mgV) : pc.priceFromMarkup(mgC, mgV)) : null;
+  const tx = (ok(txA) && ok(txR)) ? pc.tax(txA, txR, v.tx_exc === 'exc') : null;
+  const pp = (ok(ppA) && ok(ppB)) ? pc.pointsVsPercent(ppA, ppB) : null;
 
   const rateOpts = RATES.map((r) => ({ value: r, label: `${r}%` }));
 
@@ -104,18 +104,18 @@ export default function PercentageCalculatorPage() {
       <StatusStrip status="Type in any card; each result updates as you type." tone="good" />
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-        <Card label="X% of Y" formula="Y × X ÷ 100" result={nn(ofX, ofY) ? `${f(ofX, 4)}% of ${f(ofY, 4)} = ${f(pc.percentOf(ofX, ofY), 4)}` : need}>
+        <Card label="X% of Y" formula="Y × X ÷ 100" result={(ok(ofX) && ok(ofY)) ? `${f(ofX, 4)}% of ${f(ofY, 4)} = ${f(pc.percentOf(ofX, ofY), 4)}` : need}>
           {F('of_x', 'Percent X', ' (%)')}
           {F('of_y', 'Value Y')}
         </Card>
-        <Card label="X is what % of Y" formula="X ÷ Y × 100" result={nn(isX, isY) ? `${f(isX, 4)} is ${pct(pc.whatPercent(isX, isY))} of ${f(isY, 4)}${isY === 0 ? ' (Y cannot be 0)' : ''}` : need}>
+        <Card label="X is what % of Y" formula="X ÷ Y × 100" result={(ok(isX) && ok(isY)) ? `${f(isX, 4)} is ${pct(pc.whatPercent(isX, isY))} of ${f(isY, 4)}${isY === 0 ? ' (Y cannot be 0)' : ''}` : need}>
           {F('is_x', 'Value X')}
           {F('is_y', 'Value Y')}
         </Card>
         <Card
           label="Percentage change"
           formula="(B − A) ÷ |A| × 100"
-          result={nn(chA, chB) ? (change ? `${f(chA, 4)} → ${f(chB, 4)}: ${change.direction === 'unchanged' ? 'no change' : `${pct(Math.abs(change.pct))} ${change.direction}`}` : 'A cannot be 0.') : need}
+          result={(ok(chA) && ok(chB)) ? (change ? `${f(chA, 4)} → ${f(chB, 4)}: ${change.direction === 'unchanged' ? 'no change' : `${pct(Math.abs(change.pct))} ${change.direction}`}` : 'A cannot be 0.') : need}
         >
           {F('ch_a', 'From A')}
           {F('ch_b', 'To B')}
@@ -128,7 +128,7 @@ export default function PercentageCalculatorPage() {
         <Card
           label="Reverse percentage"
           formula="original = final ÷ (1 ± X ÷ 100)"
-          result={nn(rvF, rvX) ? (rv === null ? 'A 100% decrease cannot be reversed.' : `Original value before the ${f(rvX, 4)}% ${v.rv_dir}: ${f(rv, 4)}`) : need}
+          result={(ok(rvF) && ok(rvX)) ? (rv === null ? 'A 100% decrease cannot be reversed.' : `Original value before the ${f(rvX, 4)}% ${v.rv_dir}: ${f(rv, 4)}`) : need}
         >
           {seg('rv_dir', 'Change applied', [{ value: 'increase', label: 'Increase' }, { value: 'decrease', label: 'Decrease' }])}
           {F('rv_f', 'Value after the change')}
@@ -146,7 +146,7 @@ export default function PercentageCalculatorPage() {
           label="Margin vs markup"
           formula={v.mg_mode === 'cp' ? 'margin = (price − cost) ÷ price; markup = (price − cost) ÷ cost' : v.mg_mode === 'cm' ? 'price = cost ÷ (1 − margin)' : 'price = cost × (1 + markup)'}
           result={
-            !nn(mgC, mgV)
+            !(ok(mgC) && ok(mgV))
               ? need
               : v.mg_mode === 'cp'
                 ? mm

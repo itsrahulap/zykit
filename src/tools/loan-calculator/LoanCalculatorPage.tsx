@@ -279,14 +279,14 @@ export default function LoanCalculatorPage() {
       <div className={`grid grid-cols-1 items-start gap-6 ${compare ? 'lg:grid-cols-2' : ''}`}>
         <div className="min-w-0 space-y-4">
           <LoanForm title={compare ? 'Loan A' : 'Loan'} s={a} set={setA} />
-          <div aria-live="polite" className="rounded-3xl bg-primary p-4 text-primary-ink sm:p-6">
+          <div aria-live="polite" className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             {err(ra) ? <p>{err(ra)}</p> : <DetailRows rows={summary(ra as Calc)} />}
           </div>
         </div>
         {compare && (
           <div className="min-w-0 space-y-4">
             <LoanForm title="Loan B" s={b} set={setB} />
-            <div aria-live="polite" className="rounded-3xl bg-primary p-4 text-primary-ink sm:p-6">
+            <div aria-live="polite" className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900">
               {err(rb) ? <p>{err(rb)}</p> : rb && <DetailRows rows={summary(rb as Calc)} />}
             </div>
           </div>
