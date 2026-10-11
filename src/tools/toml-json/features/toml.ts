@@ -4,21 +4,22 @@ import { parseJsonText, textError, type TextError } from '../../../shared/lib/te
 
 /** A TOML date, time or datetime. JSON.stringify writes it as its original text. */
 export class TomlDate {
-  constructor(
-    readonly text: string,
-    readonly kind: 'offset-datetime' | 'local-datetime' | 'local-date' | 'local-time',
-  ) {}
+  readonly text: string;
+  readonly kind: 'offset-datetime' | 'local-datetime' | 'local-date' | 'local-time';
+  constructor(text: string, kind: TomlDate['kind']) {
+    this.text = text;
+    this.kind = kind;
+  }
   toJSON() {
     return this.text;
   }
 }
 
 class TomlSyntaxError extends Error {
-  constructor(
-    message: string,
-    readonly offset: number,
-  ) {
+  readonly offset: number;
+  constructor(message: string, offset: number) {
     super(message);
+    this.offset = offset;
   }
 }
 

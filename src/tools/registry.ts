@@ -96,6 +96,16 @@ import protobufDecoder from './protobuf-decoder';
 import bcryptGenerator from './bcrypt-generator';
 import imageDiff from './image-diff';
 import keyboardEventViewer from './keyboard-event-viewer';
+import jsonTreeViewer from './json-tree-viewer';
+import xmlFormatter from './xml-formatter';
+import htmlCssMinifier from './html-css-minifier';
+import aspectRatioCalculator from './aspect-ratio-calculator';
+import morseCode from './morse-code';
+import textToSpeech from './text-to-speech';
+import placeholderImage from './placeholder-image';
+import nginxConfigGenerator from './nginx-config-generator';
+import duplicateFileFinder from './duplicate-file-finder';
+import invoiceGenerator from './invoice-generator';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -192,6 +202,16 @@ export const TOOLS: ToolDefinition[] = [
   bcryptGenerator,
   imageDiff,
   keyboardEventViewer,
+  jsonTreeViewer,
+  xmlFormatter,
+  htmlCssMinifier,
+  aspectRatioCalculator,
+  morseCode,
+  textToSpeech,
+  placeholderImage,
+  nginxConfigGenerator,
+  duplicateFileFinder,
+  invoiceGenerator,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
