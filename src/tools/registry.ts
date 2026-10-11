@@ -106,6 +106,15 @@ import placeholderImage from './placeholder-image';
 import nginxConfigGenerator from './nginx-config-generator';
 import duplicateFileFinder from './duplicate-file-finder';
 import invoiceGenerator from './invoice-generator';
+import screenRecorder from './screen-recorder';
+import qrCodeReader from './qr-code-reader';
+import barcodeGenerator from './barcode-generator';
+import signaturePad from './signature-pad';
+import loanCalculator from './loan-calculator';
+import percentageCalculator from './percentage-calculator';
+import stopwatchTimer from './stopwatch-timer';
+import notepad from './notepad';
+import randomPicker from './random-picker';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -212,6 +221,15 @@ export const TOOLS: ToolDefinition[] = [
   nginxConfigGenerator,
   duplicateFileFinder,
   invoiceGenerator,
+  screenRecorder,
+  qrCodeReader,
+  barcodeGenerator,
+  signaturePad,
+  loanCalculator,
+  percentageCalculator,
+  stopwatchTimer,
+  notepad,
+  randomPicker,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
@@ -219,7 +237,7 @@ export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}
 export const getTool = (id: string) => TOOLS.find((t) => t.id === id);
 
 /** Display order of categories (home page, footer, README). Unknown categories go last, alphabetically. */
-export const CATEGORY_ORDER = ['Images', 'Data', 'Code', 'Converters', 'Network & HTTP', 'DevOps & Config', 'Security', 'Text', 'Web', 'Documents'];
+export const CATEGORY_ORDER = ['Images', 'Media', 'Data', 'Code', 'Converters', 'Calculators', 'Network & HTTP', 'DevOps & Config', 'Security', 'Text', 'Web', 'Documents', 'Productivity'];
 
 export function toolCategories(tools: Pick<ToolDefinition, 'category'>[] = TOOLS): string[] {
   const rank = (c: string) => (CATEGORY_ORDER.includes(c) ? CATEGORY_ORDER.indexOf(c) : CATEGORY_ORDER.length);
