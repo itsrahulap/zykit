@@ -197,8 +197,14 @@ export default function DuplicateFileFinderPage() {
         }}
         className={`flex flex-col items-center gap-3 rounded-3xl border border-dashed bg-white p-6 text-center sm:p-8 dark:bg-slate-900 ${dragging ? 'border-emerald-500' : 'border-slate-300 dark:border-slate-700'}`}
       >
-        <input ref={files} type="file" multiple className="sr-only" tabIndex={-1} aria-hidden="true" data-testid="file-input" onChange={(e) => (addPicked(e.target.files, false), (e.target.value = ''))} />
-        <input ref={folder} type="file" multiple className="sr-only" tabIndex={-1} aria-hidden="true" data-testid="folder-input" onChange={(e) => (addPicked(e.target.files, true), (e.target.value = ''))} />
+        <input ref={files} type="file" multiple className="sr-only" tabIndex={-1} aria-hidden="true" data-testid="file-input" onChange={(e) => {
+            addPicked(e.target.files, false);
+            e.target.value = '';
+          }} />
+        <input ref={folder} type="file" multiple className="sr-only" tabIndex={-1} aria-hidden="true" data-testid="folder-input" onChange={(e) => {
+            addPicked(e.target.files, true);
+            e.target.value = '';
+          }} />
         <div className="flex flex-wrap justify-center gap-3">
           <Button onClick={() => files.current?.click()} disabled={!!busy}>
             <Icon name="upload" className="h-4 w-4" /> Add files
@@ -262,7 +268,7 @@ export default function DuplicateFileFinderPage() {
             {groups.map((g) => (
               <li key={g.hash + g.size} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <Badge tone="good">{g.paths.length} copies</Badge>
+                  <Badge tone="green">{g.paths.length} copies</Badge>
                   <span className="text-slate-700 dark:text-slate-300">{formatBytes(g.size)} each · {formatBytes(g.wasted)} wasted</span>
                   <code className="min-w-0 break-all text-xs text-slate-500 dark:text-slate-400">{g.hash.slice(0, 16)}…</code>
                 </div>

@@ -10,6 +10,7 @@ const duplicateFileFinder: ToolDefinition = {
   icon: 'diff',
   tags: ['Duplicates', 'SHA-256', 'Files'],
   status: 'available',
+  shareable: false,
   load: () => import('./DuplicateFileFinderPage'),
   docs: () => import('./docs'),
 };

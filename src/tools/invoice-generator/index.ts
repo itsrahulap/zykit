@@ -10,6 +10,7 @@ const invoiceGenerator: ToolDefinition = {
   icon: 'file',
   tags: ['Invoice', 'PDF', 'Billing'],
   status: 'available',
+  shareable: false,
   load: () => import('./InvoiceGeneratorPage'),
   docs: () => import('./docs'),
 };

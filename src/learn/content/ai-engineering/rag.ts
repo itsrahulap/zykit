@@ -441,4 +441,725 @@ structure-aware:
     relatedTopics: ["vector-databases", "building-a-rag-pipeline", "advanced-rag-techniques", "evaluating-rag"],
     keywords: ["chunking", "chunk size", "overlap", "recursive text splitter", "semantic chunking", "structure-aware chunking", "markdown headings", "parent-child", "tokens", "text splitting"],
   },
+
+  {
+    id: "vector-databases",
+    title: "Vector Databases and Indexes",
+    level: "intermediate",
+    description: "Where embeddings live: exact (flat) search vs approximate nearest neighbour indexes (HNSW, IVF), Chroma and pgvector, and filtering by metadata.",
+    explanation: md(
+      "Once every chunk has an embedding, retrieval is a **nearest neighbour search**: given the query's vector, find the k stored vectors most similar to it (the **top-k**). A **vector database** (or *vector store*) is a system that stores vectors together with their text and metadata and answers that question quickly.",
+      "**The naive way: flat (brute-force) search.** Compare the query with every stored vector, compute cosine similarity (see embeddings), sort, return the best k. This is *exact* - it always finds the true nearest neighbours - and for up to tens of thousands of chunks it is perfectly fast. Its cost grows linearly: ten times more chunks means ten times more work per query. At millions of chunks with hundreds of dimensions each, scanning everything on every query becomes too slow.",
+      "**Approximate nearest neighbour (ANN) indexes** trade a tiny bit of accuracy for a huge speed-up. Instead of checking every vector, they use a data structure that leads them to the right neighbourhood and only check candidates there. They *usually* return the true top-k, but can occasionally miss one. The fraction of true neighbours an ANN search finds is called its **recall**; well-tuned indexes reach high recall while examining a small fraction of the data.",
+      "**The two index families you will meet everywhere:**",
+      "- **HNSW (Hierarchical Navigable Small World)** - a multi-layer graph where each vector is linked to some of its near neighbours. A search starts at an entry point in the sparse top layer, greedily hops towards the query, then drops to denser layers to refine. Fast, high recall, supports inserts without rebuilding; uses extra memory for the links. The default choice in most vector databases.\n- **IVF (Inverted File index)** - cluster all vectors into `nlist` groups with k-means, each represented by a centre point (*centroid*). A query is compared with the centroids first, and then only the vectors in the closest `nprobe` clusters are scanned. Cheaper to build and lighter on memory; recall depends on how many clusters you probe, and clusters should be rebuilt when the data changes a lot.",
+      "Large-scale systems also **compress** vectors (for example *product quantization*, which stores a short code instead of full floating-point numbers) to fit more in memory, at some accuracy cost.",
+      "**Metadata filtering** restricts a search to chunks whose metadata matches a condition: `dept = 'hr'`, `year >= 2024`, `source in (...)`, or 'user is allowed to see this'. It is essential for multi-tenant apps and permissions (see rag-in-production). There are two basic approaches: **pre-filtering** (filter first, then find nearest neighbours among the survivors - always returns k results if they exist) and **post-filtering** (find the top-k nearest, then drop non-matching ones - may return fewer than k, or nothing). Good vector databases integrate filtering into the index search.",
+      "**Choosing a store:**",
+      "- **Chroma** - an open-source embedded vector database you can `pip install`; stores vectors, documents and metadata on local disk. Great for learning, prototypes and small apps. Used throughout this subject.\n- **pgvector** - an extension that adds a `vector` column type and HNSW/IVFFlat indexes to PostgreSQL. If you already run Postgres, you get vector search *plus* SQL filters, joins, transactions, backups and permissions in one place.\n- **Dedicated vector databases and search engines** (many managed services exist, and general search engines have added vector support) - for very large scale, high query volume, or built-in hybrid search. Pick based on scale, operations and the features you need, not hype.",
+      "Whatever the store, you keep three things together per chunk: the **id**, the **embedding**, and the **document text + metadata**. And you must always use **the same embedding model** for stored chunks and queries - vectors from different models live in different spaces and cannot be compared.",
+    ),
+    analogy:
+      "Flat search is finding the closest café by measuring the distance to every café in the country. An IVF index is first asking 'which city is closest?', then only checking cafés in that city (and maybe the next-closest city too, that is nprobe). HNSW is asking a well-connected local: they point you to someone in the right region, who points you to someone in the right street, who points you to the café - a few hops instead of a national survey. Metadata filtering is saying 'only cafés open on Sunday'.",
+    examples: [
+      {
+        title: "Brute-force vs bucketed (IVF-style) approximate search: speed vs recall",
+        code: `// Deterministic random numbers so the output is reproducible
+function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const rand = rng(42);
+const DIM = 8, N = 3000, K = 10;
+const normalize = (v) => { const n = Math.hypot(...v); return v.map((x) => x / n); };
+const dot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
+
+// Fake "embeddings": points scattered around 12 topic centres
+const topics = Array.from({ length: 12 }, () => Array.from({ length: DIM }, () => rand() * 2 - 1));
+const noisyNear = (c) => normalize(c.map((x) => x + (rand() - 0.5) * 0.8));
+const data = Array.from({ length: N }, (_, i) => ({ id: i, v: noisyNear(topics[i % 12]) }));
+
+function bruteForce(q) {
+  const scored = data.map((d) => ({ id: d.id, score: dot(q, d.v) }));
+  return { hits: scored.sort((a, b) => b.score - a.score).slice(0, K), compared: data.length };
+}
+
+// Build the IVF index: k-means into NLIST buckets
+const NLIST = 30;
+let centroids = data.slice(0, NLIST).map((d) => d.v.slice());
+let assign = new Array(N).fill(0);
+for (let iter = 0; iter < 6; iter++) {
+  const sums = centroids.map(() => new Array(DIM).fill(0));
+  const counts = new Array(NLIST).fill(0);
+  data.forEach((d, i) => {
+    let best = 0;
+    for (let c = 1; c < NLIST; c++) if (dot(d.v, centroids[c]) > dot(d.v, centroids[best])) best = c;
+    assign[i] = best; counts[best]++;
+    d.v.forEach((x, j) => { sums[best][j] += x; });
+  });
+  centroids = sums.map((s, c) => (counts[c] ? normalize(s) : centroids[c]));
+}
+const buckets = centroids.map(() => []);
+data.forEach((d, i) => buckets[assign[i]].push(d));
+
+function ivfSearch(q, nprobe) {
+  const nearest = centroids.map((c, i) => ({ i, s: dot(q, c) })).sort((a, b) => b.s - a.s).slice(0, nprobe);
+  const candidates = nearest.flatMap((b) => buckets[b.i]);
+  const hits = candidates.map((d) => ({ id: d.id, score: dot(q, d.v) })).sort((a, b) => b.score - a.score).slice(0, K);
+  return { hits, compared: candidates.length + NLIST };
+}
+
+const queries = Array.from({ length: 20 }, (_, i) => noisyNear(topics[i % 12]));
+for (const nprobe of [1, 2, 4, 30]) {
+  let recall = 0, compared = 0;
+  for (const q of queries) {
+    const truth = new Set(bruteForce(q).hits.map((h) => h.id));
+    const approx = ivfSearch(q, nprobe);
+    recall += approx.hits.filter((h) => truth.has(h.id)).length / K;
+    compared += approx.compared;
+  }
+  console.log("nprobe=" + nprobe + "  recall@10=" + (recall / queries.length).toFixed(2) +
+    "  vectors compared per query=" + Math.round(compared / queries.length) + " (brute force: " + N + ")");
+}`,
+        explanation: "Probing only the closest bucket compares a small fraction of the vectors but can miss true neighbours that landed in a neighbouring bucket. Probing more buckets raises recall towards 1.0 at the cost of more comparisons; probing all of them is just brute force plus overhead. HNSW makes the same speed/recall trade-off with a graph instead of buckets, tuned by ef_search.",
+        walkthrough: [
+          { code: "function rng(seed) { ... }", explanation: "A tiny seeded pseudo-random generator, so every run produces the same data and the same numbers." },
+          { code: "const data = ... noisyNear(topics[i % 12])", explanation: "3,000 normalised 8-dimensional vectors grouped around 12 'topics', like embeddings of chunks about 12 subjects." },
+          { code: "for (let iter = 0; iter < 6; iter++) { ... }", explanation: "k-means: assign each vector to its most similar centroid, move each centroid to the mean of its members, repeat. This is the IVF build step." },
+          { code: "ivfSearch(q, nprobe)", explanation: "Compare the query with the 30 centroids, then scan only the vectors in the nprobe best buckets." },
+          { code: "recall += ... / K", explanation: "Recall@10: what fraction of the true top-10 (from brute force) the approximate search found." },
+        ],
+      },
+      {
+        title: "Pre-filtering vs post-filtering with metadata",
+        code: `const chunks = [
+  { id: "a", v: [0.95, 0.31], meta: { dept: "eng", year: 2025 }, text: "Eng on-call leave rules" },
+  { id: "b", v: [0.93, 0.37], meta: { dept: "eng", year: 2024 }, text: "Eng leave calendar" },
+  { id: "c", v: [0.90, 0.44], meta: { dept: "sales", year: 2025 }, text: "Sales leave blackout dates" },
+  { id: "d", v: [0.80, 0.60], meta: { dept: "hr", year: 2025 }, text: "HR annual leave policy: 25 days" },
+  { id: "e", v: [0.70, 0.71], meta: { dept: "hr", year: 2023 }, text: "HR old leave policy: 22 days" },
+  { id: "f", v: [0.10, 0.99], meta: { dept: "hr", year: 2025 }, text: "HR parking rules" },
+];
+const query = [0.97, 0.24];   // "how many days of leave do I get?"
+const cos = (a, b) => (a[0] * b[0] + a[1] * b[1]) / (Math.hypot(...a) * Math.hypot(...b));
+const top = (items, k) => items.map((c) => ({ id: c.id, text: c.text, score: +cos(query, c.v).toFixed(3) }))
+  .sort((x, y) => y.score - x.score).slice(0, k);
+const isHr2025 = (c) => c.meta.dept === "hr" && c.meta.year >= 2025;
+
+const post = top(chunks, 3).filter((h) => isHr2025(chunks.find((c) => c.id === h.id)));
+const pre = top(chunks.filter(isHr2025), 3);
+console.log("post-filter (search top-3, then filter):", post);
+console.log("pre-filter (filter, then search top-3):", pre);`,
+        explanation: "Post-filtering threw away all three nearest hits because they belonged to other departments, returning nothing even though a perfect HR answer exists. Pre-filtering (or a database that filters during the index search) returns the right chunk. When you post-filter, over-fetch (for example top-50) to reduce this risk.",
+      },
+      {
+        title: "Chroma: store with metadata, query with filters (Python)",
+        language: "python",
+        code: `# pip install chromadb sentence-transformers
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")          # 384-dimensional vectors
+client = chromadb.PersistentClient(path="./db")           # data persists on disk
+col = client.get_or_create_collection("docs")
+
+docs = [
+    "Employees get 25 days of annual leave per year.",
+    "Up to 5 unused leave days carry over to next year.",
+    "Engineers on call receive one extra day off per week on call.",
+    "Expense receipts must be submitted within 30 days.",
+]
+metas = [
+    {"source": "handbook.pdf", "page": 4, "dept": "hr", "year": 2025},
+    {"source": "handbook.pdf", "page": 4, "dept": "hr", "year": 2025},
+    {"source": "eng-wiki.md", "page": 1, "dept": "eng", "year": 2024},
+    {"source": "finance.pdf", "page": 2, "dept": "finance", "year": 2025},
+]
+col.add(
+    ids=[f"chunk-{i}" for i in range(len(docs))],
+    documents=docs,
+    embeddings=model.encode(docs, normalize_embeddings=True).tolist(),
+    metadatas=metas,
+)
+
+q = model.encode(["How much holiday do I get?"], normalize_embeddings=True).tolist()
+
+def show(res):
+    for doc, meta, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0]):
+        print(f"  {dist:.3f}  {meta['source']} p{meta['page']}: {doc}")
+
+print("no filter:");             show(col.query(query_embeddings=q, n_results=3))
+print("only HR:");               show(col.query(query_embeddings=q, n_results=3, where={"dept": "hr"}))
+print("HR or eng, 2025+:");      show(col.query(query_embeddings=q, n_results=3,
+                                     where={"$and": [{"dept": {"$in": ["hr", "eng"]}}, {"year": {"$gte": 2025}}]}))
+print("text must contain 'carry':"); show(col.query(query_embeddings=q, n_results=3,
+                                     where_document={"$contains": "carry"}))`,
+        explanation: "Chroma keeps ids, embeddings, documents and metadata together and indexes vectors with HNSW. 'distances' are lower-is-better. Chroma's default distance is L2; because we normalise the embeddings, L2 distance ranks results in exactly the same order as cosine similarity (squared L2 = 2 - 2 x cosine). 'where' filters on metadata with operators such as $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $and and $or; 'where_document' filters on the text itself.",
+      },
+      {
+        title: "pgvector: a vector column, an HNSW index and a filtered top-k query (SQL)",
+        language: "sql",
+        code: `-- Enable the extension (once per database)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE chunks (
+  id         bigserial PRIMARY KEY,
+  source     text NOT NULL,
+  page       int,
+  dept       text NOT NULL,
+  content    text NOT NULL,
+  embedding  vector(384) NOT NULL          -- must match the embedding model's dimensions
+);
+
+-- Approximate index for cosine distance. m = links per node, ef_construction = build effort
+CREATE INDEX chunks_embedding_hnsw ON chunks
+  USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+CREATE INDEX chunks_dept ON chunks (dept);
+
+-- Insert (the app sends the vector as a literal like '[0.01, -0.2, ...]' or via a driver)
+-- INSERT INTO chunks (source, page, dept, content, embedding) VALUES ($1, $2, $3, $4, $5);
+
+-- Query: higher ef_search = better recall, slower
+SET hnsw.ef_search = 100;
+SELECT id, source, page, content,
+       1 - (embedding <=> $1) AS cosine_similarity     -- <=> is cosine DISTANCE
+FROM chunks
+WHERE dept = 'hr'
+ORDER BY embedding <=> $1
+LIMIT 5;
+
+-- Alternative: IVFFlat (build AFTER loading data; lists = number of clusters)
+-- CREATE INDEX ON chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- SET ivfflat.probes = 10;`,
+        explanation: "The operator <=> is cosine distance (<-> is L2 distance, <#> is negative inner product), and the index operator class must match the operator you sort by or the index is not used. With an approximate index, a WHERE filter is applied to the candidates the index returns, so a very selective filter can yield fewer than LIMIT rows; raise ef_search, add a regular index on the filter column, or use the iterative index scans available in newer pgvector versions. From Python, the pgvector package's register_vector(conn) lets you pass NumPy arrays directly as query parameters.",
+      },
+    ],
+    howItWorks: md(
+      "**Flat index.** Store vectors in an array; for a query compute all N similarities and keep the k best (with a small heap). Cost is proportional to N x dimensions per query. Exact, simple, no build time. Libraries make this very fast with vectorised maths, so it is a good choice up to a surprisingly large N.",
+      "**IVF.** Build: run k-means to get `nlist` centroids, assign every vector to its nearest centroid (an *inverted list* per centroid). Search: rank the centroids by similarity to the query, scan the vectors in the top `nprobe` lists. Work per query is roughly nlist + N x nprobe / nlist comparisons. Increasing nprobe raises recall and latency.",
+      "**HNSW.** Each vector is a node in a graph and is linked to up to `M` close neighbours. Nodes are also randomly promoted to higher layers, each sparser than the one below, like an express lane. Search starts at the top layer, greedily moves to whichever neighbour is closest to the query until no neighbour is closer, then descends a layer and repeats. On the bottom layer it keeps a candidate list of size `ef_search` and returns the best k. Bigger `M` and `ef_construction` build a better graph (more memory, slower build); bigger `ef_search` explores more at query time (higher recall, slower).",
+      "**Distance metrics.** Cosine distance (1 - cosine similarity), dot product and L2 (Euclidean) distance. For normalised vectors all three give the same ranking, which is why normalising embeddings is a good habit. Use the metric your embedding model was trained for, and make the index metric match the query operator.",
+      "**Updates and deletes.** HNSW supports inserts incrementally; deletes are often handled by marking entries as deleted and cleaning up later. IVF centroids drift as data changes, so large changes call for a rebuild. Any change of embedding model means re-embedding everything into a new index.",
+    ),
+    diagram: `Flat: compare with ALL vectors        O(N)
+ q -> [v1][v2][v3][v4] ... [vN]
+
+IVF: compare with centroids, scan nprobe buckets
+ q -> c1  c2  c3  c4  c5        (centroids)
+          |       |
+        [....]  [....]          (only these)
+
+HNSW: greedy hops, layer by layer
+ L2:  o-----------o--------o
+                  |
+ L1:  o----o------o----o---o
+                       |
+ L0:  o-o-o-o-o-o-o-o-[o]-o-o   -> top-k`,
+    whyItExists: md(
+      "Semantic search needs 'find the most similar vectors' to be fast at scale and combined with ordinary filters, persistence and updates. Traditional databases were built for exact matches and ranges, not for nearest neighbours in hundreds of dimensions. Vector indexes and databases fill that gap, and extensions like pgvector bring the capability into databases teams already run.",
+    ),
+    whenToUse: md(
+      "Use a vector store whenever you do semantic retrieval over more than a handful of chunks. Start with flat search or Chroma for prototypes; use pgvector if you already run Postgres and want SQL filters, joins and one system to operate; consider a dedicated or managed vector search service for very large collections, high query rates or advanced features like built-in hybrid search and multi-tenancy.",
+    ),
+    whenNotToUse: md(
+      "For a few hundred or thousand chunks, an in-memory NumPy array with brute-force cosine is simpler and exact. For exact lookups (an order by id, a customer by email) use normal database queries, not vector search. Do not add a separate vector database to your architecture if pgvector in your existing Postgres meets your scale.",
+    ),
+    commonMistakes: [
+      "Embedding queries with a different model (or different normalisation) than the stored chunks, which makes similarities meaningless.",
+      "Mismatched metrics: building a cosine index but querying with L2 (or vice versa), so the index is ignored or results are wrong.",
+      "Post-filtering a small top-k and getting zero results for selective filters.",
+      "Storing vectors without the chunk text and metadata, so results cannot be shown, cited or filtered.",
+      "Assuming ANN results are exact; not measuring recall against brute force when tuning parameters.",
+      "Building an IVF index on an empty or tiny table, so the clusters do not represent the real data.",
+      "Changing the embedding model without re-embedding and rebuilding the whole index.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "In the IVF demo, change NLIST to 12 and to 60. How do recall and 'vectors compared' change for nprobe=1? Explain why." },
+      { difficulty: "Easy", prompt: "In the filtering demo, change post-filtering to over-fetch: search top-6, filter, then keep 3. Does it now find the HR chunks?" },
+      { difficulty: "Medium", prompt: "Run the Chroma example and add a 'visibility' metadata field ('public' or 'internal'). Write a query that only returns public HR chunks from 2025 onwards." },
+      { difficulty: "Medium", prompt: "Write a Python function that compares Chroma's results with a brute-force NumPy cosine search over the same vectors for 50 random queries and reports recall@5." },
+      { difficulty: "Hard", prompt: "Set up Postgres with pgvector (for example via Docker), load 10,000 chunks with 384-dimensional embeddings, and measure query latency and recall@10 (against an exact query without the index) for hnsw.ef_search = 10, 40 and 200." },
+    ],
+    interviewQuestions: [
+      { question: "What is approximate nearest neighbour search and why use it?", answer: "Finding vectors that are very likely the nearest to a query without comparing against every vector, using an index such as HNSW or IVF. It trades a small loss in recall for large gains in speed, which matters once collections reach millions of vectors and queries must return in milliseconds." },
+      { question: "Explain HNSW in a few sentences.", answer: "A layered proximity graph: every vector links to M near neighbours, and a random subset also appears in sparser upper layers. Search enters at the top, greedily walks towards the query, descends layer by layer, and on the bottom layer explores a candidate list of size ef_search to return the top-k. M and ef_construction control build quality and memory; ef_search controls query-time recall versus latency." },
+      { question: "How does IVF work and what are nlist and nprobe?", answer: "IVF clusters vectors with k-means into nlist clusters. At query time it compares the query to all centroids, then exhaustively scans only the vectors in the nprobe nearest clusters. More probes means higher recall but more work; nlist trades build cost and bucket size." },
+      { question: "What is the difference between pre-filtering and post-filtering?", answer: "Pre-filtering restricts the candidate set by metadata before (or during) the nearest neighbour search, so you get the best k among matching items. Post-filtering searches first and filters the top-k afterwards, which can return fewer than k or no results when the filter is selective. Over-fetching or filter-aware indexes mitigate this." },
+      { question: "When would you choose pgvector over a dedicated vector database?", answer: "When you already run Postgres and your scale fits: you get vector search alongside relational data, SQL filters and joins, transactions, existing backups, permissions and monitoring, with one less system to operate. Dedicated systems make sense for very large scale, very high query throughput, or features you would otherwise build yourself." },
+      { question: "Why must queries and documents use the same embedding model?", answer: "Each model defines its own vector space; dimensions and directions mean different things across models. Comparing a vector from model A with one from model B is meaningless, even if the dimensions happen to match. Changing models requires re-embedding the entire corpus." },
+      { question: "Which distance metric should you use?", answer: "The one the embedding model was trained for, usually cosine similarity or dot product. If vectors are normalised to length 1, cosine, dot product and L2 produce identical rankings. The index's metric must match the query operator." },
+    ],
+    prerequisites: ["embeddings", "chunking"],
+    relatedTopics: ["retrieval-strategies", "building-a-rag-pipeline", "rag-in-production", "evaluating-rag"],
+    keywords: ["vector database", "vector store", "ann", "approximate nearest neighbour", "hnsw", "ivf", "flat index", "chroma", "pgvector", "metadata filter", "pre-filtering", "post-filtering", "recall", "ef_search", "nprobe"],
+  },
+
+  {
+    id: "retrieval-strategies",
+    title: "Retrieval: Semantic, Keyword (BM25) and Hybrid Search",
+    level: "intermediate",
+    description: "How to find the right chunks: dense semantic search, sparse keyword search with BM25, and combining both with reciprocal rank fusion.",
+    explanation: md(
+      "**Retrieval** is the R in RAG: given the user's question, return the handful of chunks most likely to contain the answer. If the right chunk is not retrieved, the LLM cannot use it - no prompt can fix a retrieval miss. There are two fundamentally different ways to search, and the best systems use both.",
+      "**Semantic search (dense retrieval)** embeds the query and finds chunks with the most similar embeddings (see embeddings and vector-databases). It is called *dense* because embeddings are dense vectors: every one of the hundreds of numbers is used. Its strength is **meaning**: 'How much holiday do I get?' matches 'Employees receive 25 days of annual leave' even though they share no important words. Its weakness is **exact tokens**: product codes, error codes, names, ticket ids and rare jargon ('ERR_7731', 'Kubernetes 1.29', 'Smith v. Jones') are often blurred, because the embedding captures the gist, not the exact string.",
+      "**Keyword search (sparse retrieval)** matches the actual words. It is called *sparse* because a document is represented as a vector over the entire vocabulary that is almost all zeros. The standard scoring function is **BM25** ('Best Matching 25'), used by search engines for decades. For each query word, BM25 rewards documents that contain it, with three refinements:",
+      "- **Rare words count more** - *inverse document frequency (IDF)*: a word in 2 of 10,000 chunks ('ERR_7731') is far more informative than one in 9,000 ('the', 'policy').\n- **Repetition has diminishing returns** - *term-frequency saturation*, controlled by parameter `k1` (typically about 1.2-2.0): the 2nd mention of a word adds less than the 1st, the 10th adds almost nothing.\n- **Long documents are penalised** - *length normalisation*, controlled by `b` (typically 0.75): a word appearing once in a short chunk is stronger evidence than once in a very long one.",
+      "BM25 is fast, needs no model, is easy to explain, and nails exact matches - but it fails on synonyms and paraphrases ('holiday' vs 'leave') unless you add synonym lists.",
+      "**Hybrid search** runs both and merges the results. The problem: their scores are on different scales (cosine similarity is around 0-1; BM25 scores are unbounded), so you cannot just add them. The simplest robust solution is **reciprocal rank fusion (RRF)**: ignore the raw scores and use only each document's *rank* in each list. Each list contributes `1 / (k + rank)` to a document's fused score, with `k` a constant (60 is the common default) that stops the very first ranks from dominating. Documents that appear high in *both* lists win. An alternative is a weighted sum of normalised scores, which needs tuning.",
+      "**Other knobs that matter:**",
+      "- **top-k** - how many chunks to retrieve. Too few and you miss the answer; too many and you add noise, cost and latency. Common pattern: retrieve generously (20-50) and narrow down with a reranker (see reranking) to the 3-8 you send to the LLM.\n- **Similarity threshold** - drop results below a minimum score so a question with no good match gets no context (and the model can say 'I don't know').\n- **Metadata filters** - restrict by source, date, product, tenant or permissions (see vector-databases).\n- **Diversity** - top results are often near-duplicates (overlapping chunks, copied paragraphs). *Maximal marginal relevance (MMR)* picks results one by one, penalising similarity to results already chosen.\n- **Query transformation** - rewriting, expanding or splitting the user's question before searching (see conversational-rag and advanced-rag-techniques).",
+    ),
+    analogy:
+      "Semantic search is a librarian who understands what you mean: ask for 'books about feeling homesick' and they bring novels about missing home, even if the word 'homesick' never appears. Keyword search is the index at the back of a book: perfect if you know the exact term ('ERR_7731'), useless for a paraphrase. Hybrid search asks both and trusts the books both of them recommend.",
+    examples: [
+      {
+        title: "BM25 from scratch",
+        code: `const docs = [
+  "Employees receive 25 days of annual leave per year.",
+  "Error ERR_7731 means the payment gateway timed out. Retry after 30 seconds.",
+  "Unused annual leave can carry over, up to 5 days.",
+  "The payment page shows an error when the card is declined.",
+  "Holiday parties are organised by the social committee.",
+];
+const tokenize = (s) => s.toLowerCase().replace(/[^a-z0-9_ ]/g, " ").split(" ").filter(Boolean);
+const docTokens = docs.map(tokenize);
+const N = docs.length;
+const avgdl = docTokens.reduce((s, t) => s + t.length, 0) / N;
+const df = {};                                   // in how many docs does each term appear?
+for (const toks of docTokens) for (const term of new Set(toks)) df[term] = (df[term] || 0) + 1;
+
+function bm25(query, k1 = 1.2, b = 0.75) {
+  const q = tokenize(query);
+  return docTokens.map((toks, i) => {
+    let score = 0;
+    for (const term of q) {
+      const f = toks.filter((t) => t === term).length;   // term frequency in this doc
+      if (f === 0) continue;
+      const idf = Math.log((N - df[term] + 0.5) / (df[term] + 0.5) + 1);
+      score += idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * toks.length / avgdl));
+    }
+    return { doc: i, score: +score.toFixed(3) };
+  }).filter((r) => r.score > 0).sort((x, y) => y.score - x.score);
+}
+
+for (const q of ["what does ERR_7731 mean", "annual leave days", "how much holiday do I get"]) {
+  console.log("Q:", q);
+  for (const r of bm25(q)) console.log("   " + r.score + "  " + docs[r.doc]);
+}`,
+        explanation: "BM25 finds the error code instantly because 'err_7731' is rare (high IDF). 'annual leave days' ranks the two leave chunks first. But 'how much holiday do I get' matches the holiday PARTY chunk, the only one containing 'holiday', and misses the leave policy entirely - the classic keyword-search failure on synonyms.",
+        walkthrough: [
+          { code: "df[term]", explanation: "Document frequency: how many chunks contain the term. Used to compute IDF." },
+          { code: "Math.log((N - df + 0.5) / (df + 0.5) + 1)", explanation: "IDF: large for rare terms, near zero for terms in almost every document." },
+          { code: "(f * (k1 + 1)) / (f + k1 * (...))", explanation: "Term-frequency saturation: grows with f but levels off; k1 controls how fast." },
+          { code: "(1 - b + b * toks.length / avgdl)", explanation: "Length normalisation: longer-than-average chunks need more matches for the same score." },
+        ],
+      },
+      {
+        title: "Hybrid search: semantic + BM25 merged with reciprocal rank fusion",
+        code: `const docs = [
+  "Employees receive 25 days of annual leave per year.",
+  "Error ERR_7731 means the payment gateway timed out. Retry after 30 seconds.",
+  "Unused annual leave can carry over, up to 5 days.",
+  "The payment page shows an error when the card is declined.",
+  "Holiday parties are organised by the social committee.",
+];
+const tokenize = (s) => s.toLowerCase().replace(/[^a-z0-9_ ]/g, " ").split(" ").filter(Boolean);
+
+// Toy "semantic" embedding: words mapped to shared concepts, so synonyms match
+const concepts = { holiday: "leave", vacation: "leave", leave: "leave", "time off": "leave", days: "time",
+  year: "time", parties: "social", committee: "social", social: "social", payment: "pay", card: "pay", error: "fail", declined: "fail", timed: "fail", err_7731: "fail" };
+function embed(text) {
+  const v = {};
+  for (const w of tokenize(text)) { const c = concepts[w]; if (c) v[c] = (v[c] || 0) + 1; }
+  return v;
+}
+function cosine(a, b) {
+  let dot = 0, na = 0, nb = 0;
+  for (const k in a) { na += a[k] * a[k]; if (b[k]) dot += a[k] * b[k]; }
+  for (const k in b) nb += b[k] * b[k];
+  return na && nb ? dot / Math.sqrt(na * nb) : 0;
+}
+const semanticRank = (q) => docs.map((d, i) => ({ doc: i, s: cosine(embed(q), embed(d)) }))
+  .filter((r) => r.s > 0).sort((a, b) => b.s - a.s).map((r) => r.doc);
+
+// Simple keyword rank: number of shared rare-ish words (BM25 from the previous demo works too)
+const stop = new Set(["the", "a", "of", "do", "i", "how", "what", "much", "get", "per", "is", "when", "means", "many"]);
+const keywordRank = (q) => docs.map((d, i) => ({ doc: i,
+  s: tokenize(q).filter((w) => !stop.has(w) && tokenize(d).includes(w)).length }))
+  .filter((r) => r.s > 0).sort((a, b) => b.s - a.s).map((r) => r.doc);
+
+function rrf(rankings, k = 60) {
+  const scores = {};
+  for (const ranking of rankings) {
+    ranking.forEach((doc, index) => { scores[doc] = (scores[doc] || 0) + 1 / (k + index + 1); });
+  }
+  return Object.entries(scores).sort((a, b) => b[1] - a[1]).map(([doc, s]) => ({ doc: +doc, rrf: +s.toFixed(4) }));
+}
+
+for (const q of ["how many holiday days do I get", "what does ERR_7731 mean"]) {
+  const sem = semanticRank(q), kw = keywordRank(q);
+  console.log("Q:", q);
+  console.log("  semantic order:", sem.join(", "), "| keyword order:", kw.join(", "));
+  for (const r of rrf([sem, kw]).slice(0, 3)) console.log("   rrf " + r.rrf + "  " + docs[r.doc]);
+}`,
+        explanation: "For the holiday question, keyword search cannot tell the holiday-party chunk from the leave chunks (each shares one word with the query), while the semantic list knows 'holiday' means leave and ranks the party chunk last; for the error code, keyword search pins the exact chunk. RRF rewards documents ranked well by either retriever, and especially by both, so the fused list is good on both questions without any score normalisation.",
+      },
+      {
+        title: "Hybrid retrieval in Python: rank_bm25 + Chroma + RRF",
+        language: "python",
+        code: `# pip install rank_bm25 chromadb sentence-transformers
+import re
+import chromadb
+from rank_bm25 import BM25Okapi
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+col = chromadb.PersistentClient(path="./db").get_or_create_collection("docs")
+
+# Build a BM25 index over the same chunks that live in Chroma
+everything = col.get(include=["documents", "metadatas"])        # fine for small/medium corpora
+ids, texts = everything["ids"], everything["documents"]
+tokenize = lambda s: re.findall(r"[a-z0-9_]+", s.lower())
+bm25 = BM25Okapi([tokenize(t) for t in texts])
+
+def keyword_search(query, n=20):
+    scores = bm25.get_scores(tokenize(query))
+    order = sorted(range(len(ids)), key=lambda i: scores[i], reverse=True)
+    return [ids[i] for i in order[:n] if scores[i] > 0]
+
+def semantic_search(query, n=20):
+    q = model.encode([query], normalize_embeddings=True).tolist()
+    return col.query(query_embeddings=q, n_results=n)["ids"][0]
+
+def rrf(*rankings, k=60):
+    scores = {}
+    for ranking in rankings:
+        for rank, doc_id in enumerate(ranking, start=1):
+            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank)
+    return sorted(scores, key=scores.get, reverse=True)
+
+def hybrid_search(query, n=5):
+    fused = rrf(semantic_search(query), keyword_search(query))[:n]
+    got = col.get(ids=fused, include=["documents", "metadatas"])
+    by_id = {i: (d, m) for i, d, m in zip(got["ids"], got["documents"], got["metadatas"])}
+    return [(doc_id, *by_id[doc_id]) for doc_id in fused]
+
+for doc_id, text, meta in hybrid_search("what does ERR_7731 mean?"):
+    print(doc_id, meta.get("source"), text[:80])`,
+        explanation: "The BM25 index is built in memory from the chunks already stored in Chroma, so both retrievers return the same ids and RRF can merge them. For large corpora keep a persistent keyword index instead (a search engine, or Postgres full-text search as in the next example). col.get(ids=...) does not guarantee order, hence the by_id lookup.",
+      },
+      {
+        title: "Hybrid search inside Postgres: full-text + pgvector + RRF (SQL)",
+        language: "sql",
+        code: `-- One-time: a generated full-text column with a GIN index
+ALTER TABLE chunks
+  ADD COLUMN tsv tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED;
+CREATE INDEX chunks_tsv ON chunks USING gin (tsv);
+
+-- $1 = query embedding, $2 = query text
+WITH semantic AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> $1) AS rank
+  FROM chunks
+  ORDER BY embedding <=> $1
+  LIMIT 50
+),
+keyword AS (
+  SELECT id, ROW_NUMBER() OVER (ORDER BY ts_rank_cd(tsv, q) DESC) AS rank
+  FROM chunks, plainto_tsquery('english', $2) AS q
+  WHERE tsv @@ q
+  ORDER BY ts_rank_cd(tsv, q) DESC
+  LIMIT 50
+)
+SELECT c.id, c.source, c.page, c.content,
+       COALESCE(1.0 / (60 + s.rank), 0) + COALESCE(1.0 / (60 + k.rank), 0) AS rrf_score
+FROM semantic s
+FULL OUTER JOIN keyword k ON k.id = s.id
+JOIN chunks c ON c.id = COALESCE(s.id, k.id)
+ORDER BY rrf_score DESC
+LIMIT 10;`,
+        explanation: "Postgres's built-in ts_rank_cd is not BM25, but it is a solid keyword ranker, and with RRF only the ranks matter. A FULL OUTER JOIN keeps documents found by only one of the two retrievers. One query, one database, hybrid results.",
+      },
+    ],
+    howItWorks: md(
+      "**Dense retrieval pipeline:** embed the query with the same model used for chunks, run a nearest-neighbour search (with filters), return ids, texts, metadata and similarity scores. Some embedding models expect a prefix or instruction on queries versus documents (for example 'query:' and 'passage:'); check your model's documentation, since mismatches hurt quality.",
+      "**Sparse retrieval pipeline:** tokenize (lowercase, split, optionally remove stop words and apply *stemming* - reducing 'running' and 'runs' to 'run'), look up each query term in an **inverted index** (a map from each term to the list of chunks containing it), and score only those chunks with BM25. The inverted index makes this fast: you never touch chunks that contain none of the query terms.",
+      "**BM25 formula** for query Q and document D: sum over each query term t of `IDF(t) x f(t,D) x (k1 + 1) / (f(t,D) + k1 x (1 - b + b x |D| / avgdl))`, where f is the term count in D, |D| the document length and avgdl the average length. IDF(t) = `ln((N - n(t) + 0.5) / (n(t) + 0.5) + 1)` with N documents and n(t) of them containing t.",
+      "**Reciprocal rank fusion:** for every document d, `RRF(d) = sum over retrievers r of 1 / (k + rank_r(d))`, with rank starting at 1 and documents missing from a list contributing 0. With k = 60, rank 1 gives 1/61 and rank 10 gives 1/70: being in both lists matters more than being first in one. RRF needs no training and no score calibration, which is why it is the default fusion method.",
+      "**Learned sparse retrieval** is a middle ground worth knowing by name: models that output sparse word-weight vectors (expanding queries with related terms) so they work with inverted indexes but understand some synonyms.",
+    ),
+    diagram: `             question
+            /        \\
+   embed + ANN      tokenize + BM25
+   (semantic)       (keyword)
+        |                |
+  1. leave policy   1. holiday party
+  2. carry-over     2. leave policy
+  3. holiday party  3. ...
+        \\              /
+     reciprocal rank fusion
+     score = sum 1/(60 + rank)
+               |
+     1. leave policy  (high in both)
+     2. holiday party
+     3. carry-over
+               |
+     top 20-50 -> reranker -> top 5`,
+    whyItExists: md(
+      "Neither retrieval method is good enough alone. Semantic search understands paraphrases but fumbles exact identifiers; keyword search nails identifiers but misses paraphrases. Real users ask both kinds of questions, often in the same sentence. Hybrid search exists to cover both failure modes cheaply, and RRF exists because merging scores from incompatible scales is otherwise fragile.",
+    ),
+    whenToUse: md(
+      "Use semantic search as the baseline for natural-language questions. Add BM25 and fuse with RRF whenever your content has codes, names, version numbers, legal citations, product SKUs or domain jargon - which is most real corpora. Measure each retriever separately and the fused result on a test set to confirm hybrid helps for your data.",
+    ),
+    whenNotToUse: md(
+      "If users only ever search by exact identifiers, a plain database or keyword index is enough. If the corpus is tiny, retrieval strategy hardly matters - consider putting everything in the prompt. Do not add hybrid complexity before you have a baseline and an evaluation set showing what it fixes.",
+    ),
+    commonMistakes: [
+      "Relying only on embeddings and then being surprised that exact error codes, SKUs or names are not found.",
+      "Adding raw BM25 scores to cosine similarities, which lets whichever scale is larger dominate.",
+      "Using a top-k that is too small to have the answer in it, then blaming the LLM.",
+      "Tokenizing queries and documents differently for BM25 (different lowercasing or punctuation rules), so terms never match.",
+      "Returning many near-duplicate chunks (from overlap or copied content), wasting the context on one fact.",
+      "Ignoring the query prefixes or instructions an embedding model expects, degrading semantic matches.",
+      "Never inspecting what was retrieved for failed questions - most 'LLM errors' in RAG are retrieval errors.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "In the BM25 demo, change b to 0 and then to 1. Which documents move up or down for 'annual leave days' and why?" },
+      { difficulty: "Easy", prompt: "Compute by hand the RRF score with k = 60 of a document ranked 1st by semantic search and absent from keyword search, and of one ranked 3rd in both. Which wins?" },
+      { difficulty: "Medium", prompt: "Replace keywordRank in the hybrid demo with the BM25 function from the first demo and check the fused results are still sensible." },
+      { difficulty: "Medium", prompt: "Implement MMR in JavaScript: given a query vector and candidate vectors, repeatedly pick the candidate maximising 0.7 x sim(query, c) - 0.3 x max sim(c, already chosen). Show that it skips a near-duplicate." },
+      { difficulty: "Hard", prompt: "Build a 30-question test set for your own documents (questions + id of the chunk that answers each). Measure recall@5 for semantic, BM25 and hybrid (RRF) retrieval with the Python example. Report which question types each method fails on." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between dense and sparse retrieval?", answer: "Dense retrieval embeds queries and documents into dense vectors and finds nearest neighbours, capturing meaning and paraphrase. Sparse retrieval represents text by the words it contains (mostly-zero vectors over the vocabulary) and scores exact term matches, typically with BM25 via an inverted index. Dense handles synonyms; sparse handles exact identifiers and rare terms." },
+      { question: "Explain BM25's main components.", answer: "IDF makes rare terms count more than common ones; term-frequency saturation (k1) gives diminishing returns for repeated occurrences; length normalisation (b) penalises long documents relative to the average length. The score is the sum over query terms of IDF times the saturated, length-normalised term frequency." },
+      { question: "What is reciprocal rank fusion and why is it popular?", answer: "A method to merge ranked lists: each document scores the sum of 1/(k + rank) over the lists it appears in, typically with k = 60. It uses ranks only, so it needs no score normalisation or training, is robust across very different retrievers, and rewards documents that several retrievers agree on." },
+      { question: "When does semantic search fail?", answer: "On exact tokens with little semantic content (error codes, part numbers, names, versions), on rare domain jargon the embedding model never learned, on negations and precise numeric constraints, and on very short queries. Hybrid search and metadata filters address many of these cases." },
+      { question: "How do you choose top-k?", answer: "Retrieve a generous candidate set (for example 20-50) to maximise recall, then rerank and send a smaller set (for example 3-8) to the LLM to keep precision, cost and latency in check. Tune both numbers with recall@k on an evaluation set and by checking answer quality." },
+      { question: "Why might you set a similarity threshold?", answer: "So that a question with no relevant content returns no context, letting the system say it does not know instead of answering from weakly related chunks. Thresholds must be calibrated per embedding model since score distributions differ, and are more reliable on reranker scores." },
+    ],
+    prerequisites: ["embeddings", "vector-databases"],
+    relatedTopics: ["reranking", "building-a-rag-pipeline", "advanced-rag-techniques", "evaluating-rag"],
+    keywords: ["retrieval", "semantic search", "dense retrieval", "sparse retrieval", "keyword search", "bm25", "tf-idf", "inverted index", "hybrid search", "reciprocal rank fusion", "rrf", "mmr", "top-k", "similarity threshold"],
+  },
+
+  {
+    id: "reranking",
+    title: "Reranking",
+    level: "intermediate",
+    description: "Two-stage retrieval: fetch many candidates cheaply, then reorder them with a slower, smarter cross-encoder or LLM so the best chunks reach the prompt.",
+    explanation: md(
+      "First-stage retrieval (vector search, BM25 or hybrid) is built for **speed over millions of chunks**, so it uses shortcuts. Embedding search compresses the query and each chunk into separate vectors *before* they ever meet, then compares the vectors. It never reads the question and the chunk together. That is why its top results are often 'about the right topic' without actually answering the question.",
+      "**Reranking** adds a second stage: take the first stage's top candidates (say 20-50), score each one with a slower but more accurate model that reads the **query and the chunk together**, sort by that score, and keep the best few (say 3-8) for the prompt. This is called **two-stage retrieval** or *retrieve-then-rerank*: a wide, cheap net followed by a careful sort.",
+      "**Bi-encoder vs cross-encoder.** The embedding model used for search is a **bi-encoder**: it encodes query and document *independently* (two separate passes), which is what lets you pre-compute all document vectors once. A **cross-encoder** takes the query and one document *concatenated* as a single input and outputs one relevance score. Because the transformer's attention can compare every query word with every document word, it notices things a bi-encoder misses: whether the passage actually contains the requested number, whether it is about the right product version, whether a 'not' flips the meaning. The cost: nothing can be pre-computed, so you run the model once per (query, candidate) pair at query time. Fine for 50 candidates, impossible for 5 million.",
+      "**Kinds of rerankers:**",
+      "- **Cross-encoder models** - small open models such as `cross-encoder/ms-marco-MiniLM-L-6-v2` (trained on the MS MARCO web search dataset of real queries and relevant passages) run locally with the `sentence-transformers` library. Hosted reranking APIs also exist from several embedding providers.\n- **LLM rerankers** - ask an LLM to score or order the candidates ('rate each passage 0-10 for how well it answers the question'). Very flexible (you can describe what 'relevant' means in your domain) but slower and more expensive; use for small candidate sets or high-value queries.\n- **Heuristic or business-rule boosts** - add points for recency, authoritative sources, or the user's own team's documents. Often combined with a model score.",
+      "**What reranking buys you.** Better precision in the few chunks you actually send: the prompt gets shorter (cheaper, faster) *and* more relevant (better answers, fewer hallucinations from distracting context). It also gives you a more meaningful score for thresholding ('no candidate scored above X, so say I don't know').",
+      "**What it cannot do:** a reranker only reorders what the first stage found. If the right chunk is not in the candidate set, reranking cannot recover it - so the first stage should be tuned for **recall** (fetch generously) and the reranker for **precision**.",
+    ),
+    analogy:
+      "Hiring for a job: a recruiter skims 2,000 CVs for keywords and similar job titles in a few seconds each and shortlists 30 (first-stage retrieval). Then the hiring manager actually reads those 30 CVs carefully against the job description and picks the best 5 to interview (reranking). The manager would never have time to read all 2,000, and the recruiter's skim alone would put some poor fits in the top 5.",
+    examples: [
+      {
+        title: "Two-stage retrieval: cheap first stage, joint-scoring reranker",
+        code: `const chunks = [
+  "Annual leave helps employees rest, and how leave days are booked is up to each team.",
+  "Our leave policy was updated in 2025 after an employee survey.",
+  "Each staff member is entitled to 25 days of annual leave per calendar year.",
+  "Sick leave does not count towards annual leave.",
+  "Parental leave is 16 weeks at full pay.",
+  "The canteen is open from 8am to 3pm.",
+];
+const query = "how many days of annual leave do employees get";
+const words = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(" ").filter((w) => w.length > 2);
+
+// Stage 1 (fast, independent): fraction of query words present - like a crude bi-encoder/BM25
+function stage1(q, k) {
+  const qw = new Set(words(q));
+  return chunks.map((text, id) => ({ id, text, s1: words(text).filter((w) => qw.has(w)).length / qw.size }))
+    .sort((a, b) => b.s1 - a.s1).slice(0, k);
+}
+
+// Stage 2 (slower, reads query AND chunk together): a hand-written stand-in for a cross-encoder
+function crossScore(q, text) {
+  const qw = words(q), tw = words(text);
+  let score = qw.filter((w) => tw.includes(w)).length;                 // coverage
+  for (let i = 0; i < qw.length - 1; i++) {                             // phrase matches
+    if (text.toLowerCase().includes(qw[i] + " " + qw[i + 1])) score += 2;
+  }
+  if (/^how (many|much)/.test(q) && /[0-9]/.test(text)) score += 4;     // asks for a number, has one
+  if (/does not|not /.test(text.toLowerCase())) score -= 1;             // negation is risky evidence
+  return score;
+}
+
+const candidates = stage1(query, 5);
+console.log("Stage 1 top-5 (fast, approximate):");
+candidates.forEach((c, i) => console.log("  " + (i + 1) + ". [" + c.s1.toFixed(2) + "] " + c.text));
+
+const reranked = candidates.map((c) => ({ ...c, s2: crossScore(query, c.text) }))
+  .sort((a, b) => b.s2 - a.s2).slice(0, 2);
+console.log("After reranking, top-2 sent to the LLM:");
+reranked.forEach((c, i) => console.log("  " + (i + 1) + ". [" + c.s2 + "] " + c.text));`,
+        explanation: "Stage 1 ranks a vague chunk at the top because it repeats many of the query's words ('how', 'leave', 'days', 'employees') without answering anything, while the real answer uses different words ('staff member', 'entitled'). The reranker reads query and chunk together, rewards the phrase 'annual leave', and notices the question asks 'how many' while the answer chunk contains a number - so the chunk that actually answers the question moves to first place. A real cross-encoder learns these signals (and many more) from training data instead of hand-written rules.",
+        walkthrough: [
+          { code: "stage1(query, 5)", explanation: "Cheap scoring of every chunk on its own. In production: vector or hybrid search over millions of chunks." },
+          { code: "crossScore(q, text)", explanation: "The reranker sees both texts at once, so it can check phrases, question type and negation - things that need the pair, not two separate summaries." },
+          { code: ".sort((a, b) => b.s2 - a.s2).slice(0, 2)", explanation: "Reorder only the 5 candidates and keep the best 2 for the prompt." },
+        ],
+      },
+      {
+        title: "LLM as a reranker (offline, with a fake llm())",
+        code: `// Fake LLM: in reality you would send this prompt to a model and parse its JSON reply
+function llm(prompt) {
+  const passages = prompt.split("\\n").filter((l) => l.startsWith("[")); // "[i] text"
+  const scores = passages.map((line) => {
+    const i = Number(line.slice(1, line.indexOf("]")));
+    const text = line.toLowerCase();
+    const s = (text.includes("refund") ? 4 : 0) + (text.includes("days") ? 3 : 0) + (text.includes("digital") ? -2 : 0);
+    return { index: i, score: Math.max(0, Math.min(10, s + 2)) };
+  });
+  return JSON.stringify({ judgements: scores });
+}
+
+function llmRerank(question, candidates, keep) {
+  const prompt = [
+    "Rate how well each passage answers the question, from 0 (irrelevant) to 10 (directly answers).",
+    "Reply with JSON: {\\"judgements\\": [{\\"index\\": number, \\"score\\": number}]}",
+    "Question: " + question,
+    ...candidates.map((c, i) => "[" + i + "] " + c),
+  ].join("\\n");
+  const reply = JSON.parse(llm(prompt));
+  const valid = reply.judgements.filter((j) => Number.isInteger(j.index) && j.index >= 0 && j.index < candidates.length);
+  return valid.sort((a, b) => b.score - a.score).slice(0, keep)
+    .map((j) => ({ score: j.score, text: candidates[j.index] }));
+}
+
+const candidates = [
+  "Digital downloads cannot be refunded once opened.",
+  "Our customer service team is available 24/7.",
+  "Refunds are accepted within 30 days of purchase with a receipt.",
+  "Shipping takes 3 to 5 days.",
+];
+console.log(llmRerank("How many days do I have to get a refund?", candidates, 2));`,
+        explanation: "A listwise LLM reranker: number the passages, ask for scores as JSON, validate the indexes the model returns (never trust them blindly), sort and keep the best. In production use structured output (see structured-output) so the reply is guaranteed to match the schema.",
+      },
+      {
+        title: "Cross-encoder reranking with sentence-transformers (Python)",
+        language: "python",
+        code: `# pip install sentence-transformers chromadb
+import chromadb
+from sentence_transformers import SentenceTransformer, CrossEncoder
+
+embedder = SentenceTransformer("all-MiniLM-L6-v2")                 # bi-encoder (stage 1)
+reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")     # cross-encoder (stage 2)
+col = chromadb.PersistentClient(path="./db").get_or_create_collection("docs")
+
+def search(question: str, fetch_k: int = 30, keep: int = 5, min_score: float | None = None):
+    # Stage 1: cast a wide net
+    q = embedder.encode([question], normalize_embeddings=True).tolist()
+    res = col.query(query_embeddings=q, n_results=fetch_k)
+    candidates = list(zip(res["documents"][0], res["metadatas"][0]))
+    if not candidates:
+        return []
+
+    # Stage 2: score each (question, chunk) pair jointly
+    scores = reranker.predict([(question, doc) for doc, _ in candidates])
+    ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
+
+    results = [{"score": float(s), "text": doc, "meta": meta} for s, (doc, meta) in ranked[:keep]]
+    if min_score is not None:
+        results = [r for r in results if r["score"] >= min_score]
+    return results
+
+for r in search("How many vacation days do new employees get?"):
+    print(f"{r['score']:7.3f}  {r['meta'].get('source')}  {r['text'][:80]}")`,
+        explanation: "Load both models once at startup, not per request. The cross-encoder outputs one relevance score per pair (higher is more relevant); the scale depends on the model, so compare scores within a query and calibrate any min_score threshold on your own data. Batch the pairs as shown - predict() processes the list efficiently, and a GPU makes it much faster.",
+      },
+      {
+        title: "LLM reranking with Claude and structured output (Python)",
+        language: "python",
+        code: `import anthropic
+from pydantic import BaseModel
+
+client = anthropic.Anthropic()
+
+class Judgement(BaseModel):
+    index: int
+    score: int          # 0-10
+
+class Ranking(BaseModel):
+    judgements: list[Judgement]
+
+def llm_rerank(question: str, passages: list[str], keep: int = 5) -> list[tuple[int, str]]:
+    numbered = "\\n".join(f'<passage index="{i}">{p}</passage>' for i, p in enumerate(passages))
+    resp = client.messages.parse(
+        model="claude-opus-5-5",
+        max_tokens=16000,
+        output_config={"effort": "low"},          # a simple judging task: keep it fast
+        messages=[{"role": "user", "content":
+            f"Question: {question}\\n\\n{numbered}\\n\\n"
+            "Score every passage from 0 (irrelevant) to 10 (directly answers the question)."}],
+        output_format=Ranking,
+    )
+    judged = [j for j in resp.parsed_output.judgements if 0 <= j.index < len(passages)]
+    judged.sort(key=lambda j: j.score, reverse=True)
+    return [(j.score, passages[j.index]) for j in judged[:keep]]`,
+        explanation: "LLM reranking lets you describe relevance in words ('prefer official policy documents over chat messages'), at the cost of one model call per query. Keep the candidate list short, validate indexes, and fall back to the first-stage order if the call fails.",
+      },
+    ],
+    howItWorks: md(
+      "**Stage 1 (recall):** hybrid or vector search returns `fetch_k` candidates, typically 20-100. Cost is roughly constant in corpus size thanks to the index.",
+      "**Stage 2 (precision):** for each candidate, build the pair (query, chunk text) and run the reranker. A cross-encoder feeds `[query] [SEP] [chunk]` through a transformer and a small output layer produces a single relevance number. Cost is linear in `fetch_k` and in chunk length, which is why you rerank tens of candidates, not thousands, and why chunks should not be huge.",
+      "**Selection:** sort by reranker score, optionally drop candidates below a calibrated threshold, deduplicate near-identical chunks, and keep the top `keep` (often 3-8) for the prompt. Some systems also put the best chunks at the start and end of the context, because models can pay less attention to the middle of very long contexts.",
+      "**Latency budget:** a small cross-encoder on a CPU can take tens to hundreds of milliseconds for a few dozen short pairs; a GPU or hosted reranker is much faster. Measure on your hardware and reduce `fetch_k` or chunk length if needed.",
+      "**Training data note:** MS MARCO-trained cross-encoders are good general-purpose web-search rerankers. For specialised domains (legal, medical, code), evaluate them on your own questions; domain-specific or fine-tuned rerankers, or an LLM reranker, may do better.",
+    ),
+    diagram: `question
+   |
+   v
++------------------------+   millions of chunks
+| stage 1: hybrid / ANN  |   fast, approximate
++------------------------+
+   | top 30 candidates
+   v
++------------------------+   30 x (question, chunk)
+| stage 2: cross-encoder |   slow, accurate,
+|   or LLM reranker      |   reads pair together
++------------------------+
+   | sorted, threshold
+   v
+ top 5 --> prompt --> LLM`,
+    whyItExists: md(
+      "Scalable search must pre-compute document representations, which caps how well it can judge relevance; accurate relevance judgement needs to read query and document together, which cannot scale to the whole corpus. Two-stage retrieval gets the best of both: the index finds a manageable shortlist, the reranker makes the final call.",
+    ),
+    whenToUse: md(
+      "Add a reranker when the right chunk is usually somewhere in the top 20-50 but often not in the top 3-5 (measure recall@k for both), when you want to send fewer chunks to cut cost and latency, or when you need a trustworthy score for 'nothing relevant found'. It is one of the highest-impact, lowest-effort upgrades to a basic RAG pipeline.",
+    ),
+    whenNotToUse: md(
+      "Skip it when first-stage retrieval already puts the answer at rank 1-3 almost always, when the latency budget is extremely tight, or when the corpus is so small that you can send all candidates to the LLM anyway. Do not use a reranker to compensate for a first stage that never finds the right chunk - fix recall first.",
+    ),
+    commonMistakes: [
+      "Reranking only the top 5 from stage 1, which leaves nothing to reorder - fetch 20-50 candidates.",
+      "Expecting the reranker to find chunks the first stage missed.",
+      "Loading the cross-encoder model on every request instead of once at startup.",
+      "Treating raw cross-encoder scores as probabilities or reusing a threshold across different models without calibration.",
+      "Reranking very long chunks, which is slow and may be truncated by the reranker's input limit.",
+      "Trusting LLM reranker output without validating indexes and handling failures.",
+      "Not measuring: adding a reranker without checking it improves precision@k on your own questions.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "In the two-stage demo, change stage1 to return only the top 2. What does the reranker now return, and why does that show the importance of fetch_k?" },
+      { difficulty: "Easy", prompt: "Add a chunk 'Employees do not receive extra leave days for overtime.' to the demo. Where does it land before and after reranking?" },
+      { difficulty: "Medium", prompt: "Extend crossScore with a recency boost: chunks containing a year get +1 if the year is 2025 or later. Discuss the risk of mixing business rules into relevance scores." },
+      { difficulty: "Medium", prompt: "Run the Python cross-encoder example on your own indexed documents. For 10 questions, print the stage-1 rank and the reranked rank of the chunk that really answers each question." },
+      { difficulty: "Hard", prompt: "Build an evaluation comparing three pipelines on 30 questions: vector top-5, vector top-30 + cross-encoder top-5, and hybrid top-30 + cross-encoder top-5. Report precision@5 and average latency for each." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between a bi-encoder and a cross-encoder?", answer: "A bi-encoder embeds query and document separately into vectors and compares them with cosine similarity, so document vectors can be pre-computed and indexed - fast and scalable. A cross-encoder processes the query and document together in one forward pass and outputs a relevance score, so attention can compare them directly - more accurate, but it must run per pair at query time, so it is used to rerank a small candidate set." },
+      { question: "Why use two-stage retrieval?", answer: "Because high recall over a huge corpus needs a fast index, while high precision needs a slow model that reads query and document together. The first stage fetches a broad candidate set cheaply; the second reorders it accurately; the prompt gets a few highly relevant chunks." },
+      { question: "How do you choose fetch_k and the number of chunks to keep?", answer: "fetch_k should be large enough that recall@fetch_k is high on your evaluation set (often 20-50) but small enough for the reranker's latency budget. The number kept is tuned for answer quality, context cost and latency, often 3-8. Measure both rather than guessing." },
+      { question: "When would you use an LLM as a reranker?", answer: "When relevance is subtle or domain-specific and can be described in instructions, when candidate sets are small, or for high-value queries where cost and latency are acceptable. Use structured output for scores, validate the response, and keep a fallback to the first-stage order." },
+      { question: "Can a reranker fix poor retrieval?", answer: "Only partially. It can fix bad ordering among candidates but cannot surface documents the first stage never returned. If the relevant chunk is missing from the candidates, improve the first stage (hybrid search, better chunking, query rewriting, a larger fetch_k)." },
+      { question: "What are the latency implications of reranking?", answer: "Cross-encoder cost grows with the number of candidates and their length, run sequentially or in batches per query. On CPU this can add noticeable latency; mitigations are smaller models, GPUs, hosted rerankers, fewer and shorter candidates, and caching results for repeated queries." },
+    ],
+    prerequisites: ["retrieval-strategies", "embeddings"],
+    relatedTopics: ["building-a-rag-pipeline", "retrieval-strategies", "evaluating-rag", "cost-and-latency"],
+    keywords: ["reranking", "reranker", "cross-encoder", "bi-encoder", "two-stage retrieval", "ms-marco", "sentence-transformers", "llm reranker", "precision", "recall", "fetch_k"],
+  },
 ];

@@ -94,8 +94,9 @@ export function valueText(n: JsonNode): string {
   return formatJson(n, { indent: 2 });
 }
 
-export function scalarText(n: Exclude<JsonNode, { type: 'object' | 'array' }>): string {
-  return n.type === 'string' ? decodeString(n.raw) : n.raw;
+/** Text of a scalar as shown (decoded string, raw number or literal); empty for containers. */
+export function scalarText(n: JsonNode): string {
+  return n.type === 'string' ? decodeString(n.raw) : isContainer(n) ? '' : n.raw;
 }
 
 /** Truncates to `max` UTF-16 units without splitting a surrogate pair. */

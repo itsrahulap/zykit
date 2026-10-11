@@ -8,8 +8,10 @@ const jsonTreeViewer: ToolDefinition = {
     'Browse big JSON files as an expandable tree with search, path copy, type badges and array counts, without uploading them.',
   category: 'Data',
   icon: 'braces',
-  tags: ['JSON', 'Tree', 'Viewer'],
+  tags: ['JSON', 'Tree', 'Viewer', 'JSONPath', 'Search'],
   status: 'available',
+  accepts: ['json'],
+  shareable: false,
   load: () => import('./JsonTreeViewerPage'),
   docs: () => import('./docs'),
 };

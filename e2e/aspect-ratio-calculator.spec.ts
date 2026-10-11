@@ -15,7 +15,7 @@ test('Aspect Ratio Calculator works locally', async ({ page }) => {
   await page.getByLabel('Width').fill('1920');
   await page.getByLabel('Height').fill('1080');
   await expect(page.getByTestId('ratio')).toHaveText('16:9');
-  await expect(page.getByText('aspect-ratio: 16 / 9;')).toBeVisible();
+  await expect(page.locator('pre').filter({ hasText: 'aspect-ratio: 16 / 9;' })).toBeVisible();
   await expect(page.getByTestId('scaled')).toHaveText('960 × 540');
 
   await page.getByRole('button', { name: '4:3', exact: true }).click();

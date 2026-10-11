@@ -61,7 +61,7 @@ export interface NginxResult {
 }
 
 // Values go straight into the config, so anything that could end a directive or open a block is refused.
-const SAFE = /^[A-Za-z0-9_.:\-/*~@%+=\[\]]+$/;
+const SAFE = /^[A-Za-z0-9_.:\-/*~@%+=[\]]+$/;
 const SIZE = /^\d+[kKmMgG]?$/;
 const isSafe = (v: string) => SAFE.test(v);
 

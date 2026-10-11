@@ -17,7 +17,7 @@ test('nginx Config Generator works locally', async ({ page, context }) => {
   const pre = page.getByRole('region', { name: 'Output' }).locator('pre');
   await expect(pre).toContainText('try_files $uri $uri/ =404;');
 
-  await page.getByLabel('server_name', { exact: true }).fill('app.test');
+  await page.getByRole('textbox', { name: /^server_name/ }).fill('app.test');
   await expect(pre).toContainText('server_name app.test;');
   await page.getByRole('button', { name: 'Reverse proxy' }).click();
   await page.getByLabel('Upstreams').fill('127.0.0.1:8000\n127.0.0.1:8001');
@@ -31,7 +31,7 @@ test('nginx Config Generator works locally', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Download .conf' }).click();
   expect((await dl).suggestedFilename()).toBe('nginx.conf');
 
-  await page.getByLabel('server_name', { exact: true }).fill('bad; } name');
+  await page.getByRole('textbox', { name: /^server_name/ }).fill('bad; } name');
   await expect(page.getByText(/Ignored server name/).first()).toBeVisible();
 
   expect(offOrigin).toEqual([]);
