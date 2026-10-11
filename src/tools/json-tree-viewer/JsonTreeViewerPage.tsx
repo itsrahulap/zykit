@@ -143,6 +143,19 @@ export default function JsonTreeViewerPage() {
   const activeIdx = found;
   const activeRow = activeIdx >= 0 ? rows[activeIdx] : null;
 
+  // Jump to the first match when the results change (state adjusted during render, scrolling in the effect below).
+  const [seenMatches, setSeenMatches] = useState(matches);
+  if (seenMatches !== matches) {
+    setSeenMatches(matches);
+    if (matches.length) {
+      setMatchIdx(0);
+      setActiveNode(matches[0].node);
+    }
+  }
+  useEffect(() => {
+    if (matches.length) reveal.current = true;
+  }, [matches]);
+
   useEffect(() => {
     if (!reveal.current || activeIdx < 0 || !viewRef.current) return;
     reveal.current = false;
@@ -152,15 +165,6 @@ export default function JsonTreeViewerPage() {
     if (top < el.scrollTop) el.scrollTop = top;
     else if (bottom > el.scrollTop + el.clientHeight) el.scrollTop = bottom - el.clientHeight;
   });
-
-  // Jump to the first match when the results change.
-  useEffect(() => {
-    if (matches.length) {
-      reveal.current = true;
-      setMatchIdx(0);
-      setActiveNode(matches[0].node);
-    }
-  }, [matches]);
 
   const go = (i: number) => {
     reveal.current = true;

@@ -75,6 +75,8 @@ export function minifyCss(css: string, keepAllComments = false): string {
       i = lit.end;
       continue;
     }
+    // `color : red` (space after the colon too) is a declaration; `a :hover` is a selector and keeps its space.
+    if (c === ':' && paren === 0 && space && WS.test(css[i + 1] ?? '')) space = false;
     if (c === '(') paren++;
     if (c === '}' && out.endsWith(';') && !out.endsWith('\\;') && !out.endsWith(':;')) out = out.slice(0, -1);
     if (c === ')') {

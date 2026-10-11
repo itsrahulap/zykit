@@ -32,4 +32,4 @@ HTML: `tokenizeHtml` yields text, comment, declaration, tag and raw tokens; the 
 ## Known Gaps
 
 - No optional-tag removal, empty-rule removal, or `<script>`/inline-style minification.
-- Space before a declaration colon (`color : red`) is left as `color :red`, because a leading space can be a selector combinator.
+- A space before a colon is only removed when a space follows it too (`color : red`); `color :red` is left alone, because `a :hover` is a selector.

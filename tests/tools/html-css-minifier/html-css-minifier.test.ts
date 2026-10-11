@@ -3,7 +3,7 @@ import { beautifyCss, beautifyHtml, minifyCss, minifyHtml } from '../../../src/t
 
 describe('minifyCss', () => {
   it('collapses whitespace and drops the last semicolon', () => {
-    expect(minifyCss('a {\n  color : red;\n  margin: 0 auto;\n}\n\nb > c , d~e { top:0 }')).toBe('a{color :red;margin:0 auto}b>c,d~e{top:0}');
+    expect(minifyCss('a {\n  color : red;\n  margin: 0 auto;\n}\n\nb > c , d~e { top:0 }')).toBe('a{color:red;margin:0 auto}b>c,d~e{top:0}');
   });
   it('removes comments but keeps /*! */ ones', () => {
     expect(minifyCss('/*! license */ a{/* x */color:red}/* y */')).toBe('/*! license */ a{color:red}');
@@ -24,6 +24,7 @@ describe('minifyCss', () => {
     expect(minifyCss('a{color:rgb(0 0 0 / 50%);b:rgba( 0 , 0 ,0 , .5 )}')).toBe('a{color:rgb(0 0 0 / 50%);b:rgba(0,0,0,.5)}');
   });
   it('keeps descendant and pseudo-class spacing', () => {
+    expect(minifyCss('a{b{ x : y }&  :hover{z:1}}')).toBe('a{b{x:y}& :hover{z:1}}');
     expect(minifyCss('a :hover , a:hover   b{x:y}')).toBe('a :hover,a:hover b{x:y}');
     expect(minifyCss('@media (min-width: 600px) and (max-width : 900px){a{x:y}}')).toBe('@media (min-width:600px) and (max-width :900px){a{x:y}}');
   });

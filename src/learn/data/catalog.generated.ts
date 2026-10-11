@@ -2550,6 +2550,646 @@ export const catalog: LearnCatalog = {
           ]
         }
       ]
+    },
+    {
+      "id": "ai-engineering",
+      "title": "AI Engineering: LLMs, RAG and Agents",
+      "description": "From zero to production: how large language models work, prompting, embeddings, building complete RAG pipelines, and building AI agents from scratch.",
+      "topics": [
+        {
+          "id": "what-is-ai",
+          "title": "What is AI? (AI vs ML vs Deep Learning vs Generative AI)",
+          "level": "beginner",
+          "description": "The vocabulary of the field: AI, machine learning, deep learning, generative AI, models, parameters, training and inference.",
+          "prerequisites": [],
+          "relatedTopics": [
+            "how-llms-work",
+            "calling-an-llm-api",
+            "hallucinations-and-limitations",
+            "fine-tuning-vs-rag"
+          ]
+        },
+        {
+          "id": "how-llms-work",
+          "title": "How Large Language Models Work",
+          "level": "beginner",
+          "description": "Next-token prediction, training data, the transformer and attention, pretraining vs instruction tuning vs RLHF, and why models can be wrong.",
+          "prerequisites": [
+            "what-is-ai"
+          ],
+          "relatedTopics": [
+            "tokens-and-context-windows",
+            "sampling-and-model-settings",
+            "hallucinations-and-limitations",
+            "embeddings",
+            "prompting-basics"
+          ]
+        },
+        {
+          "id": "tokens-and-context-windows",
+          "title": "Tokens and Context Windows",
+          "level": "beginner",
+          "description": "What tokens are, how tokenizers split text, why everything is counted in tokens, and how the context window limits what a model can see.",
+          "prerequisites": [
+            "how-llms-work"
+          ],
+          "relatedTopics": [
+            "calling-an-llm-api",
+            "sampling-and-model-settings",
+            "chunking",
+            "cost-and-latency",
+            "agent-memory"
+          ]
+        },
+        {
+          "id": "prompting-basics",
+          "title": "Prompt Engineering Basics",
+          "level": "beginner",
+          "description": "How to write prompts that work: system vs user messages, clear instructions, context, examples (few-shot), XML-tag structure and asking for step-by-step reasoning.",
+          "prerequisites": [
+            "how-llms-work"
+          ],
+          "relatedTopics": [
+            "calling-an-llm-api",
+            "structured-output",
+            "hallucinations-and-limitations",
+            "grounded-generation-and-citations",
+            "ai-security"
+          ]
+        },
+        {
+          "id": "calling-an-llm-api",
+          "title": "Calling an LLM API",
+          "level": "beginner",
+          "description": "How applications talk to a model: API keys, the messages format, roles, statelessness, streaming, usage and stop reasons, errors and retries.",
+          "prerequisites": [
+            "tokens-and-context-windows",
+            "prompting-basics"
+          ],
+          "relatedTopics": [
+            "sampling-and-model-settings",
+            "structured-output",
+            "tool-use",
+            "agent-memory",
+            "cost-and-latency",
+            "observability-and-debugging"
+          ]
+        },
+        {
+          "id": "sampling-and-model-settings",
+          "title": "Sampling, Temperature and Model Settings",
+          "level": "beginner",
+          "description": "How the next token is chosen (greedy, temperature, top-k, top-p), and the settings you actually control: max tokens, stop sequences, effort and thinking.",
+          "prerequisites": [
+            "how-llms-work",
+            "calling-an-llm-api"
+          ],
+          "relatedTopics": [
+            "tokens-and-context-windows",
+            "hallucinations-and-limitations",
+            "structured-output",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "hallucinations-and-limitations",
+          "title": "Hallucinations and Limitations",
+          "level": "beginner",
+          "description": "Why LLMs produce confident falsehoods, the other built-in limits (cutoff, no memory, arithmetic, bias, injection), and the engineering patterns that reduce the damage.",
+          "prerequisites": [
+            "how-llms-work",
+            "prompting-basics"
+          ],
+          "relatedTopics": [
+            "what-is-rag",
+            "grounded-generation-and-citations",
+            "structured-output",
+            "evaluating-rag",
+            "ai-security",
+            "tool-use"
+          ]
+        },
+        {
+          "id": "structured-output",
+          "title": "Structured Output: JSON, Schemas and Validation",
+          "level": "beginner",
+          "description": "Getting machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
+          "prerequisites": [
+            "calling-an-llm-api",
+            "prompting-basics"
+          ],
+          "relatedTopics": [
+            "tool-use",
+            "hallucinations-and-limitations",
+            "document-loading",
+            "evaluating-rag",
+            "ai-security"
+          ]
+        },
+        {
+          "id": "embeddings",
+          "title": "Embeddings and Vector Similarity",
+          "level": "beginner",
+          "description": "Turning text into vectors of numbers that capture meaning, and comparing them with cosine similarity and dot product - the foundation of semantic search and RAG.",
+          "prerequisites": [
+            "how-llms-work"
+          ],
+          "relatedTopics": [
+            "what-is-rag",
+            "vector-databases",
+            "retrieval-strategies",
+            "chunking",
+            "reranking"
+          ]
+        },
+        {
+          "id": "what-is-rag",
+          "title": "What is RAG and Why It Exists",
+          "level": "beginner",
+          "description": "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, private-data-aware and citable - compared with fine-tuning and long context.",
+          "prerequisites": [
+            "embeddings",
+            "prompting-basics",
+            "hallucinations-and-limitations"
+          ],
+          "relatedTopics": [
+            "building-a-rag-pipeline",
+            "chunking",
+            "vector-databases",
+            "retrieval-strategies",
+            "fine-tuning-vs-rag",
+            "agentic-rag",
+            "evaluating-rag"
+          ]
+        },
+        {
+          "id": "document-loading",
+          "title": "Loading and Parsing Documents",
+          "level": "intermediate",
+          "description": "Turning PDFs, HTML, Markdown, tables and scanned pages into clean text plus metadata - the first and most underrated step of every RAG pipeline.",
+          "prerequisites": [
+            "what-is-rag",
+            "embeddings"
+          ],
+          "relatedTopics": [
+            "chunking",
+            "building-a-rag-pipeline",
+            "rag-in-production",
+            "ai-security"
+          ]
+        },
+        {
+          "id": "chunking",
+          "title": "Chunking Strategies",
+          "level": "intermediate",
+          "description": "Splitting documents into retrievable pieces: fixed-size, overlap, recursive, structure-aware and semantic chunking, and how to choose a chunk size.",
+          "prerequisites": [
+            "document-loading",
+            "embeddings",
+            "tokens-and-context-windows"
+          ],
+          "relatedTopics": [
+            "vector-databases",
+            "building-a-rag-pipeline",
+            "advanced-rag-techniques",
+            "evaluating-rag"
+          ]
+        },
+        {
+          "id": "vector-databases",
+          "title": "Vector Databases and Indexes",
+          "level": "intermediate",
+          "description": "Where embeddings live: exact (flat) search vs approximate nearest neighbour indexes (HNSW, IVF), Chroma and pgvector, and filtering by metadata.",
+          "prerequisites": [
+            "embeddings",
+            "chunking"
+          ],
+          "relatedTopics": [
+            "retrieval-strategies",
+            "building-a-rag-pipeline",
+            "rag-in-production",
+            "evaluating-rag"
+          ]
+        },
+        {
+          "id": "retrieval-strategies",
+          "title": "Retrieval: Semantic, Keyword (BM25) and Hybrid Search",
+          "level": "intermediate",
+          "description": "How to find the right chunks: dense semantic search, sparse keyword search with BM25, and combining both with reciprocal rank fusion.",
+          "prerequisites": [
+            "embeddings",
+            "vector-databases"
+          ],
+          "relatedTopics": [
+            "reranking",
+            "building-a-rag-pipeline",
+            "advanced-rag-techniques",
+            "evaluating-rag"
+          ]
+        },
+        {
+          "id": "reranking",
+          "title": "Reranking",
+          "level": "intermediate",
+          "description": "Two-stage retrieval: fetch many candidates cheaply, then reorder them with a slower, smarter cross-encoder or LLM so the best chunks reach the prompt.",
+          "prerequisites": [
+            "retrieval-strategies",
+            "embeddings"
+          ],
+          "relatedTopics": [
+            "building-a-rag-pipeline",
+            "retrieval-strategies",
+            "evaluating-rag",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "building-a-rag-pipeline",
+          "title": "Building a Complete RAG Pipeline",
+          "level": "intermediate",
+          "description": "End to end: load, clean, chunk, embed and store documents, then retrieve, rerank, build a grounded prompt and get a cited answer from Claude - as a full Python project and a runnable offline JavaScript version.",
+          "prerequisites": [
+            "what-is-rag",
+            "embeddings",
+            "calling-an-llm-api",
+            "document-loading",
+            "chunking",
+            "vector-databases",
+            "retrieval-strategies",
+            "reranking"
+          ],
+          "relatedTopics": [
+            "grounded-generation-and-citations",
+            "conversational-rag",
+            "rag-in-production",
+            "evaluating-rag",
+            "capstone-docs-assistant",
+            "agentic-rag"
+          ]
+        },
+        {
+          "id": "grounded-generation-and-citations",
+          "title": "Grounded Answers and Citations",
+          "level": "intermediate",
+          "description": "Getting the model to answer only from retrieved context, say 'I don't know' when it should, cite its sources, and checking those citations in code.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "prompting-basics",
+            "hallucinations-and-limitations",
+            "structured-output"
+          ],
+          "relatedTopics": [
+            "building-a-rag-pipeline",
+            "evaluating-rag",
+            "ai-security",
+            "hallucinations-and-limitations",
+            "conversational-rag"
+          ]
+        },
+        {
+          "id": "conversational-rag",
+          "title": "Conversational RAG",
+          "level": "intermediate",
+          "description": "Making RAG work in a chat: follow-up questions, rewriting them into standalone search queries, managing chat history, and deciding when to retrieve at all.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "calling-an-llm-api",
+            "structured-output"
+          ],
+          "relatedTopics": [
+            "agent-memory",
+            "agentic-rag",
+            "advanced-rag-techniques",
+            "grounded-generation-and-citations",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "rag-in-production",
+          "title": "RAG in Production",
+          "level": "intermediate",
+          "description": "Keeping a RAG system correct, fresh, secure, fast and observable: incremental re-indexing, deletions, permissions, caching, latency budgets and monitoring.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "vector-databases",
+            "grounded-generation-and-citations"
+          ],
+          "relatedTopics": [
+            "evaluating-rag",
+            "observability-and-debugging",
+            "cost-and-latency",
+            "ai-security",
+            "capstone-docs-assistant"
+          ]
+        },
+        {
+          "id": "what-is-an-agent",
+          "title": "What is an AI Agent?",
+          "level": "beginner",
+          "description": "An LLM that decides its own next steps in a loop, using tools, until a goal is done - and when a simpler design is better.",
+          "prerequisites": [
+            "how-llms-work",
+            "calling-an-llm-api"
+          ],
+          "relatedTopics": [
+            "tool-use",
+            "the-agent-loop",
+            "workflow-patterns",
+            "build-an-agent-from-scratch",
+            "ai-security"
+          ]
+        },
+        {
+          "id": "tool-use",
+          "title": "Tool Use and Function Calling",
+          "level": "intermediate",
+          "description": "How an LLM asks your code to run functions: tool definitions, JSON Schema inputs, tool_use and tool_result blocks.",
+          "prerequisites": [
+            "what-is-an-agent",
+            "calling-an-llm-api",
+            "structured-output"
+          ],
+          "relatedTopics": [
+            "the-agent-loop",
+            "build-an-agent-from-scratch",
+            "model-context-protocol",
+            "structured-output",
+            "ai-security"
+          ]
+        },
+        {
+          "id": "the-agent-loop",
+          "title": "The Agent Loop",
+          "level": "intermediate",
+          "description": "Perceive, think, act, observe - repeated: the loop at the heart of every agent, ReAct, and how and when it must stop.",
+          "prerequisites": [
+            "tool-use"
+          ],
+          "relatedTopics": [
+            "build-an-agent-from-scratch",
+            "agent-memory",
+            "evaluating-agents",
+            "observability-and-debugging",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "build-an-agent-from-scratch",
+          "title": "Build an Agent from Scratch",
+          "level": "intermediate",
+          "description": "Step by step: a real command-line agent with file, calculator and notes tools, a guarded loop, error handling, logging and human approval.",
+          "prerequisites": [
+            "tool-use",
+            "the-agent-loop"
+          ],
+          "relatedTopics": [
+            "what-is-an-agent",
+            "agent-memory",
+            "model-context-protocol",
+            "ai-security",
+            "evaluating-agents",
+            "capstone-docs-assistant"
+          ]
+        },
+        {
+          "id": "agent-memory",
+          "title": "Agent Memory",
+          "level": "intermediate",
+          "description": "How agents remember: the context window as working memory, summarization and compaction, and long-term stores with retrieval.",
+          "prerequisites": [
+            "the-agent-loop",
+            "tokens-and-context-windows",
+            "embeddings"
+          ],
+          "relatedTopics": [
+            "agentic-rag",
+            "conversational-rag",
+            "vector-databases",
+            "cost-and-latency",
+            "build-an-agent-from-scratch"
+          ]
+        },
+        {
+          "id": "model-context-protocol",
+          "title": "Model Context Protocol (MCP)",
+          "level": "intermediate",
+          "description": "An open standard for plugging tools, data and prompts into any AI application through MCP servers.",
+          "prerequisites": [
+            "tool-use"
+          ],
+          "relatedTopics": [
+            "tool-use",
+            "build-an-agent-from-scratch",
+            "ai-security",
+            "multi-agent-systems"
+          ]
+        },
+        {
+          "id": "agentic-rag",
+          "title": "Agentic RAG",
+          "level": "intermediate",
+          "description": "Retrieval as a tool: the model decides when to search, what to search for, and when it has enough to answer.",
+          "prerequisites": [
+            "what-is-rag",
+            "retrieval-strategies",
+            "the-agent-loop"
+          ],
+          "relatedTopics": [
+            "building-a-rag-pipeline",
+            "advanced-rag-techniques",
+            "tool-use",
+            "evaluating-rag",
+            "conversational-rag"
+          ]
+        },
+        {
+          "id": "workflow-patterns",
+          "title": "Workflow Patterns",
+          "level": "intermediate",
+          "description": "Five proven ways to compose LLM calls in code: prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer.",
+          "prerequisites": [
+            "calling-an-llm-api",
+            "what-is-an-agent"
+          ],
+          "relatedTopics": [
+            "what-is-an-agent",
+            "multi-agent-systems",
+            "structured-output",
+            "agentic-rag",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "multi-agent-systems",
+          "title": "Multi-Agent Systems",
+          "level": "advanced",
+          "description": "Several LLM agents with separate contexts and roles working together - when that helps, how to structure it, and what it costs.",
+          "prerequisites": [
+            "the-agent-loop",
+            "workflow-patterns"
+          ],
+          "relatedTopics": [
+            "workflow-patterns",
+            "agentic-rag",
+            "evaluating-agents",
+            "ai-security",
+            "observability-and-debugging",
+            "cost-and-latency"
+          ]
+        },
+        {
+          "id": "evaluating-rag",
+          "title": "Evaluating RAG",
+          "level": "advanced",
+          "description": "Measure retrieval with recall@k, precision@k, MRR and nDCG, and answers with faithfulness and relevance, using a golden dataset and LLM-as-judge.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "retrieval-strategies",
+            "structured-output",
+            "grounded-generation-and-citations"
+          ],
+          "relatedTopics": [
+            "evaluating-agents",
+            "advanced-rag-techniques",
+            "reranking",
+            "observability-and-debugging",
+            "hallucinations-and-limitations"
+          ]
+        },
+        {
+          "id": "evaluating-agents",
+          "title": "Evaluating Agents",
+          "level": "advanced",
+          "description": "Test agents on task success, trajectories, tool-call accuracy and step/cost budgets, with repeated trials and regression suites.",
+          "prerequisites": [
+            "the-agent-loop",
+            "tool-use",
+            "evaluating-rag"
+          ],
+          "relatedTopics": [
+            "build-an-agent-from-scratch",
+            "observability-and-debugging",
+            "ai-security",
+            "workflow-patterns",
+            "multi-agent-systems"
+          ]
+        },
+        {
+          "id": "advanced-rag-techniques",
+          "title": "Advanced RAG Techniques",
+          "level": "advanced",
+          "description": "Multi-query, HyDE, parent-child (small-to-big), contextual retrieval, metadata filtering, query routing and the GraphRAG idea.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "retrieval-strategies",
+            "reranking",
+            "evaluating-rag"
+          ],
+          "relatedTopics": [
+            "chunking",
+            "vector-databases",
+            "conversational-rag",
+            "agentic-rag",
+            "cost-and-latency",
+            "rag-in-production"
+          ]
+        },
+        {
+          "id": "ai-security",
+          "title": "AI Security: Prompt Injection and Guardrails",
+          "level": "advanced",
+          "description": "Direct and indirect prompt injection, data exfiltration through tools and links, and layered defenses: least privilege, approval, separation and validation.",
+          "prerequisites": [
+            "tool-use",
+            "the-agent-loop",
+            "agentic-rag"
+          ],
+          "relatedTopics": [
+            "model-context-protocol",
+            "rag-in-production",
+            "evaluating-agents",
+            "observability-and-debugging",
+            "structured-output"
+          ]
+        },
+        {
+          "id": "cost-and-latency",
+          "title": "Cost, Latency and Prompt Caching",
+          "level": "advanced",
+          "description": "Tokens drive cost and latency; cut both with prompt caching, batching, streaming, smaller prompts, smaller models and lower effort.",
+          "prerequisites": [
+            "tokens-and-context-windows",
+            "calling-an-llm-api",
+            "sampling-and-model-settings"
+          ],
+          "relatedTopics": [
+            "rag-in-production",
+            "observability-and-debugging",
+            "advanced-rag-techniques",
+            "agent-memory",
+            "workflow-patterns"
+          ]
+        },
+        {
+          "id": "fine-tuning-vs-rag",
+          "title": "Fine-tuning vs RAG vs Prompting",
+          "level": "advanced",
+          "description": "A decision guide: what prompting, retrieval and fine-tuning each change, what they cost, and which problem each actually solves.",
+          "prerequisites": [
+            "what-is-rag",
+            "how-llms-work",
+            "prompting-basics",
+            "evaluating-rag"
+          ],
+          "relatedTopics": [
+            "building-a-rag-pipeline",
+            "cost-and-latency",
+            "structured-output",
+            "tokens-and-context-windows",
+            "advanced-rag-techniques"
+          ]
+        },
+        {
+          "id": "observability-and-debugging",
+          "title": "Observability and Debugging LLM Apps",
+          "level": "advanced",
+          "description": "Trace every model and tool call with inputs, outputs, tokens and latency; log structurally; classify failures and debug from traces.",
+          "prerequisites": [
+            "calling-an-llm-api",
+            "the-agent-loop",
+            "rag-in-production"
+          ],
+          "relatedTopics": [
+            "evaluating-rag",
+            "evaluating-agents",
+            "cost-and-latency",
+            "ai-security",
+            "hallucinations-and-limitations"
+          ]
+        },
+        {
+          "id": "capstone-docs-assistant",
+          "title": "Capstone: Build a Documentation Assistant",
+          "level": "advanced",
+          "description": "A guided end-to-end project: ingest docs, hybrid retrieval, grounded answers with citations, an agent that searches and reads files, evals, guardrails and a deployment checklist.",
+          "prerequisites": [
+            "building-a-rag-pipeline",
+            "build-an-agent-from-scratch",
+            "evaluating-rag",
+            "ai-security"
+          ],
+          "relatedTopics": [
+            "grounded-generation-and-citations",
+            "agentic-rag",
+            "evaluating-agents",
+            "observability-and-debugging",
+            "cost-and-latency",
+            "rag-in-production",
+            "advanced-rag-techniques",
+            "model-context-protocol"
+          ]
+        }
+      ]
     }
   ],
   "problems": [

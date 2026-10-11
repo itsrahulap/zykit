@@ -1582,4 +1582,764 @@ QUERY (every question)
     relatedTopics: ["grounded-generation-and-citations", "conversational-rag", "rag-in-production", "evaluating-rag", "capstone-docs-assistant", "agentic-rag"],
     keywords: ["rag pipeline", "ingestion", "indexing", "chunking", "embeddings", "chroma", "sentence-transformers", "pypdf", "cross-encoder", "reranking", "grounded prompt", "citations", "anthropic sdk", "end to end", "retrieval augmented generation"],
   },
+
+  {
+    id: "grounded-generation-and-citations",
+    title: "Grounded Answers and Citations",
+    level: "intermediate",
+    description: "Getting the model to answer only from retrieved context, say 'I don't know' when it should, cite its sources, and checking those citations in code.",
+    explanation: md(
+      "Retrieval puts the right text in front of the model. **Grounded generation** is making sure the model actually *uses* that text - and only that text - to answer. An answer is **grounded** (or *faithful*) when every claim in it is supported by the provided sources. An answer that sounds right but includes facts not in the sources is **ungrounded**, even if those facts happen to be true; it means the model filled gaps from its training data or invented them (see hallucinations-and-limitations).",
+      "Grounding matters because the whole point of RAG is **trust**: users (and auditors) must be able to check where each statement came from. If the model mixes your up-to-date policy with its general knowledge about 'typical' policies, the answer can be confidently wrong in exactly the way RAG was supposed to prevent.",
+      "**The grounding toolkit:**",
+      "- **Clear instructions in the system prompt**: answer only from the sources; do not use outside knowledge; if the sources do not contain the answer, say so with an exact sentence; if sources conflict, say so and cite both.\n- **Well-delimited, numbered sources**: wrap each chunk in tags like `<source id=\"2\" file=\"handbook.pdf\" page=\"4\">...</source>` so the model can refer to them unambiguously, and put the question after the sources.\n- **A permitted way out**: models tend to answer *something* when asked a question. Explicitly allowing - and asking for - 'I don't know based on the provided documents' reduces made-up answers. Using an exact sentence lets code detect it.\n- **Citations**: require a marker such as `[2]` after every factual sentence. Citations make answers verifiable, and the requirement itself nudges the model to stay close to the sources.\n- **Quote first, then answer**: for high-stakes questions, ask the model to first extract the exact quotes that answer the question, then write the answer based only on those quotes. Quotes can be checked mechanically.\n- **Validation in code**: check that every cited number refers to a source that was actually sent, that quotes appear verbatim in their source, and flag sentences with no citation.",
+      "**Built-in citations.** The Claude API can also produce citations natively: pass each source as a `document` content block with `\"citations\": {\"enabled\": True}`, and the response's text blocks come back with a `citations` list pointing to the exact cited passage (`cited_text`) and which document it came from. This avoids parsing `[n]` markers and guarantees the cited text really exists in the document.",
+      "**'I don't know' has two layers.** The *retrieval layer* can decline before calling the model, when no chunk scores above a threshold. The *generation layer* declines when chunks were retrieved but none answers the question. You want both: the first saves cost, the second catches 'related but not answering' context. Track how often each happens - too many declines usually means a retrieval problem, too few may mean the model is guessing.",
+      "Grounding is never perfect. Treat citations as a strong signal, measure **faithfulness** on an evaluation set (see evaluating-rag), and design the UI so users can open the cited source.",
+    ),
+    analogy:
+      "Think of an open-book exam with a strict examiner. The student (the model) may only use the pages handed to them (the retrieved sources), must write the page number next to every statement (citations), and gets marks for writing 'not covered in the provided material' rather than guessing. The examiner (your validation code) checks that every page number exists and that quoted lines really appear on that page.",
+    examples: [
+      {
+        title: "Validate an answer's citations: missing, invalid and unsupported claims",
+        code: `const sources = [
+  { id: 1, file: "handbook.pdf", page: 4, text: "Employees receive 25 days of annual leave per year." },
+  { id: 2, file: "handbook.pdf", page: 5, text: "Up to 5 unused days can be carried over to the next year." },
+];
+
+// Three answers a model might return
+const answers = {
+  good: "You get 25 days of annual leave per year [1]. Up to 5 unused days can be carried over [2].",
+  sloppy: "You get 25 days of annual leave [1]. Most companies also give 10 public holidays.",
+  invalid: "You get 25 days of leave [1]. Unused days never expire [3].",
+};
+
+const words = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(" ").filter((w) => w.length > 2);
+
+function checkAnswer(answer) {
+  const report = [];
+  const sentences = answer.split(/(?<=[.!?])\\s+/).filter(Boolean);
+  for (const sentence of sentences) {
+    const ids = (sentence.match(/\\[(\\d+)\\]/g) || []).map((m) => Number(m.slice(1, -1)));
+    const claim = sentence.replace(/\\s*\\[\\d+\\]/g, "").trim();
+    if (ids.length === 0) { report.push("NO CITATION   : " + claim); continue; }
+    const bad = ids.filter((id) => !sources.some((s) => s.id === id));
+    if (bad.length) { report.push("INVALID [" + bad + "] : " + claim); continue; }
+    // crude support check: share of the claim's words found in the cited sources
+    const cited = ids.map((id) => sources.find((s) => s.id === id).text).join(" ");
+    const cw = words(claim);
+    const support = cw.filter((w) => words(cited).includes(w)).length / cw.length;
+    report.push((support >= 0.5 ? "OK " : "WEAK") + " (" + support.toFixed(2) + ")  : " + claim);
+  }
+  return report;
+}
+
+for (const [name, answer] of Object.entries(answers)) {
+  console.log("--- " + name + " ---");
+  for (const line of checkAnswer(answer)) console.log("  " + line);
+}`,
+        explanation: "Cheap, deterministic checks catch a lot: sentences with no citation (the 'public holidays' claim came from the model's general knowledge, not the sources), citations to sources that do not exist ([3], attached to a claim that actually contradicts source 2), and - via the support score - claims whose words barely appear in the cited source. Production systems add an LLM-as-judge faithfulness check for meaning, not just words (see evaluating-rag).",
+        walkthrough: [
+          { code: "answer.split(/(?<=[.!?])\\s+/)", explanation: "Split the answer into sentences; each factual sentence should carry its own citation." },
+          { code: "sentence.match(/\\[(\\d+)\\]/g)", explanation: "Extract the [n] markers in this sentence." },
+          { code: "!sources.some((s) => s.id === id)", explanation: "A citation to a source number we never sent is invalid - the model made it up." },
+          { code: "support = ... / cw.length", explanation: "A rough lexical support score: how many of the claim's words appear in the cited text. Low support flags a claim for review." },
+        ],
+      },
+      {
+        title: "Quote-first prompting with a fake llm(), and mechanical quote checking",
+        code: `const sources = {
+  1: "Refunds are available within 30 days of purchase. Items must be unused.",
+  2: "Digital downloads are not refundable once the download has started.",
+};
+
+function buildPrompt(question) {
+  const blocks = Object.entries(sources).map(([id, t]) => '<source id="' + id + '">' + t + "</source>").join("\\n");
+  return [
+    "<sources>", blocks, "</sources>",
+    "Question: " + question,
+    "First, copy the exact sentences from the sources that answer the question into <quotes>, each as [id] \\"sentence\\".",
+    "Then answer in <answer> using only those quotes, citing [id]. If there are no relevant quotes, answer: I don't know.",
+  ].join("\\n");
+}
+
+// Fake model reply (a real model would generate this). Note the second quote is slightly altered.
+function llm(prompt) {
+  return "<quotes>\\n[1] \\"Refunds are available within 30 days of purchase.\\"\\n" +
+         "[2] \\"Digital downloads are never refundable.\\"\\n</quotes>\\n" +
+         "<answer>You can get a refund within 30 days [1], but not for digital downloads once started [2].</answer>";
+}
+
+const reply = llm(buildPrompt("Can I get a refund on an ebook I bought 10 days ago?"));
+const quotes = [...reply.matchAll(/\\[(\\d+)\\] "([^"]+)"/g)].map((m) => ({ id: m[1], text: m[2] }));
+for (const q of quotes) {
+  const verbatim = (sources[q.id] || "").includes(q.text);
+  console.log((verbatim ? "VERIFIED " : "NOT FOUND") + " [" + q.id + "] " + q.text);
+}
+console.log("Answer:", reply.match(/<answer>([\\s\\S]*)<\\/answer>/)[1]);`,
+        explanation: "Asking for exact quotes before the answer makes grounding checkable: quotes are verified with a plain substring search. Here the second 'quote' paraphrases the source and changes its meaning ('never' vs 'once the download has started'), and the check catches it. A real pipeline would retry, drop the claim, or show a warning.",
+      },
+      {
+        title: "Native citations with Claude's document blocks (Python)",
+        language: "python",
+        code: `import anthropic
+
+client = anthropic.Anthropic()
+
+chunks = [   # e.g. the top results from your retriever
+    {"title": "handbook.pdf p4", "text": "Employees receive 25 days of annual leave per year."},
+    {"title": "handbook.pdf p5", "text": "Up to 5 unused days can be carried over to the next year. Carried-over days expire on 31 March."},
+]
+
+content = [
+    {
+        "type": "document",
+        "source": {"type": "text", "media_type": "text/plain", "data": c["text"]},
+        "title": c["title"],
+        "citations": {"enabled": True},
+    }
+    for c in chunks
+]
+content.append({"type": "text", "text": "How much leave can I carry over, and until when can I use it?"})
+
+resp = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=16000,
+    system="Answer only from the provided documents. If they do not contain the answer, say you don't know.",
+    messages=[{"role": "user", "content": content}],
+)
+
+for block in resp.content:
+    if block.type == "text":
+        print(block.text, end="")
+        for cite in block.citations or []:
+            print(f' [{cite.document_title}: "{cite.cited_text}"]', end="")
+print()`,
+        explanation: "Each text block in the response may carry a citations list; every citation names the document it came from (document_title, document_index) and includes cited_text, the exact passage from that document. Because the API extracts the cited text from your documents, you do not need to parse [n] markers or verify quotes yourself - you render the text and its citations, for example as footnotes.",
+      },
+      {
+        title: "Structured grounded answers with quotes, validated in code (Python)",
+        language: "python",
+        code: `import anthropic
+from pydantic import BaseModel
+
+client = anthropic.Anthropic()
+
+class Claim(BaseModel):
+    sentence: str            # one sentence of the answer
+    source_id: int           # which numbered source supports it
+    quote: str               # exact text copied from that source
+
+class GroundedAnswer(BaseModel):
+    answerable: bool         # false if the sources do not contain the answer
+    claims: list[Claim]
+
+def grounded_answer(question: str, sources: list[str]) -> GroundedAnswer:
+    numbered = "\\n".join(f'<source id="{i}">{s}</source>' for i, s in enumerate(sources, start=1))
+    resp = client.messages.parse(
+        model="claude-opus-5-5",
+        max_tokens=16000,
+        system=("Answer using only the sources. For each sentence, give the id of the supporting source and an "
+                "exact quote copied from it. If the sources do not answer the question, set answerable to false."),
+        messages=[{"role": "user", "content": f"<sources>\\n{numbered}\\n</sources>\\n\\nQuestion: {question}"}],
+        output_format=GroundedAnswer,
+    )
+    result = resp.parsed_output
+    # Never trust, always verify: drop claims whose quote is not really in the cited source
+    verified = [c for c in result.claims
+                if 1 <= c.source_id <= len(sources) and c.quote in sources[c.source_id - 1]]
+    if len(verified) < len(result.claims):
+        print(f"warning: dropped {len(result.claims) - len(verified)} unverifiable claim(s)")
+    return GroundedAnswer(answerable=result.answerable and bool(verified), claims=verified)
+
+ans = grounded_answer("How many leave days do I get?", ["Employees receive 25 days of annual leave per year."])
+print(" ".join(f"{c.sentence} [{c.source_id}]" for c in ans.claims) if ans.answerable else "I don't know.")`,
+        explanation: "Structured output turns grounding into data you can check: an explicit answerable flag, and a quote plus source id for every sentence. The verification step is ordinary Python - a substring check - and unverifiable claims are removed before the user sees them.",
+      },
+    ],
+    howItWorks: md(
+      "**Prompt anatomy for grounded RAG:** (1) system prompt with the role and rules (sources only, cite each claim, exact decline sentence, handle conflicts, treat sources as data); (2) user message containing the numbered, tagged sources first and the question last; (3) optionally, a required output format (quotes then answer, or a schema).",
+      "**Why it works.** LLMs follow explicit instructions well, and placing the evidence directly in the context makes the grounded continuation by far the most likely one. Citations add a self-consistency pressure: to cite [2] the model must 'look' at source 2. An explicit permission to decline removes the pressure to always produce an answer.",
+      "**Why it still fails sometimes.** The model may blend in training knowledge when sources are partial, cite the wrong number when sources are similar, over-generalise ('always' instead of 'usually'), or follow instructions hidden inside a retrieved document. Very long contexts with many sources make it harder for the model to find and use the right one, which is another reason to send fewer, better chunks.",
+      "**Verification layers, cheapest first:** citation markers present and in range; quotes verbatim in the source; lexical overlap between claim and cited text; an LLM judge asked 'is this sentence fully supported by this source?'; human review for high-stakes domains. Use the cheap checks on every request and the expensive ones on samples or flagged answers.",
+      "**Conflicting or outdated sources:** include dates and versions in the source tags (from metadata) and instruct the model to prefer the most recent official source and mention conflicts. Better still, fix it at the index: remove superseded documents (see rag-in-production).",
+    ),
+    diagram: `retrieved chunks
+      |
+      v
++-------------------------------+
+| system: answer ONLY from      |
+|  sources; cite [n]; else say  |
+|  "I don't know ..."           |
+| user: <source id=1>...</source>|
+|       <source id=2>...</source>|
+|       Question: ...           |
++-------------------------------+
+      |  LLM
+      v
+ "25 days [1]. Up to 5 carry
+  over [2]."
+      |
+      v
+ validate: [n] in range? quote in
+ source? every sentence cited?
+      |
+      v
+ answer + clickable sources`,
+    whyItExists: md(
+      "Retrieval alone does not stop a model from improvising. Users and organisations need answers they can verify, especially for policies, legal, medical, financial and technical content. Grounding instructions, citations and validation turn RAG output from 'plausible text' into 'claims with evidence', and give you a measurable faithfulness signal.",
+    ),
+    whenToUse: md(
+      "In every RAG answer that a person might act on. Use [n] citations for simple pipelines, native document citations when you want exact cited passages without parsing, quote-first or structured claims for high-stakes domains, and always pair them with code-level validation and a decline path.",
+    ),
+    whenNotToUse: md(
+      "Strict 'sources only' grounding is wrong for creative or general tasks where the model's own knowledge is the point (brainstorming, drafting, explaining a general concept); there, retrieval is optional context, not a constraint. Do not require citations for chit-chat turns like 'thanks!' - route those around the RAG path.",
+    ),
+    commonMistakes: [
+      "Telling the model to 'use the context' without forbidding outside knowledge or giving it a way to decline.",
+      "Putting sources after the question with no delimiters, so the model cannot tell sources apart or cite them.",
+      "Trusting [n] markers without checking they are in range and actually support the sentence.",
+      "Using a vague decline instruction ('say if unsure'), which makes declines impossible to detect in code and metrics.",
+      "Including stale or conflicting documents and expecting the prompt to sort them out.",
+      "Letting instructions inside retrieved documents override the system prompt (indirect prompt injection).",
+      "Never measuring faithfulness, so grounding regressions go unnoticed when prompts or models change.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Write a grounded system prompt for an HR assistant that answers only from sources, cites [n], uses an exact decline sentence, and prefers the newest source when two conflict." },
+      { difficulty: "Easy", prompt: "Add a fourth answer to the validation demo that cites [2] for a claim that is really in source 1. Does the support check notice? How could you improve it?" },
+      { difficulty: "Medium", prompt: "Extend the quote-first demo so that when a quote is NOT FOUND, the corresponding sentence is removed from the answer and a note 'some content was removed because it could not be verified' is added." },
+      { difficulty: "Medium", prompt: "Run the native citations example with three chunks where one is irrelevant. Print, for each citation, the document title and cited text, and confirm the irrelevant chunk is never cited." },
+      { difficulty: "Hard", prompt: "Build a faithfulness checker: for each answer sentence and its cited source, call Claude with structured output {supported: bool, reason: str}. Run it on 20 answers from your RAG pipeline and report the percentage of supported sentences." },
+    ],
+    interviewQuestions: [
+      { question: "What does it mean for a RAG answer to be grounded or faithful?", answer: "Every claim in the answer is supported by the provided sources. Faithfulness is about consistency with the context, not about real-world truth: an answer can be true but unfaithful (from training knowledge), or faithful but wrong (if the source is wrong). RAG systems aim for faithfulness to authoritative sources." },
+      { question: "How do you get a model to say 'I don't know'?", answer: "Explicitly permit and request it in the system prompt with an exact sentence, instruct it not to use outside knowledge, and add a retrieval-level threshold so nothing is sent when no chunk is relevant. Then measure decline rates on answerable and unanswerable test questions." },
+      { question: "How would you implement citations?", answer: "Number and tag each source in the prompt and require [n] after every factual sentence, then parse and validate the markers and map them to document and page metadata. Alternatively use the API's native document citations, which return the exact cited text and the document it came from. For high stakes, require exact quotes and verify them by substring match." },
+      { question: "Why validate citations in code?", answer: "Models can cite non-existent sources, the wrong source, or paraphrase a source in a way that changes its meaning. Cheap deterministic checks (range, verbatim quotes, lexical overlap) catch many of these before users see them and provide metrics for monitoring." },
+      { question: "What is quote-first prompting?", answer: "Asking the model to first extract the exact passages from the sources that answer the question, and only then compose an answer based on those quotes. It makes the model focus on evidence, and the quotes can be verified mechanically." },
+      { question: "How do you handle conflicting sources?", answer: "Prevent it at the index by removing superseded documents and tracking versions; include dates and authority in source metadata; instruct the model to prefer the most recent authoritative source and to mention conflicts while citing both; and flag such answers for review." },
+    ],
+    prerequisites: ["building-a-rag-pipeline", "prompting-basics", "hallucinations-and-limitations", "structured-output"],
+    relatedTopics: ["building-a-rag-pipeline", "evaluating-rag", "ai-security", "hallucinations-and-limitations", "conversational-rag"],
+    keywords: ["grounding", "grounded generation", "faithfulness", "citations", "i don't know", "quote extraction", "hallucination", "source attribution", "document blocks", "cited_text", "validation", "prompt"],
+  },
+
+  {
+    id: "conversational-rag",
+    title: "Conversational RAG",
+    level: "intermediate",
+    description: "Making RAG work in a chat: follow-up questions, rewriting them into standalone search queries, managing chat history, and deciding when to retrieve at all.",
+    explanation: md(
+      "A single-question RAG pipeline breaks the moment users start chatting. Turn 1: 'How many days of annual leave do employees get?' - works. Turn 2: 'And what about contractors?' - the retriever embeds *'And what about contractors?'*, which says nothing about leave, and returns chunks about contractor invoicing. Turn 3: 'Can I carry it over?' - *it* refers to leave, two turns ago. Follow-up questions are full of **references to earlier turns** (pronouns like *it* and *that*, ellipsis like 'what about X?') that only make sense with the conversation history.",
+      "**Conversational RAG** solves two separate problems:",
+      "- **Retrieving correctly for a follow-up.** The search query must be *standalone*: understandable without the chat. The standard technique is **query rewriting** (also called *query condensing* or *contextualisation*): before retrieving, ask an LLM to rewrite the latest message, given the recent history, into a self-contained question - 'How many days of annual leave do contractors get?'. You search with the rewritten question but still answer the user's actual message.\n- **Answering in context.** The LLM API is stateless (see calling-an-llm-api): you must send the conversation history on every turn so the model knows what 'it' and 'that' mean and can keep a consistent tone. The freshly retrieved sources go into the *current* turn.",
+      "**Why not just embed the whole conversation?** Concatenating all previous turns into the search query drags in old topics: after discussing leave and then switching to expenses, the query still 'smells' of leave. Embedding only the last message loses references. Rewriting gets the best of both - it pulls in exactly the context that the latest message depends on and nothing else. A cheap fallback is to embed the last user message plus the previous user message, but rewriting is more reliable.",
+      "**Managing history.** Every turn adds tokens, and every token is resent each turn, so cost and latency grow with conversation length, and eventually you hit the context window (see tokens-and-context-windows). Common strategies:",
+      "- **Do not keep old retrieved sources in history.** Store each past turn as just the user's question and the assistant's answer. Sources for the current question are retrieved fresh. This alone saves most of the tokens.\n- **Sliding window**: keep only the last N turns verbatim.\n- **Summary memory**: when history gets long, replace the oldest turns with an LLM-written summary ('The user is a contractor in Germany asking about leave and expenses').\n- **Keep the rewrite input small**: the rewriter usually needs only the last few turns.",
+      "**Deciding whether to retrieve.** Not every message needs a search: 'thanks!', 'make that shorter', or 'translate your answer into Spanish' should be answered from the conversation alone. A rewriting step can also output a flag such as `needs_retrieval`, so you skip the search for chit-chat and edits. This is a small step towards agentic RAG, where the model decides when and what to search (see agentic-rag).",
+      "**Citations across turns.** Source numbers restart every turn, because each turn has its own retrieved set. Store the citations with each answer in your application (not in the prompt) so the UI can still show sources for older messages.",
+    ),
+    analogy:
+      "Imagine a librarian with a colleague in the archive who has never heard your conversation. You tell the librarian 'and what about contractors?'. A bad librarian shouts exactly that down to the archive and gets random files about contractors. A good librarian translates it first: 'Find the annual leave policy for contractors', because they remember what you were talking about. Then they answer you in the flow of the conversation. Query rewriting is that translation step.",
+    examples: [
+      {
+        title: "Why follow-ups break retrieval, and how rewriting fixes it",
+        code: `const chunks = [
+  "Employees receive 25 days of annual leave per year.",
+  "Contractors are not entitled to paid annual leave; they invoice for days worked.",
+  "Contractors must submit invoices by the 5th of each month; late contractor invoices are paid next cycle.",
+  "Unbilled hours carry over to the next invoice.",
+  "Up to 5 unused days of annual leave carry over to the next year.",
+];
+const stop = new Set(["and", "what", "about", "the", "how", "many", "do", "get", "can", "it", "of", "per", "a", "i", "they", "to"]);
+const words = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(" ")
+  .filter((w) => w && !stop.has(w)).map((w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w));
+
+function search(query) {   // toy retriever: count shared words
+  const q = new Set(words(query));
+  return chunks.map((c) => ({ c, s: words(c).filter((w) => q.has(w)).length }))
+    .sort((a, b) => b.s - a.s)[0].c;
+}
+
+// Fake rewriter: a real system sends history + latest message to an LLM with a rewrite instruction
+function rewrite(history, latest) {
+  const topic = "annual leave";                       // what the LLM would infer from history
+  if (/what about (\\w+)/i.test(latest)) return "How many days of " + topic + " do " + latest.match(/what about (\\w+)/i)[1] + " get?";
+  if (/\\bit\\b/i.test(latest)) return latest.replace(/\\bit\\b/i, "unused " + topic);
+  return latest;
+}
+
+const history = [{ role: "user", content: "How many days of annual leave do employees get?" },
+                 { role: "assistant", content: "Employees receive 25 days per year [1]." }];
+
+for (const latest of ["And what about contractors?", "Can I carry it over?"]) {
+  const standalone = rewrite(history, latest);
+  console.log("User:       " + latest);
+  console.log("  raw search      -> " + search(latest));
+  console.log("  rewritten query :  " + standalone);
+  console.log("  rewritten search-> " + search(standalone));
+}`,
+        explanation: "Searching with the raw follow-up 'And what about contractors?' finds the invoicing chunk, because the only content word is 'contractors' and that chunk mentions it twice. The rewritten, standalone question finds the chunk that actually answers it. 'Can I carry it over?' is similar: 'it' carries no meaning for a retriever, so the raw search matches a chunk about unbilled hours carrying over. The fake rewriter uses rules only to stay offline; a real LLM handles arbitrary phrasing.",
+        walkthrough: [
+          { code: "search(latest)", explanation: "What a naive pipeline does: embed or match the user's latest message as-is." },
+          { code: "rewrite(history, latest)", explanation: "Turns the follow-up into a standalone question using the conversation. In production this is a short LLM call." },
+          { code: "search(standalone)", explanation: "Retrieval uses the rewritten question; the answer step still sees the user's real message and the history." },
+        ],
+      },
+      {
+        title: "A chat loop with fresh sources per turn and bounded history",
+        code: `const MAX_HISTORY_TURNS = 2;            // keep the last 2 user/assistant pairs verbatim
+const approxTokens = (s) => Math.ceil(s.length / 4);   // rough rule of thumb for English
+
+function retrieve(q) { return ["(top chunks for: " + q + ")"]; }       // stand-in retriever
+function rewrite(history, msg) { return history.length ? msg + " [made standalone]" : msg; }
+function llm(messages) { return "Answer to: " + messages[messages.length - 1].content.split("Question: ")[1]; }
+
+let summary = "";
+const history = [];                      // stores ONLY questions and answers, never old sources
+
+function chat(userMessage) {
+  const query = rewrite(history, userMessage);
+  const sources = retrieve(query);
+  // Sources go into the CURRENT user turn only
+  const current = { role: "user", content: "<sources>" + sources.join(" ") + "</sources>\\nQuestion: " + userMessage };
+  const messages = [...history, current];
+  const system = "Answer from the sources. Conversation summary so far: " + (summary || "(none)");
+  const answer = llm(messages);
+
+  history.push({ role: "user", content: userMessage }, { role: "assistant", content: answer });
+  while (history.length > MAX_HISTORY_TURNS * 2) {          // fold the oldest pair into the summary
+    const [q, a] = history.splice(0, 2);
+    summary += " User asked: " + q.content + " Assistant said: " + a.content + ".";   // an LLM would summarise
+  }
+  const sent = approxTokens(system) + messages.reduce((n, m) => n + approxTokens(m.content), 0);
+  console.log("turn: " + JSON.stringify(userMessage) + " | messages sent: " + messages.length + " | ~tokens: " + sent);
+  return answer;
+}
+
+["How many leave days do employees get?", "What about contractors?", "Can they carry it over?",
+ "Thanks! And how do I submit expenses?", "What is the deadline for that?"].forEach(chat);
+console.log("history kept verbatim:", history.length / 2, "turns");
+console.log("summary:", summary.trim());`,
+        explanation: "History holds only questions and answers, so each turn sends a bounded number of messages no matter how long the conversation runs; older turns survive as a summary in the system prompt. Sources are retrieved fresh for the current question and never accumulate. In a real app the summary is written by an LLM and messages strictly alternate user/assistant, starting with a user message.",
+      },
+      {
+        title: "Conversational RAG with Claude: rewrite, decide, retrieve, answer (Python)",
+        language: "python",
+        code: `import anthropic
+from pydantic import BaseModel
+from common import embed, get_collection      # from the building-a-rag-pipeline project
+
+client = anthropic.Anthropic()
+MODEL = "claude-opus-5-5"
+NO_ANSWER = "I don't know based on the provided documents."
+
+class Rewrite(BaseModel):
+    needs_retrieval: bool       # false for chit-chat, thanks, or requests to reformat the last answer
+    standalone_question: str    # the latest message rewritten to make sense on its own
+
+def rewrite(history: list[dict], message: str) -> Rewrite:
+    recent = "\\n".join(f"{m['role']}: {m['content']}" for m in history[-6:])   # last 3 turns is plenty
+    resp = client.messages.parse(
+        model=MODEL, max_tokens=16000,
+        output_config={"effort": "low"},
+        messages=[{"role": "user", "content":
+            f"<conversation>\\n{recent}\\n</conversation>\\n<latest>{message}</latest>\\n\\n"
+            "Rewrite the latest message as a standalone search question, resolving pronouns and references "
+            "using the conversation. Set needs_retrieval to false if it can be answered from the conversation alone."}],
+        output_format=Rewrite,
+    )
+    return resp.parsed_output
+
+def retrieve(question: str, k: int = 5) -> list[dict]:
+    res = get_collection().query(query_embeddings=embed([question]), n_results=k)
+    return [{"text": d, "meta": m} for d, m in zip(res["documents"][0], res["metadatas"][0])]
+
+class ChatSession:
+    def __init__(self):
+        self.history: list[dict] = []           # plain question/answer turns only
+
+    def ask(self, message: str) -> str:
+        r = rewrite(self.history, message) if self.history else Rewrite(needs_retrieval=True, standalone_question=message)
+        if r.needs_retrieval:
+            hits = retrieve(r.standalone_question)
+            sources = "\\n".join(f'<source id="{i}" file="{h["meta"]["source"]}">{h["text"]}</source>'
+                                 for i, h in enumerate(hits, start=1))
+            content = f"<sources>\\n{sources}\\n</sources>\\n\\nQuestion: {message}"
+        else:
+            content = message
+        resp = client.messages.create(
+            model=MODEL, max_tokens=16000,
+            system=("You are an HR assistant in an ongoing conversation. Use the conversation to understand the "
+                    "question. Answer factual questions ONLY from the sources in the latest message and cite [n]. "
+                    f"If they do not contain the answer, say: {NO_ANSWER}"),
+            messages=self.history[-10:] + [{"role": "user", "content": content}],   # last 5 turns + current
+        )
+        answer = "".join(b.text for b in resp.content if b.type == "text")
+        self.history += [{"role": "user", "content": message}, {"role": "assistant", "content": answer}]
+        return answer
+
+chat = ChatSession()
+for q in ["How many days of annual leave do employees get?", "And contractors?", "Thanks, can you make that shorter?"]:
+    print("User:", q)
+    print("Assistant:", chat.ask(q), "\\n")`,
+        explanation: "Three ideas in one class: a cheap structured rewrite step that also decides whether retrieval is needed; retrieval with the standalone question; and an answer call that sends trimmed history plus the current message with fresh sources. History slices are taken in pairs (even numbers) so the messages still alternate user/assistant and start with a user turn. Old sources are never stored in history.",
+      },
+    ],
+    howItWorks: md(
+      "**Per-turn flow:** (1) receive the user message; (2) if there is history, call the rewriter with the last few turns and the message to get a standalone question and a needs-retrieval flag; (3) if needed, retrieve (and rerank) with the standalone question; (4) build the messages list: trimmed history (questions and answers only) followed by the current user message containing the sources and the original message; (5) call the LLM; (6) store the plain question and answer, plus the citations in your app's database.",
+      "**Rewriter prompt essentials:** include only recent turns, tell it to resolve pronouns and references, keep the user's intent and constraints (names, dates, product versions), output only the rewritten question (structured output makes this robust), and return the message unchanged if it is already standalone. Use a low effort setting or a smaller model: it is a simple task that adds latency to every turn.",
+      "**Why answer with the original message, not the rewrite?** The rewrite is for the retriever. The answering model has the full history and the user's exact words, including tone and requests like 'briefly' that a rewrite may drop.",
+      "**Token growth.** Without trimming, turn n resends all n-1 earlier turns, so total tokens across a conversation grow roughly quadratically. With a sliding window plus summary and no stored sources, each turn costs about the same. Prompt caching (see cost-and-latency) can further cut the cost of the repeated prefix: system prompt and early history.",
+      "**Multi-question messages.** 'What is the leave policy and how do I claim expenses?' needs two searches. A rewriter can return a list of standalone questions, retrieve for each and merge the results - the multi-query idea from advanced-rag-techniques.",
+    ),
+    diagram: `history (Q/A only) + new message
+              |
+              v
+     +------------------+
+     | rewrite (LLM)    | -> standalone question
+     |                  | -> needs_retrieval?
+     +------------------+
+        | yes                 | no
+        v                     |
+   retrieve + rerank          |
+        |                     |
+        v                     v
+ messages = trimmed history
+          + user: <sources> + original message
+              |
+              v
+             LLM -> answer [n]
+              |
+   store Q + A (+ citations in app DB)`,
+    whyItExists: md(
+      "People do not talk in standalone search queries; they ask follow-ups, use pronouns and refine. A RAG system that only handles single, fully specified questions feels broken in a chat UI. Query rewriting and history management make retrieval robust to natural conversation while keeping cost bounded.",
+    ),
+    whenToUse: md(
+      "Any chat interface on top of RAG: support assistants, internal knowledge bots, documentation chat. Add query rewriting as soon as users can ask follow-ups, history trimming once conversations get long, and a needs-retrieval decision when many messages are chit-chat or edits of previous answers.",
+    ),
+    whenNotToUse: md(
+      "For single-shot search boxes or batch question answering there is no history to manage; skip the rewrite call and its latency. If almost every message is standalone (for example a search-like UI), measure whether rewriting actually improves retrieval before paying for it on every turn.",
+    ),
+    commonMistakes: [
+      "Retrieving with the raw follow-up message, so 'what about contractors?' searches for nothing useful.",
+      "Concatenating the whole conversation into the search query, pulling in stale topics.",
+      "Keeping every turn's retrieved sources in history, which explodes token usage and confuses citation numbers.",
+      "Sending history that does not alternate user/assistant correctly or starts with an assistant message after trimming.",
+      "Letting the rewriter change the user's intent or drop constraints such as dates, versions or names.",
+      "Running retrieval for 'thanks' or 'make it shorter', wasting time and sometimes replacing a good answer with an unrelated one.",
+      "Forgetting that source numbers restart each turn when showing citations for older messages.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Write three follow-up questions that would break naive retrieval for a product-documentation bot, and the standalone rewrite you would want for each." },
+      { difficulty: "Easy", prompt: "In the chat loop demo, set MAX_HISTORY_TURNS to 1 and to 10. How do 'messages sent' and '~tokens' change across the five turns?" },
+      { difficulty: "Medium", prompt: "Add a needsRetrieval check to the chat loop demo: messages like 'thanks', 'shorter please' or 'translate that' skip retrieval and are answered from history." },
+      { difficulty: "Medium", prompt: "Write the rewrite prompt for the Python example so that it returns a list of standalone questions when the user asks two things at once, and update ChatSession to retrieve for each and merge the results." },
+      { difficulty: "Hard", prompt: "Build a 15-conversation test set (each 3-4 turns) for your documents. Measure, per follow-up turn, whether the answering chunk is retrieved with (a) the raw message, (b) last two user messages concatenated, (c) LLM rewriting. Report recall@5 for each." },
+    ],
+    interviewQuestions: [
+      { question: "Why does naive RAG fail on follow-up questions?", answer: "Follow-ups depend on earlier turns through pronouns and ellipsis, so the latest message alone lacks the content needed for retrieval. Embedding 'what about contractors?' does not encode that the topic is annual leave, so the retriever returns the wrong chunks." },
+      { question: "What is query rewriting in conversational RAG?", answer: "An LLM step that takes the recent conversation and the latest message and produces a standalone question that makes sense without the history. Retrieval uses the rewritten question; the final answer still uses the original message and the history." },
+      { question: "How do you manage chat history in a RAG chatbot?", answer: "Store only questions and answers, not old retrieved sources; keep a sliding window of recent turns; summarise older turns into a short summary; ensure the trimmed messages still alternate correctly; and consider prompt caching for the stable prefix. Citations are stored in the application database rather than in the prompt." },
+      { question: "How do you decide whether to retrieve on a given turn?", answer: "Classify the message: questions needing facts trigger retrieval, while chit-chat, thanks, and edits of the previous answer (shorten, translate, reformat) do not. This can be part of the rewriter's structured output, or a rule-based pre-filter. Agentic RAG generalises this by letting the model call a search tool when it decides it needs one." },
+      { question: "Why answer with the original message rather than the rewritten query?", answer: "The rewrite is optimised for search and may lose nuances like tone, formatting requests or exact wording. The answering model has the full history and can interpret the original message correctly; the rewrite only needs to make retrieval work." },
+      { question: "What are the latency and cost implications of conversational RAG?", answer: "An extra rewrite call per turn adds latency and cost, mitigated by a low effort setting or smaller model and by skipping it when there is no history. History adds input tokens every turn, which trimming, summaries and caching keep bounded." },
+    ],
+    prerequisites: ["building-a-rag-pipeline", "calling-an-llm-api", "structured-output"],
+    relatedTopics: ["agent-memory", "agentic-rag", "advanced-rag-techniques", "grounded-generation-and-citations", "cost-and-latency"],
+    keywords: ["conversational rag", "chat history", "follow-up questions", "query rewriting", "query condensing", "standalone question", "contextualization", "sliding window", "summary memory", "needs retrieval", "multi-turn"],
+  },
+
+  {
+    id: "rag-in-production",
+    title: "RAG in Production",
+    level: "intermediate",
+    description: "Keeping a RAG system correct, fresh, secure, fast and observable: incremental re-indexing, deletions, permissions, caching, latency budgets and monitoring.",
+    explanation: md(
+      "A RAG demo answers questions about a folder you indexed once. A production RAG system serves many users, over documents that change every day, some of which most users must never see, under a latency budget, with someone on call when answers go wrong. The pipeline is the same; what changes is everything around it.",
+      "**1. Freshness and incremental re-indexing.** Documents are edited, added and deleted continuously. Re-embedding the entire corpus on every change is slow and expensive, so production systems index **incrementally**: detect what changed and only process that. The standard tool is a **content hash** (a fingerprint such as SHA-256 of the text) stored with each document or chunk. On each sync, compare hashes: new hash means new or changed content to (re-)embed, same hash means skip, and a document that no longer exists at the source means *delete its chunks*. Changes are detected by scheduled syncs (every few minutes or hours), by change events from the source system (webhooks, database change streams), or both. Track the time from 'document changed' to 'searchable' as a freshness metric.",
+      "**Deletions are a correctness and compliance issue.** If a policy is withdrawn but its chunks remain in the index, the assistant keeps confidently quoting it. If a user's data must be erased, it must be erased from the vector store too. Make sure every chunk can be traced to its source document (metadata) and deleted by it.",
+      "**2. Re-indexing everything safely.** Some changes require rebuilding the whole index: a new embedding model, a new chunking strategy. Do it **blue/green**: build a new collection or table alongside the live one, run your evaluation set against it, then switch traffic with a config change and keep the old one for rollback. Store the embedding model name and a pipeline version in metadata so you always know how a vector was made.",
+      "**3. Access control (permissions).** RAG can leak information: if an intern's question retrieves a chunk from the salary spreadsheet, the model will happily summarise it. Rules:",
+      "- **Filter at retrieval time, in code**, using permission metadata copied from the source system (which groups or users may read each document). Never rely on the prompt ('do not reveal salaries') - prompts are not a security boundary.\n- **Keep permissions in sync** with the source: when someone loses access to a document, the index must reflect it quickly.\n- **Multi-tenant apps** (one system, many customers) should isolate tenants strictly: a mandatory tenant filter on every query, or a separate collection or database per tenant.\n- **Treat retrieved text as untrusted input**: documents can contain hidden instructions (indirect prompt injection), so give the model no more power than the user has (see ai-security).",
+      "**4. Caching.** Several layers can be cached: **embeddings** of chunks (keyed by content hash, so unchanged chunks are never re-embedded), **query embeddings** and **retrieval results** for repeated questions, whole **answers** for exact repeat questions (keyed by normalised question + user permissions + index version, and invalidated when the index changes), and **prompt caching** on the LLM side for the large stable prefix of every request such as the system prompt and instructions (see cost-and-latency). Never share cached answers between users with different permissions.",
+      "**5. Latency.** A typical request: query rewrite (LLM call, if conversational) -> embedding -> vector/hybrid search -> rerank -> answer generation. Set a budget per step and measure each. The answer generation usually dominates; **stream** it so users see text immediately. Load models and clients once at startup, run independent steps (vector and keyword search) in parallel, keep the number and size of chunks small, and use a lower effort setting or a smaller model for helper steps like rewriting.",
+      "**6. Monitoring and feedback.** For every request, log the question, rewritten query, retrieved chunk ids and scores, reranker scores, prompt version, model, token usage, latency per step, the answer, its citations, and the user's feedback (thumbs up/down). Watch aggregate signals: the 'I don't know' rate, the share of answers without valid citations, retrieval score distributions (dropping scores often means content gaps or a broken ingest), cost per request, and p95 latency. Turn real failures into new evaluation cases and run the evaluation suite whenever the prompt, model, chunking or index changes (see evaluating-rag and observability-and-debugging).",
+      "**7. Reliability.** LLM APIs and embedding services can be slow or rate-limited: use timeouts, retries with exponential backoff (the official SDKs retry some errors automatically), and graceful fallbacks ('search results without an AI summary'). Run ingestion as a background job with a queue so a huge upload does not block queries.",
+    ),
+    analogy:
+      "A demo RAG is a home bookshelf. Production RAG is a public library: new books arrive daily and must be catalogued quickly (incremental indexing), recalled books must be pulled from the shelves (deletions), the rare-manuscripts room needs a key card checked at the door, not a polite sign (access control), popular questions get a ready-made answer sheet at the front desk (caching), and the head librarian tracks which questions went unanswered so the collection can improve (monitoring).",
+    examples: [
+      {
+        title: "Incremental re-indexing with content hashes: only embed what changed",
+        code: `// FNV-1a: a tiny, fast, deterministic string hash (use SHA-256 in production)
+function hash(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16);
+}
+const chunk = (text) => text.split("\\n\\n").map((t) => t.trim()).filter(Boolean);   // paragraph chunks
+
+const index = new Map();   // chunkId -> { hash, source, text }  (stand-in for the vector store)
+let embedCalls = 0;
+const embed = (text) => { embedCalls++; return [text.length]; };                      // stand-in embedding
+
+function sync(sourceFiles) {
+  const stats = { embedded: 0, skipped: 0, deleted: 0 };
+  const seen = new Set();
+  for (const [path, text] of Object.entries(sourceFiles)) {
+    chunk(text).forEach((piece, i) => {
+      const id = path + "#" + i, h = hash(piece);
+      seen.add(id);
+      const existing = index.get(id);
+      if (existing && existing.hash === h) { stats.skipped++; return; }     // unchanged: no work
+      index.set(id, { hash: h, source: path, text: piece, vector: embed(piece) });
+      stats.embedded++;
+    });
+  }
+  for (const id of [...index.keys()]) {                                      // gone at the source
+    if (!seen.has(id)) { index.delete(id); stats.deleted++; }
+  }
+  return stats;
+}
+
+let files = {
+  "leave.md": "Employees get 25 days of leave.\\n\\nUp to 5 days carry over.\\n\\nCarry-over expires 31 March.",
+  "expenses.md": "Submit receipts within 30 days.\\n\\nMeals are capped at 40 per day.",
+  "old-policy.md": "Leave is 22 days.",
+};
+console.log("initial sync:     ", sync(files), "| chunks:", index.size);
+console.log("no changes:       ", sync(files), "| chunks:", index.size);
+
+files["leave.md"] = files["leave.md"].replace("25 days", "26 days");        // one paragraph edited
+delete files["old-policy.md"];                                               // a withdrawn document
+files["remote.md"] = "Remote work up to 3 days a week.";                     // a new document
+console.log("after edits:      ", sync(files), "| chunks:", index.size);
+console.log("total embedding calls:", embedCalls, "(a full rebuild every time would have used",
+  6 + 6 + 6, ")");
+console.log("old policy still searchable?", [...index.values()].some((c) => c.source === "old-policy.md"));`,
+        explanation: "The second sync does no work at all; the third embeds only the edited paragraph and the new file, and deletes the withdrawn policy so it can no longer be quoted. Note the limitation of position-based ids (path#index): inserting a paragraph near the top shifts every later id and re-embeds them; production systems often use ids derived from the content hash or from stable section ids.",
+        walkthrough: [
+          { code: "function hash(s)", explanation: "A fingerprint of the text: identical text always gives the same hash, almost any change gives a different one." },
+          { code: "if (existing && existing.hash === h) { stats.skipped++; return; }", explanation: "The core of incremental indexing: unchanged chunks are never re-embedded." },
+          { code: "if (!seen.has(id)) { index.delete(id); ... }", explanation: "Chunks that no longer exist at the source are deleted - otherwise stale content keeps being retrieved." },
+          { code: "embedCalls", explanation: "Counts the expensive operation, to compare against rebuilding everything on every sync." },
+        ],
+      },
+      {
+        title: "Permission-filtered retrieval and a safe answer cache",
+        code: `const chunks = [
+  { text: "The office opens at 8am.", groups: ["everyone"] },
+  { text: "Salary bands for 2025: L1 40k-50k, L2 50k-65k.", groups: ["hr"] },
+  { text: "Production database failover runbook: run failover.sh.", groups: ["eng"] },
+];
+let indexVersion = 1;
+let clock = 0;                                    // fake time in seconds
+const cache = new Map();
+const TTL = 300;
+let llmCalls = 0;
+
+function retrieve(question, user) {
+  const allowed = new Set(["everyone", ...user.groups]);
+  const visible = chunks.filter((c) => c.groups.some((g) => allowed.has(g)));   // filter BEFORE ranking
+  const q = question.toLowerCase().split(" ");
+  return visible.filter((c) => q.some((w) => w.length > 3 && c.text.toLowerCase().includes(w)));
+}
+function generate(question, hits) {
+  llmCalls++;
+  return hits.length ? "Based on the documents: " + hits.map((h) => h.text).join(" ") : "I don't know based on the documents you can access.";
+}
+function ask(question, user) {
+  const normalized = question.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+  // The key includes permissions and index version, so users never see answers they could not get themselves
+  const key = indexVersion + "|" + [...user.groups].sort().join(",") + "|" + normalized;
+  const hit = cache.get(key);
+  if (hit && clock - hit.at < TTL) return "(cached) " + hit.answer;
+  const answer = generate(question, retrieve(question, user));
+  cache.set(key, { answer: answer, at: clock });
+  return answer;
+}
+
+const alice = { name: "alice", groups: ["hr"] }, bob = { name: "bob", groups: ["eng"] };
+console.log("alice:", ask("What are the salary bands?", alice));
+console.log("bob:  ", ask("What are the salary bands?", bob));
+clock += 60;
+console.log("alice:", ask("what are the SALARY bands", alice));
+chunks[1].text = "Salary bands for 2026: L1 42k-52k, L2 52k-68k.";
+indexVersion++;                                   // re-index bumps the version: old cache entries are ignored
+console.log("alice:", ask("What are the salary bands?", alice));
+console.log("LLM calls:", llmCalls);`,
+        explanation: "Permissions are enforced by filtering chunks before ranking, in code - Bob cannot retrieve the salary chunk however he phrases the question. The cache key includes the user's groups and the index version, so a cached HR answer is never served to Bob and an answer built from outdated content disappears as soon as the index changes.",
+      },
+      {
+        title: "Incremental ingest for the Chroma project: hashes, upserts and deletions (Python)",
+        language: "python",
+        code: `import hashlib
+from pathlib import Path
+from common import embed, get_collection                    # from building-a-rag-pipeline
+from ingest import load, clean, chunk, SUPPORTED
+
+def sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+def sync(folder: str = "docs", access_group: str = "everyone") -> None:
+    col = get_collection()
+    paths = {p.as_posix(): p for p in Path(folder).rglob("*") if p.suffix.lower() in SUPPORTED}
+
+    # 1. Files deleted at the source: remove their chunks
+    indexed = {m["path"] for m in col.get(include=["metadatas"])["metadatas"]}
+    for gone in indexed - paths.keys():
+        col.delete(where={"path": gone})
+        print("deleted", gone)
+
+    # 2. New or changed files: compare a whole-file hash stored on every chunk
+    for key, path in sorted(paths.items()):
+        pages = list(load(path))
+        file_hash = sha256("".join(text for _, text in pages))
+        existing = col.get(where={"path": key}, include=["metadatas"], limit=1)["metadatas"]
+        if existing and existing[0].get("file_hash") == file_hash:
+            continue                                             # unchanged: no embedding cost
+        ids, texts, metas = [], [], []
+        for page, raw in pages:
+            for n, piece in enumerate(chunk(clean(raw))):
+                ids.append(f"{key}::p{page}::c{n}")
+                texts.append(piece)
+                metas.append({"source": path.name, "path": key, "page": page, "chunk": n,
+                              "file_hash": file_hash, "access_group": access_group,
+                              "embed_model": "all-MiniLM-L6-v2", "pipeline_version": 1})
+        col.delete(where={"path": key})                          # drop stale chunks (file may have shrunk)
+        for i in range(0, len(texts), 100):
+            col.upsert(ids=ids[i:i + 100], documents=texts[i:i + 100],
+                       embeddings=embed(texts[i:i + 100]), metadatas=metas[i:i + 100])
+        print(f"re-indexed {key}: {len(texts)} chunks")
+
+def retrieve_for_user(question: str, user_groups: list[str], k: int = 20):
+    """Permission filter applied inside the vector search, never in the prompt."""
+    return get_collection().query(
+        query_embeddings=embed([question]),
+        n_results=k,
+        where={"access_group": {"$in": ["everyone", *user_groups]}},
+    )
+
+if __name__ == "__main__":
+    sync("docs")`,
+        explanation: "Run sync on a schedule (or on change events) instead of a full rebuild. Unchanged files cost one hash computation; changed files are re-chunked and re-embedded; files removed at the source lose their chunks. Every chunk records its access group, embedding model and pipeline version, so permission filtering, audits and blue/green rebuilds are possible. For large corpora, track known files and hashes in a small database table rather than reading all metadata from the vector store.",
+      },
+      {
+        title: "Production query path: prompt caching, streaming, timing and structured logs (Python)",
+        language: "python",
+        code: `import json
+import time
+import logging
+import anthropic
+
+logging.basicConfig(level=logging.INFO)
+client = anthropic.Anthropic(max_retries=3, timeout=600.0)    # create once at startup
+
+# Large, stable instructions go first and are cached; per-question sources come after.
+SYSTEM_BLOCKS = [{
+    "type": "text",
+    "text": open("prompts/rag_system_v3.txt").read(),          # rules, style guide, examples
+    "cache_control": {"type": "ephemeral"},
+}]
+PROMPT_VERSION = "rag_system_v3"
+
+def answer(question: str, user_id: str, hits: list[dict]) -> str:
+    t0 = time.perf_counter()
+    sources = "\\n".join(f'<source id="{i}">{h["text"]}</source>' for i, h in enumerate(hits, start=1))
+    parts = []
+    with client.messages.stream(
+        model="claude-opus-5-5",
+        max_tokens=64000,
+        system=SYSTEM_BLOCKS,
+        messages=[{"role": "user", "content": f"<sources>\\n{sources}\\n</sources>\\n\\nQuestion: {question}"}],
+    ) as stream:
+        for text in stream.text_stream:
+            print(text, end="", flush=True)                     # in a web app: send to the client
+            parts.append(text)
+        final = stream.get_final_message()
+    print()
+
+    logging.info(json.dumps({
+        "event": "rag_answer",
+        "user": user_id,
+        "question": question,
+        "chunk_ids": [h["id"] for h in hits],
+        "prompt_version": PROMPT_VERSION,
+        "input_tokens": final.usage.input_tokens,
+        "output_tokens": final.usage.output_tokens,
+        "cache_read_tokens": final.usage.cache_read_input_tokens,   # > 0 means the cached prefix was reused
+        "stop_reason": final.stop_reason,
+        "latency_s": round(time.perf_counter() - t0, 3),
+        "declined": "I don't know" in "".join(parts),
+    }))
+    return "".join(parts)`,
+        explanation: "Prompt caching works on prefixes: the stable system prompt comes first with cache_control, and the per-question sources come after it, so they do not invalidate the cache (very short prompts are below the minimum cacheable size and are not cached). Streaming gets the first words to the user quickly. One structured log line per request (chunk ids, prompt version, tokens, cache reads, stop reason, latency, decline flag) is the raw material for dashboards, alerts and debugging. Avoid logging sensitive document text or personal data unless your data policy allows it.",
+      },
+    ],
+    howItWorks: md(
+      "**Ingestion service:** a scheduled job or event consumer lists changed documents from each source (file storage, wiki, ticketing system), fetches content and permissions, hashes it, and pushes changed documents onto a queue. Workers load, clean, chunk, embed (in batches, with retries) and upsert chunks with metadata including source id, hash, access groups, timestamps, embedding model and pipeline version; they delete chunks of removed documents. Metrics: documents processed, failures, freshness lag.",
+      "**Query service:** authenticate the user and resolve their groups; optionally rewrite the question; check the answer cache (key = index version + permissions + normalised question); run vector and keyword search in parallel with a mandatory permission (and tenant) filter; fuse and rerank; build the grounded prompt with a cached stable prefix; stream the answer; validate citations; log the trace; store feedback.",
+      "**Versioning:** treat the prompt, chunking settings, embedding model and LLM as versioned configuration. Every logged answer records the versions used, so a quality change can be traced to the change that caused it, and the evaluation suite runs before any version goes live.",
+      "**Capacity:** embedding during ingestion is batch work and can run on cheaper or slower hardware; query-time work is latency-sensitive. Vector indexes need memory proportional to vectors x dimensions (plus graph links for HNSW), which drives instance sizing; compression or smaller-dimension embeddings reduce it.",
+      "**Safety:** besides permission filtering, scan or sanitise ingested content where appropriate, mark retrieved text as data in the prompt, do not give the answering model tools that can act on behalf of the user unless needed, and keep personal data out of logs or redact it (see ai-security).",
+    ),
+    diagram: `SOURCES (wiki, drive, tickets)
+   | change events / scheduled sync
+   v
+[ queue ] -> workers: hash? changed -> load,
+             chunk, embed, upsert(+acl, ver)
+             removed -> delete chunks
+                         |
+                         v
+                  +--------------+
+ user -> auth --> | vector store | <- filter:
+  groups  |       +--------------+   tenant+acl
+          v              |
+ cache? -> rewrite -> search -> rerank
+          |                         |
+          |   prompt (cached prefix) + sources
+          v                         v
+   logs/metrics <---- stream answer + citations
+   feedback -> eval set -> regression tests`,
+    whyItExists: md(
+      "The failure modes of RAG in production are rarely about the model: they are stale content, leaked documents, slow responses, runaway cost and silent quality regressions. Incremental indexing, permission filtering, caching, latency budgets and monitoring exist to turn a demo into a system people can rely on and engineers can operate.",
+    ),
+    whenToUse: md(
+      "As soon as a RAG system has real users, changing documents or any confidential content. Prioritise in this order: permission filtering (security), deletions and freshness (correctness), logging and evaluation (you cannot improve what you cannot see), then caching and latency optimisation (cost and experience).",
+    ),
+    whenNotToUse: md(
+      "For a personal prototype over public, static documents, most of this is overkill: a one-off ingest script and a simple query function are enough. Do not build complex multi-layer caching before measuring that repeated questions are common, and do not add a separate queue and worker fleet if a nightly re-index of a small corpus takes a few minutes.",
+    ),
+    commonMistakes: [
+      "Rebuilding the entire index on every change, making ingestion slow and expensive, or never re-indexing at all.",
+      "Forgetting deletions, so withdrawn or erased documents keep being retrieved and quoted.",
+      "Enforcing permissions in the prompt instead of filtering retrieval in code.",
+      "Sharing an answer cache across users with different permissions, or not invalidating it when the index changes.",
+      "Switching the embedding model in place instead of building a new index alongside and cutting over after evaluation.",
+      "Logging nothing about retrieval (chunk ids, scores, versions), making bad answers impossible to debug.",
+      "Ignoring latency per step and discovering in production that reranking or query rewriting doubled response time.",
+      "Logging full document text and personal data without considering privacy and retention rules.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "In the incremental demo, insert a new first paragraph into expenses.md. How many chunks are re-embedded and why? Propose an id scheme that avoids this." },
+      { difficulty: "Easy", prompt: "List every field you would log for one RAG request and, for each, one question it would help you answer when debugging." },
+      { difficulty: "Medium", prompt: "Extend the cache demo with a 'tenant' field on users and chunks so that users from different companies can never retrieve each other's chunks or share cache entries." },
+      { difficulty: "Medium", prompt: "Add timing to the Python query path for each step (embedding, search, rerank, LLM time-to-first-token, total). Run 20 questions and report p50 and p95 for each step." },
+      { difficulty: "Hard", prompt: "Implement a blue/green re-index for the Chroma project: build a new collection 'docs_v2' with a different chunk size, run an evaluation set on both, and switch a config value to the new collection only if recall@5 does not drop." },
+      { difficulty: "Hard", prompt: "Design (on paper) the ingestion pipeline for a company wiki with 200,000 pages, per-page permissions and hundreds of edits per hour: sources of change events, queue, workers, idempotency, deletion handling, freshness SLO and monitoring." },
+    ],
+    interviewQuestions: [
+      { question: "How do you keep a RAG index fresh without re-embedding everything?", answer: "Incremental indexing: detect changes via change events or scheduled syncs, compare content hashes stored with each document or chunk, re-chunk and re-embed only new or changed content, upsert by deterministic ids, and delete chunks for removed documents. Track freshness lag as a metric." },
+      { question: "How do you enforce document permissions in RAG?", answer: "Copy access-control information from the source system into chunk metadata, keep it in sync, and apply a mandatory filter in the retrieval query based on the authenticated user's identity and groups (and tenant). Never rely on the prompt to hide content, because anything in the context can end up in the answer." },
+      { question: "How would you migrate to a new embedding model?", answer: "Build a new index alongside the existing one by re-embedding all chunks with the new model, record the model in metadata, evaluate retrieval quality on a test set, then switch query traffic (which must also use the new model for queries) via configuration, keeping the old index for rollback until confident." },
+      { question: "What would you cache in a RAG system?", answer: "Chunk embeddings keyed by content hash, query embeddings and retrieval results for frequent queries, full answers for exact repeats (with keys including permissions and index version, plus a TTL), and the LLM's stable prompt prefix with prompt caching. Each cache needs a clear invalidation rule." },
+      { question: "Where does latency come from in a RAG request, and how do you reduce it?", answer: "Query rewriting and answer generation (LLM calls) usually dominate, then reranking, embedding and search. Reduce it by streaming the answer, running searches in parallel, loading models once, limiting candidates and chunk size, using lower effort or smaller models for helper steps, caching, and skipping rewriting when there is no history." },
+      { question: "What do you monitor in a production RAG system?", answer: "Per request: retrieved chunk ids and scores, prompt and model versions, tokens and cost, latency per step, stop reason, citations and user feedback. Aggregates: decline rate, uncited-answer rate, retrieval score distributions, error rates, p95 latency, cost per request and freshness lag. Failures feed the evaluation set, which runs on every change." },
+      { question: "Why are deletions important?", answer: "Stale chunks keep being retrieved and quoted after documents are withdrawn or corrected, causing wrong answers, and retaining data that must be erased can violate legal obligations. Every chunk must be traceable to its source document so it can be removed when the source is." },
+    ],
+    prerequisites: ["building-a-rag-pipeline", "vector-databases", "grounded-generation-and-citations"],
+    relatedTopics: ["evaluating-rag", "observability-and-debugging", "cost-and-latency", "ai-security", "capstone-docs-assistant"],
+    keywords: ["production rag", "incremental indexing", "re-indexing", "content hash", "freshness", "deletions", "access control", "permissions", "multi-tenancy", "caching", "prompt caching", "latency", "streaming", "monitoring", "logging", "blue green"],
+  },
 ];

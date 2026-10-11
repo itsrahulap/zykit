@@ -50,7 +50,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**Log Viewer**](https://zykit.vercel.app/tools/log-viewer) | Open NDJSON or plain log files to filter by level, field and text, sort by time and inspect each entry, without uploading. | [README](src/tools/log-viewer/README.md) |
 | [**TOML ↔ JSON**](https://zykit.vercel.app/tools/toml-json) | Convert TOML config files to JSON and JSON back to TOML, with precise error locations and dates handled correctly. | [README](src/tools/toml-json/README.md) |
 | [**JSON Tree Viewer**](https://zykit.vercel.app/tools/json-tree-viewer) | Browse big JSON files as an expandable tree with search, path copy, type badges and array counts, without uploading them. | [README](src/tools/json-tree-viewer/README.md) |
-| [**XML Formatter & XPath**](https://zykit.vercel.app/tools/xml-formatter) | Pretty-print or minify XML, validate it with exact errors, and run XPath expressions to see the matching nodes. | [README](src/tools/xml-formatter/README.md) |
+| [**XML Formatter**](https://zykit.vercel.app/tools/xml-formatter) | Pretty-print or minify XML, find syntax errors by line and column, and test XPath expressions in your browser. | [README](src/tools/xml-formatter/README.md) |
 
 ### Code (11)
 
@@ -66,7 +66,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**GraphQL Formatter**](https://zykit.vercel.app/tools/graphql-formatter) | Pretty-print or minify GraphQL queries and schemas, with syntax errors shown at the exact line and column. | [README](src/tools/graphql-formatter/README.md) |
 | [**Protobuf Decoder**](https://zykit.vercel.app/tools/protobuf-decoder) | Decode Protocol Buffers wire-format messages from hex or Base64 without a .proto file, showing field numbers, types and nested messages. | [README](src/tools/protobuf-decoder/README.md) |
 | [**Keyboard Event Viewer**](https://zykit.vercel.app/tools/keyboard-event-viewer) | Press keys and inspect each keydown and keyup: key, code, legacy keyCode, location, modifiers, Caps Lock, repeat and composition. Copy the history as JSON or Markdown. Nothing is sent anywhere. | [README](src/tools/keyboard-event-viewer/README.md) |
-| [**HTML & CSS Minifier**](https://zykit.vercel.app/tools/html-css-minifier) | Shrink HTML and CSS by removing comments and whitespace safely, or pretty-print them, and see the size saved. | [README](src/tools/html-css-minifier/README.md) |
+| [**HTML & CSS Minifier**](https://zykit.vercel.app/tools/html-css-minifier) | Shrink HTML and CSS by removing comments and whitespace without touching strings, pre blocks or scripts, or beautify them again, with before and after sizes including gzip. | [README](src/tools/html-css-minifier/README.md) |
 
 ### Converters (8)
 
@@ -141,7 +141,7 @@ Live at [zykit.vercel.app](https://zykit.vercel.app).
 | [**HTML to Markdown**](https://zykit.vercel.app/tools/html-to-markdown) | Paste HTML or rich text and get tidy Markdown with headings, lists, links, tables and code blocks preserved. | [README](src/tools/html-to-markdown/README.md) |
 | [**Markdown Table Generator**](https://zykit.vercel.app/tools/markdown-table) | Create Markdown tables from CSV, JSON or a grid editor, align columns and pretty-print existing tables. | [README](src/tools/markdown-table/README.md) |
 | [**Morse Code Translator**](https://zykit.vercel.app/tools/morse-code) | Translate text to Morse code and back, play it as audio or light at your chosen speed, and learn the alphabet. | [README](src/tools/morse-code/README.md) |
-| [**Text to Speech**](https://zykit.vercel.app/tools/text-to-speech) | Have text read aloud using the voices built into your device, with speed, pitch and voice choice. Nothing is sent to a server. | [README](src/tools/text-to-speech/README.md) |
+| [**Text to Speech**](https://zykit.vercel.app/tools/text-to-speech) | Have text read aloud using the voices built into your device, with speed, pitch and voice choice. The text stays in the page, but some voices are processed by your browser or OS vendor. | [README](src/tools/text-to-speech/README.md) |
 
 ### Web (8)
 
