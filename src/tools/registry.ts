@@ -106,7 +106,6 @@ import placeholderImage from './placeholder-image';
 import nginxConfigGenerator from './nginx-config-generator';
 import duplicateFileFinder from './duplicate-file-finder';
 import invoiceGenerator from './invoice-generator';
-import screenRecorder from './screen-recorder';
 import qrCodeReader from './qr-code-reader';
 import barcodeGenerator from './barcode-generator';
 import signaturePad from './signature-pad';
@@ -225,7 +224,6 @@ export const TOOLS: ToolDefinition[] = [
   nginxConfigGenerator,
   duplicateFileFinder,
   invoiceGenerator,
-  screenRecorder,
   qrCodeReader,
   barcodeGenerator,
   signaturePad,
