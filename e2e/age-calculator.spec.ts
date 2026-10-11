@@ -12,8 +12,10 @@ test('Age Calculator works locally', async ({ page }) => {
 
   await page.goto('/tools/age-calculator');
   await expect(page).toHaveTitle(/Age Calculator/);
-  await page.getByLabel('Input').fill('abc');
-  await expect(page.getByText('abc').last()).toBeVisible();
+  await page.getByLabel('Age at').fill('2026-10-10');
+  await page.getByLabel('Date of birth').fill('1990-05-15');
+  await expect(page.getByText('36 years, 4 months, 25 days')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Next birthday' })).toContainText('2027-05-15');
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

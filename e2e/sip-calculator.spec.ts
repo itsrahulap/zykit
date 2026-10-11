@@ -11,9 +11,16 @@ test('SIP & Compound Interest Calculator works locally', async ({ page }) => {
   page.on('pageerror', (e) => errors.push(e.message));
 
   await page.goto('/tools/sip-calculator');
-  await expect(page).toHaveTitle(/SIP & Compound Interest Calculator/);
-  await page.getByLabel('Input').fill('abc');
-  await expect(page.getByText('abc').last()).toBeVisible();
+  await expect(page).toHaveTitle(/SIP/);
+  // Defaults: ₹10,000/month, 12%, 10 years, start of month ≈ ₹23,23,391.
+  await expect(page.getByRole('region', { name: 'Result' })).toContainText('23,23,391');
+  await expect(page.getByRole('region', { name: 'Year-by-year growth' }).getByRole('row')).toHaveCount(11);
+
+  await page.getByRole('button', { name: 'Lump sum' }).click();
+  await page.getByLabel('Investment amount').fill('100000');
+  await page.getByLabel('Expected annual return (%)').fill('10');
+  await page.getByLabel('Years').fill('1');
+  await expect(page.getByRole('region', { name: 'Result' })).toContainText('1,10,000');
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

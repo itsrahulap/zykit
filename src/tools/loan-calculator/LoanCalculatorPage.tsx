@@ -15,6 +15,7 @@ import {
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows } from '../../shared/ui/Panel';
 import { Select } from '../../shared/ui/Select';
+import { CURRENCIES } from '../../shared/lib/currency';
 import { Breadcrumb, Segmented } from '../../shared/ui/tool';
 import { useShareState } from '../../shared/hooks/useShareState';
 import { downloadText } from '../../shared/utils/dom.utils';
@@ -28,13 +29,6 @@ const btnCls =
 const thCls = 'px-3 py-2 text-right font-semibold first:text-left';
 const tdCls = 'px-3 py-1.5 text-right tabular-nums first:text-left whitespace-nowrap';
 
-const CURRENCIES = [
-  { id: 'INR', locale: 'en-IN', label: 'INR (en-IN, lakh grouping)' },
-  { id: 'USD', locale: 'en-US', label: 'USD (en-US)' },
-  { id: 'EUR', locale: 'de-DE', label: 'EUR (de-DE)' },
-  { id: 'GBP', locale: 'en-GB', label: 'GBP (en-GB)' },
-  { id: 'JPY', locale: 'ja-JP', label: 'JPY (ja-JP, no decimals)' },
-];
 const FREQS: Frequency[] = ['monthly', 'weekly', 'fortnightly', 'quarterly'];
 const PAGE = 24;
 
