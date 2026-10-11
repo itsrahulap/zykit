@@ -115,6 +115,10 @@ import percentageCalculator from './percentage-calculator';
 import stopwatchTimer from './stopwatch-timer';
 import notepad from './notepad';
 import randomPicker from './random-picker';
+import pdfToImages from './pdf-to-images';
+import excelToCsv from './excel-to-csv';
+import sipCalculator from './sip-calculator';
+import ageCalculator from './age-calculator';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -230,6 +234,10 @@ export const TOOLS: ToolDefinition[] = [
   stopwatchTimer,
   notepad,
   randomPicker,
+  pdfToImages,
+  excelToCsv,
+  sipCalculator,
+  ageCalculator,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
