@@ -16,6 +16,11 @@ export const awsIntermediateTopics: Topic[] = [
       "**Load balancer types**:",
       "- **Application Load Balancer (ALB)**: layer 7 (HTTP/HTTPS). Routes by path, host, headers; good for web apps and microservices.\n- **Network Load Balancer (NLB)**: layer 4 (TCP/UDP/TLS). Very high throughput, low latency, static IPs.\n- **Gateway Load Balancer (GWLB)**: sends traffic through third-party virtual appliances such as firewalls and inspection tools.\n- Classic Load Balancer is the legacy option.",
       "Load balancers also run **health checks** and stop sending traffic to unhealthy targets.",
+      "Exam angle: Auto Scaling is about **capacity and cost** (run only what you need right now), while ELB is about **availability** (one entry point, traffic spread across healthy targets in several AZs). The service is called Elastic Load Balancing; ALB, NLB, GWLB and CLB are its load balancer types.",
+      "Distinguishing details the exam likes:",
+      "- **ALB** supports content-based routing rules (host, path, headers, query strings) and can be protected by **AWS WAF**.\n- **NLB** handles millions of requests per second and sudden spikes with ultra-low latency, and gives you a **static IP per AZ**. It suits gaming, IoT and other non-HTTP traffic.\n- **GWLB** deploys and scales fleets of third-party firewalls and intrusion detection/prevention appliances, using the GENEVE protocol.\n- **CLB** (legacy) registers instances directly instead of using target groups; AWS recommends moving to ALB or NLB.",
+      "A load balancer is worth having even in front of a single instance: it gives you one stable DNS name, makes it easy to add instances later, and lets you attach AWS WAF and free **AWS Certificate Manager (ACM)** TLS certificates.",
+      "Launch **templates** are the current way to describe what to launch (AMI, instance type, key pair, security groups). They are versioned, and the group points at a specific version or at the latest. The older launch *configurations* are deprecated.",
     ),
     analogy:
       "Imagine an airport check-in hall. The load balancer is the person at the entrance who points each traveler to the shortest open desk and stops pointing at a desk whose agent stepped away. Auto Scaling is the manager who opens more desks when the line grows and closes them when it empties - never fewer than two, never more than the hall can hold.",
@@ -55,6 +60,9 @@ Insert a firewall appliance into the path      GWLB`,
     howItWorks: md(
       "Metrics (such as CPU or request count per target) flow to CloudWatch. A scaling policy compares the metric with its target and changes the desired capacity within min and max. The group launches instances from a **launch template** or terminates the least useful ones, balancing across AZs.",
       "The load balancer sits in front, registers new instances in a **target group**, health-checks them, and distributes requests. Because instances are interchangeable, the application should keep session data outside the server (for example in a cache or database).",
+      "A **listener** (for example HTTP on port 80 or HTTPS on 443) receives traffic and forwards it to a target group according to its rules. Targets can be EC2 instances, IP addresses, Lambda functions or even another ALB. The target group's health check calls a path and expects a healthy response (such as HTTP 200) a set number of times in a row.",
+      "By default an Auto Scaling group only uses **EC2 status checks** (is the instance running?). Switch it to **ELB health checks** so instances whose application has stopped answering are also replaced. **Scale-in protection** marks specific instances so they are never chosen for termination.",
+      "When an instance is removed, **deregistration delay** (connection draining) lets in-flight requests finish first. Users reach the app through a Route 53 **alias** record pointing at the load balancer's DNS name, never at individual instance IPs.",
     ),
     diagram: `         users
            |
@@ -80,12 +88,18 @@ Insert a firewall appliance into the path      GWLB`,
       "Storing user sessions on local disk, so scaling in loses data.",
       "Health-check grace period too short, so new instances are killed while booting.",
       "Using an ALB when you need static IPs (NLB) or the reverse.",
+      "Terminating instances by hand to 'shut down' an app: the group simply launches replacements. Delete or scale the group itself.",
+      "Leaving the group on EC2 status checks only, so an instance with a crashed app keeps receiving traffic.",
+      "Pointing DNS at instance IPs instead of an alias to the load balancer.",
+      "Thinking ELB is mainly a cost-saving tool. Auto Scaling saves cost; ELB provides availability.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Explain min, desired, and max for a group set to 2/4/10 and what happens if an instance crashes." },
       { difficulty: "Medium", prompt: "Choose dynamic, predictive, or scheduled scaling for: (a) a payroll app on the 1st and 15th, (b) a viral campaign, (c) a daily commuter app." },
       { difficulty: "Medium", prompt: "Write ALB path rules to send `/api/*` to one target group and everything else to another." },
       { difficulty: "Hard", prompt: "Design a stateless login flow so any instance can serve any user. Where does the session live?" },
+      { difficulty: "Easy", prompt: "Match each to ALB, NLB or GWLB: a multiplayer game server over UDP, a fleet of third-party firewalls, a website routing /blog and /shop to different services." },
+      { difficulty: "Medium", prompt: "An instance in your group is running but its web server has crashed, and it is never replaced. Explain why and what setting fixes it." },
     ],
     interviewQuestions: [
       { question: "Difference between EC2 Auto Scaling and ELB?", answer: "Auto Scaling changes how many instances exist; ELB distributes traffic across them and checks their health." },
@@ -93,10 +107,14 @@ Insert a firewall appliance into the path      GWLB`,
       { question: "What is predictive scaling?", answer: "Forecasting load from historical patterns and scaling capacity ahead of time." },
       { question: "Exam-style: Which service automatically adds EC2 instances when demand rises?", answer: "Amazon EC2 Auto Scaling." },
       { question: "Exam-style: Which load balancer routes traffic based on URL path?", answer: "Application Load Balancer." },
+      { question: "Exam-style: Which load balancer provides a static IP address per Availability Zone and handles millions of requests per second?", answer: "Network Load Balancer." },
+      { question: "Exam-style: Which load balancer is used to deploy and scale third-party virtual firewall appliances?", answer: "Gateway Load Balancer." },
+      { question: "Exam-style: Which feature is mainly about cost, and which mainly about availability: Auto Scaling or ELB?", answer: "Auto Scaling matches capacity to demand (cost and capacity); ELB distributes traffic across healthy targets in multiple AZs (availability)." },
+      { question: "What happens if you terminate an instance that belongs to an Auto Scaling group?", answer: "The group sees it is below desired capacity and launches a replacement. To stop the instances, change the group's capacity or delete the group." },
     ],
     prerequisites: ["ec2-basics", "aws-global-infrastructure"],
     relatedTopics: ["vpc-networking", "monitoring-and-auditing", "ec2-pricing", "well-architected-framework", "load-balancing", "scalability"],
-    keywords: ["auto scaling", "elb", "alb", "nlb", "gwlb", "target group", "health check", "elasticity", "launch template", "desired capacity"],
+    keywords: ["auto scaling", "elb", "alb", "nlb", "gwlb", "target group", "health check", "elasticity", "launch template", "desired capacity", "listener", "deregistration delay", "connection draining", "scale-in protection", "geneve", "classic load balancer", "acm"],
   },
 
   {
@@ -108,6 +126,10 @@ Insert a firewall appliance into the path      GWLB`,
       "In a **tightly coupled** design, service A calls service B directly and waits. If B is slow or down, A suffers. In a **loosely coupled** design, A drops a message somewhere durable and moves on; B picks it up when it can.",
       "- **Amazon SQS** (Simple Queue Service): a managed **queue**. Producers send messages, consumers poll and process them, then delete them. Messages are stored until processed. *Standard* queues offer very high throughput with at-least-once delivery and best-effort ordering; *FIFO* queues give ordering and exactly-once processing semantics with lower throughput. A **dead-letter queue** collects messages that keep failing.\n- **Amazon SNS** (Simple Notification Service): **publish/subscribe**. A publisher sends one message to a *topic*, and SNS pushes copies to every subscriber (SQS queues, Lambda, HTTPS endpoints, email, SMS, mobile push).\n- **Amazon EventBridge**: an event bus that routes events from AWS services, SaaS apps, and your code to targets based on rules, with schedules and filtering.",
       "Combining SNS and SQS gives **fan-out**: one event, many independent queues, each processed at its own pace.",
+      "The exam groups messaging into three patterns:",
+      "- **Queuing (SQS)**: consumers *pull* messages; each message is processed and then deleted. Not real-time. Classic use: hand off slow background work (sending a sign-up or password-reset email) so the web request returns quickly.\n- **Pub/sub (SNS)**: SNS *pushes* each message straight away to all subscribers. Publishers do not know who the subscribers are, and filter policies let each subscriber receive only what it wants. SNS retries failed deliveries but does not store messages for later reading.\n- **Streaming (Amazon Kinesis Data Streams)**: producers write events into a stream split into shards; many consumers can read the *same* events, which are kept for a retention period so they can be replayed. Used for real-time analytics, clickstreams and IoT data, and costs more than simple queuing.",
+      "SNS is also the notification backbone for other AWS services: CloudWatch alarms and AWS Budgets alerts typically send their emails through an SNS topic. SNS email is plain-text and meant for internal or operational alerts, not for polished customer-facing email.",
+      "Fun fact that sometimes appears in study material: SQS was the first AWS service to launch, in 2004.",
     ),
     analogy:
       "A queue is a ticket spindle in a repair workshop: customers pin job slips, and any mechanic grabs the next slip when free; slips wait safely if everyone is busy. A topic is a notice-board announcement: one note, and every team that signed up for those announcements gets its own copy.",
@@ -176,6 +198,8 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
       "No dead-letter queue, so poison messages loop forever.",
       "Using SNS when you need buffering for a slow consumer (add an SQS queue behind it).",
       "Forgetting the access policy that lets SNS write into an SQS queue.",
+      "Mixing up the patterns: SQS = pull and queue, SNS = push and notify, Kinesis = real-time stream that several consumers can replay.",
+      "Using SNS email subscriptions to send marketing or transactional email to customers.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Explain in your own words the difference between a queue and a pub/sub topic." },
@@ -189,10 +213,13 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
       { question: "Standard vs FIFO queue?", answer: "Standard: highest throughput, at-least-once, best-effort order. FIFO: strict ordering within a group and deduplication, with lower throughput." },
       { question: "Exam-style: Which service decouples application components by storing messages until they are processed?", answer: "Amazon SQS." },
       { question: "Exam-style: Which service sends one message to many subscribers?", answer: "Amazon SNS." },
+      { question: "Exam-style: Which service ingests real-time clickstream data so several applications can read the same records?", answer: "Amazon Kinesis Data Streams." },
+      { question: "Exam-style: A CloudWatch billing alarm needs to email the finance team. Which service delivers the email?", answer: "Amazon SNS, through a topic with an email subscription." },
+      { question: "Is SQS push or pull?", answer: "Pull: consumers poll the queue. SNS is the push-based service." },
     ],
     prerequisites: ["ec2-basics"],
     relatedTopics: ["serverless-and-containers", "auto-scaling-and-load-balancing", "queues", "scalability"],
-    keywords: ["sqs", "sns", "eventbridge", "queue", "pub/sub", "fan-out", "decoupling", "dead letter", "event driven", "message"],
+    keywords: ["sqs", "sns", "eventbridge", "queue", "pub/sub", "fan-out", "decoupling", "dead letter", "event driven", "message", "kinesis data streams", "streaming", "shards", "pull", "push", "fifo", "visibility timeout"],
   },
 
   {
@@ -209,6 +236,16 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
       "**More compute options**",
       "- **AWS Batch**: runs batch jobs at any scale. You submit jobs; Batch provisions the right amount of EC2 or Fargate capacity (including Spot) and queues them, so you do not manage a scheduler.\n- **Amazon Lightsail**: simple virtual servers, containers, databases, storage and static IPs with predictable monthly pricing and a friendly console; a good fit for small websites, blogs and learning projects.\n- **Amazon ECR** (Elastic Container Registry): a managed registry for storing, scanning and sharing container images used by ECS, EKS and Fargate.\n- **AWS Outposts**: AWS infrastructure and services running in your own data center for hybrid needs.",
       "**Choosing compute**: EC2 for full control of virtual servers, containers (ECS/EKS/Fargate) for packaged applications, Lambda for short event-driven code, Elastic Beanstalk for deploying web apps without managing the infrastructure details, and Lightsail for a simple fixed-price start.",
+      "**Virtual machines vs containers**",
+      "- A **VM** runs on a hypervisor with its own full guest operating system. You usually size it with spare headroom that you pay for even when unused, and several apps sharing one VM are not isolated from each other (one can hog resources or break another's configuration).\n- A **container** runs on a container runtime (such as Docker Engine) and shares the host's OS kernel. Each container bundles its own libraries and dependencies, is isolated from its neighbours, packs more densely and starts much faster than a VM.",
+      "**Docker** popularised containers: a *Dockerfile* describes how to build an image, *Docker Compose* runs multi-container apps, and *Docker Hub* is a public image registry. The **Open Container Initiative (OCI)** standardises image formats and runtimes, so OCI images run with any compatible tool. **Kubernetes** (K8s) is the open-source orchestration standard, originally from Google and now run by the CNCF; it runs containers across many nodes in *pods* (one or more containers sharing network and storage) and shines when you have many microservices. **Bottlerocket** is AWS's open-source Linux OS built just for hosting containers.",
+      "**Monolith vs microservices**: a monolith is one tightly coupled application doing everything. Microservices split it into small, independently deployable (often stateless) services, each doing one job and often built from managed pieces such as containers, Lambda, SQS, ELB and RDS.",
+      "**ECS building blocks**",
+      "- A **cluster** provides capacity: Fargate, EC2 instances you manage, or a mix through *capacity providers*.\n- A **task definition** is the blueprint: image, CPU and memory, ports and IAM roles.\n- A **task** runs containers until they finish (good for one-off jobs). A **service** keeps a desired number of tasks running long term, such as a web server, and replaces failed ones using health checks.\n- Images come from Amazon ECR or a public registry such as Docker Hub. Container logs normally go to CloudWatch Logs.",
+      "Cost trap: an ECS cluster backed by EC2 instances bills for those instances the whole time, even with no tasks running (the upside is no cold start). A Fargate-only cluster with nothing running costs nothing, because Fargate bills for the vCPU and memory your running tasks request.",
+      "**Lambda details**: you pick a runtime (Node.js, Python, Java, .NET, Ruby, Go, or a custom runtime), memory and a timeout. Billing is number of requests plus duration, measured in **1 ms increments** (older material says 'rounded up to 100 ms'; that changed in December 2020). Small functions can be edited in the console's built-in VS Code-based code editor; bigger ones are uploaded as a .zip file, from S3, or as a **container image**. You test by sending a JSON test event and reading the output in CloudWatch Logs. For longer-running serverless container work, use Fargate instead.",
+      "**Other container helpers**: **AWS App Runner** deploys containerised web apps and APIs from an image or source code without you seeing any underlying resources (unlike Elastic Beanstalk, which shows you the EC2 instances and load balancer it creates). **AWS Step Functions** orchestrates Lambda functions and ECS/Fargate tasks as state machines, and **AWS X-Ray** traces requests across microservices.",
+      "**Serverless is a spectrum**, not a yes/no. Typical traits: high elasticity and availability, durable, secure by default, no infrastructure to see, **scale to zero** (no cost when idle) and paying for value instead of idle servers. Services commonly called serverless include Lambda, Fargate, S3, DynamoDB, Aurora Serverless, Step Functions, API Gateway, AppSync, Amplify, SQS and SNS.",
     ),
     analogy:
       "EC2 is renting a whole kitchen: full control, but you clean and maintain it. Containers are meal-prep boxes that can be reheated in any kitchen. Lambda is ordering a single dish from a ghost kitchen - it appears when you ask and you pay just for that dish.",
@@ -286,6 +323,10 @@ Containers but no hosts to patch                 Fargate`,
       "Ignoring cold-start impact on latency-sensitive paths.",
       "Choosing Kubernetes for a handful of services without needing it.",
       "Forgetting that unbounded Lambda concurrency can overwhelm a downstream database.",
+      "Running an ECS cluster on EC2 instances for an occasional job and paying for idle instances; Fargate charges nothing when no tasks run.",
+      "Creating an ECS *service* for a container that prints something and exits; that is a one-off *task*.",
+      "Reaching for containers or Kubernetes when a single EC2 instance or a Lambda function would be simpler.",
+      "Believing containers each need their own full OS like VMs; they share the host kernel.",
       "Using Batch for a latency-sensitive web request path; it is for queued, asynchronous jobs.",
     ],
     exercises: [
@@ -293,6 +334,8 @@ Containers but no hosts to patch                 Fargate`,
       { difficulty: "Medium", prompt: "Decide between Lambda, Fargate, and EC2 for: nightly 30-minute ETL, image thumbnailing on upload, a Windows legacy app." },
       { difficulty: "Medium", prompt: "Explain the difference between ECS on EC2 and ECS on Fargate in terms of who patches the hosts." },
       { difficulty: "Hard", prompt: "A Lambda connected to a relational database causes connection exhaustion at peak. Propose two mitigations." },
+      { difficulty: "Easy", prompt: "List three differences between a virtual machine and a container." },
+      { difficulty: "Medium", prompt: "Write down the ECS task definition settings you would need for a small web container, and decide whether it should run as a task or a service." },
     ],
     interviewQuestions: [
       { question: "What is AWS Lambda?", answer: "A serverless compute service that runs code in response to events and bills by invocations and duration, scaling automatically." },
@@ -302,10 +345,16 @@ Containers but no hosts to patch                 Fargate`,
       { question: "Exam-style: Which service stores Docker container images?", answer: "Amazon Elastic Container Registry (ECR)." },
       { question: "Exam-style: Which service is best for a small business that wants a simple WordPress site with predictable monthly cost?", answer: "Amazon Lightsail." },
       { question: "Which service runs queued batch computing jobs without you managing a scheduler?", answer: "AWS Batch." },
+      { question: "Exam-style: A team already runs Kubernetes on premises and wants a managed equivalent on AWS. Which service?", answer: "Amazon EKS." },
+      { question: "Exam-style: Which service runs containers without provisioning or patching servers, and works with both ECS and EKS?", answer: "AWS Fargate." },
+      { question: "How is Lambda billed?", answer: "By the number of requests plus duration (memory allocated multiplied by run time), measured in 1 ms increments." },
+      { question: "Why might an ECS cluster cost money when no containers are running?", answer: "If it uses the EC2 launch type, you pay for the EC2 instances the whole time. With Fargate you pay only for running tasks." },
+      { question: "Task vs service in ECS?", answer: "A task runs containers once until they exit; a service keeps a desired number of tasks running and replaces failed ones." },
+      { question: "Exam-style: Which service orchestrates several Lambda functions into a workflow with retries and branching?", answer: "AWS Step Functions." },
     ],
     prerequisites: ["ec2-basics", "iam-basics"],
     relatedTopics: ["messaging-sqs-sns", "auto-scaling-and-load-balancing", "migration-and-innovation", "scalability"],
-    keywords: ["lambda", "serverless", "ecs", "eks", "fargate", "ecr", "container", "kubernetes", "cold start", "event driven", "aws batch", "lightsail", "ecr", "outposts", "elastic beanstalk"],
+    keywords: ["lambda", "serverless", "ecs", "eks", "fargate", "ecr", "container", "kubernetes", "cold start", "event driven", "aws batch", "lightsail", "outposts", "elastic beanstalk", "docker", "oci", "pod", "task definition", "microservices", "monolith", "app runner", "step functions", "x-ray", "bottlerocket", "virtual machine", "scale to zero"],
   },
 
   {
@@ -317,6 +366,12 @@ Containers but no hosts to patch                 Fargate`,
       "An **Amazon VPC** (Virtual Private Cloud) is a logically isolated network you define inside a Region. You choose its IP range in **CIDR** notation (for example `10.0.0.0/16`) and carve it into **subnets**, each living in a single AZ.",
       "- **Public subnet**: has a route to an **Internet Gateway (IGW)**, so resources with public IPs can reach and be reached from the internet.\n- **Private subnet**: no direct route from the internet; ideal for databases and app servers.\n- **NAT gateway**: lets private resources start outbound connections (for updates, APIs) without accepting inbound connections. It lives in a public subnet.\n- **Route tables**: decide where traffic from a subnet goes.\n- **Virtual private gateway + Site-to-Site VPN**: an encrypted tunnel over the internet to your on-premises network.\n- **AWS Direct Connect**: a dedicated private network connection from your site to AWS, with more consistent performance than the internet.",
       "Other connectors you will meet: **VPC peering** (connect two VPCs), **Transit Gateway** (a hub for many VPCs and networks), and **VPC endpoints** (reach AWS services privately without the internet).",
+      "**Scope and sizing**: a VPC belongs to one Region; each subnet sits in exactly one AZ, which is how you choose the AZ an EC2 instance lands in. In CIDR notation a *bigger* suffix means a *smaller* range: a `/16` holds 65,536 addresses, a `/24` holds 256, a `/32` is a single IPv4 address and `/0` means every address. A subnet's range must fit inside its VPC's range.",
+      "AWS does not enforce 'public' or 'private' on a subnet; those words describe its routing. To make a subnet public you (1) create an internet gateway and attach it to the VPC, (2) add a route `0.0.0.0/0 -> IGW` to the subnet's route table, and (3) give instances public IPs, for example by turning on auto-assign public IPv4 for the subnet. A brand-new route table has only the `local` route.",
+      "**Hybrid connectivity options**",
+      "- **AWS Site-to-Site VPN**: connects an office or data center network to a VPC.\n- **AWS Client VPN**: connects individual users (remote employees) to AWS or on-premises networks.\n- Both create encrypted tunnels over the internet using **IPsec**, a protocol suite that authenticates and encrypts IP packets.\n- **AWS Direct Connect**: a dedicated private line from your data center, office or a colocation facility (a shared data center where you rent space and bandwidth) into AWS, bypassing the public internet. It gives higher, more consistent bandwidth and lower latency, and can lower data transfer costs. Lower-bandwidth *hosted* connections come through AWS partners; higher-bandwidth *dedicated* connections come straight from AWS.\n- **AWS PrivateLink** (interface VPC endpoints): reach AWS services or partner services from your VPC without traffic crossing the public internet.",
+      "Exam trap: Direct Connect is **private but not encrypted by default**. When encryption is required, run a Site-to-Site VPN over it, or use MACsec on supported connections.",
+      "Practical notes: resource 'names' in the console are just the `Name` tag. Many managed services (S3, DynamoDB, Lambda by default) run in AWS-managed networks, so you do not pick a VPC for them. You cannot delete a VPC while instances still run in it.",
     ),
     analogy:
       "A VPC is a gated campus. The main gate (internet gateway) opens onto a public plaza (public subnet) with the reception and cafe. Behind it sit private office buildings (private subnets) with no street entrance; staff walk out through a controlled side door (NAT) when they need something, but strangers cannot walk in. A private tunnel to head office is the VPN; a dedicated road is Direct Connect.",
@@ -379,12 +434,17 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
       "Placing a single NAT gateway in one AZ and losing outbound access if that AZ fails.",
       "Forgetting the route table association, so the subnet is not actually public.",
       "Believing Direct Connect is encrypted by default (it is private, not automatically encrypted).",
+      "Reading CIDR backwards: a /24 is much smaller than a /16, and /0 means all addresses, not one (a single address is /32).",
+      "Naming a subnet 'public' and expecting it to work without an IGW route and public IPs.",
+      "Mixing up Site-to-Site VPN (whole networks) and Client VPN (individual users).",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Explain why a subnet with an IGW route is called public and what else an instance needs to be reachable." },
       { difficulty: "Medium", prompt: "Use the CIDR calculator to split 10.0.0.0/16 into six /24 subnets without overlap." },
       { difficulty: "Medium", prompt: "Draw the route tables for public, private, and data subnets." },
       { difficulty: "Hard", prompt: "Design connectivity from an office to AWS needing high reliability. Combine Direct Connect and VPN and describe failover." },
+      { difficulty: "Easy", prompt: "Without a calculator: which is larger, 10.0.0.0/16 or 10.0.5.0/24? How many addresses does a /32 cover?" },
+      { difficulty: "Medium", prompt: "Choose Site-to-Site VPN, Client VPN, Direct Connect or PrivateLink for: 200 remote staff, a branch office, a steady multi-gigabit data feed, private access to a partner's SaaS API." },
     ],
     interviewQuestions: [
       { question: "What makes a subnet public?", answer: "A route to an Internet Gateway in its route table (plus public IP addressing for the resources)." },
@@ -392,10 +452,14 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
       { question: "VPN vs Direct Connect?", answer: "A VPN is an encrypted tunnel over the public internet, quick to set up; Direct Connect is a dedicated private connection with more consistent latency and bandwidth." },
       { question: "Exam-style: Which component allows internet access for a public subnet?", answer: "An Internet Gateway." },
       { question: "Exam-style: A company needs a private, dedicated link between its data center and AWS. Which service?", answer: "AWS Direct Connect." },
+      { question: "Exam-style: Remote employees need secure access to resources in a VPC from their laptops. Which service?", answer: "AWS Client VPN." },
+      { question: "Exam-style: How do you encrypt traffic that travels over AWS Direct Connect?", answer: "Run an AWS Site-to-Site VPN (IPsec) over the Direct Connect link, or use MACsec where supported. Direct Connect alone is not encrypted." },
+      { question: "Exam-style: Which service lets a VPC reach AWS or partner services privately without using the public internet?", answer: "AWS PrivateLink (interface VPC endpoints)." },
+      { question: "Is a VPC global, regional or zonal? What about a subnet?", answer: "A VPC is regional; a subnet lives in a single Availability Zone." },
     ],
     prerequisites: ["aws-global-infrastructure", "ec2-basics"],
     relatedTopics: ["network-security", "dns-and-cdn", "auto-scaling-and-load-balancing", "aws-databases"],
-    keywords: ["vpc", "subnet", "cidr", "internet gateway", "nat gateway", "route table", "vpn", "direct connect", "transit gateway", "peering"],
+    keywords: ["vpc", "subnet", "cidr", "internet gateway", "nat gateway", "route table", "vpn", "direct connect", "transit gateway", "peering", "site-to-site vpn", "client vpn", "ipsec", "privatelink", "vpc endpoint", "macsec", "colocation", "public subnet", "private subnet"],
   },
 
   {
@@ -408,6 +472,9 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
       "- **Security group (SG)**: attached to an instance's network interface. **Stateful**: if you allow a request in, the reply is automatically allowed out, and vice versa. Only *allow* rules exist; anything not allowed is denied.\n- **Network ACL (NACL)**: attached to a subnet. **Stateless**: inbound and outbound are judged separately, so you must also allow return traffic (usually ephemeral ports). It supports *allow* and *deny* rules evaluated in number order.",
       "**Default behavior**: a new security group denies all inbound and allows all outbound. The *default* NACL of a default VPC allows all traffic in and out; a NACL you create yourself starts by denying everything.",
       "Security groups can reference *other security groups* as sources, which lets you say 'the app tier may talk to the database tier' without hard-coding IPs.",
+      "Exam favourite: **to block one specific IP address, use a NACL**. Security groups cannot deny, so they cannot block a single address. A NACL rule targets a range in CIDR form, and `/32` means exactly one IPv4 address (while `/0` means all addresses).",
+      "More details:",
+      "- NACL rules are checked from the lowest number up and the first match wins. Number them with gaps (100, 150, 200) so you can slot new rules in later.\n- A NACL applies to everything in its subnet, never to one instance. Each subnet uses the VPC's default NACL unless you associate a different one.\n- Security group rules name a protocol and port (SSH 22, HTTP 80, HTTPS 443, PostgreSQL 5432) and a source (a CIDR range, 'My IP', or another security group).\n- Every VPC comes with a default security group that cannot be deleted. A group that another group references cannot be deleted until that reference is removed.",
     ),
     analogy:
       "A subnet's NACL is the guard at an office building's front desk who checks every person in and every person out against a written list, and treats the two directions as separate decisions. A security group is the receptionist at each company's door who remembers 'I invited this visitor' - so when the visitor leaves, no re-check is needed.",
@@ -470,6 +537,8 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       "Opening port 22 or 3389 to the world.",
       "Misordering NACL rule numbers so a broad allow shadows a specific deny.",
       "Hard-coding IPs where a security group reference would follow the instances automatically.",
+      "Trying to block an attacker's IP with a security group; you need a NACL deny rule (or AWS WAF for web traffic).",
+      "Writing `/0` when you mean a single address; one IPv4 address is `/32`.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "State two differences between security groups and NACLs." },
@@ -483,10 +552,12 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       { question: "What are the default rules of a new security group?", answer: "All inbound denied, all outbound allowed." },
       { question: "Exam-style: Which acts at the subnet level and is stateless?", answer: "Network ACL." },
       { question: "Exam-style: Which acts at the instance level and is stateful?", answer: "Security group." },
+      { question: "Exam-style: A company must block traffic from one malicious IP address to all instances in a subnet. What should it use?", answer: "A network ACL deny rule for that address as a /32." },
+      { question: "In what order are NACL rules evaluated?", answer: "By rule number, lowest first; the first matching rule decides, and a final implicit rule denies everything else." },
     ],
     prerequisites: ["vpc-networking"],
     relatedTopics: ["iam-basics", "security-services", "shared-responsibility-model", "ec2-basics"],
-    keywords: ["security group", "nacl", "network acl", "stateful", "stateless", "firewall", "ingress", "egress", "ephemeral ports"],
+    keywords: ["security group", "nacl", "network acl", "stateful", "stateless", "firewall", "ingress", "egress", "ephemeral ports", "block ip", "/32", "rule number", "default security group"],
   },
 
   {
@@ -499,6 +570,12 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       "**Amazon Route 53** is AWS's DNS service. It registers domains, hosts DNS zones, and checks the health of endpoints. Its **routing policies** decide which answer to return:",
       "- **Simple**: one answer.\n- **Weighted**: split traffic by percentage (canary releases).\n- **Latency-based**: send users to the Region with the lowest latency.\n- **Failover**: primary/secondary, switching on failed health checks.\n- **Geolocation / Geoproximity**: route by where the user or resource is.\n- **Multivalue answer**: return several healthy records.",
       "**Amazon CloudFront** is a **content delivery network (CDN)**. It caches copies of your content (static files, video, even API responses) in **edge locations** near users, fetching from your **origin** (S3, an ALB, any HTTP server) only on a cache miss. It also provides TLS termination, DDoS absorption, and integration with AWS WAF.",
+      "Between the origin and the edge locations sit **regional edge caches**: larger caches that hold less popular content, so fewer requests travel all the way back to the origin.",
+      "**CloudFront features to know**",
+      "- **Distribution**: the CloudFront configuration. It can have several origins (and origin groups for failover) and custom error pages. Changes take a while to deploy worldwide.\n- **Behaviors**: per-path settings such as the protocol policy (for example redirect HTTP to HTTPS) and how long content stays cached.\n- **Invalidations**: remove cached files (such as `/image.jpg`) so the next request fetches a fresh copy from the origin.\n- **Geographic restrictions**: an allow list or block list of countries.\n- **Code at the edge**: **CloudFront Functions** run lightweight JavaScript at edge locations; **Lambda@Edge** is more powerful and can read and change requests and responses. Both cut latency compared with calling a Lambda function in one Region.",
+      "**Other services that use edge locations**",
+      "- **AWS Global Accelerator**: users enter the AWS network at the nearest edge location and then travel over the AWS backbone to your application. It improves performance and availability for global users (for example a single-Region app with worldwide customers, or non-HTTP traffic) without building in other Regions. It does not cache.\n- **Amazon S3 Transfer Acceleration**: a special bucket endpoint so distant users upload to a nearby edge location, after which data rides the AWS backbone to the bucket.",
+      "Exam tip: services with 'accelerat' in the name use edge locations as an **on-ramp** into AWS. CloudFront uses them as an **off-ramp**, delivering cached content out to users.",
     ),
     analogy:
       "DNS is a phone book that you consult before every call. The CDN is a chain of local libraries that keep copies of popular books, so most readers borrow from the branch around the corner instead of ordering from the central archive across the world.",
@@ -560,6 +637,9 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       "Forgetting that DNS changes are not instant because of resolver caching.",
       "Using a CNAME at the zone apex (use a Route 53 alias record).",
       "Not setting cache headers, so CloudFront cannot cache effectively.",
+      "Updating a file at the origin and expecting users to see it at once; cached copies stay until they expire or you create an invalidation.",
+      "Choosing CloudFront for faster uploads into S3 from far away; that is S3 Transfer Acceleration.",
+      "Thinking Global Accelerator caches content like CloudFront; it only routes traffic over the AWS network.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Describe each step of DNS resolution for `shop.example.com` starting from an empty cache." },
@@ -573,10 +653,15 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       { question: "What is TTL?", answer: "How long a DNS answer (or cached object) may be reused before being fetched again." },
       { question: "Exam-style: Which service reduces latency for global users by caching content at edge locations?", answer: "Amazon CloudFront." },
       { question: "Exam-style: Which Route 53 routing policy sends users to the lowest-latency Region?", answer: "Latency-based routing." },
+      { question: "Exam-style: Users around the world upload large files to one S3 bucket and uploads are slow. What helps?", answer: "Amazon S3 Transfer Acceleration." },
+      { question: "Exam-style: A single-Region application with global users, including non-HTTP traffic, needs better performance and availability via the AWS network. Which service?", answer: "AWS Global Accelerator." },
+      { question: "How do you make CloudFront serve an updated file immediately?", answer: "Create an invalidation for that path so edge locations fetch the new version from the origin." },
+      { question: "CloudFront Functions vs Lambda@Edge?", answer: "Both run code close to users. CloudFront Functions are lightweight JavaScript for simple, high-volume request tweaks; Lambda@Edge is more powerful and can work with both requests and responses." },
+      { question: "Exam-style: How can a company stop users in certain countries from accessing content served by CloudFront?", answer: "Use CloudFront geographic restrictions (an allow list or block list of countries)." },
     ],
     prerequisites: ["aws-global-infrastructure", "vpc-networking"],
     relatedTopics: ["block-file-object-storage", "security-services", "auto-scaling-and-load-balancing", "cdn", "caching"],
-    keywords: ["dns", "route 53", "cloudfront", "cdn", "edge", "ttl", "routing policy", "alias", "cache", "origin"],
+    keywords: ["dns", "route 53", "cloudfront", "cdn", "edge", "ttl", "routing policy", "alias", "cache", "origin", "regional edge cache", "invalidation", "lambda@edge", "cloudfront functions", "global accelerator", "s3 transfer acceleration", "geo restriction", "behavior", "distribution"],
   },
 
   {
@@ -592,6 +677,13 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       "**Lifecycle rules** move or expire objects automatically. S3 has high **durability** (designed for eleven nines, 99.999999999%, meaning data is very unlikely to be lost), which is different from **availability** (how often you can read it right now), which varies by class.",
       "**More storage and data-protection services**",
       "- **Amazon FSx**: fully managed third-party file systems: FSx for Windows File Server (SMB), FSx for Lustre (high-performance computing), FSx for NetApp ONTAP and FSx for OpenZFS.\n- **AWS Storage Gateway**: a hybrid service that connects on-premises apps to AWS storage using File, Volume or Tape Gateway types, with local caching.\n- **AWS Backup**: a central service to define backup policies and schedules across EC2, EBS, RDS, DynamoDB, EFS, FSx and more, with cross-Region and cross-account copy.\n- **AWS Elastic Disaster Recovery (DRS)**: continuously replicates servers to a low-cost staging area in AWS and launches them quickly after a disaster.\n- **AWS Transfer Family**: managed SFTP, FTPS and FTP endpoints that read and write to S3 or EFS, so partners keep using file-transfer clients.",
+      "**Choosing by access pattern**: need a virtual disk attached to one server? Block (EBS). Need a shared drive many servers read and write at once, with file locking, over NFS or SMB? File (EFS, FSx). Need to upload and serve files over HTTPS without managing any infrastructure? Object (S3). Object storage has no file locking and is not meant to be mounted as an OS drive or used for high-IOPS work.",
+      "**S3 fundamentals**",
+      "- An object is a **key** (its name), the **value** (the bytes), a **version ID** when versioning is on, and **metadata**. 'Folders' in the console are just key prefixes.\n- **Bucket names are globally unique**, like domain names, even though each bucket lives in one Region.\n- Objects range from 0 bytes up to a **50 TB** maximum per object (raised from 5 TB in December 2025; older material says 5 TB). Total storage is unlimited.\n- S3 Standard keeps data across at least three AZs. **Intelligent-Tiering** moves objects between access tiers based on monitored access patterns, with no retrieval fees and a small monitoring fee (it is not described as machine learning). **Standard-IA** is as fast as Standard but charges a retrieval fee, so it gets expensive if data is read often. **One Zone-IA** keeps one AZ copy, so use it only for data you can re-create.\n- Archive data now lives in the **S3 Glacier storage classes** inside S3; the original vault-based Glacier service is legacy. **S3 on Outposts** has its own class for keeping S3 data on premises.\n- Bucket types: **general purpose** (the normal choice), **directory buckets** (for S3 Express One Zone), plus **table buckets** and **vector buckets** for newer use cases.",
+      "**S3 security and protection**",
+      "- Objects and buckets are **private by default**, and **Block Public Access** is on for new buckets; you must turn it off deliberately before any policy can make data public.\n- Use **bucket policies** (Effect, Principal, Action such as `s3:GetObject`, Resource as an ARN like `arn:aws:s3:::my-bucket/*`). Granting `s3:GetObject` on the whole bucket is very broad; least privilege scopes it to a prefix or adds conditions. ACLs are legacy: AWS recommends Object Ownership set to *bucket owner enforced*, which disables ACLs.\n- A **presigned URL** shares one private object temporarily and expires after the time you set.\n- **Encryption at rest is always on** by default with SSE-S3 (S3-managed keys). Alternatives are **SSE-KMS** (keys in AWS KMS; S3 Bucket Keys reduce KMS request costs) and **DSSE-KMS** (dual-layer encryption).\n- **Versioning** keeps every version, protecting against accidental overwrites, deletions or an attacker deleting data. **Object Lock** adds write-once-read-many (WORM) protection for a retention period or indefinitely, and requires versioning.\n- Uploads can include checksums (such as SHA or CRC) to verify integrity.\n- A bucket must be **emptied before it can be deleted**.",
+      "**EBS details**: EBS lives in the EC2 console with volumes and snapshots, and **Amazon Data Lifecycle Manager** automates snapshot schedules. Volume types: **General Purpose SSD** (gp3 is current and generally preferred over gp2), **Provisioned IOPS SSD** (io1/io2) for demanding databases, **Throughput Optimized HDD** (st1) and **Cold HDD** (sc1). HDD types cannot be boot volumes. Turn on encryption at launch or by default for the Region; encrypting an existing unencrypted volume later means snapshot, encrypted copy, then restore.",
+      "**EFS details**: serverless and elastic; you pay for what you store, with no size to provision. Choose **Regional** (multi-AZ) or **One Zone** storage, lifecycle management to move cold files to cheaper Infrequent Access and Archive tiers, and throughput modes (Elastic, Provisioned or Bursting). EFS creates a **mount target** in each AZ of the VPC, and **access points** give applications their own entry point. Files outlive any instance: a new instance mounting the same file system sees the same data.",
     ),
     analogy:
       "EBS is a personal hard drive on your desk - fast, yours, but one desk at a time. EFS is a shared network folder the whole office can open. S3 is a giant warehouse with labeled boxes: you hand over a box and get a ticket, you never edit a box in place. Glacier is the deep archive basement: cheap shelves, but fetching a box takes a while.",
@@ -668,12 +760,21 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
       "Moving small objects to cold classes where minimum size or duration charges outweigh savings.",
       "Using One Zone classes for data you cannot recreate.",
       "Using Storage Gateway when a one-time bulk move is needed - that is DataSync or Snow Family territory.",
+      "Choosing Standard-IA for data read many times a month; retrieval fees make it cost more than Standard.",
+      "Trying to delete a bucket that still has objects (or old versions) in it.",
+      "Making a whole bucket public to share one file instead of using a presigned URL.",
+      "Expecting to use an HDD (st1/sc1) EBS volume as a boot volume.",
+      "Launching unencrypted EBS volumes and having to snapshot-copy-restore later to encrypt them.",
+      "Assuming S3 bucket names only need to be unique in your account; they are globally unique.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Classify each as block, file, or object: EBS, EFS, S3, instance store." },
       { difficulty: "Medium", prompt: "Write lifecycle rules for application logs kept 7 years with the cheapest cost and rare retrieval." },
       { difficulty: "Medium", prompt: "Use the unit converter to estimate the monthly size of 1 TB written daily and what that means for storage class choice." },
       { difficulty: "Hard", prompt: "Explain how you would restore a database volume after an AZ failure using snapshots, and what data could be lost." },
+      { difficulty: "Easy", prompt: "Pick block, file or object storage for: a shared folder for ten Linux web servers, a database disk, user-uploaded profile photos." },
+      { difficulty: "Medium", prompt: "Write a bucket policy that lets anyone read only the objects under the `public/` prefix of one bucket, and list what else must be changed before it works." },
+      { difficulty: "Medium", prompt: "Design protection for regulated records that must not be deleted for seven years, even by administrators. Which S3 features do you combine?" },
     ],
     interviewQuestions: [
       { question: "Durability vs availability for S3?", answer: "Durability is the likelihood data is not lost (eleven nines); availability is the likelihood you can access it at a moment, which differs between classes." },
@@ -684,10 +785,18 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
       { question: "Exam-style: Which service gives on-premises applications access to cloud storage with local caching?", answer: "AWS Storage Gateway." },
       { question: "Which service centralises backup policies across many AWS services?", answer: "AWS Backup." },
       { question: "Which service provides managed SFTP into Amazon S3?", answer: "AWS Transfer Family." },
+      { question: "Exam-style: How can you share a private S3 object with a customer for a limited time without making it public?", answer: "Generate a presigned URL with an expiry." },
+      { question: "Exam-style: Which S3 feature provides write-once-read-many (WORM) protection?", answer: "S3 Object Lock (requires versioning)." },
+      { question: "Exam-style: Which feature protects S3 data from accidental overwrites and deletions by keeping old copies?", answer: "S3 Versioning." },
+      { question: "Exam-style: Which storage service gives many Windows servers a shared SMB file system?", answer: "Amazon FSx for Windows File Server." },
+      { question: "Exam-style: Which service is a high-performance file system for HPC and machine learning workloads?", answer: "Amazon FSx for Lustre." },
+      { question: "What are the three Storage Gateway types?", answer: "File Gateway (files stored as S3 objects), Volume Gateway (block volumes backed up to AWS) and Tape Gateway (virtual tapes for existing backup software)." },
+      { question: "What is the maximum size of a single S3 object?", answer: "50 TB (it was 5 TB until December 2025)." },
+      { question: "Is S3 data encrypted by default?", answer: "Yes. All new objects are encrypted at rest with SSE-S3 unless you choose SSE-KMS or DSSE-KMS." },
     ],
     prerequisites: ["ec2-basics", "iam-basics"],
     relatedTopics: ["aws-databases", "dns-and-cdn", "security-services", "pricing-and-billing", "migration-and-innovation"],
-    keywords: ["s3", "ebs", "efs", "instance store", "glacier", "storage class", "lifecycle", "snapshot", "durability", "object storage", "express one zone", "fsx", "storage gateway", "aws backup", "elastic disaster recovery", "transfer family", "sftp"],
+    keywords: ["s3", "ebs", "efs", "instance store", "glacier", "storage class", "lifecycle", "snapshot", "durability", "object storage", "express one zone", "fsx", "storage gateway", "aws backup", "elastic disaster recovery", "transfer family", "sftp", "presigned url", "bucket policy", "block public access", "versioning", "object lock", "worm", "sse-s3", "sse-kms", "gp3", "io2", "mount target", "data lifecycle manager", "directory bucket", "intelligent-tiering", "file gateway", "tape gateway", "volume gateway"],
   },
 
   {
@@ -697,11 +806,16 @@ Rarely read compliance archive              S3 Glacier Deep Archive`,
     description: "RDS, Aurora, DynamoDB, Redshift and the specialised and migration database services.",
     explanation: md(
       "AWS offers purpose-built databases rather than one-size-fits-all.",
-      "- **Amazon RDS**: managed relational databases (MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2). AWS handles backups, patching, and failover (Multi-AZ); you manage schema and queries.\n- **Amazon Aurora**: AWS's cloud-built relational engine compatible with MySQL and PostgreSQL, with storage replicated across AZs and fast failover.\n- **Amazon DynamoDB**: serverless key-value and document NoSQL database with single-digit-millisecond performance at nearly any scale.\n- **Amazon Redshift**: data warehouse for analytic SQL over large datasets.\n- **Amazon ElastiCache**: managed in-memory cache (Redis-compatible and Memcached) to speed up reads. **DAX** is an in-memory cache specifically for DynamoDB.\n- **Amazon MemoryDB**: a durable, Redis-compatible in-memory database for use as a primary store.\n- **Amazon DocumentDB**: MongoDB-compatible document database.\n- **Amazon Neptune**: graph database for highly connected data.\n- **Amazon Keyspaces**: managed Cassandra-compatible database.\n- **Amazon Timestream**: time-series data.",
+      "- **Amazon RDS**: managed relational databases (MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2). AWS handles backups, patching, and failover (Multi-AZ); you manage schema and queries.\n- **Amazon Aurora**: AWS's cloud-built relational engine compatible with MySQL and PostgreSQL, with storage replicated across AZs and fast failover.\n- **Amazon DynamoDB**: serverless key-value and document NoSQL database with single-digit-millisecond performance at nearly any scale.\n- **Amazon Redshift**: data warehouse for analytic SQL over large datasets.\n- **Amazon ElastiCache**: managed in-memory cache (Valkey, Redis OSS and Memcached engines) to speed up reads. **DAX** is an in-memory cache specifically for DynamoDB.\n- **Amazon MemoryDB**: a durable, Redis-compatible in-memory database for use as a primary store.\n- **Amazon DocumentDB**: MongoDB-compatible document database.\n- **Amazon Neptune**: graph database for highly connected data such as fraud rings, social networks and recommendations (queried with Gremlin, openCypher or SPARQL).\n- **Amazon Keyspaces**: managed Cassandra-compatible database.\n- **Amazon Timestream**: time-series data that changes over time, such as IoT sensor readings.",
       "Migration helpers: **AWS Database Migration Service (DMS)** moves data between databases, often with little downtime, and **AWS Schema Conversion Tool (SCT)** helps convert schemas and code when changing engines (for example Oracle to PostgreSQL).",
-      "Note: Amazon QLDB (ledger database) was announced for end of support, so treat it as retired and look at alternatives when you meet it in older material. Service lineups change - verify in current docs.",
+      "Note: Amazon QLDB (a ledger database with an immutable, cryptographically verifiable journal) reached end of support in July 2025; AWS suggests Aurora PostgreSQL for ledger-style needs. Treat it as retired when you meet it in older material. Service lineups change - verify in current docs.",
       "**EC2-hosted vs managed databases**: you can install a database engine on an EC2 instance, but then you handle patching, backups, high availability, replication and scaling yourself. A managed service such as RDS, Aurora or DynamoDB automates those tasks. Self-hosting is chosen only for unsupported engines, full OS access or special licensing.",
       "**In-memory caching**: **Amazon ElastiCache** (Redis OSS/Valkey and Memcached) caches hot data to cut latency and database load; **Amazon MemoryDB** is a durable Redis-compatible database that can be the primary store; DAX caches DynamoDB reads. **AWS Database Migration Service** moves the data and the **Schema Conversion Tool / DMS Schema Conversion** converts schema and code when engines differ, for example Oracle to Aurora PostgreSQL.",
+      "**Database vocabulary the exam assumes**",
+      "- **Relational (OLTP)**: tables, rows and columns, stored row by row and queried with SQL. This is what people usually mean by 'a database' (PostgreSQL, MySQL). Good for many small, real-time transactions.\n- **Data warehouse (OLAP)**: also relational, but stored column by column so it can aggregate huge datasets (totals, averages) quickly. Data is loaded from other systems through ETL/ELT, and it serves reports and analysis rather than live transactions. On AWS: **Redshift**.\n- **Key-value (NoSQL)**: a key and a value. Very fast and scales well, but no joins. Schemaless, so items can have different attributes.\n- **Document (NoSQL)**: a kind of key-value store holding JSON-like documents. Tables become *collections*, rows become *documents*, columns become *fields*, and joins are replaced by embedding or linking.\n- **Wide-column** (Keyspaces, Cassandra-compatible), **graph** (Neptune) and **time-series** (Timestream) cover other shapes.",
+      "**DynamoDB details**: every table needs a **partition key** and optionally a **sort key**. Capacity is **on-demand** (pay per request, the most serverless option) or **provisioned** (set read and write capacity, optionally with auto scaling). It encrypts at rest by default, supports secondary indexes, time-to-live (TTL) expiry, deletion protection, and **PartiQL**, a SQL-compatible query language. There are no shards or servers for you to manage, which is why it is AWS's go-to answer for 'massively scalable' NoSQL.",
+      "**RDS and Aurora details**: Oracle and SQL Server on RDS need a licence (license-included or bring your own). **Aurora** is MySQL- and PostgreSQL-compatible, faster than the standard engines and built for high availability and durability, at a higher price than basic RDS. **Aurora Serverless v2** scales capacity up and down in place almost instantly, suiting variable or infrequent workloads (the cold-start behaviour some material mentions applied to v1, now end of life). **RDS Proxy** pools and shares connections, which protects a database from being flooded by many Lambda functions. Store database credentials in **AWS Secrets Manager**, keep the database private inside the VPC, and connect from an app server (PostgreSQL listens on port 5432 by default).",
+      "**Redshift details**: petabyte-scale and fast for complex analytical queries, but it can be expensive, so delete trial clusters (or use **Redshift Serverless**). Data is usually loaded from S3 with the `COPY` command, and **Query Editor v2** runs SQL and charts results in the browser.",
     ),
     analogy:
       "Choosing a database is like choosing storage furniture. A relational database is a filing cabinet with labeled, linked folders and strict forms. DynamoDB is a wall of numbered lockers - blazing fast to open by number, not for complicated questions. Redshift is a library's reading room set up for analysts to compare thousands of books at once. A cache is the sticky note on your monitor.",
@@ -762,6 +876,10 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       "Skipping backup and retention settings review.",
       "Leaving a database publicly accessible.",
       "Treating DMS as a schema converter (that is SCT's job).",
+      "Choosing Redshift for an app's live transactions; it is built for analytics (OLAP), not OLTP.",
+      "Expecting joins in DynamoDB; model your data around access patterns instead.",
+      "Opening a database to the internet so a laptop can connect, instead of connecting through an app server or bastion in the VPC.",
+      "Letting thousands of Lambda invocations open their own database connections; use RDS Proxy.",
       "Installing a database on EC2 'to save money' and forgetting the staff time for backups, patching and failover.",
     ],
     exercises: [
@@ -773,17 +891,122 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
     interviewQuestions: [
       { question: "RDS vs DynamoDB?", answer: "RDS is managed relational SQL with joins and transactions; DynamoDB is a serverless key-value/document store that scales horizontally for known access patterns." },
       { question: "What is DMS?", answer: "A service that migrates data between databases, including continuous replication to reduce downtime." },
-      { question: "What does ElastiCache provide?", answer: "A managed in-memory cache (Redis-compatible/Memcached) to cut read latency and database load." },
+      { question: "What does ElastiCache provide?", answer: "A managed in-memory cache (Valkey, Redis OSS or Memcached) to cut read latency and database load." },
       { question: "Exam-style: Which service is a petabyte-scale data warehouse?", answer: "Amazon Redshift." },
       { question: "Exam-style: Which service converts a database schema when migrating between engines?", answer: "AWS Schema Conversion Tool (SCT)." },
       { question: "Exam-style: Which service reduces read latency with an in-memory cache in front of a database?", answer: "Amazon ElastiCache." },
       { question: "Exam-style: What is the main advantage of RDS over a database on EC2?", answer: "AWS automates patching, backups, replication and failover, reducing operational overhead." },
+      { question: "Exam-style: Which database is MongoDB-compatible?", answer: "Amazon DocumentDB." },
+      { question: "Exam-style: Which database is Apache Cassandra-compatible?", answer: "Amazon Keyspaces." },
+      { question: "Exam-style: Which database stores IoT sensor readings that change over time?", answer: "Amazon Timestream." },
+      { question: "Exam-style: A company needs a serverless NoSQL database with single-digit-millisecond latency at any scale. Which service?", answer: "Amazon DynamoDB." },
+      { question: "Exam-style: Which database best detects fraud rings by analysing relationships between accounts?", answer: "Amazon Neptune (graph database)." },
+      { question: "OLTP vs OLAP?", answer: "OLTP handles many small real-time transactions in a row-oriented relational database (RDS, Aurora). OLAP runs large analytical aggregations over column-oriented data (Redshift)." },
+      { question: "What are DynamoDB's two capacity modes?", answer: "On-demand (pay per request) and provisioned (set read/write capacity, optionally with auto scaling)." },
     ],
     prerequisites: ["vpc-networking", "block-file-object-storage"],
     relatedTopics: ["migration-and-innovation", "security-services", "serverless-and-containers", "caching", "databases"],
-    keywords: ["rds", "aurora", "dynamodb", "redshift", "elasticache", "dax", "memorydb", "documentdb", "neptune", "dms", "sct", "nosql", "elasticache", "memorydb", "self-managed database", "sct", "dms"],
+    keywords: ["rds", "aurora", "dynamodb", "redshift", "elasticache", "dax", "memorydb", "documentdb", "neptune", "dms", "sct", "nosql", "elasticache", "memorydb", "self-managed database", "keyspaces", "timestream", "oltp", "olap", "data warehouse", "key-value", "document database", "partition key", "sort key", "partiql", "aurora serverless", "rds proxy", "valkey", "qldb", "graph database"],
   },
 
+  {
+    id: "disaster-recovery",
+    title: "Disaster Recovery and Business Continuity",
+    level: "intermediate",
+    description: "Plan for outages with RPO and RTO, pick a DR strategy from backup and restore to multi-site active/active, and know AWS Backup and Elastic Disaster Recovery.",
+    explanation: md(
+      "A **disaster** is anything that takes a workload down for longer than a normal failure: a Region-wide outage, a flood at a data center, ransomware, or someone deleting a production database. **Disaster recovery (DR)** is how you get the workload back. **Business continuity** is the wider goal: keep the business running during and after the disruption.",
+      "A **Business Continuity Plan (BCP)** documents how the business keeps operating during an unplanned disruption. For each workload it sets two numbers:",
+      "- **Recovery Point Objective (RPO)**: the maximum acceptable **data loss**, measured as time since the last good recovery point. 'How much data can we afford to lose?' An RPO of one hour means backups or replication must be at most one hour behind.\n- **Recovery Time Objective (RTO)**: the maximum acceptable **downtime**, from the interruption until service is restored. 'How long can we be down?'",
+      "The business, not the IT team alone, chooses these targets by weighing the cost of downtime and lost data against the cost and complexity of the recovery setup. Smaller RPO and RTO always cost more.",
+      "**The four AWS DR strategies**, from cheapest and slowest (cold) to most expensive and fastest (hot):",
+      "- **Backup and restore**: back up data (and keep infrastructure as code), then rebuild everything after the event. RPO and RTO in **hours**. Lowest cost; fine for lower-priority workloads.\n- **Pilot light**: data is continuously replicated to another Region and only the core pieces (such as the database) are running. Servers are switched on and scaled up after the event. RPO and RTO in **tens of minutes**.\n- **Warm standby**: a scaled-down but fully working copy of production runs all the time in the recovery Region. On failover you scale it up. RPO and RTO in **minutes**. Suits business-critical workloads.\n- **Multi-site active/active**: a full-scale copy runs in another Region and serves real traffic all the time. Near-zero downtime and data loss for mission-critical workloads, at roughly double the infrastructure cost.",
+      "**AWS services that help**",
+      "- **AWS Backup**: one place to define backup plans (schedules, retention, cross-Region and cross-account copies) for EC2, EBS, RDS, Aurora, DynamoDB, EFS, FSx, Storage Gateway and more.\n- **AWS Elastic Disaster Recovery (AWS DRS)**, formerly CloudEndure Disaster Recovery: continuously replicates on-premises or cloud servers into a low-cost staging area in a target AWS account and Region, and launches full recovery instances within minutes when needed.\n- **Replication features**: EBS snapshot copies, S3 Cross-Region Replication, RDS cross-Region read replicas, Aurora Global Database and DynamoDB global tables.\n- **Route 53 failover routing** and health checks move users to the recovery site; **CloudFormation** rebuilds infrastructure quickly and identically.",
+      "**Multi-AZ vs multi-Region**: spreading across Availability Zones (Multi-AZ RDS, Auto Scaling across AZs) protects against a data center or AZ failure and is the normal baseline for **high availability**. Copying to a second **Region** protects against a Region-wide problem or a regional disaster, and is what the four DR strategies above usually mean. High availability keeps you running through small failures; DR gets you back after big ones.",
+      "Exam tip: match the words in the question. 'Lowest cost, hours acceptable' = backup and restore. 'Core database always replicated, start servers when needed' = pilot light. 'Scaled-down full copy always running' = warm standby. 'Zero downtime, full copy serving traffic' = multi-site active/active.",
+    ),
+    analogy:
+      "Think about a bakery preparing for a fire. Backup and restore is keeping the recipes in a safe at home: you can rebuild, but it takes days. Pilot light is a second kitchen with the oven's pilot flame lit and flour in stock: you need to turn things on and hire staff. Warm standby is a small second shop already baking a few loaves that can ramp up quickly. Active/active is two full bakeries serving customers every day: if one burns, the other carries on.",
+    examples: [
+      {
+        title: "Choosing a DR strategy",
+        language: "text",
+        code: `Workload                     RPO / RTO target     Strategy
+---------------------------  -------------------  -----------------
+Internal wiki                24 h / 24 h          Backup and restore
+Order history reports        1 h / 1 h            Pilot light
+Customer web shop            minutes / minutes    Warm standby
+Payment processing           ~0 / ~0              Multi-site active/active`,
+        explanation: "Each step down the table costs more because more infrastructure runs all the time in the recovery Region.",
+      },
+      {
+        title: "A daily backup plan with a cross-Region copy (AWS Backup)",
+        language: "bash",
+        code: `aws backup create-backup-plan --backup-plan '{
+  "BackupPlanName": "daily-35d",
+  "Rules": [{
+    "RuleName": "daily",
+    "TargetBackupVaultName": "Default",
+    "ScheduleExpression": "cron(0 3 * * ? *)",
+    "Lifecycle": { "DeleteAfterDays": 35 },
+    "CopyActions": [{
+      "DestinationBackupVaultArn": "arn:aws:backup:eu-central-1:111122223333:backup-vault:dr-vault"
+    }]
+  }]
+}'`,
+        explanation: "Assign resources to the plan (for example by tag) with create-backup-selection. The copy to another Region protects against a regional disaster; the daily schedule sets an RPO of about one day.",
+      },
+    ],
+    howItWorks: md(
+      "Every DR strategy has two halves: getting **data** to the recovery site (backups or continuous replication, which sets your RPO) and getting **compute** running there (rebuild, start, scale or already live, which sets your RTO).",
+      "With backup and restore, snapshots and backups are copied to another Region and infrastructure is rebuilt from templates. Pilot light and warm standby replicate data continuously (for example a cross-Region database replica) while keeping little or some compute running. In active/active both Regions take traffic and data is replicated both ways.",
+      "Failover is usually triggered by health checks: Route 53 notices the primary is unhealthy and starts answering with the recovery site's address. **Test the plan regularly**; a DR plan that has never been rehearsed rarely meets its RTO.",
+    ),
+    diagram: `  cost / speed  low ------------------------------> high
+  Backup &        Pilot          Warm           Active/
+  restore         light          standby        active
+  [data only]     [DB running]   [small copy]   [full copy]
+  RPO/RTO hours   10s of min     minutes        near zero
+        Primary Region ==replicate==> Recovery Region
+                 Route 53 failover sends users across`,
+    whyItExists: md(
+      "Hardware fails, people make mistakes and whole areas can be hit by disasters. Without a plan, recovery is improvised, slow and often incomplete. Defining RPO and RTO up front lets a business pay for exactly the level of protection each workload needs.",
+    ),
+    whenToUse: md(
+      "Every production workload needs at least backups and a tested restore. Move up to pilot light, warm standby or active/active as the cost of downtime and data loss grows. Use AWS Backup to centralise backups and Elastic Disaster Recovery to protect servers (including on-premises ones) with low RPO and RTO.",
+    ),
+    whenNotToUse: md(
+      "Do not pay for multi-site active/active for workloads that could tolerate a few hours of downtime. Do not rely on Multi-AZ alone when the requirement is to survive a Region-wide event, and do not treat replication as a backup: deletions and corruption replicate too, so keep point-in-time backups as well.",
+    ),
+    commonMistakes: [
+      "Mixing up RPO (data loss) and RTO (downtime).",
+      "Assuming Multi-AZ is a disaster recovery plan for a Region-wide outage.",
+      "Never testing restores, then discovering backups are incomplete or too slow to restore.",
+      "Keeping backups only in the same Region and account as production.",
+      "Treating replication as a backup, so an accidental delete is copied to the DR site instantly.",
+      "Calling the service CloudEndure Disaster Recovery; it is now AWS Elastic Disaster Recovery.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Define RPO and RTO in one sentence each and give a business example of a 4-hour RPO." },
+      { difficulty: "Medium", prompt: "Order the four DR strategies by cost and recovery time, and give one workload that suits each." },
+      { difficulty: "Medium", prompt: "Design an AWS Backup plan for EC2, RDS and EFS with daily backups, 35-day retention and a copy in a second Region." },
+      { difficulty: "Hard", prompt: "A shop needs an RTO of 15 minutes and RPO of 1 minute at the lowest reasonable cost. Pick a strategy, name the AWS services for data replication and failover, and describe a failover test." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between RPO and RTO?", answer: "RPO is the maximum acceptable data loss, measured back to the last recovery point. RTO is the maximum acceptable time to restore service after an interruption." },
+      { question: "Exam-style: Which DR strategy has the lowest cost and the longest recovery time?", answer: "Backup and restore." },
+      { question: "Exam-style: Which DR strategy keeps a scaled-down but fully functional copy of production running at all times?", answer: "Warm standby." },
+      { question: "Exam-style: Which DR strategy keeps only core components such as the database running and replicated in another Region?", answer: "Pilot light." },
+      { question: "Exam-style: Which DR strategy gives near-zero downtime by running full production in multiple Regions?", answer: "Multi-site active/active." },
+      { question: "Exam-style: Which service continuously replicates on-premises servers to AWS for fast recovery?", answer: "AWS Elastic Disaster Recovery (formerly CloudEndure Disaster Recovery)." },
+      { question: "Exam-style: Which service centrally manages and automates backups across many AWS services?", answer: "AWS Backup." },
+      { question: "Does Multi-AZ protect against a Region-wide outage?", answer: "No. Multi-AZ protects against the loss of a data center or Availability Zone; surviving a Region outage needs a copy in another Region." },
+    ],
+    prerequisites: ["aws-global-infrastructure", "block-file-object-storage", "aws-databases"],
+    relatedTopics: ["well-architected-framework", "dns-and-cdn", "auto-scaling-and-load-balancing", "migration-and-innovation", "developer-and-end-user-tools"],
+    keywords: ["disaster recovery", "dr", "business continuity", "bcp", "rpo", "rto", "backup and restore", "pilot light", "warm standby", "active active", "multi-site", "aws backup", "elastic disaster recovery", "drs", "cloudendure", "cross-region replication", "failover", "multi-az", "multi-region"],
+  },
   {
     id: "monitoring-and-auditing",
     title: "Monitoring and Auditing",
@@ -793,6 +1016,14 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       "Four services answer four different questions:",
       "- **Amazon CloudWatch** - *How is it performing?* Collects **metrics** (CPU, request counts), **logs**, and events; lets you build **dashboards** and **alarms** that notify or trigger actions such as Auto Scaling.\n- **AWS CloudTrail** - *Who did what, when?* Records API calls and console actions (management events, optionally data events) for auditing and investigation. **CloudTrail Insights** flags unusual activity patterns.\n- **AWS Config** - *What does my configuration look like and did it change?* Records resource configurations over time and evaluates them against rules (for example 'all volumes must be encrypted').\n- **AWS Trusted Advisor** - *What could I improve?* Checks your account against best practices in categories: cost optimization, performance, security, fault tolerance, service limits, and operational excellence. The number of available checks depends on your support plan.",
       "Related services: **AWS Health** (notices about AWS events that affect you), **X-Ray** (tracing requests across services), and **Systems Manager** (operational management of fleets).",
+      "Exam trio to never mix up: **CloudTrail** = who did what (API calls), **CloudWatch** = how it is running (metrics, logs, alarms), **X-Ray** = where a request slowed down or failed as it passed through distributed services.",
+      "**CloudTrail in more depth**",
+      "- It records API activity from the console, CLI and SDKs. Each event shows *who* (identity and user agent), *when* (event time), *where* (source IP) and *what* (Region, resource, action).\n- It is on by default: **Event history** shows the last 90 days of management events at no charge. For longer retention, create a **trail** that delivers log files to an S3 bucket, then query them with **Amazon Athena** (or use **CloudTrail Lake**).\n- **Management events** are logged by default. **Data events** (such as S3 object-level reads and writes or Lambda invocations) and **CloudTrail Insights** (unusual API activity) are optional and cost extra.\n- Best practice: turn on log file integrity validation and encryption, send logs to a separate, locked-down logging account, and use an **organization trail** that covers all accounts and all Regions.",
+      "**CloudWatch is an umbrella** of features:",
+      "- **Metrics**: time-ordered data points grouped into namespaces per service (for EC2: CPUUtilization, DiskReadOps, NetworkIn/Out). Memory and disk-space usage inside an instance need the **CloudWatch agent**.\n- **Logs**: individual *log events* belong to a *log stream* (one source, such as one instance or one Lambda execution environment), and streams belong to a *log group*. Lambda, RDS and Glue send logs automatically; EC2 needs the agent. **Logs Insights** runs interactive queries across log groups with its own query language, with sample and saved queries.\n- **Alarms**: watch a metric against a threshold over a number of evaluation periods. States are **OK**, **ALARM** and **INSUFFICIENT_DATA**. Actions can notify via SNS, trigger Auto Scaling or stop/reboot/recover an EC2 instance. A **billing alarm** is a classic first alarm.\n- **Dashboards**: shared visual views of metrics.\n- **Events** became **Amazon EventBridge** (formerly CloudWatch Events): rules fire targets on event patterns or on a schedule, for example 'snapshot this server every hour'.",
+      "**SLAs, SLIs and SLOs**",
+      "- **SLI** (indicator): what you actually measure, such as availability, latency, throughput, error rate or durability.\n- **SLO** (objective): the target for an SLI over a period, for example 99.99% ('four nines') monthly availability.\n- **SLA** (agreement): a formal promise from provider to customer. If AWS misses it (and you met your side), you get compensation as **service credits**, which grow as monthly uptime drops.\n- AWS SLAs are **per service** and differ: for example DynamoDB promises more for global tables than for single-Region tables, the Compute SLA covers EC2, EBS, ECS, EKS and others, and the RDS SLA applies to Multi-AZ deployments. There is no single SLA page; look up '<service> SLA'.",
+      "**AWS Health Dashboard** has two views: a public **service health** view (status of every AWS service by Region) and a personalised **account health** view (formerly the Personal Health Dashboard) showing events, scheduled maintenance and guidance for *your* resources. It is free for all customers, and its events can drive alerts through EventBridge.",
     ),
     analogy:
       "CloudWatch is the dashboard of a car: speed, fuel, warning lights. CloudTrail is the car's black-box recorder: every door opened and button pressed, with the driver's identity. Config is the maintenance log showing how the car was modified over time. Trusted Advisor is the mechanic who looks over the car and says 'your tires are worn'.",
@@ -855,12 +1086,18 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       "Not retaining CloudTrail logs long enough for investigations.",
       "Alerting on too many noisy metrics until the team ignores them.",
       "Assuming all Trusted Advisor checks are available on every support plan.",
+      "Expecting CloudTrail Event history to keep events forever; create a trail to S3 for long-term retention.",
+      "Assuming S3 object reads are in CloudTrail by default; data events must be turned on.",
+      "Expecting EC2 memory usage in CloudWatch without installing the CloudWatch agent.",
+      "Confusing the SLA (the contract) with the SLO (the target) or the SLI (the measurement).",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Which service answers each: 'Why is the app slow?', 'Who changed the security group?', 'Is every volume encrypted?'" },
       { difficulty: "Medium", prompt: "Create an alarm on a metric and an SNS email subscription. Trigger it and confirm the notification." },
       { difficulty: "Medium", prompt: "Use the cron builder tool to design a schedule for a nightly EventBridge rule that runs a cleanup job." },
       { difficulty: "Hard", prompt: "Outline an incident investigation using CloudWatch, CloudTrail and Config for 'an S3 bucket became public overnight'." },
+      { difficulty: "Easy", prompt: "Define SLI, SLO and SLA for a checkout API in one sentence each." },
+      { difficulty: "Medium", prompt: "Write a Logs Insights query idea to find the 20 most recent errors in a Lambda function's log group, and say which log group and stream you would expect." },
     ],
     interviewQuestions: [
       { question: "CloudWatch vs CloudTrail?", answer: "CloudWatch monitors performance and operational data (metrics, logs, alarms); CloudTrail records API activity for governance and audit." },
@@ -868,24 +1105,33 @@ Move Oracle to PostgreSQL                          SCT + DMS`,
       { question: "What are Trusted Advisor categories?", answer: "Cost optimization, performance, security, fault tolerance, service limits, and operational excellence." },
       { question: "Exam-style: Which service logs API calls made in an AWS account?", answer: "AWS CloudTrail." },
       { question: "Exam-style: Which service can alarm when CPU utilisation exceeds a threshold?", answer: "Amazon CloudWatch." },
+      { question: "Exam-style: Which service traces requests through a microservices application to find bottlenecks?", answer: "AWS X-Ray." },
+      { question: "Exam-style: How long does CloudTrail Event history keep management events, and how do you keep them longer?", answer: "90 days. Create a trail that delivers logs to an S3 bucket (and analyse them with Athena or CloudTrail Lake)." },
+      { question: "Exam-style: Where can you see scheduled AWS maintenance that affects your own EC2 instances?", answer: "The account health view of the AWS Health Dashboard." },
+      { question: "Exam-style: What does a customer receive if AWS fails to meet a service's SLA?", answer: "Service credits." },
+      { question: "What are the three CloudWatch alarm states?", answer: "OK, ALARM and INSUFFICIENT_DATA." },
+      { question: "What was Amazon EventBridge formerly called?", answer: "CloudWatch Events." },
     ],
     prerequisites: ["iam-basics", "ec2-basics"],
     relatedTopics: ["security-services", "pricing-and-billing", "well-architected-framework", "monitoring-and-observability"],
-    keywords: ["cloudwatch", "cloudtrail", "config", "trusted advisor", "alarm", "metrics", "logs", "audit", "dashboard", "insights"],
+    keywords: ["cloudwatch", "cloudtrail", "config", "trusted advisor", "alarm", "metrics", "logs", "audit", "dashboard", "insights", "x-ray", "event history", "trail", "data events", "logs insights", "log group", "log stream", "cloudwatch agent", "eventbridge", "sla", "sli", "slo", "service credits", "health dashboard"],
   },
 
   {
     id: "analytics-services",
     title: "AWS Analytics Services",
     level: "intermediate",
-    description: "Athena, Kinesis, Glue, QuickSight, EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
+    description: "Athena, Kinesis, Glue, Amazon Quick (formerly QuickSight), EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
     explanation: md(
       "**Analytics** is turning raw data into answers. AWS offers a managed service for each stage: collecting and streaming data, storing and transforming it, querying it, and visualising it. Most services here are *managed*, so you do not run the servers.",
-      "- **Amazon Athena**: run standard SQL directly on files in S3 with no servers to manage; you pay per amount of data scanned.\n- **Amazon Kinesis**: collect and process real-time streaming data. *Data Streams* ingests and stores streams, *Data Firehose* delivers streams to S3, Redshift or OpenSearch, and *Managed Service for Apache Flink* analyses streams with SQL or code.\n- **Amazon MSK** (Managed Streaming for Apache Kafka): a managed Kafka cluster for teams already using Kafka.\n- **AWS Glue**: serverless ETL (extract, transform, load) with a **Data Catalog** that stores table definitions so Athena, Redshift and EMR can find your data.\n- **Amazon EMR**: managed big data clusters running Apache Spark, Hadoop, Hive and Presto for large batch processing.\n- **Amazon Redshift**: a managed data warehouse for fast SQL analytics over large structured data, using columnar storage.\n- **Amazon OpenSearch Service**: search, log analytics and dashboards on top of OpenSearch.\n- **Amazon QuickSight**: business intelligence; build interactive dashboards and charts, with ML insights and pay-per-session pricing for readers.\n- **AWS Data Exchange**: find, subscribe to and use third-party datasets in the cloud.",
-      "A common pattern is a **data lake**: raw data lands in S3, Glue catalogs and transforms it, Athena or Redshift queries it, and QuickSight visualises the results.",
+      "- **Amazon Athena**: run standard SQL directly on files in S3 with no servers to manage; you pay per amount of data scanned.\n- **Amazon Kinesis**: collect and process real-time streaming data. *Data Streams* ingests and stores streams, *Data Firehose* delivers streams to S3, Redshift or OpenSearch, and *Managed Service for Apache Flink* analyses streams with SQL or code.\n- **Amazon MSK** (Managed Streaming for Apache Kafka): a managed Kafka cluster for teams already using Kafka.\n- **AWS Glue**: serverless ETL (extract, transform, load) with a **Data Catalog** that stores table definitions so Athena, Redshift and EMR can find your data.\n- **Amazon EMR**: managed big data clusters running Apache Spark, Hadoop, Hive and Presto for large batch processing.\n- **Amazon Redshift**: a managed data warehouse for fast SQL analytics over large structured data, using columnar storage.\n- **Amazon OpenSearch Service**: search, log analytics and dashboards on top of OpenSearch.\n- **Amazon Quick** (formerly Amazon QuickSight, briefly Quick Suite): business intelligence; build interactive dashboards and charts, with ML insights and natural-language questions about your data.\n- **AWS Data Exchange**: find, subscribe to and use third-party datasets in the cloud.",
+      "Name changes to recognise: **Amazon Data Firehose** was Kinesis Data Firehose, **Amazon Managed Service for Apache Flink** was Kinesis Data Analytics, **Amazon OpenSearch Service** was Amazon Elasticsearch Service, and **Amazon Quick** was QuickSight. **Kinesis Video Streams** ingests and processes video. Kinesis Data Streams lets several consumers read the same records in real time; Firehose is the simpler, serverless way to just deliver a stream to S3, Redshift or OpenSearch.",
+      "**More detail on the key services**",
+      "- **Athena** is serverless and interactive: point it at CSV, JSON or Parquet files in S3 and pay per query (by data scanned). Its SQL engine is based on Trino (a Presto fork), and it also runs Apache Spark in notebooks. You can use it from the console, JDBC/ODBC drivers, CLI and SDKs. It is the usual way to query CloudTrail logs, load balancer and CloudFront logs and VPC Flow Logs stored in S3, using tables from the Glue Data Catalog.\n- **Glue**: *crawlers* discover data and infer schemas, the **Glue Data Catalog** centralises that metadata for Athena, EMR and Redshift Spectrum, and **Glue Studio** builds ETL jobs visually.\n- **AWS Lake Formation** helps you build and secure a **data lake**: a central store that keeps raw data in its native format until someone needs it.\n- **Redshift** is the exam's answer for OLAP and data-warehouse questions (OLTP, meaning transactions, points to RDS or Aurora instead). It feeds BI tools such as Amazon Quick.\n- **Amazon Quick** is comparable to Tableau or Power BI; its **SPICE** in-memory engine speeds up dashboards, and it offers ML insights such as anomaly detection, forecasting and auto-written narratives.\n- **OpenSearch Service** gives powerful search and log analytics. The older **Amazon CloudSearch** (simpler managed search) and **AWS Data Pipeline** are closed to new customers; use OpenSearch, and Glue or Step Functions, instead.",
+      "A common pattern is a **data lake**: raw data lands in S3, Glue catalogs and transforms it, Athena or Redshift queries it, and Amazon Quick visualises the results.",
     ),
     analogy:
-      "Think of a city water system. Kinesis is the river carrying a constant flow, S3 is the reservoir, Glue is the treatment plant labelling and cleaning the water, Athena is a tap you open to take a glass now, Redshift is a bottled-water warehouse built for fast big orders, and QuickSight is the dashboard in the control room showing levels.",
+      "Think of a city water system. Kinesis is the river carrying a constant flow, S3 is the reservoir, Glue is the treatment plant labelling and cleaning the water, Athena is a tap you open to take a glass now, Redshift is a bottled-water warehouse built for fast big orders, and Amazon Quick is the dashboard in the control room showing levels.",
     examples: [
       {
         title: "Query CSV files in S3 with Athena",
@@ -914,32 +1160,32 @@ LIMIT 5;`,
 -------------------------------------  ---------------------
 SQL on files in S3, no servers         Athena
 Real-time clickstream ingestion        Kinesis Data Streams
-Load a stream into S3 automatically    Kinesis Data Firehose
+Load a stream into S3 automatically    Amazon Data Firehose
 Existing Kafka applications            MSK
 Serverless ETL + data catalog          Glue
 Spark/Hadoop on big datasets           EMR
 Data warehouse for BI queries          Redshift
 Log search and dashboards              OpenSearch Service
-Business dashboards                    QuickSight
+Business dashboards                    Amazon Quick
 Buy third-party datasets               Data Exchange`,
       },
     ],
     howItWorks: md(
       "Analytics systems separate **storage** from **compute** where they can. Data sits cheaply in S3; compute services (Athena, EMR, Redshift Spectrum) read it when needed. Streaming services buffer records in shards or partitions so consumers can read them in order and at their own pace.",
-      "**Glue crawlers** scan data, infer its schema and write table metadata to the Data Catalog. **Redshift** stores data by column and distributes it across nodes, which is why aggregations over billions of rows are fast. **QuickSight** connects to these sources (and SPICE, its in-memory engine) to render dashboards.",
+      "**Glue crawlers** scan data, infer its schema and write table metadata to the Data Catalog. **Redshift** stores data by column and distributes it across nodes, which is why aggregations over billions of rows are fast. **Amazon Quick** connects to these sources (and SPICE, its in-memory engine) to render dashboards.",
     ),
     diagram: `  sources        ingest            store & prepare      analyse         visualise
  +--------+   +-----------+     +-------------+   +-----------+   +-----------+
- | apps / |-->| Kinesis / |---->| S3 data lake|-->| Athena    |-->| QuickSight|
+ | apps / |-->| Kinesis / |---->| S3 data lake|-->| Athena    |-->|   Quick   |
  | logs / |   | MSK /     |     |  + Glue ETL |   | Redshift  |   +-----------+
  | IoT    |   | Firehose  |     |  + Catalog  |   | EMR       |
  +--------+   +-----------+     +-------------+   | OpenSearch|
                                                   +-----------+`,
     whyItExists: md(
-      "Companies generate far more data than a single database can usefully hold or query. Building and operating a Hadoop cluster, a Kafka cluster and a warehouse by hand needs specialist staff. Managed analytics services let a small team ask questions of large data without that operating burden.",
+      "Companies generate far more data than a single database can usefully hold or query. Building and operating a Hadoop cluster, a Kafka cluster and a warehouse by hand needs specialist staff. **Big data** simply means data so large or unstructured that traditional databases and tools struggle to move and process it. Managed analytics services let a small team ask questions of large data without that operating burden.",
     ),
     whenToUse: md(
-      "Use Athena for occasional SQL over S3 data, Redshift for heavy repeated BI workloads, Kinesis or MSK for real-time ingestion, Glue for ETL and cataloging, EMR for Spark/Hadoop jobs, OpenSearch for search and log exploration, QuickSight for dashboards, and Data Exchange when you need an external dataset.",
+      "Use Athena for occasional SQL over S3 data, Redshift for heavy repeated BI workloads, Kinesis or MSK for real-time ingestion, Glue for ETL and cataloging, EMR for Spark/Hadoop jobs, OpenSearch for search and log exploration, Amazon Quick for dashboards, and Data Exchange when you need an external dataset.",
     ),
     whenNotToUse: md(
       "Do not use Athena or Redshift as the transactional database behind an application (use RDS or DynamoDB). Do not use EMR for tiny jobs that Lambda or Glue could do, and do not stand up Redshift for a one-off query that Athena can answer.",
@@ -948,8 +1194,10 @@ Buy third-party datasets               Data Exchange`,
       "Using a data warehouse as an application database.",
       "Storing Athena input as large uncompressed CSV, which makes each query scan (and cost) more than needed.",
       "Confusing Kinesis Data Streams (ingest and hold records) with Firehose (deliver them to a destination).",
-      "Forgetting QuickSight is for visualisation, not for storing or transforming data.",
+      "Forgetting Amazon Quick is for visualisation, not for storing or transforming data.",
       "Picking EMR when a serverless option would remove cluster management.",
+      "Answering 'RDS' to a data-warehouse or OLAP question; that is Redshift.",
+      "Learning old names only: Kinesis Data Firehose, Kinesis Data Analytics, Elasticsearch Service and QuickSight have all been renamed.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a one-line purpose for each of the nine services in this lesson without looking." },
@@ -959,19 +1207,135 @@ Buy third-party datasets               Data Exchange`,
     ],
     interviewQuestions: [
       { question: "Exam-style: Which service lets you run SQL queries directly on data in S3 without provisioning servers?", answer: "Amazon Athena." },
-      { question: "Exam-style: Which service is used to build business intelligence dashboards?", answer: "Amazon QuickSight." },
+      { question: "Exam-style: Which service is used to build business intelligence dashboards?", answer: "Amazon Quick (formerly Amazon QuickSight)." },
       { question: "Exam-style: Which service is a managed data warehouse?", answer: "Amazon Redshift." },
       { question: "Exam-style: Which service performs serverless ETL and maintains a data catalog?", answer: "AWS Glue." },
       { question: "Exam-style: Which service ingests and processes real-time streaming data?", answer: "Amazon Kinesis (Data Streams, Firehose, Managed Service for Apache Flink)." },
       { question: "Exam-style: Which service lets you find and subscribe to third-party datasets?", answer: "AWS Data Exchange." },
       { question: "Exam-style: Which service runs managed Apache Spark and Hadoop clusters?", answer: "Amazon EMR." },
       { question: "Exam-style: A company already uses Apache Kafka and wants a managed service. Which one?", answer: "Amazon MSK." },
+      { question: "Exam-style: Which service helps build, secure and manage a data lake?", answer: "AWS Lake Formation." },
+      { question: "Exam-style: Which is the simplest serverless way to load streaming data into S3 or Redshift?", answer: "Amazon Data Firehose (formerly Kinesis Data Firehose)." },
+      { question: "Exam-style: Which service provides search and log analytics, formerly called Elasticsearch Service?", answer: "Amazon OpenSearch Service." },
+      { question: "What does a Glue crawler do?", answer: "It scans data sources, infers their schema and writes table definitions into the Glue Data Catalog so services like Athena can query them." },
+      { question: "Exam-style: Which service ingests and processes live video streams?", answer: "Amazon Kinesis Video Streams." },
     ],
     prerequisites: ["block-file-object-storage", "aws-databases"],
     relatedTopics: ["block-file-object-storage", "aws-databases", "messaging-sqs-sns", "application-integration", "cloud-practitioner-exam"],
-    keywords: ["athena", "kinesis", "glue", "quicksight", "emr", "opensearch", "msk", "kafka", "data exchange", "redshift", "data lake", "etl", "data warehouse", "analytics"],
+    keywords: ["athena", "kinesis", "glue", "quicksight", "emr", "opensearch", "msk", "kafka", "data exchange", "redshift", "data lake", "etl", "data warehouse", "analytics", "amazon quick", "data firehose", "managed service for apache flink", "kinesis video streams", "lake formation", "glue data catalog", "crawler", "spice", "trino", "olap", "big data", "cloudsearch", "elasticsearch"],
   },
 
+  {
+    id: "ai-ml-services",
+    title: "AI and Machine Learning Services",
+    level: "intermediate",
+    description: "SageMaker AI, Bedrock, Amazon Q and the ready-made AI services (Rekognition, Comprehend, Lex, Polly, Transcribe, Translate, Textract, Kendra, Personalize), plus AWS ML chips.",
+    explanation: md(
+      "**Artificial intelligence (AI)** is machines doing things that normally need human intelligence. **Machine learning (ML)** is a kind of AI where a system gets better at a task by learning from data instead of being explicitly programmed. **Deep learning** is ML using artificial neural networks loosely inspired by the brain. **Generative AI** creates new content such as text, images, audio or code, usually with large **foundation models**.",
+      "AWS offers three layers, and the exam mostly asks you to pick the right one:",
+      "- **Ready-made AI services**: call an API, no ML knowledge needed (Rekognition, Polly, Comprehend and friends below).\n- **Generative AI services**: **Amazon Bedrock** and **Amazon Q**.\n- **ML platform**: **Amazon SageMaker AI** to build, train and deploy your own models, plus AWS chips and machine images for running them.",
+      "**Ready-made AI services** (know what each one does):",
+      "- **Amazon Rekognition**: analyse images and video to detect objects, people, faces, celebrities, unsafe content and text.\n- **Amazon Textract**: pull text, forms and tables out of scanned documents (more than plain OCR, it keeps the structure).\n- **Amazon Comprehend**: natural language processing; finds sentiment, entities, key phrases and topics in text such as reviews, support tickets, emails and social posts.\n- **Amazon Translate**: neural machine translation between languages.\n- **Amazon Transcribe**: **speech to text** (call recordings into transcripts, subtitles).\n- **Amazon Polly**: **text to speech** (lifelike voices reading text aloud).\n- **Amazon Lex**: build voice and text chatbots; the same conversational technology as Alexa, often used inside Amazon Connect.\n- **Amazon Kendra**: intelligent enterprise search that answers natural-language questions from your documents instead of only matching keywords.\n- **Amazon Personalize**: real-time personalised recommendations, based on the technology behind Amazon.com recommendations.",
+      "**Generative AI**",
+      "- **Amazon Bedrock**: a fully managed API service giving access to many foundation models (text, image and embeddings) from Amazon and third-party providers. You build generative AI apps, chatbots and agents, and customise models with your own data, without managing any infrastructure. It is a building block for developers, not a chat app.\n- **Amazon Q**: generative AI assistants. **Amazon Q Developer** (formerly Amazon CodeWhisperer) suggests and explains code in your IDE and helps with AWS tasks; **Amazon Q Business** answers questions over company data.",
+      "**Building your own models**",
+      "- **Amazon SageMaker AI** (formerly just Amazon SageMaker; the 'Amazon SageMaker' name now covers a wider data and AI platform): fully managed service to build, train, tune and deploy ML models at scale, with frameworks such as PyTorch, TensorFlow and Hugging Face models. **SageMaker Ground Truth** labels training data using human labellers, and **Amazon Augmented AI (A2I)** sends low-confidence predictions to people for review.\n- **AWS Deep Learning AMIs** and **Deep Learning Containers** come with popular frameworks preinstalled.\n- **AWS chips for ML**: **AWS Trainium** accelerates *training*, **AWS Inferentia** accelerates *inference* (running a trained model), and the **AWS Neuron** SDK runs ML frameworks on both. Inferentia is not a GPU; GPU instances use NVIDIA or AMD chips. Amazon Elastic Inference was discontinued; use Inferentia-based instances or GPUs instead.",
+      "**ML used inside other services**: **Amazon DevOps Guru** spots abnormal application behaviour from operational metrics, logs and events. **Amazon CodeGuru** reviews code and profiles application performance, and **Amazon Fraud Detector** finds online fraud such as fake accounts; check current availability for these two before choosing them, as AWS has been winding down several older ML services. Older study material may also mention DeepLens, DeepComposer, Elastic Inference, Forecast or the Lookout services, which are discontinued or closed to new customers.",
+      "Exam tip: the direction words matter. **Polly** turns text into speech; **Transcribe** turns speech into text; **Translate** changes language; **Textract** extracts text from documents; **Comprehend** understands the meaning of text.",
+    ),
+    analogy:
+      "Think of a restaurant. The ready-made AI services are dishes on the menu: order 'translation' and it arrives. Bedrock is a pantry stocked with prepared sauces from many famous chefs that you combine into your own dish. SageMaker AI is a fully equipped professional kitchen where you invent recipes from scratch. Trainium and Inferentia are specialised ovens: one for developing new recipes, one for serving thousands of plates fast.",
+    examples: [
+      {
+        title: "Which AI service?",
+        language: "text",
+        code: `Need                                         Service
+-------------------------------------------  ----------------
+Find faces/objects in photos or video        Rekognition
+Read forms and tables from scanned PDFs      Textract
+Sentiment of customer reviews                Comprehend
+Turn call recordings into text               Transcribe
+Read articles aloud                          Polly
+Translate a website                          Translate
+Customer-service chatbot                     Lex
+Search company docs with questions           Kendra
+"Customers also bought" recommendations      Personalize
+Build a gen AI app on foundation models      Bedrock
+AI coding assistant in the IDE               Amazon Q Developer
+Train and deploy a custom model              SageMaker AI`,
+      },
+      {
+        title: "Calling ready-made AI services from the CLI",
+        language: "bash",
+        code: `# Sentiment of a sentence
+aws comprehend detect-sentiment --language-code en \\
+  --text "The delivery was late but support was brilliant."
+
+# Labels in an image stored in S3
+aws rekognition detect-labels \\
+  --image '{"S3Object":{"Bucket":"my-photos","Name":"street.jpg"}}' \\
+  --max-labels 5
+
+# Text to speech
+aws polly synthesize-speech --output-format mp3 --voice-id Joanna \\
+  --text "Hello from Amazon Polly" hello.mp3`,
+        explanation: "No model training is involved: each call sends data to a pre-trained AWS model and returns the result.",
+      },
+    ],
+    howItWorks: md(
+      "**Ready-made services** host pre-trained models behind an API. You send an image, text or audio and get structured results back, paying per request or per unit processed.",
+      "**Bedrock** hosts foundation models behind one API. Your app sends a prompt and gets generated output; you can ground answers in your own documents (retrieval-augmented generation), add guardrails and build agents, while AWS runs the infrastructure.",
+      "**SageMaker AI** covers the full ML lifecycle: prepare and label data, train a model on managed compute (which can use Trainium or GPU instances), evaluate it, then deploy it to an endpoint (which can use Inferentia) that applications call for predictions.",
+    ),
+    diagram: `  More control / effort
+       ^
+       |  SageMaker AI   build, train, deploy own models
+       |                 (Trainium train, Inferentia infer)
+       |  Bedrock / Q    generative AI on foundation models
+       |  AI services    Rekognition, Comprehend, Polly...
+       +------------------------------------------> ease`,
+    whyItExists: md(
+      "Building ML from scratch needs specialist skills, lots of data and expensive hardware. AWS packages common AI tasks as simple APIs, gives managed access to foundation models, and runs the heavy training and hosting infrastructure, so teams can add AI features without building everything themselves.",
+    ),
+    whenToUse: md(
+      "Use a ready-made AI service when your task matches one (detecting faces, transcribing calls, translating text). Use Bedrock to build generative AI features on existing foundation models, Amazon Q for AI assistance for developers and employees, and SageMaker AI when you need a custom model trained on your own data.",
+    ),
+    whenNotToUse: md(
+      "Do not train a custom model in SageMaker AI when a ready-made service already does the job. Do not use AI services where simple rules or a database query give an exact answer. Do not send sensitive data to any AI service without checking data handling, Region and compliance requirements.",
+    ),
+    commonMistakes: [
+      "Mixing up Polly (text to speech) and Transcribe (speech to text).",
+      "Choosing Comprehend to extract text from a scanned form; that is Textract (Comprehend analyses text you already have).",
+      "Thinking Bedrock is a chatbot app like a consumer AI chat site; it is an API service for building apps on many foundation models.",
+      "Calling Inferentia a GPU or a training chip; it is an inference accelerator, and Trainium is for training.",
+      "Using old names on the exam: CodeWhisperer is now Amazon Q Developer, and SageMaker is now SageMaker AI.",
+      "Reaching for SageMaker AI to build image recognition from scratch when Rekognition already provides it.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Match each service to its job without notes: Polly, Transcribe, Translate, Textract, Comprehend, Rekognition, Lex, Kendra, Personalize." },
+      { difficulty: "Medium", prompt: "Design a call-center analytics flow: recordings become text, the text gets a sentiment score, and negative calls are flagged. Name each AWS service." },
+      { difficulty: "Medium", prompt: "Explain when a company should pick Bedrock rather than SageMaker AI, with one example each." },
+      { difficulty: "Hard", prompt: "A retailer wants a support chatbot that answers from its own policy documents. Sketch an architecture using Lex or Bedrock plus a search or knowledge source, and list the risks to manage." },
+    ],
+    interviewQuestions: [
+      { question: "Exam-style: Which service converts text into lifelike speech?", answer: "Amazon Polly." },
+      { question: "Exam-style: Which service converts speech into text?", answer: "Amazon Transcribe." },
+      { question: "Exam-style: Which service detects objects, faces and inappropriate content in images and video?", answer: "Amazon Rekognition." },
+      { question: "Exam-style: Which service extracts text, forms and tables from scanned documents?", answer: "Amazon Textract." },
+      { question: "Exam-style: Which service determines the sentiment of customer reviews?", answer: "Amazon Comprehend." },
+      { question: "Exam-style: Which service builds conversational chatbots with voice and text?", answer: "Amazon Lex." },
+      { question: "Exam-style: Which service gives intelligent search over enterprise documents using natural-language questions?", answer: "Amazon Kendra." },
+      { question: "Exam-style: Which service provides real-time product recommendations?", answer: "Amazon Personalize." },
+      { question: "Exam-style: Which service provides API access to foundation models from Amazon and other providers for generative AI apps?", answer: "Amazon Bedrock." },
+      { question: "Exam-style: Which fully managed service lets data scientists build, train and deploy custom ML models?", answer: "Amazon SageMaker AI." },
+      { question: "Exam-style: Which AI assistant generates code suggestions in the IDE (formerly CodeWhisperer)?", answer: "Amazon Q Developer." },
+      { question: "Trainium vs Inferentia?", answer: "Trainium is AWS's chip for training ML models; Inferentia is its chip for low-cost, high-performance inference. Both use the AWS Neuron SDK." },
+      { question: "AI vs ML vs deep learning?", answer: "AI is the broad goal of machines acting intelligently; ML is AI that learns from data; deep learning is ML using multi-layer neural networks." },
+    ],
+    prerequisites: ["what-is-cloud-computing", "serverless-and-containers"],
+    relatedTopics: ["analytics-services", "application-integration", "developer-and-end-user-tools", "specialised-services", "ec2-pricing"],
+    keywords: ["ai", "machine learning", "ml", "deep learning", "generative ai", "foundation model", "sagemaker", "sagemaker ai", "ground truth", "augmented ai", "a2i", "bedrock", "amazon q", "q developer", "codewhisperer", "q business", "rekognition", "textract", "comprehend", "translate", "transcribe", "polly", "lex", "kendra", "personalize", "trainium", "inferentia", "neuron", "devops guru", "codeguru", "fraud detector", "deep learning ami"],
+  },
   {
     id: "application-integration",
     title: "Application Integration Services",
@@ -981,6 +1345,12 @@ Buy third-party datasets               Data Exchange`,
       "Modern applications are made of many small parts. **Application integration** services connect those parts so they stay loosely coupled: one piece can fail, slow down or change without breaking the others.",
       "- **Amazon EventBridge**: a serverless event bus. Applications, AWS services and SaaS partners publish *events*; *rules* match them and route them to targets such as Lambda or SQS. It also provides scheduled rules (cron-style) and a scheduler.\n- **AWS Step Functions**: visual workflows (state machines) that coordinate several steps such as Lambda functions, with retries, branching, parallel work and error handling.\n- **Amazon SQS** (recap): a queue that holds messages until a consumer processes them; decouples producers and consumers.\n- **Amazon SNS** (recap): publish/subscribe notifications that fan one message out to many subscribers (email, SMS, SQS, Lambda, HTTP).\n- **Amazon API Gateway**: creates, publishes and secures REST, HTTP and WebSocket APIs in front of Lambda or other backends, with throttling, caching and authorization.\n- **Amazon SES** (Simple Email Service): send bulk and transactional email, such as receipts and newsletters, at low cost.\n- **Amazon Connect**: a cloud contact center. Customers call or chat and agents answer through a browser, with routing, IVR menus and analytics, paid per use.",
       "Rule of thumb: **SQS** when one consumer pulls work at its own pace, **SNS** when many subscribers all need the message, **EventBridge** when you route events by content from many sources, and **Step Functions** when order and state of steps matter.",
+      "Integration usually happens through an intermediate system rather than direct calls. The common patterns are **queuing**, **streaming**, **pub/sub**, **API gateways**, **state machines** and **event buses**.",
+      "**EventBridge buses** (EventBridge was formerly CloudWatch Events): every account has a **default event bus** that receives events from AWS services. You can add **custom event buses** for your own apps (including sharing across accounts) and **partner event buses** that receive events from third-party SaaS providers.",
+      "**More integration services**",
+      "- **Amazon MQ**: a managed message broker for **Apache ActiveMQ** and **RabbitMQ**. Choose it when migrating an app that already speaks those standard protocols, instead of rewriting it for SQS/SNS.\n- **Amazon MSK** (Managed Streaming for Apache Kafka): fully managed Kafka for real-time streaming pipelines, similar in purpose to Kinesis.\n- **AWS AppSync**: a fully managed **GraphQL** API service. A *schema* defines the data model and *resolvers* connect each field to a data source (DynamoDB, Lambda, OpenSearch, HTTP endpoints, RDS/Aurora, EventBridge). It supports real-time updates through GraphQL *subscriptions*, *merged APIs* that combine several teams' APIs behind one endpoint, and authorization with API keys, IAM, Cognito user pools, OpenID Connect or Lambda authorizers.\n- **API Gateway** also transforms requests and responses and can send requests to backends such as Lambda, EC2 or Kinesis.",
+      "**Which email service?**",
+      "- **SNS**: plain system notifications to operators (alarms, alerts).\n- **SES**: application email, transactional (sign-up, password reset, invoices) and bulk, with HTML templates, custom domains, inbound receiving and reputation monitoring.\n- **Amazon WorkMail**: managed business mailboxes and calendars for staff, like Outlook or Gmail.\n- **Amazon Pinpoint** was the marketing-campaign service (segments, journeys). It is closed to new customers and its engagement features end in October 2026, moving to **AWS End User Messaging** and **Amazon Connect**. Older exam material may still list it for marketing campaigns.",
     ),
     analogy:
       "A restaurant has a ticket rail (SQS) where orders wait for the cook, a loudspeaker (SNS) announcing 'table 4 is ready' to everyone, a switchboard (EventBridge) sending each kind of message to the right station, a head chef following the recipe step by step (Step Functions), a front door with a host who checks reservations (API Gateway), a mailing desk (SES) and a phone line for customers (Connect).",
@@ -1031,6 +1401,9 @@ Buy third-party datasets               Data Exchange`,
       "Writing retry and branching logic by hand inside Lambda instead of using Step Functions.",
       "Exposing a Lambda or backend directly to the internet when API Gateway would add auth and throttling.",
       "Thinking Amazon Connect is a telephone hardware product; it is a cloud service.",
+      "Rewriting an ActiveMQ or RabbitMQ application for SQS during a lift-and-shift when Amazon MQ would run it unchanged.",
+      "Using SNS email for customer-facing messages; use SES.",
+      "Confusing AppSync (GraphQL) with API Gateway (REST, HTTP and WebSocket APIs).",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Match each service to its job: EventBridge, Step Functions, API Gateway, SES, Connect." },
@@ -1045,10 +1418,14 @@ Buy third-party datasets               Data Exchange`,
       { question: "Exam-style: Which service sends transactional or marketing email?", answer: "Amazon SES." },
       { question: "Exam-style: Which service provides a cloud-based contact center?", answer: "Amazon Connect." },
       { question: "When do you choose SNS over SQS?", answer: "When one message must reach many subscribers at once; SQS is for a queue consumed by workers." },
+      { question: "Exam-style: A company is migrating an application that uses Apache ActiveMQ and wants a managed broker without code changes. Which service?", answer: "Amazon MQ." },
+      { question: "Exam-style: Which service provides managed GraphQL APIs with real-time subscriptions?", answer: "AWS AppSync." },
+      { question: "Exam-style: Which service gives employees managed business email and calendars?", answer: "Amazon WorkMail." },
+      { question: "What kinds of event bus does EventBridge offer?", answer: "The default bus (AWS service events), custom buses for your own applications, and partner buses for third-party SaaS events." },
     ],
     prerequisites: ["messaging-sqs-sns", "serverless-and-containers"],
     relatedTopics: ["messaging-sqs-sns", "serverless-and-containers", "analytics-services", "developer-and-end-user-tools"],
-    keywords: ["eventbridge", "step functions", "sns", "sqs", "api gateway", "ses", "connect", "event driven", "decoupling", "workflow", "contact center"],
+    keywords: ["eventbridge", "step functions", "sns", "sqs", "api gateway", "ses", "connect", "event driven", "decoupling", "workflow", "contact center", "amazon mq", "activemq", "rabbitmq", "msk", "appsync", "graphql", "event bus", "partner event bus", "workmail", "pinpoint", "end user messaging"],
   },
 
   {
@@ -1059,9 +1436,18 @@ Buy third-party datasets               Data Exchange`,
     explanation: md(
       "Besides core infrastructure, AWS offers tools for developers who build and ship software, and services that deliver desktops and applications to end users. **Availability note:** AWS sometimes stops accepting new customers for a service or retires it (for example Cloud9 and parts of the Code* suite have been closed to new customers). Always **check current availability** before choosing a service, but know them for the exam.",
       "**Developer tools**",
-      "- **AWS CloudShell**: a browser-based shell with the AWS CLI preinstalled, signed in with your console credentials.\n- **AWS Cloud9**: a browser-based IDE for writing and debugging code.\n- **AWS CodeCommit** (Git repositories), **CodeBuild** (compile and test), **CodeDeploy** (deploy to EC2, Lambda, on-premises), **CodePipeline** (automate the release stages), **CodeArtifact** (store packages) and **CodeStar** (project templates) form a CI/CD suite.\n- **AWS X-Ray**: traces requests through a distributed application to find slow or failing components.\n- **AWS AppConfig** (part of Systems Manager): deploy application configuration and feature flags safely, with validation and gradual rollout.\n- **AWS Amplify**: build, host and connect web and mobile front ends to backends such as authentication and storage.\n- **AWS AppSync**: managed GraphQL (and pub/sub) APIs that connect to data sources.\n- **AWS Device Farm**: test web and mobile apps on real phones and browsers.",
+      "- **AWS CloudShell**: a browser-based shell with the AWS CLI preinstalled, signed in with your console credentials.\n- **AWS Cloud9**: a browser-based IDE for writing and debugging code. It has been closed to new customers since July 2024; use CloudShell, a local IDE with the AWS Toolkit, or the console's built-in editors instead.\n- **AWS CodeCommit** (Git repositories, closed to new customers), **CodeBuild** (compile and test), **CodeDeploy** (deploy to EC2, Lambda, on-premises), **CodePipeline** (automate the release stages) and **CodeArtifact** (store packages) form a CI/CD suite. **CodeStar** (project templates) was discontinued in July 2024. A typical modern pipeline: a push to GitHub triggers CodePipeline, CodeBuild runs the build and tests, and CodeDeploy does a **blue/green** deployment, creating a new environment and shifting traffic to it.\n- **AWS X-Ray**: traces requests through a distributed application to find slow or failing components.\n- **AWS AppConfig** (part of Systems Manager): deploy application configuration and feature flags safely, with validation and gradual rollout.\n- **AWS Amplify**: build, host and connect web and mobile front ends to backends such as authentication and storage.\n- **AWS AppSync**: managed GraphQL (and pub/sub) APIs that connect to data sources.\n- **AWS Device Farm**: test web and mobile apps on real phones and browsers.\n- **AWS Toolkit for VS Code** (and other IDEs): an open-source extension to browse resources (AWS Explorer), view CDK stacks, get help writing ECS task definitions, and build, debug and deploy serverless apps with SAM and CloudFormation.\n- **Configuration and secrets**: **Systems Manager Parameter Store** holds app settings and environment variables; **AWS Secrets Manager** holds secrets such as database passwords, with automatic rotation, and apps fetch them at runtime.",
+      "**Infrastructure as Code (IaC)**",
+      "IaC means scripts that create, update and destroy infrastructure automatically. The files double as a shareable, version-controlled blueprint and inventory of your environment.",
+      "- **AWS CloudFormation**: *declarative* IaC. You describe the end state in JSON or YAML templates; it is explicit and verbose, which lowers the chance of misconfiguration. A template has `AWSTemplateFormatVersion` (still `2010-09-09`), a `Description` and `Resources` (such as `AWS::S3::Bucket`). Pseudo parameters like `AWS::StackName` and `AWS::AccountId` help build unique names. You upload a template (directly or from S3) or design it visually in **AWS Infrastructure Composer**; CloudFormation creates a **stack**, and the stack's events show why a deployment failed.\n- **AWS CDK** (Cloud Development Kit): *imperative-style* IaC in TypeScript, JavaScript, Python, Java, C#/.NET or Go. It is less verbose but more implicit. CDK **synthesizes CloudFormation templates** and deploys them as stacks, so knowing CloudFormation still helps you debug. Extras include reusable construct libraries (Construct Hub), the CDK CLI, CDK Pipelines for CI/CD and an assertions library for unit tests.\n- **AWS SAM** (Serverless Application Model): a CloudFormation extension with shorthand for serverless apps.",
+      "Exam trap, **CDK vs SDK**: both use programming languages, but CDK manages *desired state*. Deploying 'one VM' ten times still gives one VM (idempotent). An SDK script just makes API calls, so running a 'create instance' script ten times creates ten instances.",
+      "Once a stack manages a resource, change it by updating the template and redeploying. Editing it by hand causes **drift**. Deleting a stack deletes its resources (a non-empty S3 bucket must be emptied first).",
+      "**Provisioning and platform services** (most use CloudFormation underneath)",
+      "- **AWS Elastic Beanstalk**: a PaaS, similar to Heroku. Pick a platform (Docker, Go, .NET, Java, Node.js, PHP, Python, Ruby, Tomcat), upload code, and it provisions EC2, Auto Scaling, load balancing, optionally RDS, CloudWatch monitoring and SNS notifications. You can still see and change those resources. It has two environment tiers, **web server** (HTTP requests) and **worker** (background jobs pulled from an SQS queue), and presets from a cheap single instance to high availability. Deployment policies include all at once, rolling, rolling with additional batch, immutable, traffic splitting and blue/green (by swapping environment URLs). It also gives health monitoring, logs, managed platform updates and application versions you can roll back to.\n- **AWS Amplify**: tools plus fully managed hosting for full-stack web and mobile apps: Amplify Hosting (static and server-rendered sites with CI/CD), client libraries, UI components and a backend built from Cognito, AppSync or API Gateway, S3, DynamoDB and Lambda. **Amplify Gen 2** (generally available since 2024) uses a code-first TypeScript approach.\n- **AWS Quick Starts** (now AWS Partner Solutions): reference deployments as CloudFormation templates. **AWS Marketplace**: a digital catalogue of third-party software you can find, buy and deploy on AWS.",
+      "**Media**: **AWS Elemental MediaConvert** is the current file-based video transcoding service (many output formats, overlays, captions); **Amazon Elastic Transcoder** is the legacy service it replaces. **AWS Elemental MediaConnect** is different: it transports *live* video.",
+      "**Business applications** mostly appear as distractors: **Amazon Connect** (cloud contact center with phone numbers, inbound and outbound calls, IVR call flows, recording and queues, the same system Amazon's own customer service uses), **Amazon WorkMail** (business email and calendars), **Amazon SES** (application email) and **Amazon Quick** (BI dashboards, formerly QuickSight). Amazon WorkDocs was discontinued in April 2025 and Amazon Chime meetings ended in February 2026.",
       "**End-user computing**",
-      "- **Amazon WorkSpaces Family**: managed virtual desktops (Windows or Linux) for staff, billed monthly or hourly; **WorkSpaces Secure Browser** (formerly WorkSpaces Web) gives a secure, isolated browser for internal web apps.\n- **Amazon AppStream 2.0**: streams a desktop *application* to a browser instead of a whole desktop.",
+      "- **Amazon WorkSpaces Family**: managed virtual desktops (Windows or Linux), a desktop-as-a-service (DaaS) that scales to thousands of users reachable from anywhere, billed monthly or hourly; **WorkSpaces Secure Browser** (formerly WorkSpaces Web) gives a secure, isolated browser for internal web apps.\n- **Amazon AppStream 2.0**: streams a desktop *application* to a browser instead of a whole desktop.",
       "**Internet of Things**",
       "- **AWS IoT Core**: connects devices securely and routes their messages. **AWS IoT Greengrass** extends AWS to the device edge so it can run code and make decisions locally, even offline.",
     ),
@@ -1117,12 +1503,20 @@ aws s3 ls
       "Confusing CodeDeploy (deployment) with CodePipeline (orchestration) or CodeBuild (build/test).",
       "Mixing up X-Ray (tracing requests) with CloudTrail (API audit) and CloudWatch (metrics/logs).",
       "Choosing WorkSpaces when AppStream 2.0 would stream just one app.",
+      "Mixing up CDK (infrastructure in code, synthesised to CloudFormation, idempotent) and the SDKs (API calls from your app, not idempotent).",
+      "Changing a stack-managed resource by hand and creating drift, instead of updating the template.",
+      "Thinking Elastic Beanstalk hides the underlying resources; it creates EC2, load balancers and more that you can still see and change.",
+      "Storing database passwords in plain environment variables or code instead of Secrets Manager.",
+      "Picking Elastic Transcoder (legacy) or MediaConnect (live transport) for file transcoding; MediaConvert is the current choice.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "List which Code* service builds, which deploys and which orchestrates." },
       { difficulty: "Medium", prompt: "A slow API call crosses five microservices. Explain how X-Ray would help find the bottleneck." },
       { difficulty: "Medium", prompt: "Pick WorkSpaces, WorkSpaces Secure Browser or AppStream 2.0 for three different scenarios." },
       { difficulty: "Hard", prompt: "Design a release pipeline with a manual approval step and blue/green deployment, naming each AWS service." },
+      { difficulty: "Easy", prompt: "Write a minimal CloudFormation YAML template that creates one S3 bucket, and name the three top-level keys you used." },
+      { difficulty: "Medium", prompt: "Explain what happens if you run a CDK app that defines one EC2 instance three times, versus an SDK script that calls RunInstances three times." },
+      { difficulty: "Medium", prompt: "Pick an Elastic Beanstalk environment tier and deployment policy for (a) a public website that must never go fully offline during deploys, (b) a background image-processing service." },
     ],
     interviewQuestions: [
       { question: "Exam-style: Which service traces requests across a distributed application?", answer: "AWS X-Ray." },
@@ -1132,10 +1526,18 @@ aws s3 ls
       { question: "Exam-style: Which service tests mobile apps on real devices?", answer: "AWS Device Farm." },
       { question: "Exam-style: Which service lets you run code on devices locally and connect them to AWS?", answer: "AWS IoT Greengrass (with IoT Core for cloud connectivity)." },
       { question: "Exam-style: Which service provides a browser-based CLI?", answer: "AWS CloudShell." },
+      { question: "Exam-style: Which service lets you define infrastructure in JSON or YAML templates?", answer: "AWS CloudFormation." },
+      { question: "Exam-style: Which service lets developers define infrastructure using familiar programming languages?", answer: "The AWS Cloud Development Kit (CDK), which synthesizes CloudFormation templates." },
+      { question: "Exam-style: A developer wants to upload code and have AWS provision servers, load balancing and scaling automatically. Which service?", answer: "AWS Elastic Beanstalk." },
+      { question: "Exam-style: Which service stores database credentials and rotates them automatically?", answer: "AWS Secrets Manager." },
+      { question: "Exam-style: Where can a company buy and deploy third-party software that runs on AWS?", answer: "AWS Marketplace." },
+      { question: "Exam-style: Which service hosts full-stack web and mobile apps with a managed backend and CI/CD?", answer: "AWS Amplify." },
+      { question: "Exam-style: Which service converts video files into formats for different devices?", answer: "AWS Elemental MediaConvert." },
+      { question: "What are the two Elastic Beanstalk environment tiers?", answer: "Web server (handles HTTP requests) and worker (processes background jobs from an SQS queue)." },
     ],
     prerequisites: ["interacting-with-aws", "serverless-and-containers"],
     relatedTopics: ["interacting-with-aws", "serverless-and-containers", "application-integration", "monitoring-and-auditing", "governance-and-management"],
-    keywords: ["cloudshell", "cloud9", "codecommit", "codebuild", "codedeploy", "codepipeline", "x-ray", "appconfig", "amplify", "appsync", "device farm", "workspaces", "appstream", "iot core", "greengrass", "ci/cd"],
+    keywords: ["cloudshell", "cloud9", "codecommit", "codebuild", "codedeploy", "codepipeline", "x-ray", "appconfig", "amplify", "appsync", "device farm", "workspaces", "appstream", "iot core", "greengrass", "ci/cd", "infrastructure as code", "cloudformation", "cdk", "sam", "stack", "drift", "infrastructure composer", "elastic beanstalk", "blue/green", "secrets manager", "parameter store", "aws toolkit", "marketplace", "mediaconvert", "connect", "workmail", "quick starts"],
   },
 
   {
@@ -1145,8 +1547,17 @@ aws s3 ls
     description: "Config, Control Tower, Systems Manager, Service Catalog, License Manager, Compute Optimizer, Resource Groups, Launch Wizard, Health and Audit Manager.",
     explanation: md(
       "As accounts and resources multiply, you need to keep them compliant, tidy and efficient. These services help you **govern** (set and check rules) and **manage** (operate and optimise) your environment. They complement CloudWatch, CloudTrail and Trusted Advisor from the monitoring lesson.",
-      "- **AWS Config**: records resource configuration over time and evaluates it against rules (for example 'all S3 buckets must be encrypted').\n- **AWS Control Tower**: sets up and governs a secure multi-account environment (a *landing zone*) with guardrails built on Organizations and SCPs.\n- **AWS Systems Manager**: operations hub for fleets - Session Manager (shell without opening SSH), Patch Manager, Run Command, Parameter Store and Inventory.\n- **AWS Service Catalog**: a catalog of pre-approved products (CloudFormation templates) that users can launch without broad permissions.\n- **AWS License Manager**: tracks software licenses and enforces usage limits across AWS and on-premises.\n- **AWS Compute Optimizer**: analyses utilisation and recommends right-sized EC2, EBS, Lambda and other resources.\n- **AWS Resource Groups and Tag Editor**: group resources by tags and bulk-edit tags across Regions.\n- **AWS Launch Wizard**: guided deployment of enterprise workloads such as SQL Server or SAP on AWS following best practices.\n- **AWS Health Dashboard**: personal view of events affecting *your* resources (plus the **AWS Health API** to integrate alerts) and a service-health view of AWS overall.\n- **AWS Audit Manager**: continuously collects evidence to help prepare for audits against frameworks.\n- **IAM access reports**: last-accessed data and credential reports that show unused permissions.",
+      "- **AWS Config**: records resource configuration over time and evaluates it against rules (for example 'all S3 buckets must be encrypted').\n- **AWS Control Tower**: sets up and governs a secure multi-account environment (a *landing zone*) with **controls** (formerly called guardrails) built on Organizations, SCPs and Config.\n- **AWS Systems Manager**: operations hub for fleets - Session Manager (shell without opening SSH), Patch Manager, Run Command, Parameter Store and Inventory.\n- **AWS Service Catalog**: a catalog of pre-approved products (CloudFormation templates) that users can launch without broad permissions.\n- **AWS License Manager**: tracks software licenses and enforces usage limits across AWS and on-premises.\n- **AWS Compute Optimizer**: analyses utilisation and recommends right-sized EC2, EBS, Lambda and other resources.\n- **AWS Resource Groups and Tag Editor**: group resources by tags and bulk-edit tags across Regions.\n- **AWS Launch Wizard**: guided deployment of enterprise workloads such as SQL Server or SAP on AWS following best practices.\n- **AWS Health Dashboard**: personal view of events affecting *your* resources (plus the **AWS Health API** to integrate alerts) and a service-health view of AWS overall.\n- **AWS Audit Manager**: continuously collects evidence to help prepare for audits against frameworks.\n- **IAM access reports**: last-accessed data and credential reports that show unused permissions.",
       "Remember the split: **CloudTrail** answers *who did what*, **Config** answers *what does it look like and was it compliant*, **CloudWatch** answers *how is it performing*.",
+      "**AWS Organizations and multi-account setups**",
+      "- Signing up creates an **AWS account** plus that account's **root user**; an account is a container for resources and billing, not a person.\n- **AWS Organizations** creates new accounts and centrally manages them: **consolidated billing**, access control, compliance, security and resource sharing.\n- The **management account** (formerly 'master account') owns the organization. Do not confuse it with the **root user** (the all-powerful sign-in in every single account) or with the **root** of the organization tree (the top container).\n- **Organizational units (OUs)** group accounts and can be nested to form a hierarchy, for example Security, Prod and Dev OUs.\n- **Service control policies (SCPs)** set the *maximum* permissions available to accounts in the organization, an OU or selected accounts. They never grant permissions themselves; IAM still has to allow the action. SCPs are the tool for organisation-wide guardrails such as 'only these Regions may be used' for data residency. (Inside a single account, an IAM policy with an explicit deny on other Regions does the same for its users and roles.)\n- **Tag policies** standardise tag keys and values across the organization.\n- Best practice for serious workloads is **multiple accounts** that isolate environments or teams.",
+      "**AWS Control Tower** (it replaced the retired AWS Landing Zone solution) gives you:",
+      "- A **landing zone**: a well-architected baseline with sign-in through IAM Identity Center, centralised CloudTrail logs in a separate log archive account and a security audit account.\n- **Account Factory**: automated, standard account creation with pre-approved network and Region settings, offered self-service through AWS Service Catalog.\n- **Controls** (formerly guardrails): pre-packaged *preventive* (SCP-based) and *detective* (Config-based) rules applied to the whole organization or chosen OUs.",
+      "**AWS Config as compliance as code**",
+      "**Change management** is a formal process to monitor, enforce and remediate changes; **compliance as code** automates it. Config records resource configurations and changes and evaluates them against **Config rules**, giving you a resource inventory, a timeline of when each resource was or was not compliant, and help spotting security weaknesses. Key facts:",
+      "- It is enabled **per Region**.\n- Rules are AWS **managed rules** or **custom rules** backed by your own Lambda function, and run on each configuration change or periodically (for example flagging resources created outside an approved Region).\n- Rules can trigger notifications or **auto-remediation**, such as a Systems Manager Automation runbook that puts a resource back into the desired state.\n- **Conformance packs** bundle rules and remediations (deployed as CloudFormation templates) for frameworks such as CIS or NIST. Config charges per rule evaluation, so remove packs you do not need.",
+      "**Tags and Resource Groups**: a tag is a key-value pair on a resource (an EC2 instance's display name is just its `Name` tag). Tags drive organisation, cost allocation and budgets, operations (for example marking mission-critical systems), security classification, compliance and automation, and can appear in IAM policy conditions (attribute-based access control). **AWS Resource Groups** collect resources that share tags or belong to the same CloudFormation stack, so you can view and act on them together, from the Resource Groups & Tag Editor console or Systems Manager.",
+      "**More Systems Manager**: **Session Manager** (and EC2 Instance Connect) give a shell without managing SSH keys; **Automation** runbooks can, for example, build a freshly patched custom AMI every night; **AppConfig** safely deploys configuration changes and feature flags with validators, monitored rollouts and automatic rollback.",
     ),
     analogy:
       "Running many AWS accounts is like managing an apartment building. Control Tower is the building code, Config is the inspector comparing each flat to it, Systems Manager is the maintenance crew with master keys, Service Catalog is the approved furniture list, Compute Optimizer suggests which flats are too big for their tenants, and Health Dashboard is the notice board of repairs affecting your floor.",
@@ -1173,10 +1584,10 @@ Application    checkout`,
       },
     ],
     howItWorks: md(
-      "**Config** takes a snapshot of a resource whenever it changes, stores it as a configuration item, and runs managed or custom rules against it, optionally triggering remediation. **Control Tower** applies preventive guardrails (SCPs) and detective guardrails (Config rules) to accounts it provisions. **Systems Manager** uses an agent on instances (or managed nodes) so you can patch and run commands without inbound ports.",
+      "**Config** takes a snapshot of a resource whenever it changes, stores it as a configuration item, and runs managed or custom rules against it, optionally triggering remediation. **Control Tower** applies preventive controls (SCPs) and detective controls (Config rules) to accounts it provisions. **Systems Manager** uses an agent on instances (or managed nodes) so you can patch and run commands without inbound ports.",
       "**Compute Optimizer** reads CloudWatch utilisation metrics and uses machine learning to suggest cheaper or better-fitting resource types. **Health Dashboard** pushes events (maintenance, outages) that affect your own resources, and the Health API can feed them to chat or ticketing tools.",
     ),
-    diagram: `  Organizations ── Control Tower (landing zone + guardrails)
+    diagram: `  Organizations ── Control Tower (landing zone + controls)
         |
    accounts ── Config (what changed / compliant?) ── Audit Manager (evidence)
         |
@@ -1198,25 +1609,36 @@ Application    checkout`,
       "Opening SSH ports for administration when Systems Manager Session Manager avoids it.",
       "Believing Compute Optimizer changes resources for you - it only recommends.",
       "Not tagging resources, which makes Resource Groups and cost allocation weak.",
+      "Thinking an SCP grants permissions; it only sets the maximum, and IAM must still allow the action.",
+      "Calling the management account the 'root account' and confusing it with the root user.",
+      "Enabling Config in one Region and assuming every Region is covered.",
+      "Leaving unused conformance packs running and paying for every rule evaluation.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "For each of the eleven services, write one sentence on its job." },
       { difficulty: "Medium", prompt: "Explain how Config, CloudTrail and CloudWatch each help investigate an unexpectedly open S3 bucket." },
       { difficulty: "Medium", prompt: "Define a tagging standard for a company and say which services benefit from it." },
-      { difficulty: "Hard", prompt: "Plan a landing zone for production, development and security accounts using Control Tower guardrails." },
+      { difficulty: "Medium", prompt: "Write the idea of an SCP that blocks all Regions except one for every account in a 'Prod' OU, and explain why users still need IAM permissions." },
+      { difficulty: "Hard", prompt: "Plan a landing zone for production, development and security accounts using Control Tower controls." },
     ],
     interviewQuestions: [
       { question: "Exam-style: Which service evaluates resource configurations against desired rules and records changes over time?", answer: "AWS Config." },
-      { question: "Exam-style: Which service sets up a governed multi-account environment with guardrails?", answer: "AWS Control Tower." },
+      { question: "Exam-style: Which service sets up a governed multi-account environment with controls (formerly guardrails)?", answer: "AWS Control Tower." },
       { question: "Exam-style: Which service lets administrators patch and run commands on many instances without SSH?", answer: "AWS Systems Manager." },
       { question: "Exam-style: Which service provides recommendations to rightsize EC2 instances?", answer: "AWS Compute Optimizer." },
       { question: "Exam-style: Which service lets administrators offer approved, pre-configured products to users?", answer: "AWS Service Catalog." },
-      { question: "Exam-style: Which service shows events that affect your specific AWS resources?", answer: "AWS Health Dashboard (Personal Health)." },
+      { question: "Exam-style: Which service shows events that affect your specific AWS resources?", answer: "AWS Health Dashboard, account health view (formerly the Personal Health Dashboard)." },
       { question: "Exam-style: Which service helps collect evidence for audits?", answer: "AWS Audit Manager." },
       { question: "Exam-style: Which service tracks software license usage?", answer: "AWS License Manager." },
+      { question: "Exam-style: Which feature of AWS Organizations restricts the maximum permissions of member accounts, for example to approved Regions only?", answer: "Service control policies (SCPs)." },
+      { question: "Exam-style: Which AWS Organizations feature combines bills from many accounts into one payment?", answer: "Consolidated billing." },
+      { question: "Exam-style: Which Control Tower feature automates provisioning of new standardised accounts?", answer: "Account Factory." },
+      { question: "Exam-style: Which service lets you group resources that share tags and act on them together?", answer: "AWS Resource Groups (with Tag Editor)." },
+      { question: "Exam-style: How can a company apply a packaged set of Config rules for a framework like CIS?", answer: "Deploy an AWS Config conformance pack." },
+      { question: "What is the difference between the management account and the root user?", answer: "The management account is the AWS account that owns an organization; the root user is the all-powerful sign-in identity that exists in every AWS account." },
     ],
     prerequisites: ["monitoring-and-auditing", "security-services"],
     relatedTopics: ["monitoring-and-auditing", "security-services", "pricing-and-billing", "developer-and-end-user-tools", "support-and-partner-resources"],
-    keywords: ["config", "control tower", "systems manager", "service catalog", "license manager", "compute optimizer", "resource groups", "tag editor", "launch wizard", "health dashboard", "audit manager", "landing zone", "governance"],
+    keywords: ["config", "control tower", "systems manager", "service catalog", "license manager", "compute optimizer", "resource groups", "tag editor", "launch wizard", "health dashboard", "audit manager", "landing zone", "governance", "organizations", "management account", "organizational unit", "ou", "scp", "service control policy", "consolidated billing", "account factory", "controls", "guardrails", "conformance pack", "compliance as code", "tags", "tag policy", "appconfig", "session manager", "multi-account"],
   },
 ];

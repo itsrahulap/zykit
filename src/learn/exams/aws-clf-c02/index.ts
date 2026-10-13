@@ -2,6 +2,7 @@
 import type { ExamQuestion } from '../types';
 import { billingSupportQuestions } from './questions/billing-support';
 import { cloudConceptsQuestions } from './questions/cloud-concepts';
+import { courseReviewQuestions } from './questions/course-review';
 import { securityComplianceQuestions } from './questions/security-compliance';
 import { technologyCoreQuestions } from './questions/technology-core';
 import { technologyMoreQuestions } from './questions/technology-more';
@@ -12,4 +13,5 @@ export const questions: ExamQuestion[] = [
   ...technologyCoreQuestions,
   ...technologyMoreQuestions,
   ...billingSupportQuestions,
+  ...courseReviewQuestions,
 ];

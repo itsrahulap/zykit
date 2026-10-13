@@ -2155,7 +2155,8 @@ export const catalog: LearnCatalog = {
             "vpc-networking",
             "well-architected-framework",
             "cdn",
-            "scalability"
+            "scalability",
+            "disaster-recovery"
           ]
         },
         {
@@ -2170,7 +2171,8 @@ export const catalog: LearnCatalog = {
             "iam-basics",
             "aws-global-infrastructure",
             "serverless-and-containers",
-            "monitoring-and-auditing"
+            "monitoring-and-auditing",
+            "developer-and-end-user-tools"
           ]
         },
         {
@@ -2187,7 +2189,8 @@ export const catalog: LearnCatalog = {
             "shared-responsibility-model",
             "auto-scaling-and-load-balancing",
             "block-file-object-storage",
-            "scalability"
+            "scalability",
+            "specialised-services"
           ]
         },
         {
@@ -2367,6 +2370,24 @@ export const catalog: LearnCatalog = {
           ]
         },
         {
+          "id": "disaster-recovery",
+          "title": "Disaster Recovery and Business Continuity",
+          "level": "intermediate",
+          "description": "Plan for outages with RPO and RTO, pick a DR strategy from backup and restore to multi-site active/active, and know AWS Backup and Elastic Disaster Recovery.",
+          "prerequisites": [
+            "aws-global-infrastructure",
+            "block-file-object-storage",
+            "aws-databases"
+          ],
+          "relatedTopics": [
+            "well-architected-framework",
+            "dns-and-cdn",
+            "auto-scaling-and-load-balancing",
+            "migration-and-innovation",
+            "developer-and-end-user-tools"
+          ]
+        },
+        {
           "id": "monitoring-and-auditing",
           "title": "Monitoring and Auditing",
           "level": "intermediate",
@@ -2386,7 +2407,7 @@ export const catalog: LearnCatalog = {
           "id": "analytics-services",
           "title": "AWS Analytics Services",
           "level": "intermediate",
-          "description": "Athena, Kinesis, Glue, QuickSight, EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
+          "description": "Athena, Kinesis, Glue, Amazon Quick (formerly QuickSight), EMR, OpenSearch Service, MSK, Data Exchange and Redshift - which analytics tool fits which data job.",
           "prerequisites": [
             "block-file-object-storage",
             "aws-databases"
@@ -2397,6 +2418,23 @@ export const catalog: LearnCatalog = {
             "messaging-sqs-sns",
             "application-integration",
             "cloud-practitioner-exam"
+          ]
+        },
+        {
+          "id": "ai-ml-services",
+          "title": "AI and Machine Learning Services",
+          "level": "intermediate",
+          "description": "SageMaker AI, Bedrock, Amazon Q and the ready-made AI services (Rekognition, Comprehend, Lex, Polly, Transcribe, Translate, Textract, Kendra, Personalize), plus AWS ML chips.",
+          "prerequisites": [
+            "what-is-cloud-computing",
+            "serverless-and-containers"
+          ],
+          "relatedTopics": [
+            "analytics-services",
+            "application-integration",
+            "developer-and-end-user-tools",
+            "specialised-services",
+            "ec2-pricing"
           ]
         },
         {
@@ -2453,7 +2491,7 @@ export const catalog: LearnCatalog = {
           "id": "security-services",
           "title": "AWS Security Services",
           "level": "advanced",
-          "description": "Organizations and SCPs, Artifact, Shield, WAF, KMS, Inspector, GuardDuty, Security Hub and Macie.",
+          "description": "Organizations and SCPs, Artifact, Shield, WAF, KMS and CloudHSM, Inspector, GuardDuty, Security Hub, Macie, plus zero trust, cryptography and compliance basics.",
           "prerequisites": [
             "iam-basics",
             "network-security",
@@ -2463,7 +2501,8 @@ export const catalog: LearnCatalog = {
             "monitoring-and-auditing",
             "pricing-and-billing",
             "well-architected-framework",
-            "block-file-object-storage"
+            "block-file-object-storage",
+            "governance-and-management"
           ]
         },
         {
@@ -2479,7 +2518,8 @@ export const catalog: LearnCatalog = {
             "well-architected-framework",
             "migration-and-innovation",
             "security-services",
-            "block-file-object-storage"
+            "block-file-object-storage",
+            "support-and-partner-resources"
           ]
         },
         {
@@ -2496,7 +2536,26 @@ export const catalog: LearnCatalog = {
             "well-architected-framework",
             "pricing-and-billing",
             "serverless-and-containers",
-            "security-services"
+            "security-services",
+            "aws-databases",
+            "ai-ml-services"
+          ]
+        },
+        {
+          "id": "specialised-services",
+          "title": "Specialised Services: HPC, Quantum, Satellite and Custom Chips",
+          "level": "advanced",
+          "description": "High performance computing (ParallelCluster, EFA, placement groups, Batch), Amazon Braket, AWS Ground Station, and AWS-designed chips: Graviton, Inferentia and Trainium.",
+          "prerequisites": [
+            "ec2-basics",
+            "auto-scaling-and-load-balancing"
+          ],
+          "relatedTopics": [
+            "ec2-pricing",
+            "ai-ml-services",
+            "serverless-and-containers",
+            "block-file-object-storage",
+            "well-architected-framework"
           ]
         },
         {
@@ -2514,14 +2573,15 @@ export const catalog: LearnCatalog = {
             "monitoring-and-auditing",
             "migration-and-innovation",
             "scalability",
-            "cloud-practitioner-exam"
+            "cloud-practitioner-exam",
+            "disaster-recovery"
           ]
         },
         {
           "id": "support-and-partner-resources",
           "title": "Support Plans and Partner Resources",
           "level": "advanced",
-          "description": "Support plans, Support Center, re:Post, Knowledge Center, Partner Network, Marketplace, Professional Services, Solutions Architects, IQ, AMS and Activate.",
+          "description": "Current support plans (Dec 2025 lineup), Trusted Advisor, Support Center, re:Post, Knowledge Center, Partner Network, Marketplace, Professional Services, Solutions Architects, AMS and Activate.",
           "prerequisites": [
             "pricing-and-billing"
           ],
@@ -2536,7 +2596,7 @@ export const catalog: LearnCatalog = {
           "id": "cloud-practitioner-exam",
           "title": "AWS Cloud Practitioner Exam (CLF-C02)",
           "level": "advanced",
-          "description": "Exam format and domains, a study plan, question strategies, and a task-statement map, and a 25-question practice set.",
+          "description": "Exam format and domains, a study plan, question strategies, a task-statement map, look-alike names, and a 27-question practice set.",
           "prerequisites": [
             "well-architected-framework",
             "pricing-and-billing"
@@ -2546,7 +2606,9 @@ export const catalog: LearnCatalog = {
             "shared-responsibility-model",
             "iam-basics",
             "security-services",
-            "migration-and-innovation"
+            "migration-and-innovation",
+            "support-and-partner-resources",
+            "ai-ml-services"
           ]
         }
       ]
