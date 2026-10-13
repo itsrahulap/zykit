@@ -6,7 +6,7 @@ export const awsCloudPractitioner: Exam = {
   title: 'AWS Certified Cloud Practitioner',
   code: 'CLF-C02',
   description:
-    'Practice questions and full-length mock tests for the AWS Certified Cloud Practitioner exam, with an explanation for every answer.',
+    'Free AWS Certified Cloud Practitioner (CLF-C02) practice exam: questions with explanations, timed 65-question mock tests and practice by domain, updated for 2026 AWS changes.',
   domains: [
     { id: 'cloud-concepts', title: 'Cloud Concepts', weight: 0.24 },
     { id: 'security-compliance', title: 'Security and Compliance', weight: 0.3 },
@@ -22,5 +22,15 @@ export const awsCloudPractitioner: Exam = {
     'Scored from 100 to 1,000; you need **700** to pass. Unanswered questions count as wrong, so never leave one blank.',
     'Mock tests here use the same format and domain weights, and pass at 70% correct as a rough match for 700.',
     'AWS changed its Support plans in December 2025 (now Basic, Business Support+, Enterprise Support and Unified Operations). Questions here use the current plans and explain the older names, which the exam may still use.',
+  ],
+  updates: [
+    '**Support plans** changed in December 2025: Basic, Business Support+, Enterprise Support and Unified Operations. Developer and Business Support closed to new customers and Enterprise On-Ramp is being retired. Older questions may still use the old names.',
+    'Changing your **Support plan** no longer requires the root user; an IAM user with the right permissions can do it.',
+    '**AWS KMS** now uses FIPS 140-3 **Level 3** validated HSMs, so "KMS is Level 2, CloudHSM is Level 3" is outdated. CloudHSM’s real difference is single-tenant HSMs you control.',
+    '**Amazon S3** objects can now be up to **50 TB** (previously 5 TB).',
+    'The original **Security Hub** is now **AWS Security Hub CSPM**; a new AWS Security Hub correlates findings from CSPM, GuardDuty, Inspector and Macie.',
+    'New accounts since July 15, 2025 get **Free Tier credits** on a Free or Paid plan instead of the old 12-month free tier.',
+    '**Retired or closed to new customers:** Snowball Edge (use DataSync or AWS Data Transfer Terminal), AWS IQ, Cloud9, CodeCommit and QLDB.',
+    '**Renamed:** QuickSight → Amazon Quick, CodeWhisperer → Amazon Q Developer, CloudEndure → AWS Elastic Disaster Recovery, Elasticsearch Service → OpenSearch Service.',
   ],
 };

@@ -2,7 +2,7 @@
 // results with per-domain scores and a full review. Progress is kept in localStorage (examStore).
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { useDocumentMeta } from '../../shared/hooks/useDocumentMeta';
 import { Headline } from '../../shared/ui/page';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -11,7 +11,8 @@ import { cardClass, SectionHeading, StatTile } from '../components/learnUi';
 import { LoadError, LoadingState, NotFoundState } from '../components/PageStates';
 import { ProgressBar } from '../components/ProgressBar';
 import { InlineText, RichText } from '../components/RichText';
-import { buildMockTest, buildPractice, formatClock, isCorrect, scoreTest, type Score, type TestItem } from './engine';
+import { buildMockTest, buildPractice, formatClock, isCorrect, sampleQuestions, scoreTest, type Score, type TestItem } from './engine';
+import { examMeta, SAMPLES_PER_DOMAIN } from './seo';
 import { examStore, getExam, recordAttempt, type Attempt } from './index';
 import type { Exam, ExamQuestion } from './types';
 
@@ -29,11 +30,7 @@ export default function ExamPage() {
   const [failed, setFailed] = useState(false);
   const [view, setView] = useState<View>({ name: 'home' });
 
-  useDocumentMeta(
-    entry
-      ? { title: `${entry.exam.title} (${entry.exam.code}) practice exam`, description: entry.exam.description }
-      : { title: 'Not found', noindex: true },
-  );
+  useDocumentMeta(entry ? examMeta(entry.exam, bank?.length) : { title: 'Not found', noindex: true });
   useEffect(() => {
     entry?.load().then(setBank, () => setFailed(true));
   }, [entry]);
@@ -168,6 +165,60 @@ function ExamHome({ exam, bank, onStart }: { exam: Exam; bank: ExamQuestion[]; o
             Practice my mistakes ({missedQs.length})
           </Button>
         </div>
+      </section>
+
+      <section aria-labelledby="updates" className={`${cardClass} space-y-3 p-6 sm:p-8`}>
+        <h2 id="updates" className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          What changed since most study guides were written
+        </h2>
+        <ul className="max-w-4xl space-y-2 text-slate-700 dark:text-slate-300">
+          {exam.updates.map((u) => (
+            <li key={u} className="flex gap-2">
+              <Icon name="info" className="mt-1 h-4 w-4 shrink-0 text-slate-400" />
+              <span>
+                <InlineText text={u} />
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="samples" className="space-y-6">
+        <SectionHeading id="samples">Sample questions with answers</SectionHeading>
+        <p className="max-w-3xl text-slate-600 dark:text-slate-400">
+          A few questions from each domain. Open one to see the answer and why. Study the topics behind them in the{' '}
+          <Link to="/learn/aws" className="font-semibold text-emerald-700 hover:underline dark:text-emerald-400">
+            AWS Cloud lessons
+          </Link>
+          , then take a mock test.
+        </p>
+        {exam.domains.map((d) => (
+          <div key={d.id} className="space-y-3">
+            <h3 className="font-semibold text-slate-900 dark:text-white">{d.title}</h3>
+            <ol className="max-w-4xl divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+              {sampleQuestions(exam, bank, SAMPLES_PER_DOMAIN)
+                .filter((q) => q.domain === d.id)
+                .map((q) => (
+                  <li key={q.id} className="p-4 sm:px-5">
+                    <details className="group">
+                      <summary className="cursor-pointer list-none font-medium text-slate-900 dark:text-white [&::-webkit-details-marker]:hidden">
+                        <InlineText text={q.question} />
+                      </summary>
+                      <ul className="mt-3 space-y-1 text-sm">
+                        {q.options.map((o, i) => (
+                          <li key={i} className={q.answer.includes(i) ? 'font-semibold text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}>
+                            {LETTERS[i]}. <InlineText text={o} />
+                            {q.answer.includes(i) && ' (correct)'}
+                          </li>
+                        ))}
+                      </ul>
+                      <RichText text={q.explanation} className="mt-3 text-sm" />
+                    </details>
+                  </li>
+                ))}
+            </ol>
+          </div>
+        ))}
       </section>
 
       {attempts.length > 0 && (

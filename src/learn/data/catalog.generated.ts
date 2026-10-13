@@ -2126,7 +2126,7 @@ export const catalog: LearnCatalog = {
     {
       "id": "aws",
       "title": "AWS Cloud",
-      "description": "Cloud fundamentals and the core Amazon Web Services, from first principles to the Cloud Practitioner exam.",
+      "description": "Cloud fundamentals and the core Amazon Web Services, from first principles to the AWS Certified Cloud Practitioner (CLF-C02) exam.",
       "topics": [
         {
           "id": "what-is-cloud-computing",

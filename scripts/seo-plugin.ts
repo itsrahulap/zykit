@@ -89,6 +89,32 @@ function toolBody(tool: Tool, tools: Tool[], docsHtml = '') {
   );
 }
 
+/** Mirrors src/learn/exams/types.ts (not imported: the build script's tsconfig doesn't include src/). */
+interface ExamQuestionData {
+  id: string;
+  domain: string;
+  question: string;
+  options: string[];
+  answer: number[];
+  explanation: string;
+}
+interface ExamData {
+  id: string;
+  title: string;
+  code: string;
+  description: string;
+  domains: { id: string; title: string; weight: number }[];
+  questionCount: number;
+  minutes: number;
+  passRatio: number;
+  facts: string[];
+  updates: string[];
+}
+interface ExamSeoModule {
+  SAMPLES_PER_DOMAIN: number;
+  examMeta(e: ExamData, n?: number): { title: string; description: string };
+  examStructuredData(e: ExamData, s: ExamQuestionData[], url: string, siteUrl: string): unknown;
+}
 interface BlogModule {
   blogPages(): { file: string; path: string; post?: unknown }[];
   blogHomeHtml(title: string, description: string): string;
@@ -159,6 +185,25 @@ export function seoPlugin(): Plugin {
         const d = docs.get(t.id);
         return d ? docsHtml.toolDocsHtml(t.name, d) : '';
       };
+      // The certification practice exam page (src/learn/exams), with sample questions and Quiz JSON-LD.
+      const [examDef, examBank, examSeo, examPage, engine] = await Promise.all([
+        load<{ awsCloudPractitioner: ExamData }>('src/learn/exams/aws-clf-c02/exam.ts'),
+        load<{ questions: ExamQuestionData[] }>('src/learn/exams/aws-clf-c02/index.ts'),
+        load<ExamSeoModule>('src/learn/exams/seo.ts'),
+        load<{ examHtml(e: ExamData, n: number, s: ExamQuestionData[], t: string): string }>('src/learn/exams/examHtml.ts'),
+        load<{ sampleQuestions(e: ExamData, b: ExamQuestionData[], n: number): ExamQuestionData[] }>('src/learn/exams/engine.ts'),
+      ]);
+      const exam = examDef.awsCloudPractitioner;
+      const examPath = `/learn/exams/${exam.id}`;
+      const examM = examSeo.examMeta(exam, examBank.questions.length);
+      const examMetaFull: Meta = { title: `${examM.title} · ${site.SITE.name}`, description: examM.description, url: `${site.SITE.url}${examPath}` };
+      const samples = engine.sampleQuestions(exam, examBank.questions, examSeo.SAMPLES_PER_DOMAIN);
+      const examPageHtml = renderPage(
+        template,
+        examMetaFull,
+        examSeo.examStructuredData(exam, samples, examMetaFull.url, site.SITE.url),
+        examPage.examHtml(exam, examBank.questions.length, samples, examM.title),
+      );
       const [blog, blogSeo] = await Promise.all([load<BlogModule>('src/blog/html.ts'), load<BlogSeoModule>('src/blog/seo.ts')]);
       const blogPages = blog.blogPages().map((b) => {
         const m = b.post ? blogSeo.postMeta(b.post) : blogSeo.blogHomeMeta();
@@ -178,12 +223,13 @@ export function seoPlugin(): Plugin {
         ]),
         ...learn.map((p): [string, string] => [p.file, renderPage(template, learnMeta(p), p.structuredData, p.body)]),
         ...blogPages.map((b): [string, string] => [b.file, b.html]),
+        [`${examPath.slice(1)}.html`, examPageHtml],
       ];
       for (const [file, page] of pages) {
         await mkdir(dirname(join(outDir, file)), { recursive: true });
         await writeFile(join(outDir, file), page);
       }
-      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url), ...blogPages.map((b) => b.meta.url)]));
+      await writeFile(join(outDir, 'sitemap.xml'), sitemap([home.url, ...tools.map((t) => seo.toolMeta(t).url), ...learn.map((p) => learnMeta(p).url), ...blogPages.map((b) => b.meta.url), examMetaFull.url]));
       config.logger.info(`seo: wrote ${pages.length} pages and sitemap.xml`);
     },
   };

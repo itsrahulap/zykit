@@ -37,4 +37,6 @@ export interface Exam {
   passRatio: number;
   /** Facts shown on the exam page. */
   facts: string[];
+  /** Recent changes older study material gets wrong; shown on the page and in its search page. */
+  updates: string[];
 }

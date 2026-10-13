@@ -95,3 +95,8 @@ export function formatClock(seconds: number): string {
   const ss = String(s % 60).padStart(2, '0');
   return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
+
+/** A stable sample of `perDomain` questions from each domain, in bank order (shown on the page and in its search page). */
+export function sampleQuestions(exam: Exam, bank: ExamQuestion[], perDomain: number): ExamQuestion[] {
+  return exam.domains.flatMap((d) => bank.filter((q) => q.domain === d.id).slice(0, perDomain));
+}
