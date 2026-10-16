@@ -8,18 +8,18 @@ export const aiAgentTopics: Topic[] = [
     level: "beginner",
     description: "An LLM that decides its own next steps in a loop, using tools, until a goal is done - and when a simpler design is better.",
     explanation: md(
-      "An **AI agent** is a program where a large language model (LLM) is given a goal, a set of **tools** (functions it may ask your code to run, such as 'read a file' or 'search the docs'), and a loop. On every turn the model looks at everything that has happened so far and decides what to do next: call a tool, call several tools, or stop and give an answer. Your code runs the tools the model asked for, sends the results back, and the model decides again.",
-      "The key word is **decides**. In an agent, the *model* chooses the sequence of steps at run time. You do not know in advance whether it will take two steps or twelve, or which tools it will pick. That flexibility is the whole point - and also the whole risk.",
-      "It helps to place agents on a ladder of three designs that people often confuse:",
-      "- **Chatbot (single call)**: text in, text out. One request to the model, one reply. No tools, no loop. Example: 'rewrite this email to sound friendlier'.\n- **Workflow**: an LLM is used inside a sequence of steps that *your code* defines. The path is fixed or chosen by simple rules: classify the ticket, then route it, then draft a reply, then check the draft. The model fills in the blanks; the program holds the steering wheel.\n- **Agent**: the model holds the steering wheel. It picks which tool to use, reads the result, and keeps going until it judges the task done (or until your safety limits stop it).",
-      "A useful definition from practitioners: workflows are systems where LLMs and tools are orchestrated through **predefined code paths**; agents are systems where the LLM **dynamically directs its own process and tool usage**. Both are useful. Neither is automatically better.",
-      "Every agent is built from the same four parts:",
-      "- **Model**: the LLM that reasons and chooses actions.\n- **Tools**: functions with a name, a description, and an input schema (a JSON Schema describing the arguments). The model can only *request* a tool; your code actually runs it.\n- **Loop**: call the model, run any requested tools, append the results to the conversation, call the model again - until it stops asking for tools.\n- **Guardrails**: a maximum number of steps, timeouts, permission checks, human approval for risky actions, and logging so you can see what happened.",
-      "**When NOT to build an agent** is the most important lesson on this page. Start with the simplest thing that works: a single well-written prompt. If that is not enough, add retrieval (fetching relevant documents) or a fixed workflow. Only reach for an agent when the steps genuinely cannot be known in advance - because agents cost more (many model calls per task), are slower, are harder to test (each run can take a different path), and can make compounding mistakes (a wrong step early leads every later step astray).",
-      "Good agent tasks share a few traits: the task is open-ended, the number of steps varies, the model needs feedback from the environment (test results, search hits, file contents) to make progress, and mistakes are cheap to detect and recover from. Coding assistants that edit files and run tests, research assistants that search and read iteratively, and support assistants that look up orders and take bounded actions are classic examples.",
+      "An **AI agent** gives a large language model (LLM) a goal, a set of **tools** (functions it can ask your code to run, like 'read a file' or 'search the docs'), and a loop. Each turn, the model looks at everything so far and decides what to do: call one or more tools, or stop and answer. Your code runs the tools, sends back the results, and the model decides again.",
+      "The key word is **decides**. The *model* picks the steps at run time. You don't know in advance whether it will take two steps or twelve, or which tools it will use. That flexibility is the whole point, and the whole risk.",
+      "People often confuse three designs:",
+      "- **Chatbot (single call)**: one request, one reply. No tools, no loop. Example: 'rewrite this email to sound friendlier'.\n- **Workflow**: the LLM runs inside steps that *your code* defines. The path is fixed or chosen by simple rules: classify the ticket, route it, draft a reply, check the draft. The model fills in the blanks; the program steers.\n- **Agent**: the model steers. It picks a tool, reads the result, and keeps going until it judges the task done (or your safety limits stop it).",
+      "A common definition: workflows run LLMs and tools through **predefined code paths**; agents let the LLM **dynamically direct its own process and tool usage**. Both are useful. Neither is automatically better.",
+      "Every agent has four parts:",
+      "- **Model**: the LLM that reasons and chooses actions.\n- **Tools**: functions with a name, a description, and an input schema (a JSON Schema for the arguments). The model can only *request* a tool; your code runs it.\n- **Loop**: call the model, run requested tools, append the results, call the model again, until it stops asking for tools.\n- **Guardrails**: a step limit, timeouts, permission checks, human approval for risky actions, and logging.",
+      "**When NOT to build an agent** is the most important lesson here. Start with a single well-written prompt. If that's not enough, add retrieval (fetching relevant documents) or a fixed workflow. Only use an agent when the steps truly can't be known in advance. Agents cost more (many model calls per task), are slower, are harder to test (each run can take a different path), and make compounding mistakes (one wrong early step leads every later step astray).",
+      "Good agent tasks are open-ended, need a varying number of steps, get feedback from the environment (test results, search hits, file contents), and have mistakes that are cheap to spot and fix. Classic examples: coding assistants that edit files and run tests, research assistants that search and read in rounds, and support assistants that look up orders and take bounded actions.",
     ),
     analogy:
-      "A chatbot is a calculator: press keys, get one answer. A workflow is a recipe: step 1 chop, step 2 fry, step 3 serve - the cook follows the card. An agent is a chef you hand a goal ('make dinner for four, one guest is vegetarian') and a stocked kitchen: the chef opens the fridge, tastes, adjusts, and decides each next step. You get flexibility, but you also need house rules - a budget, no using the expensive knives without asking, and a deadline.",
+      "A chatbot is a calculator: press keys, get one answer. A workflow is a recipe: chop, fry, serve, in that order. An agent is a chef you give a goal ('dinner for four, one vegetarian') and a stocked kitchen. The chef opens the fridge, tastes, adjusts, and decides each next step. You get flexibility, but you need house rules: a budget, ask before using the expensive knives, and a deadline.",
     examples: [
       {
         title: "Chatbot vs workflow vs agent, side by side (runnable, offline)",
@@ -60,12 +60,12 @@ for (let step = 1; step <= 5; step++) {               // max-steps guard
   console.log("agent    : step", step, action.tool + "(" + action.arg + ") ->", observation);
   history.push(observation);
 }`,
-        explanation: "Notice who decides the order of steps. In the workflow, the program hard-codes classify-then-reply. In the agent, the scripted model looked at the order first, saw a double charge, chose to refund, then chose to stop. A real LLM makes those choices from the conversation instead of a script.",
+        explanation: "Notice who picks the order of steps. The workflow hard-codes classify-then-reply. The agent's scripted model looked up the order, saw a double charge, chose to refund, then chose to stop. A real LLM makes those choices from the conversation instead of a script.",
         walkthrough: [
-          { code: "console.log(\"chatbot  :\", llm(\"What are your hours?\"));", explanation: "A chatbot is a single model call. No tools, no loop, no memory beyond what you send." },
-          { code: "const team = llm(\"Classify: \" + ticket);", explanation: "In a workflow your program decides that classification happens first and drafting happens second." },
-          { code: "function agentModel(history) { ... }", explanation: "In an agent, the model looks at everything observed so far and returns either a tool request or a final answer." },
-          { code: "for (let step = 1; step <= 5; step++)", explanation: "The loop keeps going until the model gives a final answer - but never more than 5 steps, so a confused model cannot run forever." },
+          { code: "console.log(\"chatbot  :\", llm(\"What are your hours?\"));", explanation: "A chatbot is one model call. No tools, no loop, no memory beyond what you send." },
+          { code: "const team = llm(\"Classify: \" + ticket);", explanation: "In a workflow, your program decides to classify first and draft second." },
+          { code: "function agentModel(history) { ... }", explanation: "In an agent, the model reads everything observed so far and returns a tool request or a final answer." },
+          { code: "for (let step = 1; step <= 5; step++)", explanation: "The loop runs until the model gives a final answer, but never more than 5 steps, so a confused model can't run forever." },
         ],
       },
       {
@@ -88,7 +88,7 @@ for block in resp.content:
 
 # Before building an agent, ask: is this already good enough?
 # If one call (plus maybe retrieved documents) solves it, stop here.`,
-        explanation: "This is the baseline every agent project should beat. An agent is this same call placed inside a loop, with tools attached.",
+        explanation: "Every agent project should beat this baseline. An agent is this same call inside a loop, with tools attached.",
       },
       {
         title: "Decision checklist: do I need an agent?",
@@ -105,9 +105,9 @@ for block in resp.content:
       },
     ],
     howItWorks: md(
-      "Under the hood an agent is an ordinary program. The model never touches your files or databases directly. It produces a structured request such as `{name: \"read_file\", input: {path: \"todo.txt\"}}`. Your code checks that request, runs the real function, and appends the output to the conversation as a **tool result**. Then it calls the model again with the whole conversation, because LLM APIs are **stateless** - the model remembers nothing between calls unless you send it.",
-      "Each pass through the loop is called a **step** or **turn**. The loop ends when the model replies without asking for a tool (it considers the task done), when a safety limit is reached (maximum steps, time, or cost), or when something needs a human decision.",
-      "Because every step re-sends the growing conversation, cost and latency grow with the number of steps. A 10-step agent run can easily cost 10-30 times a single call. That is why the advice is always: prove you need the flexibility before paying for it.",
+      "An agent is an ordinary program. The model never touches your files or databases. It produces a structured request like `{name: \"read_file\", input: {path: \"todo.txt\"}}`. Your code checks it, runs the real function, and appends the output as a **tool result**. Then it calls the model again with the whole conversation, because LLM APIs are **stateless**: the model remembers nothing between calls unless you send it.",
+      "Each pass through the loop is a **step** or **turn**. The loop ends when the model replies without asking for a tool (task done), when a safety limit is hit (steps, time, or cost), or when a human must decide.",
+      "Every step re-sends the growing conversation, so cost and latency grow with the step count. A 10-step run can easily cost 10-30 times a single call. Prove you need the flexibility before paying for it.",
     ),
     diagram: `  CHATBOT          WORKFLOW                AGENT
   -------          --------                -----
@@ -122,14 +122,14 @@ for block in resp.content:
                   output               +-- result
   1 call          fixed path           model picks path`,
     whyItExists: md(
-      "Many real tasks cannot be scripted in advance. Fixing a bug means reading code, forming a guess, running tests, and reacting to what fails. Researching a question means searching, reading, and searching again based on what you learned. A fixed pipeline cannot anticipate every branch; an LLM that can choose actions and observe results can.",
-      "Agents exist to turn a model that only *talks* into a system that can *act* - safely, within limits you define.",
+      "Many tasks can't be scripted in advance. Fixing a bug means reading code, guessing, running tests, and reacting to what fails. Research means searching, reading, and searching again. A fixed pipeline can't foresee every branch; an LLM that chooses actions and sees results can.",
+      "Agents turn a model that only *talks* into a system that can *act*, safely, within limits you set.",
     ),
     whenToUse: md(
-      "Use an agent when the task is open-ended, the number and order of steps depend on intermediate results, the environment gives clear feedback (a test passes, a search returns hits), and you can bound the damage of a wrong action. Coding assistants, research assistants, data-exploration helpers and support bots with a few safe actions are typical fits.",
+      "Use an agent when the task is open-ended, the steps depend on intermediate results, the environment gives clear feedback (a test passes, a search returns hits), and you can limit the damage of a wrong action. Typical fits: coding assistants, research assistants, data-exploration helpers, and support bots with a few safe actions.",
     ),
     whenNotToUse: md(
-      "Do not build an agent when a single prompt, retrieval, or a fixed workflow would do. Do not build one when every step is known in advance (use a workflow - it is cheaper, faster and testable), when latency must be very low, when the cost per request must be predictable, or when actions are irreversible and you cannot add human approval. 'Agent' is not a goal; a working, reliable feature is.",
+      "Skip the agent when a single prompt, retrieval, or a fixed workflow would do. Also skip it when every step is known in advance (a workflow is cheaper, faster and testable), when latency must be very low, when cost per request must be predictable, or when actions are irreversible and you can't add human approval. 'Agent' is not a goal; a reliable feature is.",
     ),
     commonMistakes: [
       "Starting with an agent framework before trying a single good prompt - most problems never need a loop.",
@@ -166,20 +166,20 @@ for block in resp.content:
     level: "intermediate",
     description: "How an LLM asks your code to run functions: tool definitions, JSON Schema inputs, tool_use and tool_result blocks.",
     explanation: md(
-      "**Tool use** (also called **function calling**) lets a model ask your application to run a function and give it the result. The model cannot browse, read your database or do reliable arithmetic on its own, but it can say: 'please call `get_weather` with `{\"city\": \"Paris\"}`'. Your code runs it and replies with the answer. This single mechanism is what turns a text generator into something that can look things up and take actions.",
+      "**Tool use** (or **function calling**) lets a model ask your app to run a function and return the result. The model can't browse, read your database, or reliably do arithmetic, but it can say: 'please call `get_weather` with `{\"city\": \"Paris\"}`'. Your code runs it and replies. This one mechanism turns a text generator into something that can look things up and act.",
       "A **tool definition** has three parts:",
-      "- **name**: a short identifier like `get_weather` (letters, digits, underscores, hyphens).\n- **description**: plain-language text telling the model *what the tool does, when to use it, and what it returns*. This is the most important part - the model chooses tools mostly by reading descriptions.\n- **input_schema**: a **JSON Schema** - a standard JSON format for describing the shape of data - that lists the arguments, their types, which are required, and allowed values (`enum`).",
-      "The conversation then contains two new kinds of **content blocks** (a message's content can be a list of typed blocks instead of a plain string):",
-      "- **tool_use** (in the assistant's message): `{type: \"tool_use\", id: \"toolu_...\", name: \"get_weather\", input: {city: \"Paris\"}}`. The `id` is unique per call.\n- **tool_result** (in the next user message): `{type: \"tool_result\", tool_use_id: \"toolu_...\", content: \"18°C and cloudy\"}`. The `tool_use_id` must match the call it answers. Add `is_error: true` when the tool failed, with an error message as the content, so the model knows to try something else.",
-      "When the model wants a tool, the response's **stop_reason** is `tool_use`. You must append the assistant message *exactly as received* (including the tool_use blocks) to your history, run the tools, then send one user message containing the tool_result blocks. Then call the model again.",
-      "**Parallel tool calls**: a single assistant turn can contain several tool_use blocks (for example, weather in Paris *and* Oslo). Run them all (in parallel if they are independent) and return **all results in one user message**, one tool_result per tool_use id. Splitting them across several messages is a common bug.",
-      "**tool_choice** controls whether the model may use tools. The default, `auto`, lets the model decide whether to call a tool or answer directly. On current Claude models, rely on `auto` plus clear instructions in the system prompt and tool descriptions ('Always use the calculator for arithmetic') rather than trying to force a specific tool.",
-      "Writing good tools is a design skill, sometimes called the **agent-computer interface**:",
-      "- Write descriptions like documentation for a new colleague: what it does, when to use it, when *not* to, what the output looks like, limits (max rows, units).\n- Keep the set small and non-overlapping. Two tools that both 'search' confuse the model.\n- Make arguments hard to misuse: enums instead of free text, clear units ('amount_cents'), absolute or workspace-relative paths stated explicitly.\n- Return concise, meaningful output. A 2 MB JSON dump wastes context; return the fields that matter, and say when results were truncated.\n- Return helpful error messages ('No file named todo.txt; available: notes.txt, plan.md') so the model can recover.",
-      "Tool use is also a convenient way to get **structured data**: the model's `input` object always follows the shape you described. For pure data extraction, dedicated structured-output features (see Structured Output) are usually simpler.",
+      "- **name**: a short identifier like `get_weather` (letters, digits, underscores, hyphens).\n- **description**: plain text saying *what the tool does, when to use it, and what it returns*. This matters most: the model picks tools mainly by reading descriptions.\n- **input_schema**: a **JSON Schema** (a standard format for describing data shape) listing the arguments, their types, which are required, and allowed values (`enum`).",
+      "The conversation then gets two new kinds of **content blocks** (a message's content can be a list of typed blocks instead of a string):",
+      "- **tool_use** (in the assistant's message): `{type: \"tool_use\", id: \"toolu_...\", name: \"get_weather\", input: {city: \"Paris\"}}`. The `id` is unique per call.\n- **tool_result** (in the next user message): `{type: \"tool_result\", tool_use_id: \"toolu_...\", content: \"18°C and cloudy\"}`. The `tool_use_id` must match the call it answers. If the tool failed, add `is_error: true` with an error message as content, so the model tries something else.",
+      "When the model wants a tool, **stop_reason** is `tool_use`. Append the assistant message to your history *exactly as received* (tool_use blocks included), run the tools, send one user message with the tool_result blocks, and call the model again.",
+      "**Parallel tool calls**: one assistant turn can hold several tool_use blocks (say, weather in Paris *and* Oslo). Run them all (in parallel if independent) and return **all results in one user message**, one tool_result per tool_use id. Splitting them across messages is a common bug.",
+      "**tool_choice** controls tool use. The default, `auto`, lets the model decide whether to call a tool or answer directly. On current Claude models, use `auto` plus clear instructions in the system prompt and tool descriptions ('Always use the calculator for arithmetic') instead of forcing a specific tool.",
+      "Designing good tools is a skill, sometimes called the **agent-computer interface**:",
+      "- Write descriptions like docs for a new colleague: what it does, when to use it and when *not* to, what the output looks like, and limits (max rows, units).\n- Keep the set small and non-overlapping. Two tools that both 'search' confuse the model.\n- Make arguments hard to misuse: enums instead of free text, clear units ('amount_cents'), and explicitly stated absolute or workspace-relative paths.\n- Return short, useful output. A 2 MB JSON dump wastes context; return the fields that matter and say when results were truncated.\n- Return helpful errors ('No file named todo.txt; available: notes.txt, plan.md') so the model can recover.",
+      "Tool use is also a handy way to get **structured data**: the model's `input` always follows your schema. For pure data extraction, dedicated structured-output features (see Structured Output) are usually simpler.",
     ),
     analogy:
-      "Think of a manager on the phone with an assistant at the office. The manager cannot reach the filing cabinet, so they say: 'Please pull the file for order 42.' The assistant fetches it and reads it back. The manager decides what to ask next. The manager is the model, the assistant is your code, and the list of things the assistant is allowed to do - with instructions for each - is your tool list.",
+      "Picture a manager on the phone with an assistant at the office. The manager can't reach the filing cabinet, so they say: 'Please pull the file for order 42.' The assistant reads it back, and the manager decides what to ask next. The manager is the model, the assistant is your code, and the list of allowed jobs (with instructions for each) is your tool list.",
     examples: [
       {
         title: "Validate and dispatch tool calls like an API would send them (runnable)",
@@ -243,7 +243,7 @@ const results = assistantContent.filter((b) => b.type === "tool_use").map(handle
 // ALL results go back in ONE user message:
 const nextUserMessage = { role: "user", content: results };
 for (const r of nextUserMessage.content) console.log(JSON.stringify(r));`,
-        explanation: "Every tool_use gets exactly one tool_result with the matching id, errors are reported (not thrown) with is_error so the model can recover, and all results travel together in one user message.",
+        explanation: "Each tool_use gets exactly one tool_result with the matching id. Errors are returned with is_error (not thrown) so the model can recover. All results go back together in one user message.",
       },
       {
         title: "One full tool round trip with the Anthropic SDK",
@@ -292,7 +292,7 @@ messages.append({"role": "user", "content": results})               # ALL result
 resp = client.messages.create(model="claude-opus-5-5", max_tokens=16000,
                               tools=tools, messages=messages)
 print(next(b.text for b in resp.content if b.type == "text"))`,
-        explanation: "Two calls: the first returns tool_use blocks, the second receives the results. Turning these two calls into a loop gives you an agent (see The Agent Loop).",
+        explanation: "Two calls: the first returns tool_use blocks, the second gets the results. Put these two calls in a loop and you have an agent (see The Agent Loop).",
       },
       {
         title: "What the message history looks like after one tool round",
@@ -309,13 +309,13 @@ print(next(b.text for b in resp.content if b.type == "text"))`,
     {"type": "tool_result", "tool_use_id": "toolu_01B", "content": "4 C, snow"}
   ]}
 ]`,
-        explanation: "Roles still alternate user/assistant. Tool results are sent with role 'user' because they come from your side of the conversation. The ids shown are illustrative.",
+        explanation: "Roles still alternate user/assistant. Tool results use role 'user' because they come from your side. The ids are illustrative.",
       },
     ],
     howItWorks: md(
-      "When you pass `tools`, the API turns your definitions into special instructions that the model was trained to follow. The model reads the conversation and the tool descriptions, and if it decides a tool would help, it generates a tool_use block instead of (or after) plain text and stops with `stop_reason: \"tool_use\"`.",
-      "The model generates the `input` object to match your JSON Schema, but treat it as **untrusted input**: validate types and ranges, check permissions, and never pass it straight to a shell or SQL query. A model can be tricked (by text in a web page or document it read) into requesting harmful actions - this is *prompt injection*, covered in AI Security.",
-      "Tool definitions are sent with every request and count as input tokens, so a list of 50 verbose tools costs on every call. Keep the list focused on the task.",
+      "When you pass `tools`, the API turns your definitions into special instructions the model was trained to follow. If the model decides a tool would help, it writes a tool_use block instead of (or after) plain text and stops with `stop_reason: \"tool_use\"`.",
+      "The model shapes `input` to match your JSON Schema, but treat it as **untrusted input**: validate types and ranges, check permissions, and never pass it straight to a shell or SQL query. Text in a web page or document the model read can trick it into requesting harmful actions. This is *prompt injection*, covered in AI Security.",
+      "Tool definitions go with every request and count as input tokens, so 50 verbose tools cost you on every call. Keep the list focused.",
     ),
     diagram: `  your app                       model
   --------                       -----
@@ -328,13 +328,13 @@ print(next(b.text for b in resp.content if b.type == "text"))`,
                         <------  final text
                                  (stop_reason = end_turn)`,
     whyItExists: md(
-      "Models are frozen at training time and live inside a text box. They do not know today's weather, your customer's order status, or the contents of your repository, and they make arithmetic slips. Tool use gives them a disciplined, structured way to ask for fresh data and to trigger actions, while your code keeps control over what actually runs.",
+      "Models are frozen at training time and live in a text box. They don't know today's weather, your customer's order status, or what's in your repo, and they make arithmetic slips. Tool use gives them a structured way to ask for fresh data and trigger actions, while your code controls what actually runs.",
     ),
     whenToUse: md(
-      "Use tools whenever the model needs information it cannot know (live data, private data, search), needs exact computation (math, date arithmetic, code execution), or needs to take an action (create a ticket, write a file). Also use a tool definition when you want guaranteed-shape arguments from the model.",
+      "Use tools when the model needs information it can't know (live data, private data, search), exact computation (math, dates, code execution), or an action (create a ticket, write a file). A tool definition also gets you arguments in a guaranteed shape.",
     ),
     whenNotToUse: md(
-      "Do not wrap things in tools that you could just put in the prompt: if the model always needs the same small document, include it directly. Do not expose dangerous capabilities (arbitrary shell, raw SQL, payments) as tools without strict validation and approval. Do not create dozens of overlapping tools; merge or remove them.",
+      "Don't wrap things in tools that could just go in the prompt: if the model always needs the same small document, include it. Don't expose dangerous capabilities (arbitrary shell, raw SQL, payments) without strict validation and approval. Don't create dozens of overlapping tools; merge or remove them.",
     ),
     commonMistakes: [
       "Writing one-line tool descriptions; the model picks tools by their descriptions, so vague ones cause wrong or missing calls.",
@@ -371,17 +371,17 @@ print(next(b.text for b in resp.content if b.type == "text"))`,
     level: "intermediate",
     description: "Perceive, think, act, observe - repeated: the loop at the heart of every agent, ReAct, and how and when it must stop.",
     explanation: md(
-      "The **agent loop** is the small piece of code that turns tool use into an agent. It is often described as four phases repeated until done:",
-      "- **Perceive**: the model receives the goal plus everything that has happened so far (the full message history).\n- **Think**: it reasons about what to do next. Current Claude models do this with built-in adaptive *thinking*; older systems prompted the model to write its reasoning out.\n- **Act**: it requests one or more tool calls (or decides it is finished).\n- **Observe**: your code runs the tools and appends their results; the next iteration starts with this new information.",
-      "This idea was popularised by **ReAct** (Reason + Act), a prompting technique where the model alternated lines of 'Thought:', 'Action:' and 'Observation:' in plain text and the program parsed the Action lines. Modern APIs replace the text parsing with native tool_use blocks, but the rhythm - reason, act, observe, repeat - is the same.",
-      "The loop in code is short: call the model; append its reply to the history; if it asked for tools, run them, append the results as one user message, and loop; otherwise, stop. The interesting part is **when to stop**, and the API tells you through the response's `stop_reason`:",
-      "- `end_turn`: the model finished its answer. Normal exit.\n- `tool_use`: the model wants tools run. Keep looping.\n- `max_tokens`: the reply was cut off because it hit your `max_tokens` limit. The answer is incomplete - raise the limit or ask the model to continue; do not treat it as a final answer.\n- `stop_sequence`: generation hit one of your custom stop strings.\n- `refusal`: the model declined for safety reasons. Stop and surface this; do not retry the same request in a loop.\n- `pause_turn`: used with server-side tools that run on the provider's side; the model paused a long turn. Send the conversation back (with the paused assistant content appended) to let it continue.",
-      "On top of the model's own stopping, **you** must add stop conditions, because a model can loop - repeating the same search, retrying a broken tool, or wandering:",
-      "- **Max steps** (iterations): the single most important guard. 10-30 is typical for interactive agents.\n- **Budget**: stop when total tokens or cost passes a limit (sum `usage.input_tokens` and `usage.output_tokens` each step).\n- **Wall-clock timeout**: stop after N seconds.\n- **Repetition detection**: stop (or warn the model) when the same tool is called with the same input several times.\n- **Human checkpoints**: pause for approval before risky actions, or when the agent is stuck.",
-      "When a guard triggers, end gracefully: return what was learned so far and say why it stopped, rather than crashing. Log every step - the model's text, each tool name and input, each result (truncated), stop_reason and token usage - so you can replay and debug runs later.",
+      "The **agent loop** is the small piece of code that turns tool use into an agent. It repeats four phases until done:",
+      "- **Perceive**: the model gets the goal plus everything so far (the full message history).\n- **Think**: it reasons about the next move. Current Claude models use built-in adaptive *thinking*; older systems prompted the model to write its reasoning out.\n- **Act**: it requests one or more tool calls (or decides it's finished).\n- **Observe**: your code runs the tools and appends the results; the next round starts with this new information.",
+      "**ReAct** (Reason + Act) made this popular. The model wrote alternating 'Thought:', 'Action:' and 'Observation:' lines in plain text, and the program parsed the Action lines. Modern APIs use native tool_use blocks instead of text parsing, but the rhythm is the same: reason, act, observe, repeat.",
+      "The code is short: call the model and append its reply. If it asked for tools, run them, append the results as one user message, and loop. Otherwise, stop. The interesting part is **when to stop**. The response's `stop_reason` tells you:",
+      "- `end_turn`: the model finished. Normal exit.\n- `tool_use`: the model wants tools run. Keep looping.\n- `max_tokens`: the reply was cut off at your `max_tokens` limit. It's incomplete: raise the limit or ask the model to continue. Don't treat it as final.\n- `stop_sequence`: generation hit one of your custom stop strings.\n- `refusal`: the model declined for safety reasons. Stop and surface it; don't retry the same request in a loop.\n- `pause_turn`: with server-side tools (run by the provider), the model paused a long turn. Send the conversation back, with the paused assistant content appended, so it can continue.",
+      "**You** must also add stop conditions, because a model can loop: repeating a search, retrying a broken tool, or wandering.",
+      "- **Max steps**: the most important guard. 10-30 is typical for interactive agents.\n- **Budget**: stop when tokens or cost pass a limit (sum `usage.input_tokens` and `usage.output_tokens` each step).\n- **Wall-clock timeout**: stop after N seconds.\n- **Repetition detection**: stop (or warn the model) when the same tool is called with the same input several times.\n- **Human checkpoints**: pause for approval before risky actions, or when the agent is stuck.",
+      "When a guard triggers, end gracefully: return what you have and say why it stopped, instead of crashing. Log every step (model text, each tool name and input, each result truncated, stop_reason, token usage) so you can replay and debug runs.",
     ),
     analogy:
-      "A detective solving a case: look at the evidence (perceive), form a theory (think), go interview a witness or check a record (act), note what was learned (observe), and repeat. A good detective also has a boss who says 'you have three days and a fixed budget - report back either way'. That boss is your max-steps and budget guard.",
+      "A detective looks at the evidence (perceive), forms a theory (think), interviews a witness or checks a record (act), notes what they learned (observe), and repeats. A good detective also has a boss who says 'you have three days and a fixed budget; report back either way'. That boss is your max-steps and budget guard.",
     examples: [
       {
         title: "Classic text ReAct: parse Thought / Action / Observation (runnable)",
@@ -410,7 +410,7 @@ for (let step = 0; step < 5; step++) {
   const arg = action.slice(action.indexOf("[") + 1, action.lastIndexOf("]"));
   transcript += "\\nObservation: " + tools[name](arg);
 }`,
-        explanation: "The loop is the same as today's: model output -> run action -> append observation -> repeat. Native tool_use blocks simply replace the fragile string parsing with structured JSON.",
+        explanation: "Same loop as today: model output -> run action -> append observation -> repeat. Native tool_use blocks just replace the fragile string parsing with structured JSON.",
       },
       {
         title: "Guards in action: a model stuck in a loop (runnable)",
@@ -490,13 +490,13 @@ def agent_loop(task, tools, run_tool, system, max_steps=15, max_total_tokens=400
         if total > max_total_tokens:
             return "[stopped] token budget exceeded"
     return f"[stopped] no answer after {max_steps} steps"`,
-        explanation: "Each exit path is explicit: normal finish, truncated, refused, paused, unknown, budget, and max steps. The log line per step is your future debugging lifeline.",
+        explanation: "Every exit is explicit: normal finish, truncated, refused, paused, unknown, budget, and max steps. The per-step log line is what you'll debug with later.",
       },
     ],
     howItWorks: md(
-      "Every iteration re-sends the complete history, so step N's request contains the original task, every earlier assistant message (with its tool_use blocks), and every tool result. This is how the model 'remembers' what it has already tried. It is also why long runs get slower and more expensive, and why large tool outputs should be trimmed.",
-      "The history must stay well-formed: roles alternate, every tool_use is followed in the very next user message by a tool_result with the same id, and tool results come first in that user message. Breaking these rules produces API errors - a frequent bug when people prune or edit history.",
-      "Reliability compounds. If each step is right 95% of the time, a 10-step run with no recovery succeeds only about 60% of the time (0.95 to the power 10). Agents survive this by observing results and correcting course - which is why clear error messages from tools and good feedback signals (tests, validators) matter so much.",
+      "Each round re-sends the full history: the task, every earlier assistant message (with its tool_use blocks), and every tool result. That's how the model 'remembers' what it tried. It's also why long runs get slower and pricier, and why you should trim large tool outputs.",
+      "The history must stay well-formed: roles alternate, every tool_use is answered in the very next user message by a tool_result with the same id, and tool results come first in that message. Breaking these rules causes API errors, a frequent bug when pruning or editing history.",
+      "Reliability compounds. If each step is right 95% of the time, a 10-step run with no recovery succeeds only about 60% of the time (0.95 to the power 10). Agents survive by observing results and correcting course, so clear tool errors and good feedback signals (tests, validators) matter a lot.",
     ),
     diagram: `        +-----------------------------+
         |  messages = [task]          |
@@ -515,13 +515,13 @@ def agent_loop(task, tools, run_tool, system, max_steps=15, max_total_tokens=400
    |                |
    +-- step < max --+`,
     whyItExists: md(
-      "A single model call can only use what is already in the prompt. Real tasks need several rounds of gathering information and acting on it. The loop lets the model use each observation to decide its next move, which is what makes multi-step problem solving possible. Explicit stop conditions exist because models do not always know when to give up.",
+      "One model call can only use what's in the prompt. Real tasks need several rounds of gathering information and acting on it. The loop lets the model use each observation to pick its next move, which makes multi-step problem solving possible. Explicit stop conditions exist because models don't always know when to give up.",
     ),
     whenToUse: md(
-      "Use a loop whenever the model may need more than one round of tools to finish - research, debugging, data exploration, multi-step support actions. Write it yourself at least once to understand it; later, an SDK helper such as a tool runner can manage it for you.",
+      "Use a loop when the model may need more than one round of tools: research, debugging, data exploration, multi-step support actions. Write it yourself at least once; later, an SDK helper such as a tool runner can manage it.",
     ),
     whenNotToUse: md(
-      "If you know the model will always need exactly one tool call (or a fixed sequence), skip the loop and write a workflow - two explicit calls are easier to test. If latency matters more than flexibility, cap the loop at 1-3 steps or avoid it.",
+      "If the model always needs exactly one tool call (or a fixed sequence), skip the loop and write a workflow; two explicit calls are easier to test. If latency matters more than flexibility, cap the loop at 1-3 steps or avoid it.",
     ),
     commonMistakes: [
       "No max-steps limit - the single most expensive agent bug.",
@@ -558,23 +558,25 @@ def agent_loop(task, tools, run_tool, system, max_steps=15, max_total_tokens=400
     level: "intermediate",
     description: "Step by step: a real command-line agent with file, calculator and notes tools, a guarded loop, error handling, logging and human approval.",
     explanation: md(
-      "In this lesson you build a complete, working agent twice: first as an **offline JavaScript version** you can run right here in the browser (with a scripted fake model, so you can watch every step), then as a **real Python command-line agent** using the Anthropic SDK. Finally you see the same agent rebuilt with the SDK's **tool runner**, which writes the loop for you. No framework is needed - an agent is about 150 lines of ordinary code.",
-      "**What we are building.** `mini_agent.py` answers questions about the files in a `workspace/` folder. It has five tools: `list_files`, `read_file` (restricted to the workspace), `calculator` (safe arithmetic), `search_notes` (keyword search across workspace text files) and `save_note` (writes to `notes.txt`, so it needs human approval). Example task: 'Add up the amounts in budget.txt and save the total as a note.'",
-      "**Before you start: chatbot vs workflow vs agent.** If every request needed exactly 'read budget.txt, then sum it', a two-step workflow would be cheaper and more predictable. We build an agent because the questions are open-ended: the model must decide which files to look at, whether it needs arithmetic, and when it knows enough. Always start simple and only add the loop when the task needs it.",
-      "**Step 1 - Set up.** `pip install anthropic`, set the `ANTHROPIC_API_KEY` environment variable, create a `workspace/` folder with a few text files. Keep the model id and limits as constants at the top of the file (`MODEL`, `MAX_STEPS`).",
-      "**Step 2 - Write the system prompt.** The system prompt tells the model its role, its environment and its working rules: 'Use tools instead of guessing. Always use the calculator for arithmetic. If a tool returns an error, read it and adjust. Say which files you used.' Short, concrete rules beat long essays.",
-      "**Step 3 - Define the tools.** Each tool gets a name, a description that says what it does, when to use it and what it returns, and a JSON Schema for its input. Descriptions are where most of the agent's quality comes from.",
-      "**Step 4 - Implement the tools safely.** This is ordinary code, and it is your security boundary:",
-      "- `read_file` resolves the requested path and refuses anything outside the workspace, so `../../.ssh/id_rsa` or an absolute path fails. It also caps how much text it returns.\n- `calculator` must **never** call `eval()` on model text - that would run arbitrary code. Instead it parses the expression into a syntax tree (Python's `ast` module) and evaluates only numbers and `+ - * / ** %`, with a cap on exponent size so `9**9**9` cannot freeze your machine.\n- `search_notes` does a case-insensitive keyword search and returns `file:line: text` hits, capped at 20.\n- `save_note` appends to a file - a side effect - so it is marked **risky**.",
-      "**Step 5 - Write the dispatcher.** `run_tool(name, input)` maps tool names to functions. It raises an exception on bad input or unknown tools; the loop catches exceptions and turns them into `is_error` tool results so the model can recover.",
-      "**Step 6 - Add the human-approval gate.** Before running a tool in `RISKY_TOOLS`, print what the agent wants to do and ask `Allow? [y/N]`. If the human says no, return an `is_error` result saying the user denied it, so the model continues without it instead of retrying.",
-      "**Step 7 - Write the loop.** Call the model with system prompt, tools and history; log stop_reason and token usage; append the assistant content unchanged; on `end_turn` return the text; on `max_tokens` or `refusal` stop with a clear message; on `tool_use` run every tool_use block and append **all** results in **one** user message (this is how parallel tool calls are handled). Repeat up to `MAX_STEPS`, then stop with an explanation.",
-      "**Step 8 - Log every step.** One line per model call (step, stop_reason, tokens) and one per tool call (name, input, first 200 characters of output or the error). When an agent misbehaves, this log is how you find out why.",
-      "**Step 9 - Run it and read the trace.** Try tasks that need several tools, a task that triggers an error (ask for a file that does not exist), a task that tries to escape the workspace, and one that asks to save a note (answer 'n' and watch it adapt).",
-      "**Step 10 - Simplify with the tool runner.** Once you understand the loop, the SDK's beta tool runner can run it for you: decorate plain Python functions with `@beta_tool` (their type hints and docstrings become the schema and description) and iterate over `client.beta.messages.tool_runner(...)`. You keep the same tools and the same safety code; you just stop hand-writing the loop.",
+      "You'll build a complete agent twice. First, an **offline JavaScript version** you can run here in the browser, with a scripted fake model so you can watch every step. Then a **real Python command-line agent** using the Anthropic SDK. Finally, the same agent rebuilt with the SDK's **tool runner**, which writes the loop for you. No framework needed: an agent is about 150 lines of ordinary code.",
+      "**What we're building.** `mini_agent.py` answers questions about the files in a `workspace/` folder. It has five tools:",
+      "- `list_files`\n- `read_file` (restricted to the workspace)\n- `calculator` (safe arithmetic)\n- `search_notes` (keyword search across workspace text files)\n- `save_note` (writes to `notes.txt`, so it needs human approval)",
+      "Example task: 'Add up the amounts in budget.txt and save the total as a note.'",
+      "**Why an agent here?** If every request were exactly 'read budget.txt, then sum it', a two-step workflow would be cheaper and more predictable. The questions are open-ended, though: the model must decide which files to read, whether it needs arithmetic, and when it knows enough. Start simple and add the loop only when the task needs it.",
+      "**Step 1 - Set up.** Run `pip install anthropic`, set `ANTHROPIC_API_KEY`, and create a `workspace/` folder with a few text files. Keep the model id and limits as constants at the top (`MODEL`, `MAX_STEPS`).",
+      "**Step 2 - Write the system prompt.** Give the model its role, environment and rules: 'Use tools instead of guessing. Always use the calculator for arithmetic. If a tool returns an error, read it and adjust. Say which files you used.' Short, concrete rules beat long essays.",
+      "**Step 3 - Define the tools.** Each gets a name, a description (what it does, when to use it, what it returns), and a JSON Schema for its input. Most of the agent's quality comes from the descriptions.",
+      "**Step 4 - Implement the tools safely.** This is ordinary code, and it's your security boundary:",
+      "- `read_file` resolves the path and refuses anything outside the workspace, so `../../.ssh/id_rsa` or an absolute path fails. It also caps how much text it returns.\n- `calculator` must **never** call `eval()` on model text, which would run arbitrary code. It parses the expression into a syntax tree (Python's `ast` module) and evaluates only numbers and `+ - * / ** %`, with an exponent cap so `9**9**9` can't freeze your machine.\n- `search_notes` does a case-insensitive keyword search and returns up to 20 `file:line: text` hits.\n- `save_note` appends to a file (a side effect), so it's marked **risky**.",
+      "**Step 5 - Write the dispatcher.** `run_tool(name, input)` maps names to functions and raises on bad input or unknown tools. The loop catches exceptions and turns them into `is_error` results so the model can recover.",
+      "**Step 6 - Add the human-approval gate.** Before running a tool in `RISKY_TOOLS`, show what the agent wants to do and ask `Allow? [y/N]`. If the human says no, return an `is_error` result saying the user denied it, so the model carries on without it instead of retrying.",
+      "**Step 7 - Write the loop.** Call the model with system prompt, tools and history. Log stop_reason and token usage, and append the assistant content unchanged. On `end_turn`, return the text. On `max_tokens` or `refusal`, stop with a clear message. On `tool_use`, run every tool_use block and append **all** results in **one** user message (this handles parallel tool calls). Repeat up to `MAX_STEPS`, then stop with an explanation.",
+      "**Step 8 - Log every step.** One line per model call (step, stop_reason, tokens) and one per tool call (name, input, first 200 characters of output or the error). When the agent misbehaves, this log tells you why.",
+      "**Step 9 - Run it and read the trace.** Try a task that needs several tools, one that triggers an error (ask for a missing file), one that tries to escape the workspace, and one that saves a note (answer 'n' and watch it adapt).",
+      "**Step 10 - Simplify with the tool runner.** Once you understand the loop, the SDK's beta tool runner can run it. Decorate plain Python functions with `@beta_tool` (type hints and docstrings become the schema and description) and iterate over `client.beta.messages.tool_runner(...)`. Same tools, same safety code; you just stop hand-writing the loop.",
     ),
     analogy:
-      "Building an agent is like hiring a new intern and setting up their desk. The system prompt is the onboarding note, the tools are the keys you hand them (the filing room key, a calculator, but not the company credit card), the approval gate is 'ask me before you send anything outside', the max-steps guard is 'if you are not done by 5pm, come and tell me where you got stuck', and the log is the notebook where they write down everything they did.",
+      "Building an agent is like setting up a new intern's desk. The system prompt is the onboarding note. The tools are the keys you hand over (filing room, calculator, but not the company credit card). The approval gate is 'ask me before you send anything outside'. The max-steps guard is 'if you're not done by 5pm, tell me where you got stuck'. The log is their notebook of everything they did.",
     examples: [
       {
         title: "Complete offline agent: watch every step (runnable)",
@@ -692,11 +694,11 @@ function runAgent(task, maxSteps) {
 
 console.log("FINAL ANSWER: " + runAgent("What do my monthly costs add up to? Anything about the release?", 8));
 console.log("With maxSteps=2: " + runAgent("Same question", 2));`,
-        explanation: "Everything a real agent has is here: tool registry, a safe calculator, a workspace guard that rejects '../secrets.env', parallel tool calls answered in one message, an is_error result the model recovers from, a step log, and a max-steps guard (the second run shows it firing). Swap llm() for a real API call and you have the Python version below.",
+        explanation: "It has everything a real agent has: a tool registry, a safe calculator, a workspace guard that rejects '../secrets.env', parallel tool calls answered in one message, an is_error result the model recovers from, a step log, and a max-steps guard (the second run shows it firing). Swap llm() for a real API call and you get the Python version below.",
         walkthrough: [
-          { code: "function calculate(expr) { ... }", explanation: "A recursive-descent parser: sum handles + and -, product handles * and /, factor handles numbers, parentheses and unary minus. Only arithmetic can run - no eval()." },
-          { code: "if (path.startsWith(\"/\") || path.includes(\"..\")) throw ...", explanation: "The workspace guard. The model may ask for any path; your code decides what is allowed." },
-          { code: "function llm(messages) { ... }", explanation: "Stands in for the real model. It returns the same shape the API returns: stop_reason plus content blocks." },
+          { code: "function calculate(expr) { ... }", explanation: "A recursive-descent parser: sum handles + and -, product handles * and /, factor handles numbers, parentheses and unary minus. Only arithmetic can run; no eval()." },
+          { code: "if (path.startsWith(\"/\") || path.includes(\"..\")) throw ...", explanation: "The workspace guard. The model can ask for any path; your code decides what's allowed." },
+          { code: "function llm(messages) { ... }", explanation: "Stands in for the real model and returns the same shape as the API: stop_reason plus content blocks." },
           { code: "messages.push({ role: \"assistant\", content: resp.content });", explanation: "Append the model's full reply, tool_use blocks included, before adding results." },
           { code: "results.push({ ..., is_error: true });", explanation: "Failures become data the model can read, not crashes." },
           { code: "messages.push({ role: \"user\", content: results });", explanation: "All tool results for the turn go back together in one user message." },
@@ -884,7 +886,7 @@ if __name__ == "__main__":
     WORKSPACE.mkdir(exist_ok=True)
     task = " ".join(sys.argv[1:]) or input("Task: ")
     print("\\n" + run_agent(task))`,
-        explanation: "About 170 lines, no framework. The security-critical parts are ordinary code you control: safe_path, the AST-based calculator, output caps, and the approval gate. Everything the model produces - tool names, paths, expressions - is treated as untrusted input.",
+        explanation: "About 170 lines, no framework. The security-critical parts are ordinary code you control: safe_path, the AST-based calculator, output caps, and the approval gate. Everything the model produces (tool names, paths, expressions) is treated as untrusted input.",
       },
       {
         title: "The same agent with the SDK tool runner",
@@ -960,7 +962,7 @@ for step, message in enumerate(runner, 1):      # one assistant message per loop
     if step >= 12:                              # your own max-steps guard
         print("Stopping: step limit reached.")
         break`,
-        explanation: "The decorator builds each tool's JSON Schema from type hints and its description from the docstring; the runner calls the model, runs requested tools, and feeds results back until the model stops. The safety code (workspace guard, safe calculator, approval) does not go away - it moves into the tool functions.",
+        explanation: "The decorator builds each tool's JSON Schema from type hints and its description from the docstring. The runner calls the model, runs requested tools, and feeds results back until the model stops. The safety code (workspace guard, safe calculator, approval) doesn't go away; it moves into the tool functions.",
       },
       {
         title: "A sample run log (what you should see)",
@@ -981,14 +983,14 @@ INFO step 4 stop=end_turn in=1700 out=40
 
 Your monthly costs total 1780 (rent 1200 + food 450 + transport 130), from budget.txt.
 I saved this total to notes.txt.`,
-        explanation: "Illustrative output - token counts and wording will differ on every run. Notice input tokens grow each step, because the whole history is re-sent.",
+        explanation: "Illustrative output; token counts and wording differ every run. Input tokens grow each step because the whole history is re-sent.",
       },
     ],
     howItWorks: md(
-      "The Python agent and the JavaScript demo have the same skeleton: **messages** (the growing history), **TOOLS** (what the model may request), **run_tool** (what actually happens), and the **loop** (call, append, run, append, repeat). The model never runs code; it only emits tool_use blocks, and the dispatcher decides what to do with them.",
-      "Parallel tool calls need no extra code: if the model returns three tool_use blocks in one turn, the inner `for block in resp.content` loop runs all three and the results travel together in one user message. To speed this up you could run independent tools concurrently with `concurrent.futures.ThreadPoolExecutor`, as long as each result keeps its `tool_use_id`.",
-      "The approval gate sits between the model's request and execution. Because a denial is reported as an `is_error` result, the conversation stays well-formed and the model can explain what it could not do. In a web app the same idea becomes a 'pending approval' state that a user resolves with a button.",
-      "The tool runner automates the loop and schema generation, but you still own limits, safety, and logging. Write the manual loop first so you know exactly what the runner is doing for you.",
+      "The Python agent and the JavaScript demo share one skeleton: **messages** (the growing history), **TOOLS** (what the model may request), **run_tool** (what actually happens), and the **loop** (call, append, run, append, repeat). The model never runs code. It only emits tool_use blocks, and the dispatcher decides what to do with them.",
+      "Parallel tool calls need no extra code. If the model returns three tool_use blocks in one turn, the inner `for block in resp.content` loop runs all three and the results go back in one user message. To speed it up, run independent tools concurrently with `concurrent.futures.ThreadPoolExecutor`, as long as each result keeps its `tool_use_id`.",
+      "The approval gate sits between the model's request and execution. A denial is reported as an `is_error` result, so the conversation stays well-formed and the model can explain what it couldn't do. In a web app this becomes a 'pending approval' state the user resolves with a button.",
+      "The tool runner automates the loop and schema generation, but you still own limits, safety and logging. Write the manual loop first so you know what the runner does for you.",
     ),
     diagram: `  user task
      |
@@ -1007,13 +1009,13 @@ I saved this total to notes.txt.`,
   tools: list_files read_file calculator
          search_notes save_note(risky)`,
     whyItExists: md(
-      "Frameworks hide the loop behind abstractions, and when something goes wrong you cannot see why. Building an agent from scratch shows that there is no magic: a model, a list of tools, a dispatcher and a loop. With that understanding you can debug any framework, decide whether you need one at all, and put security controls where they belong - in your code, not in the prompt.",
+      "Frameworks hide the loop behind abstractions, so when something breaks you can't see why. Building from scratch shows there's no magic: a model, a list of tools, a dispatcher and a loop. Then you can debug any framework, decide whether you need one, and put security controls where they belong: in your code, not the prompt.",
     ),
     whenToUse: md(
-      "Build your own loop when you need full control over safety, logging and cost; when your tools are few and well-defined; when you are learning; or when a framework would add more complexity than it removes. Use the SDK tool runner once the manual loop is clear and you want less boilerplate.",
+      "Build your own loop when you need full control over safety, logging and cost, when you have a few well-defined tools, when you're learning, or when a framework would add more complexity than it removes. Switch to the SDK tool runner once the manual loop is clear and you want less boilerplate.",
     ),
     whenNotToUse: md(
-      "If the task is always the same two or three steps, write a workflow instead of a loop. If you need durable long-running agents (resume after crashes, distributed workers, scheduling), consider an established agent framework or platform rather than growing this script indefinitely. And never ship the approval-free version of a tool that sends, deletes or pays.",
+      "If the task is always the same two or three steps, write a workflow instead. If you need durable long-running agents (resume after crashes, distributed workers, scheduling), use an established agent framework or platform rather than growing this script forever. Never ship an approval-free version of a tool that sends, deletes or pays.",
     ),
     commonMistakes: [
       "Implementing a calculator with eval() or exec() on model output - that is remote code execution.",
@@ -1052,18 +1054,18 @@ I saved this total to notes.txt.`,
     level: "intermediate",
     description: "How agents remember: the context window as working memory, summarization and compaction, and long-term stores with retrieval.",
     explanation: md(
-      "LLMs have no memory of their own between API calls. Everything an agent 'remembers' is something your code chose to put into the next request. **Agent memory** is the set of techniques for deciding what to keep, what to compress, what to store outside the model, and what to bring back when it is needed.",
-      "It helps to borrow terms from human memory:",
-      "- **Working memory (short-term)**: the current **context window** - the system prompt, the message history, tool calls and results of this run. It is fast and precise, but limited in size, and every token in it is paid for on every call.\n- **Long-term memory**: information stored *outside* the model - files, a database, a vector store - that survives across sessions and can be far larger than any context window.\n- Long-term memory is often split further: **semantic** memory (facts: 'the user prefers Python'), **episodic** memory (what happened: 'last Tuesday we migrated the billing DB and it failed on step 3'), and **procedural** memory (how to do things: instructions and learned rules, often kept in the system prompt or a rules file).",
-      "**Working memory management.** A long agent run fills the context with old tool outputs. Problems appear before you hit the hard limit: cost and latency grow every step, and models attend less reliably to details buried in a very long context (sometimes called *context rot*). Techniques, from simplest to most involved:",
-      "- **Trim tool outputs at the source**: return 20 relevant lines, not 2,000.\n- **Sliding window**: keep only the last N turns. Simple, but the agent forgets the original goal unless you always keep the first user message.\n- **Clear old tool results**: replace bulky results from earlier steps with a short placeholder like '[result removed - re-run read_file if needed]', keeping the tool_use/tool_result structure valid.\n- **Summarization / compaction**: when the history passes a threshold, ask the model to summarize the older part (decisions made, facts learned, open questions, files touched), then continue with *summary + recent turns*. This keeps the essentials at a fraction of the tokens.\n- **Scratchpad / notes file**: give the agent a tool to write its own progress notes (a to-do list, findings) to a file, and to read them back. Its plan then survives even aggressive compaction.",
+      "LLMs have no memory between API calls. Everything an agent 'remembers' is something your code put in the next request. **Agent memory** is about deciding what to keep, what to compress, what to store outside the model, and what to bring back when needed.",
+      "Terms borrowed from human memory help:",
+      "- **Working memory (short-term)**: the current **context window**: system prompt, message history, and this run's tool calls and results. Fast and precise, but limited in size, and you pay for every token on every call.\n- **Long-term memory**: information stored *outside* the model (files, a database, a vector store). It survives across sessions and can be far larger than any context window.\n- Long-term memory is often split further: **semantic** (facts: 'the user prefers Python'), **episodic** (events: 'last Tuesday we migrated the billing DB and it failed on step 3'), and **procedural** (how to do things: instructions and learned rules, often in the system prompt or a rules file).",
+      "**Managing working memory.** A long run fills the context with old tool outputs. Trouble starts before the hard limit: cost and latency grow every step, and models track details buried in very long contexts less reliably (sometimes called *context rot*). Techniques, simplest first:",
+      "- **Trim tool outputs at the source**: return 20 relevant lines, not 2,000.\n- **Sliding window**: keep only the last N turns. Simple, but the agent forgets the goal unless you always keep the first user message.\n- **Clear old tool results**: swap bulky earlier results for a short placeholder like '[result removed - re-run read_file if needed]', keeping the tool_use/tool_result structure valid.\n- **Summarization / compaction**: when history passes a threshold, have the model summarize the older part (decisions, facts learned, open questions, files touched), then continue with *summary + recent turns*. You keep the essentials at a fraction of the tokens.\n- **Scratchpad / notes file**: give the agent a tool to write and read its own progress notes (a to-do list, findings). Its plan then survives even aggressive compaction.",
       "**Long-term memory** usually works through tools or automatic retrieval:",
-      "- **Explicit memory tools**: `remember(fact)` and `recall(query)`. The model decides what is worth saving. Simple and transparent; you can show users what was stored and let them delete it.\n- **Retrieval-based memory**: store memories as embeddings (vectors that capture meaning, see Embeddings) in a vector store, and before each turn retrieve the few memories most similar to the current message and insert them into the prompt. This is RAG applied to the agent's own past.\n- **Structured profiles**: for well-known fields (name, timezone, plan tier), a normal database row beats fuzzy retrieval.",
-      "Memory needs housekeeping: memories go stale ('user works at Acme' after they changed jobs), conflict, or contain sensitive data. Store a timestamp and source with each memory, prefer newer facts, let users view and delete what is stored, and never save secrets such as passwords or API keys.",
-      "Some model providers, including Anthropic, offer built-in context-management features (for example automatic compaction or clearing old tool results, and a client-side memory tool). They implement the same ideas; check the current documentation before relying on a specific one.",
+      "- **Explicit memory tools**: `remember(fact)` and `recall(query)`. The model decides what to save. Simple and transparent; users can see what was stored and delete it.\n- **Retrieval-based memory**: store memories as embeddings (vectors that capture meaning, see Embeddings) in a vector store. Before each turn, retrieve the few most similar to the current message and add them to the prompt. This is RAG over the agent's own past.\n- **Structured profiles**: for known fields (name, timezone, plan tier), a normal database row beats fuzzy retrieval.",
+      "Memory needs housekeeping. Memories go stale ('user works at Acme' after a job change), conflict, or hold sensitive data. Store a timestamp and source with each one, prefer newer facts, let users view and delete what's stored, and never save secrets like passwords or API keys.",
+      "Some providers, including Anthropic, offer built-in context management (for example automatic compaction, clearing old tool results, and a client-side memory tool). They use the same ideas; check the current docs before relying on a specific one.",
     ),
     analogy:
-      "Working memory is your desk: only so many papers fit, but everything on it is right in front of you. Compaction is clearing the desk at the end of a meeting by writing a one-page summary and filing the rest. Long-term memory is the filing cabinet in the corner: huge, but you only benefit from it if you know what to pull out when you need it - and if someone throws away the outdated folders.",
+      "Working memory is your desk: only so many papers fit, but everything is in front of you. Compaction is clearing the desk after a meeting by writing a one-page summary and filing the rest. Long-term memory is the filing cabinet: huge, but only useful if you know what to pull out, and if someone throws away the outdated folders.",
     examples: [
       {
         title: "Compaction: summarize old turns when over budget (runnable)",
@@ -1102,7 +1104,7 @@ const out = compact(system, msgs, 60, 3);
 console.log("after :", out.msgs.length, "messages,", countTokens(out.msgs), "tokens");
 console.log("system now:", out.system);
 console.log("first kept message:", out.msgs[0].role, "-", out.msgs[0].content);`,
-        explanation: "Old turns are folded into a short summary in the system prompt; recent turns stay verbatim. The cut point is moved so the kept history starts with a user message, keeping roles valid. A real summarizer is an LLM call with instructions on what to preserve.",
+        explanation: "Old turns fold into a short summary in the system prompt; recent turns stay verbatim. The cut point shifts so the kept history starts with a user message, keeping roles valid. A real summarizer is an LLM call told what to preserve.",
       },
       {
         title: "Retrieval-based long-term memory with tiny vectors (runnable)",
@@ -1145,7 +1147,7 @@ for (const q of ["which language for data scripts", "how long should replies be"
 const relevant = recall("project deadline", 3).filter((m) => m.score >= 0.5);
 const newest = relevant.sort((a, b) => b.day - a.day)[0];
 console.log("prompt context: - (saved day " + newest.day + ") " + newest.text);`,
-        explanation: "Each memory is stored with a vector; at question time the most similar memories are retrieved and added to the prompt. The conflicting deadlines show a real trap: similarity alone ranks the outdated deadline first, so you need timestamps and a recency rule (here: newest relevant memory wins). Real systems use a real embedding model and a vector store.",
+        explanation: "Each memory is stored with a vector. At question time, the most similar memories are retrieved and added to the prompt. The conflicting deadlines show a real trap: similarity alone ranks the outdated deadline first, so you need timestamps and a recency rule (here, the newest relevant memory wins). Real systems use a real embedding model and a vector store.",
       },
       {
         title: "Long-term memory as tools, persisted in a JSON file",
@@ -1188,7 +1190,7 @@ def recall(query: str) -> str:
 
 # Add MEMORY_TOOLS to your agent's tool list and route "remember"/"recall" in run_tool.
 # Upgrade path: swap keyword matching for embeddings + a vector store (e.g. Chroma).`,
-        explanation: "The model decides what to save and when to look things up. Because memory lives in a plain file, users can inspect and edit it - an important trust and privacy feature.",
+        explanation: "The model decides what to save and when to look things up. Memory lives in a plain file, so users can inspect and edit it, which matters for trust and privacy.",
       },
       {
         title: "Compacting an agent's history with an LLM summary",
@@ -1238,9 +1240,11 @@ def compact(messages: list, keep_recent: int = 6) -> list:
       },
     ],
     howItWorks: md(
-      "Every call is built fresh: system prompt (instructions + possibly retrieved long-term memories) + message history (working memory, possibly compacted) + the new user message. Memory management is simply the code that assembles that request.",
-      "Compaction trades detail for space. A good summary prompt lists exactly what must survive: the goal, constraints, decisions, facts learned, what was tried and failed, and the next steps. Without that, summaries drop the one detail that mattered.",
-      "Retrieval-based memory follows the RAG pipeline: write (embed + store with metadata such as time, user and source), read (embed the current query, find nearest neighbours, filter by user and recency), and inject (add the top few into the prompt, clearly labelled as memories that may be outdated). Scoping by user id is essential - one user's memories must never leak into another's prompt.",
+      "Every call is built fresh: system prompt (instructions, maybe plus retrieved long-term memories) + message history (working memory, maybe compacted) + the new user message. Memory management is just the code that assembles that request.",
+      "Compaction trades detail for space. A good summary prompt lists what must survive: the goal, constraints, decisions, facts learned, what was tried and failed, and next steps. Without that, summaries drop the one detail that mattered.",
+      "Retrieval-based memory follows the RAG pipeline:",
+      "- **Write**: embed and store with metadata such as time, user and source.\n- **Read**: embed the current query, find nearest neighbours, filter by user and recency.\n- **Inject**: add the top few to the prompt, clearly labelled as memories that may be outdated.",
+      "Scoping by user id is essential: one user's memories must never leak into another's prompt.",
     ),
     diagram: `   each model call is assembled from:
   +------------------------------------------+
@@ -1253,13 +1257,13 @@ def compact(messages: list, keep_recent: int = 6) -> list:
         |  context full?  -> compact old turns
         |  new durable fact? -> remember() -> store`,
     whyItExists: md(
-      "Context windows are finite and every token costs money and time on every step. At the same time, useful assistants must stay coherent through long tasks and remember users across sessions. Memory techniques let an agent keep the important parts of a long history and a large body of past knowledge without stuffing everything into every request.",
+      "Context windows are finite, and every token costs money and time on every step. Yet useful assistants must stay coherent through long tasks and remember users across sessions. Memory techniques keep the important parts of a long history and past knowledge without stuffing everything into every request.",
     ),
     whenToUse: md(
-      "Use compaction or result-clearing for long-running agents (coding sessions, research tasks) whose history grows past a comfortable size. Use long-term memory for assistants that serve the same user repeatedly and benefit from preferences and past decisions. Use a notes/scratchpad tool for multi-hour tasks that need a persistent plan.",
+      "Use compaction or result-clearing for long-running agents (coding sessions, research) whose history grows too large. Use long-term memory for assistants that serve the same user repeatedly and benefit from past preferences and decisions. Use a notes/scratchpad tool for multi-hour tasks that need a persistent plan.",
     ),
     whenNotToUse: md(
-      "Short, single-session tasks need no memory system - the message history is enough. Do not add vector-based memory when a few structured fields in a database would do. Avoid persistent memory where privacy rules forbid storing user data, or where stale memories could cause harm (medical, legal) without careful review.",
+      "Short, single-session tasks need no memory system; the message history is enough. Don't add vector memory when a few database fields would do. Avoid persistent memory where privacy rules forbid storing user data, or where stale memories could cause harm (medical, legal) without careful review.",
     ),
     commonMistakes: [
       "Assuming the model remembers previous API calls - it does not; you must resend or re-inject.",
@@ -1297,20 +1301,21 @@ def compact(messages: list, keep_recent: int = 6) -> list:
     level: "intermediate",
     description: "An open standard for plugging tools, data and prompts into any AI application through MCP servers.",
     explanation: md(
-      "The **Model Context Protocol (MCP)** is an open protocol that standardizes how AI applications connect to external tools and data. Instead of every app writing custom integration code for every service (GitHub, a database, your file system, Slack...), a service is wrapped once as an **MCP server**, and any MCP-compatible application can use it. It is often compared to USB-C: one standard plug instead of a drawer full of adapters.",
-      "Without MCP, connecting M applications to N services needs up to M x N custom integrations. With MCP you need M clients and N servers.",
+      "The **Model Context Protocol (MCP)** is an open protocol for connecting AI applications to external tools and data. Instead of every app writing custom code for every service (GitHub, a database, your file system, Slack...), each service is wrapped once as an **MCP server**, and any MCP-compatible app can use it. It's often compared to USB-C: one standard plug instead of a drawer of adapters.",
+      "Without MCP, connecting M apps to N services needs up to M x N custom integrations. With MCP you need M clients and N servers.",
       "MCP has three roles:",
-      "- **Host**: the AI application the user works in - a desktop chat app, an IDE, a coding agent, or your own agent program. The host owns the model and decides what the model may do.\n- **Client**: a connector inside the host that maintains a connection to **one** server. A host with three servers runs three clients.\n- **Server**: a program that exposes capabilities - for example a 'notes' server, a 'postgres' server, a 'github' server. It can run locally as a subprocess or remotely over the network.",
-      "Servers offer three main kinds of capabilities (called **primitives**):",
-      "- **Tools**: functions the model can call, with a name, description and JSON Schema - exactly like the tools in Tool Use. *Model-controlled*: the model decides when to call them.\n- **Resources**: read-only data identified by a URI (a file, a database schema, a document), which the host application can attach to the context. *Application-controlled*.\n- **Prompts**: reusable prompt templates with arguments (for example 'summarize-pr' with a PR number) that a user can pick, often shown as slash commands. *User-controlled*.",
-      "Clients can also offer capabilities to servers, such as **sampling** (a server asks the host's model to generate text, with the host staying in control) and **roots** (the host tells the server which folders it may work in).",
-      "**Transports** define how messages travel. Messages are **JSON-RPC 2.0** - a simple standard where each request has a `method`, `params` and an `id`, and each response carries the matching `id`. The two standard transports are:",
-      "- **stdio**: the host launches the server as a local subprocess and they exchange messages over standard input and output. Simple and private; ideal for local tools.\n- **Streamable HTTP**: the server runs as a web service; the client sends HTTP POST requests and the server can stream responses. Used for remote, shared or hosted servers, typically with authentication (OAuth).",
+      "- **Host**: the AI app the user works in: a desktop chat app, an IDE, a coding agent, or your own agent. The host owns the model and decides what it may do.\n- **Client**: a connector inside the host that keeps a connection to **one** server. A host with three servers runs three clients.\n- **Server**: a program that exposes capabilities, such as a 'notes', 'postgres' or 'github' server. It can run locally as a subprocess or remotely over the network.",
+      "Servers offer three main kinds of capabilities (**primitives**):",
+      "- **Tools**: functions the model can call, with a name, description and JSON Schema, just like in Tool Use. *Model-controlled*: the model decides when to call them.\n- **Resources**: read-only data identified by a URI (a file, a database schema, a document) that the host can attach to the context. *Application-controlled*.\n- **Prompts**: reusable templates with arguments (for example 'summarize-pr' with a PR number) that the user picks, often as slash commands. *User-controlled*.",
+      "Clients can also offer capabilities to servers, such as **sampling** (a server asks the host's model to generate text, with the host in control) and **roots** (the host tells the server which folders it may use).",
+      "**Transports** define how messages travel. Messages are **JSON-RPC 2.0**: each request has a `method`, `params` and an `id`, and each response carries the matching `id`. The two standard transports:",
+      "- **stdio**: the host launches the server as a local subprocess and they talk over standard input and output. Simple and private; ideal for local tools.\n- **Streamable HTTP**: the server runs as a web service; the client sends HTTP POST requests and the server can stream responses. Used for remote, shared or hosted servers, usually with authentication (OAuth).",
       "A session starts with an **initialize** handshake where both sides declare their protocol version and capabilities. Then the client can call `tools/list`, `tools/call`, `resources/list`, `resources/read`, `prompts/list` and `prompts/get`.",
-      "**Security matters.** An MCP server runs code with whatever permissions you give it, and its tool descriptions and outputs go straight into the model's context. Only install servers you trust, review what tools they expose, prefer read-only or narrowly-scoped servers, keep approval prompts on for actions with side effects, and remember that data returned by a server (web pages, issues, emails) can contain prompt-injection attempts.",
+      "**Security matters.** An MCP server runs code with whatever permissions you give it, and its tool descriptions and outputs go straight into the model's context. So:",
+      "- Only install servers you trust, and review the tools they expose.\n- Prefer read-only or narrowly scoped servers.\n- Keep approval prompts on for actions with side effects.\n- Remember that data a server returns (web pages, issues, emails) can contain prompt-injection attempts.",
     ),
     analogy:
-      "MCP is like the standard electrical socket. Appliance makers (server authors) build one plug; house builders (host apps) install standard sockets; anything plugs into anything. The host is the house, each client is a socket, each server is an appliance - and you still should not plug in a device from a stranger without checking it first.",
+      "MCP is like a standard electrical socket. Appliance makers (server authors) build one plug; house builders (host apps) install standard sockets; anything plugs into anything. The host is the house, each client a socket, each server an appliance. You still shouldn't plug in a stranger's device without checking it first.",
     examples: [
       {
         title: "A complete MCP server in Python with FastMCP",
@@ -1353,7 +1358,7 @@ def weekly_review() -> str:
 if __name__ == "__main__":
     mcp.run()          # stdio transport by default
     # mcp.run(transport="streamable-http")  # to serve over HTTP instead`,
-        explanation: "FastMCP builds each tool's JSON Schema from type hints and its description from the docstring, just like the SDK tool runner. With the stdio transport, stdout carries protocol messages, so any print() to stdout would corrupt the stream - log to stderr.",
+        explanation: "FastMCP builds each tool's JSON Schema from type hints and its description from the docstring, like the SDK tool runner. With stdio, stdout carries protocol messages, so any print() to stdout corrupts the stream. Log to stderr.",
       },
       {
         title: "Registering the server in a desktop host's config",
@@ -1366,7 +1371,7 @@ if __name__ == "__main__":
     }
   }
 }`,
-        explanation: "Hosts that launch local stdio servers take a command and arguments; this is the shape used by Claude Desktop's claude_desktop_config.json, and other hosts use similar entries. Use absolute paths: the host may start the server from a different working directory.",
+        explanation: "Hosts that launch local stdio servers take a command and arguments. This is the shape of Claude Desktop's claude_desktop_config.json; other hosts use similar entries. Use absolute paths, since the host may start the server from a different working directory.",
       },
       {
         title: "Your own agent as an MCP host: list tools and call them",
@@ -1406,7 +1411,7 @@ async def main():
             print("".join(b.text for b in resp.content if b.type == "text"))
 
 asyncio.run(main())`,
-        explanation: "MCP tool definitions map one-to-one onto API tool definitions (name, description, inputSchema). The agent loop is the same one you already know - only run_tool is replaced by session.call_tool.",
+        explanation: "MCP tool definitions map one-to-one onto API tool definitions (name, description, inputSchema). The agent loop is the one you know; only run_tool is replaced by session.call_tool.",
       },
       {
         title: "What travels over the wire: JSON-RPC messages (runnable simulation)",
@@ -1446,9 +1451,9 @@ console.log("server state:", server.notes);`,
       },
     ],
     howItWorks: md(
-      "When the host starts, it launches or connects to each configured server and performs the initialize handshake. It then lists each server's tools (and resources and prompts) and merges the tool definitions into what it sends the model. When the model emits a tool_use for an MCP tool, the host routes it to the right client, which sends `tools/call` to its server and returns the result as a tool_result. To the model, MCP tools look like any other tools.",
-      "Servers can notify clients when their lists change (for example new tools appear), and long operations can report progress. Remote servers over Streamable HTTP typically use OAuth so that each user grants access with their own identity.",
-      "Because every connected server's tool definitions are added to the context, connecting dozens of servers costs tokens on every call and makes tool selection harder. Connect what the task needs.",
+      "On startup, the host launches or connects to each configured server and runs the initialize handshake. It lists each server's tools (and resources and prompts) and merges the tool definitions into what it sends the model. When the model emits a tool_use for an MCP tool, the host routes it to the right client, which sends `tools/call` to its server and returns the result as a tool_result. To the model, MCP tools look like any other tools.",
+      "Servers can notify clients when their lists change (for example, new tools appear), and long operations can report progress. Remote servers over Streamable HTTP usually use OAuth so each user grants access with their own identity.",
+      "Every connected server's tool definitions go into the context, so dozens of servers cost tokens on every call and make tool selection harder. Connect only what the task needs.",
     ),
     diagram: `  +------------------ HOST (AI app) -------------------+
   |   model  <-->  agent loop                          |
@@ -1463,13 +1468,13 @@ console.log("server state:", server.notes);`,
      messages: JSON-RPC 2.0  (initialize, tools/list,
                tools/call, resources/read, prompts/get)`,
     whyItExists: md(
-      "Every AI application needed the same integrations, and every integration was rewritten for every app with slightly different tool formats. MCP separates *who builds the integration* from *who uses it*: write a server once and it works in many hosts; build a host once and it gains access to an ecosystem of servers.",
+      "Every AI app needed the same integrations, rewritten for each app with slightly different tool formats. MCP separates *who builds the integration* from *who uses it*. Write a server once and it works in many hosts; build a host once and it can use a whole ecosystem of servers.",
     ),
     whenToUse: md(
-      "Use MCP when you want your tools usable from several AI applications (desktop chat, IDE, your own agent), when you want to reuse existing community or vendor servers instead of writing integrations, or when you want a clean process boundary between the agent and the systems it touches.",
+      "Use MCP when your tools should work from several AI apps (desktop chat, IDE, your own agent), when you want to reuse community or vendor servers instead of writing integrations, or when you want a clean process boundary between the agent and the systems it touches.",
     ),
     whenNotToUse: md(
-      "If you have one agent with three small in-process tools, plain tool definitions in your code are simpler and faster - MCP adds a process, a protocol and a dependency. Do not connect untrusted or unreviewed servers to an agent that has access to sensitive data or powerful actions.",
+      "For one agent with three small in-process tools, plain tool definitions in your code are simpler and faster; MCP adds a process, a protocol and a dependency. Don't connect untrusted or unreviewed servers to an agent with access to sensitive data or powerful actions.",
     ),
     commonMistakes: [
       "Printing debug output to stdout in a stdio server, corrupting the JSON-RPC stream.",

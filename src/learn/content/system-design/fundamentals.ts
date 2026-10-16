@@ -5,20 +5,18 @@ export const systemDesignFundamentalsTopics: Topic[] = [
     id: "what-is-system-design",
     title: "What is System Design?",
     level: "beginner",
-    description: "Planning how the different parts of a real software system fit together and work at scale.",
+    description: "Planning how the parts of a software system fit together and work at scale.",
     explanation: `
-Writing a single function or a small app is one skill. Deciding how dozens
-of services, databases, and servers should work *together* — so that
-millions of people can use a product reliably, quickly, and without it
-falling over — is a different skill entirely. That's **system design**.
+Writing a small app is one skill. Deciding how dozens of services,
+databases, and servers work *together*, so millions of people can use a
+product reliably and quickly, is another. That's **system design**.
 
-It's less about writing code and more about making decisions: Where should
-data live? How do different parts of the system talk to each other? What
-happens when one part fails, or when ten times more people show up at
-once?
+It's more about decisions than code: Where should data live? How do the
+parts talk to each other? What happens when one part fails, or when ten
+times more people show up?
     `.trim(),
     analogy:
-      "If writing code is like building a single room, system design is like being the architect of an entire city — deciding where the roads, water pipes, and power lines go so that everything works together, even as the population grows.",
+      "If writing code is building a single room, system design is planning a whole city: where the roads, pipes, and power lines go so everything keeps working as the population grows.",
     examples: [
       {
         title: "Questions system design answers",
@@ -31,35 +29,35 @@ once?
       },
     ],
     howItWorks: `
-System design usually starts with understanding requirements (how many
-users, how much data, how fast does it need to respond), then breaks the
-problem into components (servers, databases, caches, queues), and decides
-how those components connect and what happens when something goes wrong.
-It's an iterative process of trade-offs, not a single right answer.
+First, understand the requirements: how many users, how much data, how
+fast it must respond. Then break the problem into components (servers,
+databases, caches, queues) and decide how they connect and what happens
+when one fails.
+
+It's a repeated process of trade-offs, not a single right answer.
     `.trim(),
     whyItExists: `
-A system that works perfectly for 10 users can completely fall apart at 10
-million — slow responses, crashes, lost data. System design exists to
-think through those problems *before* they happen, and to make deliberate,
-informed trade-offs instead of accidental ones.
+A system that works for 10 users can fall apart at 10 million: slow
+responses, crashes, lost data. System design lets you think through those
+problems *before* they happen and make trade-offs on purpose, not by
+accident.
     `.trim(),
     whenToUse: `
-Reach for system-design thinking whenever you're planning something
-bigger than a single script — choosing how services, data, and traffic
-should be organized before (or while) you build, especially once more
-than one person or more than a handful of users will depend on it.
+Use it whenever you plan something bigger than a single script: deciding
+how services, data, and traffic are organized before or while you build.
+It matters most once more than one person, or more than a handful of
+users, depend on it.
     `.trim(),
     whenNotToUse: `
-For a small script, a personal tool, or a prototype nobody else depends
-on yet, heavy system design is overkill — you'd spend more time planning
-for scale you don't have than actually building. Start simple, and bring
-in system design as real constraints (more users, more data, more
-reliability needs) show up.
+For a small script, a personal tool, or a prototype nobody depends on
+yet, heavy design is overkill. You'd spend more time planning for scale
+you don't have than building. Start simple and add design as real needs
+(more users, more data, more reliability) show up.
     `.trim(),
     commonMistakes: [
-      "Jumping straight to specific technologies before understanding the actual requirements and constraints.",
-      "Designing only for the current scale and ignoring how the system would need to change if usage grew 100x.",
-      "Assuming there's one 'correct' design instead of a best trade-off given the specific goals.",
+      "Picking technologies before understanding the requirements and constraints.",
+      "Designing only for today's scale and ignoring what would change if usage grew 100x.",
+      "Assuming there's one 'correct' design instead of the best trade-off for the goals.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Pick an app you use daily (e.g. a messaging app) and list 3 questions you'd need to answer to design its backend." },
@@ -67,24 +65,24 @@ reliability needs) show up.
       { difficulty: "Hard", prompt: "Describe what might break in your sketch above if the app suddenly went from 1,000 to 10,000,000 users." },
     ],
     interviewQuestions: [
-      { question: "What is system design, in your own words?", answer: "The process of deciding how the components of a software system (servers, databases, caches, queues, etc.) fit together to meet requirements like scale, speed, and reliability." },
-      { question: "Why can't you just \"add more servers\" to fix every scaling problem?", answer: "Because bottlenecks often move to somewhere else — like a single database — that doesn't automatically scale just by adding more application servers." },
-      { question: "What's the difference between a functional and a non-functional requirement in system design?", answer: "Functional requirements describe what the system does (e.g. 'users can post a photo'); non-functional requirements describe how well it does it (e.g. 'responses under 200ms', 'handles 1M users')." },
-      { question: "What's the difference between vertical scaling and horizontal scaling?", answer: "Vertical scaling means making a single machine more powerful (more CPU, RAM); horizontal scaling means adding more machines and spreading the load across them." },
-      { question: "Why is horizontal scaling generally preferred for large-scale systems, despite being more complex?", answer: "A single machine has a hard ceiling on how powerful it can get and becomes a single point of failure, while horizontal scaling has no fixed ceiling and lets the system tolerate individual machines failing." },
-      { question: "What are some of the main non-functional requirements a system designer needs to gather before designing a system?", answer: "Things like availability (how often it must be up), latency (how fast it must respond), scalability (how much growth it must handle), consistency (how up-to-date data must be across replicas), and durability (whether data can ever be lost)." },
-      { question: "What is a single point of failure, and why does system design try to eliminate them?", answer: "Any single component whose failure takes down the whole system — system design tries to remove them (through redundancy and replication) because a system is only as reliable as its least reliable required component." },
-      { question: "Why do system design interviews emphasize trade-offs rather than a single correct answer?", answer: "Because real systems balance competing goals (cost, consistency, latency, complexity) differently depending on their specific requirements, so a good designer explains the reasoning behind a choice rather than reciting one 'correct' architecture." },
-      { question: "What is back-of-the-envelope estimation, and why is it a common first step in system design?", answer: "Rough capacity math (expected users, requests per second, storage growth) done early to reveal which parts of a design will actually be under strain, so effort isn't wasted optimizing something that was never going to be a bottleneck." },
-      { question: "What's the difference between throughput and latency?", answer: "Latency is how long a single request takes to complete; throughput is how many requests the system can handle in a given period — a system can have high throughput and still feel slow per-request, or vice versa." },
-      { question: "Why might a design that works fine for 10,000 users fail at 10 million, even with no bugs?", answer: "Because resources that seemed effectively unlimited at small scale — a single database's connections, disk I/O, a single server's memory — become real bottlenecks once traffic and data volume grow by orders of magnitude." },
-      { question: "What is the CAP theorem, and why does it matter when designing a distributed system?", answer: "It states that a distributed system can't simultaneously guarantee Consistency, Availability, and Partition tolerance during a network failure — since partitions are unavoidable in practice, it forces an explicit choice between staying consistent or staying available when the network splits." },
-      { question: "What's the difference between designing for a read-heavy workload versus a write-heavy workload?", answer: "Read-heavy systems tend to lean on caching and read replicas to serve the same data to many readers cheaply; write-heavy systems need to focus on how writes are distributed and ordered (sharding, queues) since caching doesn't help data that changes constantly." },
-      { question: "Why is it important to clarify assumptions and scope before diving into a system's design?", answer: "Without agreeing on scale, key features, and constraints up front, two people can design very different, equally 'correct' systems for the same vague prompt — clarifying scope focuses effort on the requirements that actually matter." },
-      { question: "What does \"availability\" mean in system design, and how is it typically expressed?", answer: "The proportion of time a system is operational and able to serve requests, often expressed as a percentage of uptime (e.g. 99.9%, informally '3 nines') or in terms of allowed downtime per year." },
-      { question: "Give an example of a trade-off between consistency and availability.", answer: "A banking system might reject a request during a network partition rather than risk showing a stale balance (favoring consistency), while a social media feed might show slightly outdated data rather than fail entirely (favoring availability)." },
-      { question: "Why might adding a cache introduce new problems instead of simply making a system faster?", answer: "A cache can serve stale data if it isn't invalidated correctly, adds an extra component that can fail or get out of sync with the source of truth, and shifts complexity toward cache-invalidation bugs, which are notoriously easy to get wrong." },
-      { question: "What's the risk of over-engineering a system design for scale it doesn't actually need yet?", answer: "It burns time and money building and maintaining complexity (extra services, replication, queues) that isn't solving a real current problem, while likely guessing wrong about which future bottlenecks will actually matter." },
+      { question: "What is system design, in your own words?", answer: "Deciding how a system's parts (servers, databases, caches, queues) fit together to meet needs like scale, speed, and reliability." },
+      { question: "Why can't you just \"add more servers\" to fix every scaling problem?", answer: "The bottleneck often moves somewhere else, like a single database, which doesn't scale just because you added application servers." },
+      { question: "What's the difference between a functional and a non-functional requirement in system design?", answer: "Functional requirements say what the system does ('users can post a photo'). Non-functional requirements say how well it does it ('responses under 200ms', 'handles 1M users')." },
+      { question: "What's the difference between vertical scaling and horizontal scaling?", answer: "Vertical scaling makes one machine more powerful (more CPU, RAM). Horizontal scaling adds more machines and spreads the load across them." },
+      { question: "Why is horizontal scaling generally preferred for large-scale systems, despite being more complex?", answer: "One machine has a hard ceiling and is a single point of failure. Horizontal scaling has no fixed ceiling and survives individual machines failing." },
+      { question: "What are some of the main non-functional requirements a system designer needs to gather before designing a system?", answer: "Availability (how often it must be up), latency (how fast it must respond), scalability (how much growth it must handle), consistency (how up to date replicas must be), and durability (whether data can ever be lost)." },
+      { question: "What is a single point of failure, and why does system design try to eliminate them?", answer: "A single component whose failure takes down the whole system. Designs remove them with redundancy and replication, because a system is only as reliable as its weakest required part." },
+      { question: "Why do system design interviews emphasize trade-offs rather than a single correct answer?", answer: "Real systems balance competing goals (cost, consistency, latency, complexity) differently for different requirements. A good designer explains the reasoning behind a choice instead of reciting one 'correct' architecture." },
+      { question: "What is back-of-the-envelope estimation, and why is it a common first step in system design?", answer: "Rough early math on users, requests per second, and storage growth. It shows which parts will be under strain, so you don't waste effort optimizing something that was never a bottleneck." },
+      { question: "What's the difference between throughput and latency?", answer: "Latency is how long one request takes. Throughput is how many requests the system handles in a given time. A system can have high throughput and still feel slow per request, or the reverse." },
+      { question: "Why might a design that works fine for 10,000 users fail at 10 million, even with no bugs?", answer: "Resources that seem unlimited at small scale (database connections, disk I/O, a server's memory) become real bottlenecks when traffic and data grow by orders of magnitude." },
+      { question: "What is the CAP theorem, and why does it matter when designing a distributed system?", answer: "A distributed system can't guarantee Consistency, Availability, and Partition tolerance all at once during a network failure. Partitions happen in practice, so you must choose: stay consistent or stay available when the network splits." },
+      { question: "What's the difference between designing for a read-heavy workload versus a write-heavy workload?", answer: "Read-heavy systems use caching and read replicas to serve the same data to many readers cheaply. Write-heavy systems focus on how writes are spread and ordered (sharding, queues), since caching doesn't help data that changes constantly." },
+      { question: "Why is it important to clarify assumptions and scope before diving into a system's design?", answer: "Without agreeing on scale, key features, and constraints, two people can design very different, equally 'correct' systems for the same vague prompt. Clear scope focuses effort on what matters." },
+      { question: "What does \"availability\" mean in system design, and how is it typically expressed?", answer: "The share of time a system is up and serving requests. It's usually a percentage of uptime (e.g. 99.9%, informally '3 nines') or allowed downtime per year." },
+      { question: "Give an example of a trade-off between consistency and availability.", answer: "A bank might reject a request during a network partition rather than show a stale balance (consistency). A social feed might show slightly old data rather than fail (availability)." },
+      { question: "Why might adding a cache introduce new problems instead of simply making a system faster?", answer: "A cache can serve stale data if not invalidated correctly. It's another part that can fail or drift from the source of truth, and cache-invalidation bugs are notoriously easy to get wrong." },
+      { question: "What's the risk of over-engineering a system design for scale it doesn't actually need yet?", answer: "You spend time and money on complexity (extra services, replication, queues) that solves no current problem, and you'll likely guess wrong about which future bottlenecks matter." },
     ],
     relatedTopics: ["client-and-server", "scalability"],
     keywords: ["system design", "architecture", "scale", "trade-offs"],
@@ -93,19 +91,18 @@ reliability needs) show up.
     id: "client-and-server",
     title: "Client and Server",
     level: "beginner",
-    description: "The basic relationship between the app you use and the machine that does the real work behind it.",
+    description: "How the app you use relates to the machine that does the work behind it.",
     explanation: `
-When you open an app or website, the thing you're looking at — the
-screen, the buttons — is called the **client**. It usually doesn't have
-all the data or logic itself; instead, it sends a request over the
-internet to a **server**: a computer somewhere else that has the actual
-data and does the real processing, then sends a response back.
+The app or website you see, with its screen and buttons, is the
+**client**. It usually doesn't hold the data or logic itself. It sends a
+request over the internet to a **server**, a computer elsewhere that has
+the data, does the processing, and sends a response back.
 
-This split — client asks, server answers — is the foundation almost every
-piece of software on the internet is built on.
+Client asks, server answers. Almost all software on the internet is built
+on this split.
     `.trim(),
     analogy:
-      "It's like ordering food at a restaurant. You (the client) don't cook the meal yourself — you tell the waiter what you want, the kitchen (the server) prepares it, and the waiter brings it back to your table.",
+      "It's like ordering at a restaurant. You (the client) don't cook. You tell the waiter what you want, the kitchen (the server) makes it, and the waiter brings it to your table.",
     examples: [
       {
         title: "A basic client-server exchange",
@@ -119,17 +116,16 @@ fetch("https://api.example.com/users/1")
 // { "id": 1, "name": "Amara" }`,
         walkthrough: [
           { code: 'fetch("https://api.example.com/users/1")', explanation: "The client sends a request asking for user #1." },
-          { code: ".then((response) => response.json())", explanation: "Once a response arrives, parses its body as JSON." },
+          { code: ".then((response) => response.json())", explanation: "When the response arrives, parses its body as JSON." },
           { code: ".then((user) => console.log(user));", explanation: "Uses the data the server sent back." },
-          { code: "// Server receives the request...", explanation: "The server does its own work on its own machine, entirely out of the client's sight." },
+          { code: "// Server receives the request...", explanation: "The server does its work on its own machine, out of the client's sight." },
         ],
       },
     ],
     howItWorks: `
-The client sends a request over the network specifying what it wants. The
-server receives that request, does whatever work is needed (looking up
-data, running logic), and sends a response back. The client then updates
-what the user sees, based on that response.
+The client sends a request over the network saying what it wants. The
+server does the work (looking up data, running logic) and sends a
+response. The client then updates the screen based on that response.
     `.trim(),
     diagram: `
 Client (app/browser)
@@ -141,51 +137,49 @@ Client (app/browser)
 Client (app/browser) — updates the screen
     `.trim(),
     whyItExists: `
-Splitting work this way lets many different clients (phones, browsers,
-smart TVs) share the same server and data, without each device needing to
-store and manage everything itself. It also lets the server be updated or
-scaled independently of the apps that use it.
+Many clients (phones, browsers, smart TVs) can share one server and its
+data, so no device has to store and manage everything itself. The server
+can also be updated or scaled separately from the apps that use it.
     `.trim(),
     whenToUse: `
-This model applies to essentially any networked application — web apps,
-mobile apps, games with online features — any time one program needs data
-or processing that lives somewhere else.
+It applies to almost any networked app (web apps, mobile apps, online
+games): any time one program needs data or processing that lives
+somewhere else.
     `.trim(),
     whenNotToUse: `
-A fully offline tool that never talks to another machine doesn't need a
-client-server split at all. And for something genuinely tiny and local,
-introducing a whole separate server just adds operational complexity with
-no real benefit.
+A fully offline tool that never talks to another machine doesn't need
+it. For something tiny and local, a separate server just adds
+operational work with no real benefit.
     `.trim(),
     commonMistakes: [
-      "Assuming the client can be trusted — a server should always re-check anything important, since clients can be modified by users.",
-      "Forgetting that a request/response trip takes real time (network latency), which affects how responsive an app feels.",
+      "Trusting the client. Users can modify clients, so the server should always re-check anything important.",
+      "Forgetting that each request/response trip takes real time (network latency), which affects how responsive an app feels.",
       "Putting sensitive logic or secrets in client-side code, where anyone can inspect it.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Open your browser's Network tab and find one request your favorite website sends to its server." },
-      { difficulty: "Medium", prompt: "Explain, in your own words, why a weather app needs a server instead of just knowing the weather itself." },
-      { difficulty: "Hard", prompt: "Describe what could go wrong if a shopping app trusted the price sent from the client instead of verifying it on the server." },
+      { difficulty: "Medium", prompt: "Explain in your own words why a weather app needs a server instead of just knowing the weather itself." },
+      { difficulty: "Hard", prompt: "Describe what could go wrong if a shopping app trusted the price sent by the client instead of checking it on the server." },
     ],
     interviewQuestions: [
-      { question: "What is the client-server model?", answer: "An architecture where a client sends requests to a server, which processes them and returns a response, rather than the client handling everything itself." },
-      { question: "Why shouldn't a server trust data coming from the client?", answer: "Because client-side code and requests can be modified or forged by anyone, so the server must independently validate anything security- or business-critical." },
-      { question: "What is latency, in the context of client-server communication?", answer: "The time it takes for a request to travel to the server and for the response to travel back — a key factor in how fast an app feels." },
-      { question: "What's the difference between a thin client and a thick (fat) client?", answer: "A thin client does minimal processing and relies on the server for most logic and data (e.g. a basic web page); a thick client handles significant logic and state locally, only talking to the server when it needs data or to persist changes (e.g. a native desktop app)." },
-      { question: "Why can many different kinds of clients (web, mobile, smart TV) all share the same server?", answer: "Because the server exposes its data and logic through a shared protocol (like HTTP) rather than a client-specific interface, so any client that speaks that protocol correctly can use it, regardless of what device or platform it runs on." },
-      { question: "What is a request-response cycle, and why does understanding it matter for building responsive apps?", answer: "It's the full round trip of a client sending a request and receiving a response — understanding it matters because every cycle takes real time, so an app that triggers many unnecessary cycles (or blocks the UI while waiting on one) will feel slow even if the server itself is fast." },
-      { question: "At a conceptual level, how does a client know which physical server to talk to when it makes a request?", answer: "The client resolves a human-readable address (like a domain name) into a network location via DNS, then opens a connection to that location — the client doesn't need to know or care which actual machine ends up handling the request." },
-      { question: "How should a well-built client handle a server that's slow to respond?", answer: "It should avoid blocking the whole UI, show appropriate loading/pending state, and set a reasonable timeout rather than waiting indefinitely — treating a slow response as an expected condition to design for, not an edge case." },
-      { question: "Why is validating input only on the client side considered a security anti-pattern?", answer: "Because client-side code runs on a device the user fully controls — it can be bypassed, modified, or skipped entirely by sending requests directly, so any validation that matters for security or data integrity must also be enforced on the server." },
-      { question: "What's the difference between synchronous and asynchronous client-server communication?", answer: "In a synchronous exchange, the client waits for the server's response before doing anything else; in an asynchronous exchange, the client continues other work and handles the response (or a notification) whenever it eventually arrives." },
-      { question: "Can a server ever act as a client? Give an example.", answer: "Yes — when a server needs data or work from another service, it makes its own outgoing request and acts as a client to that service, e.g. a backend server calling a third-party payment API before returning a response to the original client." },
-      { question: "Why does moving business logic from the client to the server usually improve security, even at the cost of extra latency?", answer: "Logic that runs on the server is outside the user's control and can't be tampered with or bypassed the way client-side code can, so anything where correctness or trust matters (pricing, permissions, validation) is safer enforced there, even though it means an extra round trip." },
-      { question: "What's the difference between latency and bandwidth?", answer: "Latency is the delay before data starts arriving; bandwidth is how much data can be transferred per unit of time once it's flowing — a connection can have low latency but low bandwidth, or vice versa, and each affects performance differently." },
-      { question: "Why might a client cache data locally instead of requesting it from the server every time, and what's the trade-off?", answer: "Caching avoids the latency and load cost of repeating identical requests, but risks the client working with stale data if the server-side data changes and the cache isn't invalidated or refreshed appropriately." },
-      { question: "What is a network round trip, and why do developers try to minimize how many a page or app makes?", answer: "It's one full request-response exchange between client and server; each one adds latency, so an app that makes many sequential round trips (instead of batching or parallelizing them) ends up feeling noticeably slower than the actual server processing time would suggest." },
-      { question: "How does the client-server model differ from a peer-to-peer model?", answer: "In client-server, roles are fixed — clients request, servers respond, and servers are usually centralized; in peer-to-peer, participants act as both client and server to each other, with no required central authority coordinating every exchange." },
-      { question: "What role does the server play when multiple clients try to modify the same data at the same time?", answer: "The server acts as the single source of truth that decides how concurrent updates are ordered or reconciled (e.g. via locks, transactions, or conflict resolution rules) — without that central arbiter, clients could overwrite each other's changes inconsistently." },
-      { question: "Why do mobile apps often need to handle network failures more gracefully than typical desktop web apps?", answer: "Mobile devices frequently lose or switch connectivity (moving between Wi-Fi and cellular, entering low-signal areas), so a mobile client needs to expect intermittent failures and design for retries, offline states, or queued requests rather than assuming a stable connection." },
+      { question: "What is the client-server model?", answer: "A client sends requests to a server, which processes them and returns a response, instead of the client doing everything itself." },
+      { question: "Why shouldn't a server trust data coming from the client?", answer: "Anyone can modify or forge client code and requests, so the server must validate anything that matters for security or business rules." },
+      { question: "What is latency, in the context of client-server communication?", answer: "The time for a request to reach the server and the response to come back. It's a key factor in how fast an app feels." },
+      { question: "What's the difference between a thin client and a thick (fat) client?", answer: "A thin client does little processing and relies on the server for most logic and data (e.g. a basic web page). A thick client keeps much of the logic and state locally and only calls the server to fetch or save data (e.g. a native desktop app)." },
+      { question: "Why can many different kinds of clients (web, mobile, smart TV) all share the same server?", answer: "The server exposes its data and logic through a shared protocol like HTTP, not a client-specific interface. Any client that speaks that protocol can use it, whatever device it runs on." },
+      { question: "What is a request-response cycle, and why does understanding it matter for building responsive apps?", answer: "It's the full round trip of sending a request and getting a response. Every cycle takes real time, so an app that makes many unneeded cycles, or blocks the UI while waiting, feels slow even with a fast server." },
+      { question: "At a conceptual level, how does a client know which physical server to talk to when it makes a request?", answer: "It resolves a human-readable address (like a domain name) to a network location via DNS, then connects to it. The client doesn't need to know which actual machine handles the request." },
+      { question: "How should a well-built client handle a server that's slow to respond?", answer: "Don't block the whole UI, show a loading state, and set a reasonable timeout instead of waiting forever. Treat slow responses as normal, not an edge case." },
+      { question: "Why is validating input only on the client side considered a security anti-pattern?", answer: "Client code runs on a device the user controls. It can be bypassed or skipped by sending requests directly, so any validation that matters for security or data integrity must also run on the server." },
+      { question: "What's the difference between synchronous and asynchronous client-server communication?", answer: "Synchronous: the client waits for the response before doing anything else. Asynchronous: the client keeps working and handles the response (or a notification) when it arrives." },
+      { question: "Can a server ever act as a client? Give an example.", answer: "Yes. When a server needs another service, it sends its own request and acts as that service's client, e.g. a backend calling a third-party payment API before replying to the original client." },
+      { question: "Why does moving business logic from the client to the server usually improve security, even at the cost of extra latency?", answer: "Server-side logic is outside the user's control and can't be tampered with or bypassed. Anything where correctness or trust matters (pricing, permissions, validation) is safer there, even if it costs an extra round trip." },
+      { question: "What's the difference between latency and bandwidth?", answer: "Latency is the delay before data starts arriving. Bandwidth is how much data can flow per unit of time. A connection can have low latency but low bandwidth, or the reverse, and each affects performance differently." },
+      { question: "Why might a client cache data locally instead of requesting it from the server every time, and what's the trade-off?", answer: "Caching avoids the latency and load of repeating the same request. The risk is stale data if the server's data changes and the cache isn't refreshed." },
+      { question: "What is a network round trip, and why do developers try to minimize how many a page or app makes?", answer: "One full request-response exchange. Each adds latency, so an app making many round trips one after another (instead of batching or running them in parallel) feels much slower than the server's actual processing time." },
+      { question: "How does the client-server model differ from a peer-to-peer model?", answer: "In client-server, roles are fixed: clients request, servers respond, and servers are usually central. In peer-to-peer, each participant acts as both client and server, with no central authority required." },
+      { question: "What role does the server play when multiple clients try to modify the same data at the same time?", answer: "It's the single source of truth that orders or reconciles concurrent updates (via locks, transactions, or conflict rules). Without it, clients could overwrite each other's changes inconsistently." },
+      { question: "Why do mobile apps often need to handle network failures more gracefully than typical desktop web apps?", answer: "Mobile devices often lose or switch connectivity (Wi-Fi to cellular, low-signal areas). A mobile client should expect drops and plan for retries, offline states, or queued requests instead of assuming a stable connection." },
     ],
     prerequisites: ["what-is-system-design"],
     relatedTopics: ["http", "rest-apis"],
@@ -195,16 +189,15 @@ no real benefit.
     id: "http",
     title: "HTTP",
     level: "beginner",
-    description: "The common language that lets clients and servers talk to each other over the web.",
+    description: "The shared language clients and servers use to talk over the web.",
     explanation: `
-For a client and a server to communicate, they both need to agree on a
-shared format for requests and responses — otherwise it's just noise
-neither side understands. **HTTP** (HyperText Transfer Protocol) is that
-shared language: a set of rules for how a request should be structured,
-what kinds of requests exist, and how a server should respond.
+A client and server must agree on a format for requests and responses,
+or neither understands the other. **HTTP** (HyperText Transfer Protocol)
+is that shared language. It sets how a request is structured, what kinds
+of requests exist, and how a server should respond.
     `.trim(),
     analogy:
-      "HTTP is like the standard format for a letter: a return address, a recipient address, a subject, and a body. Because everyone agrees on that format, any recipient (server) can read a properly formatted letter (request) — and is expected to write back using that same standard format (a response), rather than replying however they feel like.",
+      "HTTP is like the standard format for a letter: return address, recipient, subject, body. Because everyone agrees on it, any recipient (server) can read a well-formed letter (request) and is expected to reply in the same format (a response).",
     examples: [
       {
         title: "A basic HTTP request/response",
@@ -219,77 +212,76 @@ Content-Type: application/json
         explanation:
           "`GET /users/1` asks for user #1. The server replies with a status code (`200 OK` means success) and the requested data.",
         walkthrough: [
-          { code: "GET /users/1 HTTP/1.1", explanation: "The method (GET) and path (/users/1) — this request asks to read user #1." },
-          { code: "Host: api.example.com", explanation: "A header telling the server which website/host this request is meant for." },
-          { code: "HTTP/1.1 200 OK", explanation: "The response's status line — 200 means the request succeeded." },
-          { code: '{ "id": 1, "name": "Amara" }', explanation: "The response body — the actual data that was requested." },
+          { code: "GET /users/1 HTTP/1.1", explanation: "The method (GET) and path (/users/1). This request asks to read user #1." },
+          { code: "Host: api.example.com", explanation: "A header telling the server which website this request is for." },
+          { code: "HTTP/1.1 200 OK", explanation: "The response's status line. 200 means success." },
+          { code: '{ "id": 1, "name": "Amara" }', explanation: "The response body: the data that was requested." },
         ],
       },
     ],
     howItWorks: `
-Every HTTP request has a **method** (what kind of action, like GET or
-POST), a **path** (what resource it's about), and optional **headers** and
-a **body** (extra data). Every response has a **status code** (like 200
-for success or 404 for not found) plus its own headers and body. Both
-sides just follow this shared structure.
+Every request has a **method** (the action, like GET or POST), a **path**
+(the resource it's about), and optional **headers** and **body** (extra
+data).
+
+Every response has a **status code** (like 200 for success or 404 for not
+found) plus its own headers and body.
     `.trim(),
     whyItExists: `
-Without a shared protocol, every client and server pair would need its own
-custom way of communicating — nothing on the web would be interoperable.
-HTTP gives every browser, app, and server a common language, which is why
-the web works at all.
+Without a shared protocol, every client and server pair would need its
+own custom way to talk, and nothing on the web would work together. HTTP
+gives every browser, app, and server a common language.
     `.trim(),
     whenToUse: `
-You're using HTTP any time a browser, app, or script talks to a web
-server — which is most of the time a client-server application
-communicates at all.
+You use HTTP any time a browser, app, or script talks to a web server,
+which covers most client-server communication.
     `.trim(),
     whenNotToUse: `
-For very high-frequency, low-latency communication — real-time games,
-some financial trading systems — raw HTTP's overhead can be too much;
-protocols like WebSockets or dedicated binary protocols fit better there.
+For very frequent, low-latency messages (real-time games, some trading
+systems), HTTP's overhead can be too much. WebSockets or dedicated binary
+protocols fit better there.
     `.trim(),
     commonMistakes: [
-      "Confusing HTTP status code categories, e.g. thinking all 4xx codes mean 'server error' (they mean client error; 5xx means server error).",
-      "Forgetting that HTTP is stateless by default — the server doesn't automatically remember previous requests unless something (like cookies or tokens) carries that state.",
-      "Using the wrong method for the action, e.g. using GET for something that changes data on the server.",
+      "Mixing up status code groups, e.g. thinking 4xx means 'server error'. 4xx is a client error; 5xx is a server error.",
+      "Forgetting HTTP is stateless by default. The server doesn't remember earlier requests unless something (like cookies or tokens) carries that state.",
+      "Using the wrong method, e.g. GET for something that changes data on the server.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "List the HTTP methods GET, POST, PUT, and DELETE, and describe what each is typically used for." },
+      { difficulty: "Easy", prompt: "List the HTTP methods GET, POST, PUT, and DELETE, and describe what each is usually used for." },
       { difficulty: "Medium", prompt: "Look up what HTTP status codes 200, 301, 404, and 500 mean." },
-      { difficulty: "Hard", prompt: "Explain, in your own words, why HTTP being 'stateless' matters for how servers are designed to scale." },
+      { difficulty: "Hard", prompt: "Explain in your own words why HTTP being 'stateless' matters for how servers scale." },
     ],
     interviewQuestions: [
-      { question: "What is HTTP?", answer: "A protocol (a set of rules) that defines how clients and servers structure requests and responses when communicating over the web." },
-      { question: "What does it mean that HTTP is stateless?", answer: "Each request is handled independently — the server doesn't automatically remember anything about previous requests from the same client unless extra mechanisms (cookies, tokens, sessions) are used." },
-      { question: "What's the difference between GET and POST?", answer: "GET requests data without changing anything on the server (and can be cached); POST typically sends data to create or change something on the server." },
-      { question: "What does it mean for an HTTP method to be \"idempotent\"? Which common methods are idempotent?", answer: "An idempotent method produces the same end result no matter how many times the identical request is repeated — `GET`, `PUT`, `DELETE`, `HEAD`, and `OPTIONS` are idempotent, while `POST` and `PATCH` generally are not." },
-      { question: "What does it mean for an HTTP method to be \"safe\", and how is that different from being idempotent?", answer: "A safe method doesn't change server state at all (it's read-only, like `GET` or `HEAD`); idempotent only requires that repeating the request doesn't change the outcome further — so a method can be idempotent without being safe, like `DELETE`, which changes state on the first call but not on repeats." },
-      { question: "Why is PUT considered idempotent but POST is not?", answer: "`PUT` replaces a resource with the exact representation sent, so sending the same `PUT` request twice leaves the resource in the same final state; `POST` typically creates a new resource each time, so repeating it (e.g. resubmitting a form) can create duplicates." },
-      { question: "Is DELETE idempotent? Explain with an example.", answer: "Yes — deleting the same resource twice leaves it in the same end state (gone) as deleting it once, even though the second request might return a `404` instead of a success status; the *result* on the server is unchanged, which is what idempotency actually measures." },
-      { question: "What's the difference between PATCH and PUT?", answer: "`PUT` is expected to replace an entire resource with the payload sent; `PATCH` applies a partial update, changing only the fields included in the request while leaving the rest untouched." },
+      { question: "What is HTTP?", answer: "A protocol (a set of rules) for how clients and servers structure requests and responses on the web." },
+      { question: "What does it mean that HTTP is stateless?", answer: "Each request is handled on its own. The server doesn't remember earlier requests from the same client unless something extra (cookies, tokens, sessions) is used." },
+      { question: "What's the difference between GET and POST?", answer: "GET reads data without changing anything on the server, and can be cached. POST usually sends data to create or change something." },
+      { question: "What does it mean for an HTTP method to be \"idempotent\"? Which common methods are idempotent?", answer: "Repeating the same request gives the same end result. `GET`, `PUT`, `DELETE`, `HEAD`, and `OPTIONS` are idempotent; `POST` and `PATCH` generally are not." },
+      { question: "What does it mean for an HTTP method to be \"safe\", and how is that different from being idempotent?", answer: "A safe method doesn't change server state at all (read-only, like `GET` or `HEAD`). Idempotent only means repeats don't change the outcome further. So `DELETE` is idempotent but not safe: it changes state on the first call, not on repeats." },
+      { question: "Why is PUT considered idempotent but POST is not?", answer: "`PUT` replaces a resource with exactly what you send, so sending it twice leaves the same final state. `POST` usually creates a new resource each time, so repeating it (e.g. resubmitting a form) can create duplicates." },
+      { question: "Is DELETE idempotent? Explain with an example.", answer: "Yes. Deleting a resource twice leaves it in the same state (gone) as deleting it once. The second call may return `404` instead of success, but the *result* on the server is the same, and that's what idempotency measures." },
+      { question: "What's the difference between PATCH and PUT?", answer: "`PUT` replaces the whole resource with the payload. `PATCH` is a partial update: it changes only the fields you send and leaves the rest alone." },
       { question: "What are the five broad categories of HTTP status codes?", answer: "1xx (informational, request received and being processed), 2xx (success), 3xx (redirection, further action needed), 4xx (client error), and 5xx (server error)." },
-      { question: "What's the difference between a 401 and a 403 status code?", answer: "401 Unauthorized means the request lacks valid authentication (the client isn't identified, or its credentials are missing/invalid); 403 Forbidden means the client is identified but doesn't have permission to access that resource." },
-      { question: "What's the difference between a 404 and a 410 status code?", answer: "404 Not Found means the server has no resource at that URL (which could be temporary or permanent); 410 Gone explicitly signals that a resource used to exist there but has been permanently removed, which is a stronger, more specific signal than a plain 404." },
-      { question: "What's the difference between a 500 and a 503 status code?", answer: "500 Internal Server Error means something went wrong while processing the request on the server itself (an unhandled error, a bug); 503 Service Unavailable means the server is temporarily unable to handle the request (overloaded, down for maintenance) and implies the client can retry later." },
-      { question: "What's the difference between a 301 and a 302 redirect?", answer: "301 Moved Permanently tells the client (and search engines) the resource has permanently moved to a new URL and future requests should go straight there; 302 Found signals a temporary redirect, meaning the client should keep using the original URL for future requests." },
-      { question: "Why does it matter whether a redirect is 301 or 302 for things like caching or search engine indexing?", answer: "Browsers and search engines may cache a 301 redirect and transfer the original URL's search ranking to the new one, since it's treated as permanent; a 302 is not cached or trusted the same way, since the original URL is expected to become valid again." },
-      { question: "What is the purpose of HTTP headers? Give an example of a request header and a response header.", answer: "Headers carry metadata about a request or response separate from its body — e.g. the request header `Host` tells the server which website the request is for, while the response header `Content-Type` tells the client how to interpret the body." },
-      { question: "What's the difference between the Content-Type and Accept headers?", answer: "`Content-Type` (sent by whichever side includes a body) describes the format of the data actually being sent; `Accept` (sent by the client) states which response formats the client is willing to receive, letting the server choose accordingly." },
-      { question: "At a high level, how does HTTP caching work, and which headers control it?", answer: "A response can include caching headers like `Cache-Control` (how long a response may be reused, and by whom) so that a client or intermediate proxy can reuse a stored copy of a response instead of re-requesting it, until that cache entry expires or is invalidated." },
-      { question: "What's the difference between Cache-Control: no-cache and Cache-Control: no-store?", answer: "`no-cache` allows a response to be stored but requires it to be revalidated with the server before each reuse; `no-store` forbids storing the response at all, which is used for sensitive data that should never be cached anywhere." },
-      { question: "What is an ETag, and how does it help avoid re-downloading unchanged data?", answer: "It's a token the server generates that identifies a specific version of a resource; the client can send it back in an `If-None-Match` header on a later request, and if the resource hasn't changed the server replies with a `304 Not Modified` and no body, saving bandwidth." },
-      { question: "What's the purpose of the If-None-Match header, and how does the server respond to it?", answer: "It lets the client say 'only send me the full response if the resource's ETag has changed since I last saw this value' — if the ETag still matches, the server returns `304 Not Modified`; if it doesn't, the server returns the current representation with a `200 OK`." },
-      { question: "Why is HTTP described as stateless, and what mechanisms let applications build state (like being logged in) on top of it?", answer: "Each HTTP request is handled independently, with no built-in memory of previous requests; applications add state on top using mechanisms like cookies, sessions, or tokens that are sent with every request to identify the client." },
-      { question: "At a conceptual level, what changed between HTTP/1.1 and HTTP/2?", answer: "HTTP/1.1 generally needs a separate connection (or queued requests on one) per concurrent request, while HTTP/2 multiplexes many requests and responses over a single connection and compresses headers, reducing overhead and avoiding head-of-line blocking at the connection level." },
-      { question: "What problem does HTTP keep-alive solve?", answer: "Without it, a new TCP connection would need to be opened and closed for every single request, which is slow; keep-alive reuses one connection for multiple requests/responses, avoiding that repeated setup cost." },
-      { question: "Why is the Host header required, even though the request is already being sent to a specific server's IP address?", answer: "A single IP address (and port) can serve many different websites (virtual hosting), so the server needs the `Host` header to know which specific site or application the request is actually meant for." },
-      { question: "Why might a client send a HEAD request instead of a GET?", answer: "`HEAD` returns the same headers a `GET` would, without the body, letting a client check things like whether a resource exists or how large it is, without spending bandwidth downloading the actual content." },
-      { question: "What is the OPTIONS method typically used for?", answer: "It asks a server what methods and headers are allowed for a given resource, most commonly used automatically by browsers as a CORS \"preflight\" request before a cross-origin request that isn't considered \"simple\"." },
-      { question: "What's the difference between a query parameter and a path parameter in a request URL?", answer: "A path parameter identifies a specific resource as part of the URL's structure (e.g. `/users/42`); a query parameter (e.g. `?sort=name&page=2`) modifies how that resource is fetched, like filtering, sorting, or pagination, without changing which resource is being addressed." },
-      { question: "Why is it a mistake to use GET for a request that changes data on the server?", answer: "`GET` is expected to be safe and idempotent, so browsers, proxies, and crawlers may prefetch, cache, or repeat `GET` requests freely — if `GET` has side effects, those tools can trigger unintended changes without the user or developer expecting it." },
-      { question: "What is content negotiation in HTTP?", answer: "The process by which a client and server agree on the best representation of a resource to return — e.g. the client's `Accept` header states preferred formats or languages, and the server picks a matching representation to send back." },
-      { question: "Why does the 429 status code exist, and how should a well-behaved client respond to it?", answer: "429 Too Many Requests signals that the client has been rate-limited; a well-behaved client should back off and retry later, ideally respecting a `Retry-After` header if the server includes one, rather than immediately retrying and making the problem worse." },
+      { question: "What's the difference between a 401 and a 403 status code?", answer: "401 Unauthorized: the request lacks valid authentication (credentials missing or invalid). 403 Forbidden: the client is identified but isn't allowed to access that resource." },
+      { question: "What's the difference between a 404 and a 410 status code?", answer: "404 Not Found: nothing is at that URL, possibly temporarily. 410 Gone: something used to be there and was permanently removed, a stronger and more specific signal." },
+      { question: "What's the difference between a 500 and a 503 status code?", answer: "500 Internal Server Error: something broke while the server handled the request (an unhandled error, a bug). 503 Service Unavailable: the server is temporarily unable to respond (overloaded, maintenance), so the client can retry later." },
+      { question: "What's the difference between a 301 and a 302 redirect?", answer: "301 Moved Permanently: the resource has a new URL for good, and future requests (and search engines) should go there. 302 Found: a temporary redirect, so the client should keep using the original URL." },
+      { question: "Why does it matter whether a redirect is 301 or 302 for things like caching or search engine indexing?", answer: "Because a 301 is permanent, browsers and search engines may cache it and move the old URL's search ranking to the new one. A 302 isn't treated that way, since the original URL is expected to work again." },
+      { question: "What is the purpose of HTTP headers? Give an example of a request header and a response header.", answer: "Headers carry metadata separate from the body. The request header `Host` tells the server which website the request is for; the response header `Content-Type` tells the client how to read the body." },
+      { question: "What's the difference between the Content-Type and Accept headers?", answer: "`Content-Type` (sent by whichever side includes a body) describes the format of the data being sent. `Accept` (sent by the client) lists the response formats it will take, so the server can choose." },
+      { question: "At a high level, how does HTTP caching work, and which headers control it?", answer: "A response can include headers like `Cache-Control` (how long it may be reused, and by whom). A client or proxy can then reuse a stored copy instead of asking again, until it expires or is invalidated." },
+      { question: "What's the difference between Cache-Control: no-cache and Cache-Control: no-store?", answer: "`no-cache` allows storing a response but requires checking with the server before each reuse. `no-store` forbids storing it at all, for sensitive data that should never be cached." },
+      { question: "What is an ETag, and how does it help avoid re-downloading unchanged data?", answer: "A token the server gives to one version of a resource. The client sends it back later in `If-None-Match`; if nothing changed, the server replies `304 Not Modified` with no body, saving bandwidth." },
+      { question: "What's the purpose of the If-None-Match header, and how does the server respond to it?", answer: "It tells the server 'send the full response only if the ETag changed since this value'. If the ETag still matches, the server returns `304 Not Modified`; otherwise it returns the current version with `200 OK`." },
+      { question: "Why is HTTP described as stateless, and what mechanisms let applications build state (like being logged in) on top of it?", answer: "Each request is handled on its own, with no built-in memory of earlier ones. Apps add state with cookies, sessions, or tokens sent on every request to identify the client." },
+      { question: "At a conceptual level, what changed between HTTP/1.1 and HTTP/2?", answer: "HTTP/1.1 generally needs a separate connection per concurrent request, or queues requests on one. HTTP/2 multiplexes many requests and responses over one connection and compresses headers, cutting overhead and avoiding head-of-line blocking at the connection level." },
+      { question: "What problem does HTTP keep-alive solve?", answer: "Without it, a new TCP connection would be opened and closed for every request, which is slow. Keep-alive reuses one connection for many requests and responses." },
+      { question: "Why is the Host header required, even though the request is already being sent to a specific server's IP address?", answer: "One IP address (and port) can serve many websites (virtual hosting). The server needs `Host` to know which site the request is for." },
+      { question: "Why might a client send a HEAD request instead of a GET?", answer: "`HEAD` returns the same headers as `GET` but no body. A client can check whether a resource exists or how large it is without downloading it." },
+      { question: "What is the OPTIONS method typically used for?", answer: "It asks the server which methods and headers a resource allows. Browsers most often send it automatically as a CORS \"preflight\" before a cross-origin request that isn't \"simple\"." },
+      { question: "What's the difference between a query parameter and a path parameter in a request URL?", answer: "A path parameter identifies a resource as part of the URL (e.g. `/users/42`). A query parameter (e.g. `?sort=name&page=2`) changes how it's fetched (filtering, sorting, pagination) without changing which resource it is." },
+      { question: "Why is it a mistake to use GET for a request that changes data on the server?", answer: "`GET` is expected to be safe and idempotent, so browsers, proxies, and crawlers may prefetch, cache, or repeat it freely. If `GET` has side effects, those tools can trigger changes nobody intended." },
+      { question: "What is content negotiation in HTTP?", answer: "How a client and server agree on the best representation to return. For example, the client's `Accept` header lists preferred formats or languages, and the server picks a match." },
+      { question: "Why does the 429 status code exist, and how should a well-behaved client respond to it?", answer: "429 Too Many Requests means the client is rate-limited. A good client backs off and retries later, respecting a `Retry-After` header if present, instead of retrying at once and making things worse." },
     ],
     prerequisites: ["client-and-server"],
     relatedTopics: ["client-and-server", "rest-apis", "authentication-and-sessions", "websockets"],

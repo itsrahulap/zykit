@@ -9,9 +9,10 @@ const docs: ToolDocs = {
     'Read **Pattern explained** for a one-line description of each part of the pattern.',
   ],
   howItWorks:
-    'The pattern is compiled with the browser’s own `RegExp`, so the syntax and behaviour are exactly those of JavaScript in your browser, including named groups, lookbehind and, with the `u` flag, `\\p{…}` Unicode properties. Matches are found with `RegExp.prototype.exec`, and the replacement preview uses `String.prototype.replace`, so it replaces every match with `g` and only the first without it.\n\n' +
-    'Matching runs in a Web Worker, shortly after you stop typing. If it doesn’t finish within 1 second, the worker is terminated, which is the only way to stop a pattern that backtracks catastrophically, and a fresh one is used for the next try. Empty matches advance by one character (one code point with `u`), so patterns such as `a*` can’t loop forever.\n\n' +
-    '**Pattern explained** is a best-effort tokenizer, not a full parser: it describes escapes, classes, groups, quantifiers, anchors and back-references one by one.',
+    'The pattern is compiled with your browser’s own `RegExp`, so syntax and behaviour are exactly JavaScript’s. That includes named groups, lookbehind and, with the `u` flag, `\\p{…}` Unicode properties.\n\n' +
+    'Matches are found with `RegExp.prototype.exec`. The replacement preview uses `String.prototype.replace`, so it replaces every match with `g` and only the first without it.\n\n' +
+    'Matching runs in a Web Worker shortly after you stop typing. If it doesn’t finish within 1 second, the worker is terminated (the only way to stop a pattern that backtracks catastrophically) and a fresh one is used next time. Empty matches advance by one character (one code point with `u`), so patterns such as `a*` can’t loop forever.\n\n' +
+    '**Pattern explained** is a best-effort tokenizer, not a full parser. It describes escapes, classes, groups, quantifiers, anchors and back-references one by one.',
   limits: [
     'JavaScript regex syntax only. PCRE, Python or .NET features such as possessive quantifiers, atomic groups, inline `(?i)` flags or `\\A` / `\\Z` aren’t supported unless your browser’s `RegExp` accepts them.',
     'Flags `g`, `i`, `m`, `s`, `u`, `y` and `d` are available; the `v` (unicodeSets) flag isn’t offered.',
@@ -20,7 +21,7 @@ const docs: ToolDocs = {
     'Empty (zero-length) matches appear in the table but can’t be highlighted in the text.',
   ],
   privacy:
-    'The pattern and text are processed in your browser and never uploaded or stored. The **Share** button (Copy share link) puts the pattern, flags, test text and replacement in the link’s `#` fragment, which browsers don’t send to servers; links are limited in size, so long texts show *Too large to share*. A pattern sent here with **Send to…**, or a result you send on, passes through this tab’s session storage and is removed as soon as the receiving tool reads it.',
+    'The pattern and text are processed in your browser and never uploaded or stored. The **Share** button (Copy share link) puts the pattern, flags, test text and replacement in the link’s `#` fragment, which browsers don’t send to servers. Links have a size limit, so long texts show *Too large to share*. Anything sent here or on with **Send to…** passes through this tab’s session storage and is removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Why does my pattern only find one match?',
@@ -29,12 +30,12 @@ const docs: ToolDocs = {
     {
       question: 'Do I need to escape slashes?',
       answer:
-        'No. Type the pattern without the surrounding `/…/` and flags; a `/` inside is matched literally. If you paste the pattern into JavaScript code as a literal, escape it there as `\\/`.',
+        'No. Type the pattern without the surrounding `/…/` and flags; a `/` inside is matched literally. If you paste it into JavaScript code as a literal, escape it there as `\\/`.',
     },
     {
       question: 'What does “Stopped after 1 s” mean?',
       answer:
-        'The pattern took too long, usually because of catastrophic backtracking: nested quantifiers like `(a+)+` can take exponential time on text that almost matches. Make the inner part more specific or remove the nesting.',
+        'The pattern took too long, usually from catastrophic backtracking: nested quantifiers like `(a+)+` can take exponential time on text that almost matches. Make the inner part more specific or remove the nesting.',
     },
     {
       question: 'Will a pattern that works here work in Python or Java?',
@@ -43,7 +44,7 @@ const docs: ToolDocs = {
     },
     {
       question: 'How do I use a named group in the replacement?',
-      answer: 'Name it with `(?<year>\\d{4})` in the pattern, then write `$<year>` in **Replacement**. Numbered groups are `$1`, `$2` and so on, `$&` is the whole match and `$$` a literal dollar sign.',
+      answer: 'Name it with `(?<year>\\d{4})` in the pattern, then write `$<year>` in **Replacement**. Numbered groups are `$1`, `$2` and so on; `$&` is the whole match and `$$` a literal dollar sign.',
     },
   ],
 };

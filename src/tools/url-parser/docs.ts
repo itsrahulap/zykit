@@ -8,9 +8,9 @@ const docs: ToolDocs = {
     'Under **Query parameters**, edit keys and values, remove rows or use **+ Add parameter**. The **Rebuilt URL** updates as you type: copy it, send it to another tool with **Send to…**, or click **Use as input** to parse it again.',
   ],
   howItWorks:
-    'The URL is parsed with your browser’s built-in `URL` API, which implements the WHATWG URL Standard, so you see exactly what `fetch()` and links would use: the host is lower-cased and converted to punycode, default ports are dropped, `.` and `..` path segments are resolved, and characters that need escaping are percent-encoded. If parsing fails and a base URL is given, the input is resolved relative to that base, the same way a browser resolves a link on a page.\n\n' +
-    'Path segments, the username, the password and the hash are shown percent-decoded. An internationalised host name in punycode (`xn--…`) is also decoded to Unicode with an RFC 3492 decoder. When the port is omitted, the default for `http`, `https`, `ws`, `wss` or `ftp` is shown.\n\n' +
-    'Query parameters are read with `URLSearchParams`, which decodes `%XX` escapes and turns `+` into a space. Order and repeated keys are kept. The rebuilt URL serialises the rows the same way, so spaces become `+` and other reserved characters are percent-encoded; rows with both key and value empty are left out.',
+    'The URL is parsed with your browser’s built-in `URL` API (the WHATWG URL Standard), so you see exactly what `fetch()` and links would use. The host is lower-cased and converted to punycode, default ports are dropped, `.` and `..` path segments are resolved, and characters that need escaping are percent-encoded. If parsing fails and a base URL is given, the input is resolved against it, as a browser resolves a link on a page.\n\n' +
+    'Path segments, username, password and hash are shown percent-decoded. A punycode host name (`xn--…`) is also decoded to Unicode with an RFC 3492 decoder. If the port is omitted, the default for `http`, `https`, `ws`, `wss` or `ftp` is shown.\n\n' +
+    'Query parameters are read with `URLSearchParams`, which decodes `%XX` escapes and turns `+` into a space. Order and repeated keys are kept. The rebuilt URL encodes the rows the same way: spaces become `+` and other reserved characters are percent-encoded. Rows with an empty key and value are left out.',
   limits: [
     'Input longer than 100,000 characters is rejected.',
     'A relative URL can’t be parsed without a base URL, and a base must itself be an absolute URL with a scheme.',
@@ -19,7 +19,7 @@ const docs: ToolDocs = {
     'The tool only parses the URL. It doesn’t check that the host exists or that the page can be reached.',
   ],
   privacy:
-    'Parsing runs entirely in your browser; nothing is requested or uploaded, and the site’s Content Security Policy blocks requests to other servers. Nothing is stored. **Copy share link** puts the URL and base URL (including any username and password in them) into the link’s `#` fragment, which browsers don’t send to servers, but anyone you give the link to can read it. Query edits aren’t included. **Send to…** hands the rebuilt URL over through this tab’s session storage, and it is removed as soon as the receiving tool reads it.',
+    'Parsing runs in your browser. Nothing is requested, uploaded or stored, and the site’s Content Security Policy blocks requests to other servers. **Copy share link** puts the URL and base URL, including any username and password, in the link’s `#` fragment. Browsers don’t send that to servers, but anyone you give the link to can read it. Query edits aren’t included. **Send to…** passes the rebuilt URL through this tab’s session storage, removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Why does the parsed URL look different from what I pasted?',

@@ -6,42 +6,31 @@ export const webFundamentalsBeginnerTopics: Topic[] = [
     title: "How the Web Works",
     level: "beginner",
     description:
-      "What actually happens, step by step, between typing a web address and seeing a page appear on screen.",
+      "What happens, step by step, between typing a web address and seeing the page.",
     explanation: `
-Type an address into a browser and press enter, and a page shows up a
-moment later. That moment feels instant, but it's actually a whole chain
-of hand-offs happening across machines you'll never see.
+You type an address, press enter, and a page appears. It feels instant,
+but it's a chain of hand-offs between machines you never see.
 
-First, your browser needs to figure out *which computer* on the internet
-is responsible for that address — the address you typed is a
-human-friendly name, not a location a computer can dial directly. So
-there's a lookup step that turns the name into a numeric address for a
-specific machine somewhere in the world.
+**1. Look up.** The address you typed is a human-friendly name, not a
+location a computer can connect to. A lookup step turns the name into the
+numeric address of a specific machine.
 
-Once your browser knows which machine to talk to, it sends that machine a
-request — basically a structured message saying "please send me the page
-at this address." That machine (a **server**) is a computer that sits
-listening for exactly these kinds of requests, all day, from anyone who
-asks.
+**2. Request.** Your browser sends that machine a message: "please send me
+the page at this address." The machine is a **server**, a computer that
+listens for these requests all day.
 
-The server figures out what to send back — it might be a file sitting on
-disk, or it might build the response fresh by pulling data from a
-database — and sends a response back across the same connection. That
-response usually contains a document, written in a language browsers
-understand, describing the content and structure of the page.
+**3. Respond.** The server sends back a response. It might be a file on
+disk, or something it builds on the spot from a database. Usually it's a
+document that describes the page's content and structure.
 
-Finally, your browser takes that document and turns it into the visual
-page you actually see: it reads through the document, fetches any extra
-files it references (images, styling, additional code), and paints
-everything onto the screen in the right positions with the right colors
-and fonts.
+**4. Render.** Your browser reads the document, fetches any extra files it
+mentions (images, styles, code), and paints everything on screen.
 
-All of this — the lookup, the request, the response, the rendering — is
-what people mean when they say "the web works." Later topics give names
-to each of these pieces individually.
+Look up, request, respond, render: that's how the web works. Later topics
+look at each step in detail.
   `.trim(),
     analogy:
-      "It's like mailing a letter to a company using only their name — a directory first looks up their street address, the letter travels there, an employee reads it and writes a reply, and that reply travels all the way back to your mailbox.",
+      "It's like mailing a letter to a company when you only know its name. A directory looks up the street address, the letter travels there, someone writes a reply, and the reply travels back to your mailbox.",
     examples: [
       {
         title: "The trip a request takes",
@@ -51,13 +40,13 @@ to each of these pieces individually.
 4. Server sends back: an HTML document
 5. Browser reads the document and displays it`,
         explanation:
-          "This is the whole round trip in plain steps — no protocol names needed yet, just the shape of the conversation.",
+          "The whole round trip in plain steps. No protocol names yet, just the shape of the conversation.",
         walkthrough: [
-          { code: "You type: example.com", explanation: "You give the browser a human-readable name, not a machine address." },
-          { code: "Browser looks up which server...", explanation: "A lookup step translates the name into the actual location of a server." },
-          { code: 'Browser sends: "GET / please"', explanation: "The browser asks that server for a specific page — here, the homepage." },
-          { code: "Server sends back: an HTML document", explanation: "The server responds with the content and structure of the page." },
-          { code: "Browser reads the document and displays it", explanation: "The browser turns that document into the visual page you see." },
+          { code: "You type: example.com", explanation: "You give the browser a readable name, not a machine address." },
+          { code: "Browser looks up which server...", explanation: "A lookup turns the name into the server's actual location." },
+          { code: 'Browser sends: "GET / please"', explanation: "The browser asks the server for a page, here the homepage." },
+          { code: "Server sends back: an HTML document", explanation: "The server replies with the page's content and structure." },
+          { code: "Browser reads the document and displays it", explanation: "The browser turns the document into the page you see." },
         ],
       },
       {
@@ -67,19 +56,18 @@ to each of these pieces individually.
   ├── logo.png       <- fetched separately, an image
   └── app.js         <- fetched separately, for behavior`,
         explanation:
-          "The first document the browser gets almost always references more files. The browser reads it, notices those references, and goes and fetches each one — often several requests, not just one.",
+          "The first document almost always references more files. The browser spots those references and fetches each one, so one page usually means several requests.",
       },
     ],
     howItWorks: `
-Under the hood, this whole process rests on a few cooperating systems: a
-naming system that maps human-readable addresses to machine locations, a
-network that can carry messages between any two connected computers, and
-an agreed-upon format both browser and server understand for asking for
-and describing a page.
+The process rests on three systems working together:
 
-None of these steps require you to think about wires or cables directly —
-your operating system and browser handle the actual networking. What
-matters at this level is the sequence: look up, request, respond, render.
+- a naming system that maps readable addresses to machine locations
+- a network that carries messages between any two connected computers
+- a shared format that browser and server both use to ask for and describe a page
+
+Your operating system and browser handle the actual networking. At this
+level, what matters is the sequence: look up, request, respond, render.
   `.trim(),
     diagram: `
 [ You ]  --type address-->  [ Browser ]
@@ -101,55 +89,55 @@ matters at this level is the sequence: look up, request, respond, render.
                           [   Page shown   ]
   `.trim(),
     whyItExists: `
-This layered process exists because the web was designed to connect
-*any* browser to *any* server, run by different people, on different
-machines, anywhere in the world. Breaking the problem into separate
-steps — naming, requesting, responding, rendering — meant each piece
-could be built, understood, and improved independently, and it's the
-reason typing an address into any browser reliably works no matter who
-built that browser or who runs that server.
+The web was built to connect *any* browser to *any* server, run by
+different people on different machines anywhere in the world. Splitting
+the job into separate steps (naming, requesting, responding, rendering)
+let each piece be built and improved on its own.
+
+That's why typing an address into any browser works, no matter who built
+the browser or runs the server.
   `.trim(),
     whenToUse: `
-Understanding this flow matters any time something on a website is slow
-or broken and you need to reason about *where* the problem is — is the
-lookup failing, is the server not responding, or is the page failing to
-render once it arrives? Every deeper web topic (HTTP, DNS, rendering,
-caching) is really just a closer look at one step of this same journey.
+Use this model when a site is slow or broken and you need to find
+*where* the problem is. Is the lookup failing, is the server not
+responding, or is the page failing to render?
+
+Every deeper web topic (HTTP, DNS, rendering, caching) is a closer look at
+one step of this journey.
   `.trim(),
     whenNotToUse: `
-You don't need to think about this whole chain for everyday tasks like
-writing HTML or styling a button — those live entirely inside the
-"render" step. This mental model is most useful when something crosses
-the boundary between browser and server, or when things go wrong.
+Everyday tasks like writing HTML or styling a button live entirely in the
+"render" step, so you don't need the whole chain for them. The model helps
+most when something crosses between browser and server, or goes wrong.
   `.trim(),
     commonMistakes: [
-      "Thinking the address you type is the server's actual location, rather than a name that gets looked up.",
-      "Assuming a webpage is a single file, when it's usually a document plus many separately fetched files.",
-      "Believing the page 'just appears' rather than being built by the browser step by step after the response arrives.",
+      "Thinking the address you type is the server's location, not a name that gets looked up.",
+      "Assuming a webpage is one file, when it's usually a document plus many separately fetched files.",
+      "Believing the page 'just appears', when the browser builds it step by step after the response arrives.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "In your own words, list the four major steps that happen between typing an address and seeing a page." },
-      { difficulty: "Medium", prompt: "Open your browser's developer tools, go to the Network panel, and reload a page. Count how many separate files were fetched to build that one page." },
-      { difficulty: "Hard", prompt: "Explain what might go wrong at each of the four steps (lookup, request, response, render) and how the symptom would look different to a user in each case." },
+      { difficulty: "Easy", prompt: "In your own words, list the four main steps between typing an address and seeing a page." },
+      { difficulty: "Medium", prompt: "Open your browser's developer tools, go to the Network panel, and reload a page. Count how many files were fetched to build it." },
+      { difficulty: "Hard", prompt: "For each of the four steps (lookup, request, response, render), explain what might go wrong and how the symptom would look to a user." },
     ],
     interviewQuestions: [
-      { question: "At a high level, what happens between typing a URL and seeing a page?", answer: "The browser looks up which server the address belongs to (DNS), opens a connection and sends that server a request, receives a response containing the page's content, and then renders that content on screen." },
-      { question: "Is a webpage usually a single file?", answer: "No. The initial HTML document typically references additional files — stylesheets, images, scripts — that the browser discovers while parsing it and fetches separately, often as many concurrent requests." },
-      { question: "Why does the web need a naming lookup step at all?", answer: "Because humans use readable names like `example.com`, but computers need a numeric address (an IP address) to actually open a connection; DNS is the lookup step that translates one into the other." },
-      { question: "What is DNS, and what does it actually return?", answer: "DNS (Domain Name System) is the naming lookup system for the web. Given a domain name, it returns the IP address of a server responsible for that domain, which the browser then connects to." },
-      { question: "Why is looking up the same domain often faster the second time?", answer: "Browsers, operating systems, and network resolvers cache DNS answers for a period of time (its TTL), so a repeat lookup for the same domain can be served from cache instead of doing a full lookup again." },
-      { question: "What's the difference between a domain name and an IP address?", answer: "A domain name is a human-readable label like `example.com`. An IP address is the actual numeric address of a machine on the network that a browser connects to; DNS is what maps one to the other." },
-      { question: "What role does a port number play in a request, and what are the default ports for HTTP and HTTPS?", answer: "A port identifies which specific service on a server should handle the connection, since one machine can run many services. HTTP defaults to port 80 and HTTPS defaults to port 443, so those don't need to be typed explicitly in a URL." },
-      { question: "What's the difference between HTTP and HTTPS?", answer: "HTTPS is HTTP layered on top of an encrypted connection (TLS). The request/response content is the same, but HTTPS prevents anyone intercepting the traffic from reading or tampering with it in transit." },
-      { question: "What does it mean for HTTP to be a request/response protocol?", answer: "The browser (client) always initiates by sending a request, and the server always replies with a response; the server never pushes a page to a browser that didn't ask for it first." },
-      { question: "What do the main HTTP status code categories mean?", answer: "2xx means success, 3xx means redirection to another location, 4xx means the client's request was somehow invalid or unauthorized (like 404 Not Found), and 5xx means the server failed while handling an otherwise valid request." },
-      { question: "What happens when a server responds with a redirect?", answer: "The server sends back a 3xx status code and a `Location` header pointing to a different URL, and the browser automatically makes a new request to that URL instead of rendering the redirect response itself." },
-      { question: "Why might a website use a CDN, and how does that change which server you actually talk to?", answer: "A CDN (content delivery network) serves cached copies of a site's files from servers geographically closer to the visitor. DNS for that domain resolves to a nearby CDN server rather than the site's single origin server, reducing latency." },
-      { question: "What's the difference between latency and bandwidth?", answer: "Latency is how long it takes for a single piece of data to make the round trip; bandwidth is how much data can be transferred per second once the connection is flowing. A high-bandwidth connection can still feel slow if latency is high." },
-      { question: "Why can a page technically finish loading but still show a blank screen for a while?", answer: "Getting a response is only one step; the browser still has to parse the HTML, fetch referenced files, compute layout, and paint pixels before anything is visible — a slow render step can delay the visible page well after the network work is done." },
-      { question: "What's the difference between a client and a server in this model?", answer: "The client (typically a browser) initiates requests and renders what it gets back. The server listens for requests and decides what to send in response. The same machine could act as either role in different contexts." },
-      { question: "How would the symptoms differ between a DNS failure, a server being down, and a rendering failure?", answer: "A DNS failure shows an error before any connection is attempted, often 'server not found.' A server being down shows a connection error after a lookup succeeds. A rendering failure can show a blank or broken page even though the network request completed normally." },
-      { question: "Why is the very first request to a site often slower than later ones?", answer: "The first request has to pay the cost of DNS lookup, opening a TCP connection, and (for HTTPS) a TLS handshake, none of which are needed again if the browser reuses that same connection for subsequent requests." },
+      { question: "At a high level, what happens between typing a URL and seeing a page?", answer: "The browser looks up which server owns the address (DNS), opens a connection and sends a request, gets back a response with the page's content, and renders it on screen." },
+      { question: "Is a webpage usually a single file?", answer: "No. The first HTML document usually references other files (stylesheets, images, scripts). The browser finds them while parsing and fetches each one separately, often many at once." },
+      { question: "Why does the web need a naming lookup step at all?", answer: "People use readable names like `example.com`, but computers need a numeric IP address to open a connection. DNS translates one into the other." },
+      { question: "What is DNS, and what does it actually return?", answer: "DNS (Domain Name System) is the web's naming lookup. Given a domain name, it returns the IP address of a server for that domain, which the browser then connects to." },
+      { question: "Why is looking up the same domain often faster the second time?", answer: "Browsers, operating systems, and network resolvers cache DNS answers for a set time (the TTL). A repeat lookup can come from cache instead of doing the full lookup again." },
+      { question: "What's the difference between a domain name and an IP address?", answer: "A domain name is a readable label like `example.com`. An IP address is the numeric address of the machine the browser actually connects to. DNS maps one to the other." },
+      { question: "What role does a port number play in a request, and what are the default ports for HTTP and HTTPS?", answer: "One machine can run many services, and the port says which one should handle the connection. HTTP defaults to port 80 and HTTPS to port 443, so you don't need to type them in a URL." },
+      { question: "What's the difference between HTTP and HTTPS?", answer: "HTTPS is HTTP over an encrypted connection (TLS). The requests and responses are the same, but anyone intercepting the traffic can't read or tamper with it." },
+      { question: "What does it mean for HTTP to be a request/response protocol?", answer: "The browser (client) always starts by sending a request, and the server replies with a response. The server never pushes a page to a browser that didn't ask for it." },
+      { question: "What do the main HTTP status code categories mean?", answer: "2xx means success. 3xx means redirect to another location. 4xx means the client's request was invalid or unauthorized (like 404 Not Found). 5xx means the server failed while handling a valid request." },
+      { question: "What happens when a server responds with a redirect?", answer: "The server sends a 3xx status code and a `Location` header with a different URL. The browser automatically requests that URL instead of rendering the redirect response." },
+      { question: "Why might a website use a CDN, and how does that change which server you actually talk to?", answer: "A CDN (content delivery network) serves cached copies of a site's files from servers close to the visitor. DNS for the domain points to a nearby CDN server instead of the site's single origin server, which cuts latency." },
+      { question: "What's the difference between latency and bandwidth?", answer: "Latency is how long one piece of data takes to make the round trip. Bandwidth is how much data can move per second once the connection is flowing. A high-bandwidth connection can still feel slow if latency is high." },
+      { question: "Why can a page technically finish loading but still show a blank screen for a while?", answer: "Getting the response is only one step. The browser still has to parse the HTML, fetch referenced files, compute layout, and paint pixels. A slow render step can delay the visible page long after the network work is done." },
+      { question: "What's the difference between a client and a server in this model?", answer: "The client (usually a browser) sends requests and renders what comes back. The server listens for requests and decides what to send. The same machine can play either role in different contexts." },
+      { question: "How would the symptoms differ between a DNS failure, a server being down, and a rendering failure?", answer: "A DNS failure shows an error before any connection is tried, often 'server not found.' A down server shows a connection error after the lookup succeeds. A rendering failure can show a blank or broken page even though the request completed normally." },
+      { question: "Why is the very first request to a site often slower than later ones?", answer: "The first request pays for the DNS lookup, opening a TCP connection, and (for HTTPS) a TLS handshake. Later requests skip all of that if the browser reuses the same connection." },
     ],
     relatedTopics: ["html-basics", "browser-rendering"],
     keywords: ["web", "internet", "request", "response", "server", "browser", "how the web works"],
@@ -159,35 +147,29 @@ the boundary between browser and server, or when things go wrong.
     title: "HTML Basics",
     level: "beginner",
     description:
-      "The language used to describe what's on a page and how it's structured — not what it looks like.",
+      "The language that describes what's on a page and how it's structured, not how it looks.",
     explanation: `
 Before a page can be styled or made interactive, something has to say
-*what's actually on it*: here's a heading, here's a paragraph, here's a
-picture, here's a link. That description of content and structure is
-written in a language called **HTML** (HyperText Markup Language).
+*what's on it*: a heading, a paragraph, a picture, a link. That
+description is written in **HTML** (HyperText Markup Language).
 
-HTML doesn't care about colors, fonts, or spacing — that's a separate
-job, handled by CSS. HTML's only job is to say what each piece of
-content *is* and how the pieces relate to each other: this text is the
-main heading, this block is a list, this image belongs here, this text
-is a link to another page.
+HTML doesn't handle colors, fonts, or spacing; that's CSS's job. HTML
+only says what each piece of content *is* and how the pieces relate: this
+is the main heading, this is a list, this text links to another page.
 
-You write HTML using **tags** — short instructions wrapped in angle
-brackets, like \`<p>\` for a paragraph. Most tags come in a pair: an
-opening tag and a matching closing tag, with content in between. An
-opening tag, its closing tag, and everything between them together form
-an **element**. Tags can also carry extra information called
-**attributes** — for example, an image tag needs an attribute telling
-the browser which image file to show.
+You write HTML with **tags**: short instructions in angle brackets, like
+\`<p>\` for a paragraph. Most tags come in pairs, an opening tag and a
+closing tag with content between them. Together they form an
+**element**. Tags can also carry **attributes**, extra details such as
+which image file an image tag should show.
 
-Using tags that describe the actual *meaning* of content — a heading tag
-for a heading, a button tag for a button — rather than generic
-tags for everything, is called **semantic HTML**, and it matters more
-than it might seem: it's what lets screen readers, search engines, and
-other tools understand your page, not just display it.
+Choosing tags that match the content's *meaning* (a heading tag for a
+heading, a button tag for a button) instead of generic tags is called
+**semantic HTML**. It lets screen readers, search engines, and other
+tools understand your page, not just display it.
   `.trim(),
     analogy:
-      "HTML is like the labeled outline of a document — 'this is the title,' 'this is a bullet list,' 'this is a footnote' — written before anyone has decided what font or color anything will be.",
+      "HTML is like a document's labeled outline ('this is the title,' 'this is a bullet list,' 'this is a footnote'), written before anyone picks a font or color.",
     examples: [
       {
         title: "A minimal page",
@@ -202,14 +184,14 @@ other tools understand your page, not just display it.
   </body>
 </html>`,
         explanation:
-          "Every HTML page has this same basic shape: a declaration of what kind of document it is, then a head with page metadata, then a body with the visible content.",
+          "Every HTML page has this shape: a declaration of the document type, a head with page metadata, and a body with the visible content.",
         walkthrough: [
-          { code: "<!DOCTYPE html>", explanation: "Tells the browser this document is written in modern HTML, so it renders it accordingly." },
-          { code: "<html> ... </html>", explanation: "Wraps the entire page — everything belongs inside this one element." },
-          { code: "<head> <title>My Page</title> </head>", explanation: "Holds information about the page itself, like the title shown in the browser tab, rather than visible content." },
-          { code: "<body> ... </body>", explanation: "Contains everything the user actually sees rendered on the page." },
-          { code: "<h1>Welcome</h1>", explanation: "A heading element — this text is marked as the page's main heading, not just large text." },
-          { code: "<p>This is a paragraph of text.</p>", explanation: "A paragraph element, wrapping a block of body text." },
+          { code: "<!DOCTYPE html>", explanation: "Tells the browser to render this as modern HTML." },
+          { code: "<html> ... </html>", explanation: "Wraps the whole page. Everything goes inside this element." },
+          { code: "<head> <title>My Page</title> </head>", explanation: "Holds information about the page, like the title in the browser tab, not visible content." },
+          { code: "<body> ... </body>", explanation: "Holds everything the user sees on the page." },
+          { code: "<h1>Welcome</h1>", explanation: "A heading element. It marks this text as the page's main heading, not just large text." },
+          { code: "<p>This is a paragraph of text.</p>", explanation: "A paragraph element wrapping a block of text." },
         ],
       },
       {
@@ -223,67 +205,64 @@ other tools understand your page, not just display it.
 
 <button type="submit">Send</button>`,
         explanation:
-          "src and alt are attributes on the image tag, providing extra detail the tag alone doesn't carry. nav and button are semantic elements — they tell the browser and assistive tools what role this content plays, not just how it looks.",
+          "src and alt are attributes that give the image tag extra detail. nav and button are semantic elements: they tell the browser and assistive tools what role the content plays, not just how it looks.",
       },
     ],
     howItWorks: `
-When a browser receives an HTML document, it reads through the tags from
-top to bottom and builds an internal tree structure out of them — each
-element becomes a node, nested inside whichever element contains it.
-That internal tree is what the browser actually uses to render and later
-lets JavaScript modify; the original HTML text is just the starting
-blueprint for building it.
+The browser reads the HTML tags from top to bottom and builds a tree from
+them. Each element becomes a node, nested inside the element that
+contains it.
+
+The browser renders from that tree, and JavaScript can change it later.
+The HTML text is just the starting blueprint.
   `.trim(),
     whyItExists: `
-HTML exists to separate *what content is* from *how it looks* and *how it
-behaves*. By having one dedicated, simple language just for structure and
-meaning, browsers, search engines, screen readers, and countless other
-tools can all agree on how to interpret any page on the web, regardless
-of who built it or what it's styled to look like.
+HTML separates *what content is* from *how it looks* and *how it
+behaves*. With one simple language for structure and meaning, browsers,
+search engines, screen readers, and other tools can all read any page the
+same way, whoever built it and however it's styled.
   `.trim(),
     whenToUse: `
-Every webpage needs HTML — it's the one layer that's never optional.
-Reach for the semantically correct tag whenever one exists: a button for
-something clickable that performs an action, a heading tag for a real
-heading, a list for a genuine list — rather than styling a generic
-element to merely look the part.
+Every webpage needs HTML; it's the one layer that's never optional. Use
+the semantically correct tag whenever one exists: a button for a
+clickable action, a heading tag for a real heading, a list for a real
+list. Don't style a generic element to look the part.
   `.trim(),
     whenNotToUse: `
-HTML isn't the place to control appearance (that's CSS) or behavior
-(that's JavaScript). Reaching for extra HTML tags purely to force a
-visual effect, instead of using CSS for that job, tends to produce
+Don't use HTML to control appearance (that's CSS) or behavior (that's
+JavaScript). Adding tags just to force a visual effect produces
 confusing, hard-to-maintain markup.
   `.trim(),
     commonMistakes: [
-      "Using a generic element styled to look like a button instead of an actual button element, which breaks keyboard and screen-reader support.",
-      "Forgetting to close tags, which can cause the browser to misinterpret how content is nested.",
-      "Treating an image's alt attribute as optional decoration text rather than a real description used by screen readers.",
+      "Styling a generic element to look like a button instead of using a real button element, which breaks keyboard and screen-reader support.",
+      "Forgetting to close tags, so the browser misreads how content is nested.",
+      "Treating an image's alt attribute as optional decoration instead of a real description that screen readers use.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a minimal HTML page with a title, one heading, and one paragraph." },
       { difficulty: "Medium", prompt: "Build a simple page with a navigation bar (nav), a list of three items, and an image with meaningful alt text." },
-      { difficulty: "Hard", prompt: "Take a page built with only generic div elements and rewrite it using semantic tags (header, nav, main, button, footer) where appropriate, and explain each change." },
+      { difficulty: "Hard", prompt: "Take a page built only from generic div elements and rewrite it with semantic tags (header, nav, main, button, footer) where they fit. Explain each change." },
     ],
     interviewQuestions: [
-      { question: "What is HTML responsible for, and what is it not responsible for?", answer: "HTML describes the structure and meaning of content on a page — headings, paragraphs, links, images. It is not responsible for visual styling, which is CSS's job, or interactive behavior, which is JavaScript's job." },
-      { question: "What's the difference between a tag, an element, and an attribute?", answer: "A tag is the bracketed instruction itself, like `<p>` or `</p>`. An element is the opening tag, its content, and its closing tag together, forming one unit in the page. An attribute is extra information placed inside an opening tag, such as `src` or `href`, that gives the browser more detail about that element." },
-      { question: "What is semantic HTML, and why does it matter?", answer: "Semantic HTML means choosing tags that describe what content actually *is* — `<nav>` for navigation, `<button>` for a clickable action — instead of generic tags styled to look the part. It matters because screen readers, search engines, and browsers use that meaning to decide how to present or announce the content, not just how to draw it." },
-      { question: "What does the `<!DOCTYPE html>` declaration do, and what happens if it's missing?", answer: "It tells the browser to parse and render the page using the modern HTML standard. Without it, some browsers fall back to `quirks mode`, an older, less consistent rendering mode kept for backward compatibility, which can subtly change how things like box sizing are calculated." },
-      { question: "What's the difference between the `<head>` and `<body>` of a document?", answer: "The `<head>` holds information about the page itself — its title, linked stylesheets, metadata — none of which is rendered as visible content. The `<body>` contains everything the user actually sees on screen." },
-      { question: "Why does the `alt` attribute on an `<img>` matter, beyond being read aloud by screen readers?", answer: "It also serves as the text shown in place of the image if the file fails to load, and search engines use it to understand what the image depicts since they can't 'see' the pixels themselves." },
-      { question: "What is a void element, and why don't tags like `<img>` or `<br>` have closing tags?", answer: "A void element can never contain content or children, so HTML doesn't require — or allow — a separate closing tag for it. `<img src=\"cat.jpg\">` is complete on its own; there's nothing for a closing tag to wrap around." },
-      { question: "If you forget to close a `<p>` tag before opening another one, does the browser throw an error?", answer: "No — HTML parsers are deliberately forgiving. The browser follows a defined error-recovery algorithm: certain elements, like `<p>`, are automatically closed when an incompatible tag appears, so the page still renders, just not necessarily with the structure you intended." },
-      { question: "Given `<ul><li>A<li>B</ul>` with no closing `</li>` tags, how many list items does the browser actually render?", answer: "Two. The HTML parser's error-recovery rules automatically close an `<li>` element as soon as another `<li>` starts, so the missing closing tags don't merge or drop items — they're inferred." },
-      { question: "Why is a `<div>` with a click handler a worse choice than an actual `<button>` for a clickable action?", answer: "A `<button>` comes with built-in keyboard behavior for free: it's reachable via Tab, and pressing Enter or Space activates it, and it's announced as a button to screen readers. A plain `<div>` has none of that by default — you'd have to manually reimplement focus, keyboard activation, and the accessible role yourself." },
-      { question: "What's the difference between an element's `id` and its `class` attribute?", answer: "An `id` is meant to identify one specific element uniquely within the page, while a `class` is meant to be reused across many elements that share a role or style. `id` is also used for in-page links (`#section`) and is typically the fastest way to look an element up." },
-      { question: "What happens if two elements on a page share the same `id`?", answer: "The HTML is invalid, but browsers won't refuse to render it — `document.getElementById` and CSS `#id` selectors will simply match only the first one in the document, silently ignoring the duplicate, which makes this kind of bug easy to miss." },
-      { question: "What's the difference between a block-level element and an inline element?", answer: "A block-level element, like `<p>` or `<div>`, starts on its own line and takes up the full available width by default. An inline element, like `<span>` or `<a>`, flows within the surrounding text and only takes up as much width as its content needs. CSS's `display` property can override this default for any element." },
-      { question: "Why does heading order (`<h1>` through `<h6>`) matter, beyond making text bigger?", answer: "Screen readers let users jump between headings to navigate a page's structure, the way a sighted user might scan for section titles. Skipping levels or using headings purely for their font size, rather than to reflect actual document structure, breaks that navigation." },
-      { question: "What does the default `type` of a `<button>` inside a `<form>` do, and why does it surprise people?", answer: "An unset `<button>` defaults to `type=\"submit\"`, meaning clicking it submits the enclosing form and reloads or navigates the page. Developers who just want a button to run some JavaScript often need to explicitly set `type=\"button\"` to avoid that unintended submission." },
-      { question: "What's the difference between hiding content with an HTML comment versus hiding it with CSS?", answer: "Content inside an HTML comment (`<!-- ... -->`) is never parsed into the page at all — it doesn't exist as an element. Content hidden via CSS is still a real element in the page; it's just not visually shown (or, depending on the technique, still present for screen readers or layout)." },
-      { question: "You need a piece of text that, when clicked, takes the user to a different page. Should you use `<a>` or `<button>`?", answer: "`<a href=\"...\">`. Anchors are for navigation — they update the URL, work with right-click/open-in-new-tab, and are announced as links. `<button>` is for triggering an action on the current page, like submitting a form or opening a modal, and has none of that navigation behavior built in." },
-      { question: "Why does the browser build a tree out of HTML tags instead of just keeping the raw text around?", answer: "A tree lets the browser (and later, JavaScript) know exactly which elements are nested inside which, so it can figure out layout, apply styles based on structure, and target individual elements — none of which is possible while the page is still just a flat string of text." },
-      { question: "What's wrong with writing an entire page's content using only `<div>` and `<span>` elements?", answer: "Nothing renders incorrectly, but the page loses all semantic meaning — screen readers can't identify headings, landmarks, or buttons, search engines can't tell what's important, and other developers lose the structural hints that tag names like `<nav>` or `<h1>` normally provide." },
+      { question: "What is HTML responsible for, and what is it not responsible for?", answer: "HTML describes the structure and meaning of content: headings, paragraphs, links, images. Visual styling is CSS's job, and interactive behavior is JavaScript's." },
+      { question: "What's the difference between a tag, an element, and an attribute?", answer: "A tag is the bracketed instruction, like `<p>` or `</p>`. An element is the opening tag, its content, and its closing tag together. An attribute is extra information inside an opening tag, such as `src` or `href`, that tells the browser more about the element." },
+      { question: "What is semantic HTML, and why does it matter?", answer: "Semantic HTML uses tags that describe what content *is* (`<nav>` for navigation, `<button>` for a clickable action) instead of generic tags styled to look the part. Screen readers, search engines, and browsers use that meaning to decide how to present or announce the content." },
+      { question: "What does the `<!DOCTYPE html>` declaration do, and what happens if it's missing?", answer: "It tells the browser to use the modern HTML standard. Without it, some browsers fall back to `quirks mode`, an older, less consistent mode kept for backward compatibility. That can subtly change things like how box sizing is calculated." },
+      { question: "What's the difference between the `<head>` and `<body>` of a document?", answer: "The `<head>` holds information about the page (title, linked stylesheets, metadata) and isn't shown as content. The `<body>` holds everything the user sees." },
+      { question: "Why does the `alt` attribute on an `<img>` matter, beyond being read aloud by screen readers?", answer: "It's shown in place of the image if the file fails to load. Search engines also use it to understand the image, since they can't 'see' the pixels." },
+      { question: "What is a void element, and why don't tags like `<img>` or `<br>` have closing tags?", answer: "A void element can never have content or children, so HTML doesn't need or allow a closing tag. `<img src=\"cat.jpg\">` is complete on its own; there's nothing to wrap." },
+      { question: "If you forget to close a `<p>` tag before opening another one, does the browser throw an error?", answer: "No. HTML parsers are deliberately forgiving and follow a defined error-recovery algorithm. Some elements, like `<p>`, close automatically when an incompatible tag appears. The page still renders, just maybe not with the structure you meant." },
+      { question: "Given `<ul><li>A<li>B</ul>` with no closing `</li>` tags, how many list items does the browser actually render?", answer: "Two. The parser's error-recovery rules close an `<li>` as soon as another `<li>` starts, so the missing closing tags are inferred. No items are merged or dropped." },
+      { question: "Why is a `<div>` with a click handler a worse choice than an actual `<button>` for a clickable action?", answer: "A `<button>` comes with keyboard support for free: you can reach it with Tab, activate it with Enter or Space, and screen readers announce it as a button. A plain `<div>` has none of that; you'd have to rebuild focus, keyboard activation, and the accessible role yourself." },
+      { question: "What's the difference between an element's `id` and its `class` attribute?", answer: "An `id` identifies one unique element on the page. A `class` is reused across many elements that share a role or style. `id` is also used for in-page links (`#section`) and is usually the fastest way to look up an element." },
+      { question: "What happens if two elements on a page share the same `id`?", answer: "The HTML is invalid, but the browser still renders it. `document.getElementById` and CSS `#id` selectors match only the first one and silently ignore the duplicate, so the bug is easy to miss." },
+      { question: "What's the difference between a block-level element and an inline element?", answer: "A block-level element, like `<p>` or `<div>`, starts on its own line and takes the full available width by default. An inline element, like `<span>` or `<a>`, flows within the text and is only as wide as its content. CSS's `display` property can override this for any element." },
+      { question: "Why does heading order (`<h1>` through `<h6>`) matter, beyond making text bigger?", answer: "Screen reader users jump between headings to navigate a page, the way sighted users scan section titles. Skipping levels, or using headings just for their font size, breaks that navigation." },
+      { question: "What does the default `type` of a `<button>` inside a `<form>` do, and why does it surprise people?", answer: "A `<button>` with no type defaults to `type=\"submit\"`, so clicking it submits the form and reloads or navigates the page. If you just want the button to run some JavaScript, set `type=\"button\"` explicitly." },
+      { question: "What's the difference between hiding content with an HTML comment versus hiding it with CSS?", answer: "Content inside an HTML comment (`<!-- ... -->`) is never parsed into the page; it doesn't exist as an element. Content hidden with CSS is still a real element, just not shown (and, depending on the technique, may still affect screen readers or layout)." },
+      { question: "You need a piece of text that, when clicked, takes the user to a different page. Should you use `<a>` or `<button>`?", answer: "`<a href=\"...\">`. Anchors are for navigation: they update the URL, support right-click and open-in-new-tab, and are announced as links. `<button>` triggers an action on the current page, like submitting a form or opening a modal, and has no navigation behavior." },
+      { question: "Why does the browser build a tree out of HTML tags instead of just keeping the raw text around?", answer: "A tree shows exactly which elements are nested inside which. That lets the browser (and later JavaScript) work out layout, apply styles based on structure, and target single elements. None of that works on a flat string of text." },
+      { question: "What's wrong with writing an entire page's content using only `<div>` and `<span>` elements?", answer: "It renders fine, but the page loses all semantic meaning. Screen readers can't find headings, landmarks, or buttons, search engines can't tell what's important, and other developers lose the hints that tags like `<nav>` or `<h1>` give." },
     ],
     relatedTopics: ["how-the-web-works", "css-basics", "the-dom"],
     keywords: ["html", "tags", "elements", "attributes", "semantic html", "markup"],
@@ -293,33 +272,29 @@ confusing, hard-to-maintain markup.
     title: "CSS Basics",
     level: "beginner",
     description:
-      "The language used to control how a page looks, kept deliberately separate from what the page contains.",
+      "The language that controls how a page looks, kept separate from what the page contains.",
     explanation: `
-HTML says what's on a page — a heading, a paragraph, an image. But it
-says nothing about what color that heading should be, how big the text
-is, or how much space sits around the image. That's an entirely separate
-job, handled by a language called **CSS** (Cascading Style Sheets).
+HTML says what's on a page: a heading, a paragraph, an image. It says
+nothing about the heading's color, the text size, or the space around the
+image. That's the job of **CSS** (Cascading Style Sheets).
 
-Keeping style separate from structure means the same HTML content can
-look completely different depending on which styles are applied to it —
-and it means one set of style rules can be reused across many pages,
-instead of having to redefine "make this text blue" everywhere blue text
-appears.
+Keeping style separate from structure means the same HTML can look
+completely different with different styles. It also means one set of
+rules can be reused across many pages, so you don't repeat "make this
+text blue" everywhere.
 
-CSS works by writing **rules**: a **selector** that says *which*
-elements the rule applies to, followed by one or more **properties** and
-values that say *what* to change about them. A property might be
-\`color\`, \`font-size\`, or \`margin\`; the value is the specific setting,
-like \`blue\` or \`16px\`.
+CSS is made of **rules**. A **selector** says *which* elements a rule
+applies to, and one or more **properties** with values say *what* to
+change. A property might be \`color\`, \`font-size\`, or \`margin\`; the
+value is the setting, like \`blue\` or \`16px\`.
 
-It's common for more than one rule to apply to the same element at once —
-maybe a general rule styles all paragraphs, while a more specific rule
-targets just one particular paragraph. The set of rules the browser
-follows to decide which value wins when rules conflict is called the
-**cascade**, and it's where CSS gets its name.
+Often several rules apply to the same element. A general rule might style
+all paragraphs while a more specific one targets a single paragraph. The
+way the browser decides which value wins is called the **cascade**, and
+it's where CSS gets its name.
   `.trim(),
     analogy:
-      "If HTML is a document's labeled outline, CSS is the style guide applied on top of it afterward — 'make all headings blue, add spacing between paragraphs' — without changing a word of the actual content.",
+      "If HTML is a document's labeled outline, CSS is the style guide applied on top ('make all headings blue, add space between paragraphs') without changing a word of the content.",
     examples: [
       {
         title: "A basic rule",
@@ -329,12 +304,12 @@ follows to decide which value wins when rules conflict is called the
   line-height: 1.5;
 }`,
         explanation:
-          "This rule targets every paragraph element on the page and sets its text color, font size, and line spacing.",
+          "This rule targets every paragraph on the page and sets its text color, font size, and line spacing.",
         walkthrough: [
-          { code: "p {", explanation: "The selector — this rule applies to every <p> element in the document." },
-          { code: "color: darkslategray;", explanation: "A property (color) and a value (darkslategray) — sets the text color." },
-          { code: "font-size: 16px;", explanation: "Sets how large the text renders." },
-          { code: "line-height: 1.5;", explanation: "Sets the vertical spacing between lines of text within the paragraph." },
+          { code: "p {", explanation: "The selector: this rule applies to every <p> element." },
+          { code: "color: darkslategray;", explanation: "A property (color) and a value (darkslategray) that set the text color." },
+          { code: "font-size: 16px;", explanation: "Sets the text size." },
+          { code: "line-height: 1.5;", explanation: "Sets the vertical space between lines in the paragraph." },
         ],
       },
       {
@@ -343,46 +318,44 @@ follows to decide which value wins when rules conflict is called the
 .highlight { color: orange; }
 #intro { color: red; }`,
         explanation:
-          "If one paragraph has both class=\"highlight\" and id=\"intro\", all three rules could apply to it. CSS resolves the conflict using specificity and order — here, the id selector wins, so that paragraph renders red, not orange or black.",
+          "If a paragraph has both class=\"highlight\" and id=\"intro\", all three rules apply. CSS settles the conflict by specificity and order. Here the id selector wins, so the paragraph is red, not orange or black.",
       },
     ],
     howItWorks: `
-When a browser renders a page, it reads all the CSS that applies —
-whether from a separate stylesheet file, a style tag, or inline on an
-element — and matches each rule's selector against the elements in the
-page. For every element, it collects every rule that could apply, then
-uses a set of tie-breaking rules (roughly: more specific selectors win,
-and later rules win over earlier ones when specificity ties) to decide
-the final value for each property.
+The browser reads all the CSS that applies, whether from a stylesheet
+file, a style tag, or inline on an element. It matches each rule's
+selector against the page's elements.
+
+For each element, it gathers every matching rule and picks the final
+value for each property. Roughly: more specific selectors win, and when
+specificity ties, the later rule wins.
   `.trim(),
     whyItExists: `
-CSS exists so that appearance doesn't have to be tangled up inside
-content. Before this separation existed, changing a site's look meant
-editing styling scattered across every single page. With CSS, one
-stylesheet can restyle an entire site, and the same content can be
-presented differently for different contexts, like print versus screen.
+CSS keeps appearance out of content. Before it, changing a site's look
+meant editing styling scattered across every page. Now one stylesheet can
+restyle a whole site, and the same content can look different in
+different contexts, like print versus screen.
   `.trim(),
     whenToUse: `
-Reach for CSS for anything about *how* a page looks or is arranged:
-colors, spacing, fonts, sizing, positioning, and layout. Prefer a shared
-stylesheet over one-off inline styles whenever a look needs to be
-consistent across multiple elements or pages.
+Use CSS for anything about *how* a page looks or is arranged: colors,
+spacing, fonts, sizing, positioning, and layout. When a look should be
+consistent across elements or pages, use a shared stylesheet instead of
+one-off inline styles.
   `.trim(),
     whenNotToUse: `
-CSS isn't the tool for describing what content actually is (that's
-HTML's job) or for making a page react to user actions with new
-behavior beyond simple visual states (that's JavaScript's job, though
-CSS alone can handle small interactive touches like hover effects).
+CSS doesn't describe what content is (that's HTML) or add new behavior in
+response to user actions (that's JavaScript). It can handle small
+interactive touches like hover effects on its own.
   `.trim(),
     commonMistakes: [
-      "Being surprised a style 'isn't applying' without realizing a more specific rule elsewhere is overriding it.",
-      "Overusing inline styles instead of a shared stylesheet, making the same visual change hard to apply consistently.",
-      "Forgetting that rule order matters when specificity is equal — a later rule with the same specificity wins.",
+      "Wondering why a style 'isn't applying' when a more specific rule elsewhere is overriding it.",
+      "Overusing inline styles instead of a shared stylesheet, so one visual change is hard to apply everywhere.",
+      "Forgetting that order matters when specificity is equal: the later rule wins.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a CSS rule that makes all h1 elements on a page green and centered." },
-      { difficulty: "Medium", prompt: "Create three rules that could all apply to the same element (by tag, class, and id) and predict which value wins for a shared property." },
-      { difficulty: "Hard", prompt: "Given a small HTML page with existing conflicting styles, trace through the cascade by hand to determine the final rendered color of a specific element." },
+      { difficulty: "Medium", prompt: "Write three rules that all apply to the same element (by tag, class, and id) and predict which value wins for a shared property." },
+      { difficulty: "Hard", prompt: "Given a small HTML page with conflicting styles, trace the cascade by hand to find the final color of a specific element." },
     ],
     interviewQuestions: [
       { question: "What problem does CSS solve that HTML alone doesn't?", answer: "HTML describes structure and content, but nothing about appearance. CSS controls how that content looks — color, size, spacing, layout — and keeping it separate means the same content can be restyled, or reused across pages, without touching the markup." },

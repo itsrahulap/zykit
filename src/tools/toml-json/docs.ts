@@ -8,8 +8,9 @@ const docs: ToolDocs = {
     'Copy or download the result, or press **Swap** to turn the output into the new input and convert it back.',
   ],
   howItWorks:
-    'TOML is read by a parser written for this site that follows TOML 1.0: tables, array tables (`[[x]]`), inline tables, dotted keys, bare and quoted keys, basic, literal and multi-line strings with all escapes, integers (decimal, `0x`, `0o`, `0b`, with `_` separators), floats including `inf` and `nan`, booleans, dates, times and datetimes, and arrays of mixed types. It rejects what the spec rejects: duplicate keys, redefined tables, extending inline tables or static arrays, leading zeros, invalid dates and bad escapes.\n\n' +
-    'Dates and times have no JSON type, so they become strings with their original text (`1979-05-27T07:32:00Z`). JSON → TOML writes scalar keys first, then `[tables]` and `[[arrays of tables]]`; arrays of objects become array tables, other arrays are written inline. Keys that are not bare are quoted.',
+    'TOML is read by this site’s own TOML 1.0 parser. It supports tables, array tables (`[[x]]`), inline tables, dotted keys, bare and quoted keys, basic, literal and multi-line strings with all escapes, integers (decimal, `0x`, `0o`, `0b`, with `_` separators), floats including `inf` and `nan`, booleans, dates, times, datetimes and mixed-type arrays.\n\n' +
+    'It rejects what the spec rejects: duplicate keys, redefined tables, extending inline tables or static arrays, leading zeros, invalid dates and bad escapes.\n\n' +
+    'JSON has no date type, so dates and times become strings with their original text (`1979-05-27T07:32:00Z`). JSON → TOML writes scalar keys first, then `[tables]` and `[[arrays of tables]]`. Arrays of objects become array tables; other arrays are written inline. Keys that aren’t bare are quoted.',
   limits: [
     'Input is limited to about 5 MB; opened or dropped files to 10 MB.',
     'TOML 1.0 only: TOML 1.1 additions (optional seconds in times, newlines in inline tables, `\\e` and `\\xHH` escapes) are reported as errors.',
@@ -18,7 +19,7 @@ const docs: ToolDocs = {
     'Comments and formatting are not kept.',
   ],
   privacy:
-    'Conversion happens entirely in your browser and files are read locally; nothing is uploaded or stored. **Share** copies a link with your input and options in the URL’s `#` fragment, which browsers don’t send to servers, though anyone with the link can read it. If you use **Send to…**, the result is handed over through this tab’s session storage and removed as soon as the other tool reads it.',
+    'Conversion runs in your browser and files are read locally. Nothing is uploaded or stored. **Share** copies a link with your input and options in the URL’s `#` fragment; browsers don’t send that to servers, but anyone with the link can read it. **Send to…** passes the result through this tab’s session storage, removed as soon as the other tool reads it.',
   faqs: [
     {
       question: 'Why do dates come out as strings?',

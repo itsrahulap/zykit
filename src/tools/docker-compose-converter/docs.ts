@@ -8,7 +8,13 @@ const docs: ToolDocs = {
     'Read the **warnings** and notes under the output, then copy the result, download it as `docker-compose.yml` or `docker-run.sh`, or send it to another tool.',
   ],
   howItWorks:
-    'The command is split into words with a POSIX shell tokenizer (quotes, backslash line continuations, `$\'…\'` strings), then each `docker run` is parsed: short flags can be clustered (`-dit`) or have their value attached (`-p8080:80`), `--flag=value` and `--flag value` both work, and the first word that isn’t an option is the image; everything after it is the command. Several commands separated by newlines, `&&` or `;` become several services. Flags map to service keys, for example `-p` to `ports`, `-e` to `environment`, `-v` to `volumes`, `--mount` to long-form volumes, `--health-*` to `healthcheck`, `--cpus` and `--memory` to `deploy.resources.limits`, and `--add-host`, `--cap-add`, `--cap-drop` and `--privileged` to their Compose keys. Named volumes are declared under top-level `volumes`, and named networks under top-level `networks` (marked `external: true`, because `docker run` needs them to exist).\n\n' +
+    'The command is split into words with a POSIX shell tokenizer (quotes, backslash line continuations, `$\'…\'` strings). Then each `docker run` is parsed. Short flags can be clustered (`-dit`) or have their value attached (`-p8080:80`), and `--flag=value` and `--flag value` both work. The first word that isn’t an option is the image; everything after it is the command. Several commands separated by newlines, `&&` or `;` become several services.\n\n' +
+    'Flags map to service keys, for example:\n\n' +
+    '- `-p` to `ports`, `-e` to `environment`, `-v` to `volumes`\n' +
+    '- `--mount` to long-form volumes, `--health-*` to `healthcheck`\n' +
+    '- `--cpus` and `--memory` to `deploy.resources.limits`\n' +
+    '- `--add-host`, `--cap-add`, `--cap-drop` and `--privileged` to their Compose keys\n\n' +
+    'Named volumes are declared under top-level `volumes`. Named networks go under top-level `networks`, marked `external: true` because `docker run` needs them to exist.\n\n' +
     'Compose → docker run reads the YAML with the `yaml` package (anchors and merge keys supported). Each service becomes one `docker run` command, listed in `depends_on` order, with ports, environment, volumes, networks, health check, resources and command written as flags. Declared networks that Compose would create get a `docker network create` line first. Anything without an equivalent is reported as a warning.',
   limits: [
     'Input is limited to about 1 MB. Only `docker run` (and `docker container run`, `podman run`) commands are converted; other commands in the same paste are skipped with a warning.',
@@ -19,7 +25,7 @@ const docs: ToolDocs = {
     'Several `--network` flags in one command need Docker 25 or newer.',
   ],
   privacy:
-    'Conversion happens entirely in your browser; your commands and Compose files are never uploaded or stored. **Share** copies a link with your input in the URL’s `#` fragment, which browsers don’t send to servers, though anyone with the link can read it, so avoid sharing input that contains passwords or tokens. If you use **Send to…** or receive text from another tool, it is handed over through this tab’s session storage and removed as soon as the receiving tool reads it.',
+    'Conversion happens entirely in your browser; your commands and Compose files are never uploaded or stored. **Share** copies a link with your input in the URL’s `#` fragment, which browsers don’t send to servers, though anyone with the link can read it, so don’t share input that contains passwords or tokens. Text sent to or from another tool with **Send to…** passes through this tab’s session storage and is removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Why is the network marked external?',

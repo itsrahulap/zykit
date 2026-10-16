@@ -7,18 +7,16 @@ export const javascriptAdvancedTopics: Topic[] = [
     level: "advanced",
     description: "An object that represents a value you'll get later, not right now.",
     explanation: `
-Some tasks don't finish instantly — fetching data from a server, reading a
-file, waiting a few seconds. JavaScript can't just pause and wait around,
-because that would freeze the whole page. Instead, it needs a way to say
-"start this task, and let me know when it's done."
+Some tasks take time: fetching data, reading a file, waiting a few seconds.
+JavaScript can't just stop and wait, because that would freeze the page.
+It needs a way to say "start this, and tell me when it's done."
 
-A **Promise** is an object that represents a value that isn't ready yet, but
-will be — either successfully (**resolved**) or unsuccessfully (**rejected**).
-You attach instructions for what to do in each case using \`.then()\` and
-\`.catch()\`.
+A **Promise** is an object for a value that isn't ready yet. It ends up
+either **resolved** (success) or **rejected** (failure). You say what to do
+in each case with \`.then()\` and \`.catch()\`.
     `.trim(),
     analogy:
-      "A promise is like a food delivery tracking number. You don't have the food yet, but you have something that represents it — and you can be notified the moment it arrives, or if the order fails.",
+      "A promise is like a food delivery tracking number. You don't have the food yet, but you have something that stands for it, and you get told when it arrives or if the order fails.",
     examples: [
       {
         title: "Creating and using a promise",
@@ -35,9 +33,9 @@ waitOneSecond()
   .catch((error) => console.log("Something went wrong:", error));`,
         walkthrough: [
           { code: "function waitOneSecond() {", explanation: "Defines a function that returns a promise instead of an immediate value." },
-          { code: "return new Promise((resolve) => {", explanation: "Creates a new pending promise; resolve is a function to call once the work succeeds." },
-          { code: 'setTimeout(() => { resolve("Done waiting!"); }, 1000);', explanation: "After 1 second, calls resolve with the result, settling the promise as fulfilled." },
-          { code: "waitOneSecond().then((message) => ...)", explanation: "Runs this callback once the promise resolves, receiving the resolved value." },
+          { code: "return new Promise((resolve) => {", explanation: "Creates a pending promise. Call resolve when the work succeeds." },
+          { code: 'setTimeout(() => { resolve("Done waiting!"); }, 1000);', explanation: "After 1 second, calls resolve with the result, so the promise is fulfilled." },
+          { code: "waitOneSecond().then((message) => ...)", explanation: "Runs once the promise resolves, with the resolved value." },
           { code: ".catch((error) => ...)", explanation: "Runs only if the promise is rejected instead of resolved." },
         ],
       },
@@ -57,14 +55,16 @@ fetchUser(-1)
   .then((user) => console.log(user))
   .catch((error) => console.log("Failed:", error.message)); // "Failed: Invalid user id"`,
         explanation:
-          "`reject(...)` settles the promise as failed instead of successful, and control jumps straight to `.catch()`, skipping `.then()` entirely.",
+          "`reject(...)` marks the promise as failed. Control jumps straight to `.catch()` and skips `.then()`.",
       },
     ],
     howItWorks: `
-A promise starts in a "pending" state. When the task finishes, it either
-calls \`resolve(value)\` — moving the promise to "fulfilled" and triggering any
-\`.then()\` callbacks — or calls \`reject(error)\`, moving it to "rejected" and
-triggering \`.catch()\`. Once settled, a promise's outcome never changes again.
+A promise starts out "pending". When the task finishes, it calls one of:
+
+- \`resolve(value)\`: the promise becomes "fulfilled" and \`.then()\` callbacks run.
+- \`reject(error)\`: the promise becomes "rejected" and \`.catch()\` runs.
+
+Once settled, the outcome never changes.
     `.trim(),
     diagram: `
 Promise created (pending)
@@ -79,27 +79,26 @@ resolve(value)   reject(error)
 .then() runs     .catch() runs
     `.trim(),
     whyItExists: `
-Before promises, handling multiple sequential async tasks (like "fetch a
-user, then fetch their orders, then fetch order details") led to deeply
-nested callbacks that were hard to read and error-prone. Promises give
-asynchronous code a consistent shape and let errors be handled in one place.
+Before promises, running async steps in order ("fetch a user, then their
+orders, then the order details") meant deeply nested callbacks that were
+hard to read and easy to get wrong. Promises give async code one consistent
+shape and let you handle errors in one place.
     `.trim(),
     whenToUse: `
-Reach for a promise anytime you're doing something that finishes later,
-not immediately — fetching data, reading a file, waiting on a timer — and
-you want a clean way to say what happens on success versus failure.
+Use a promise for anything that finishes later (fetching data, reading a
+file, waiting on a timer) when you want a clear way to handle success and
+failure.
     `.trim(),
     whenNotToUse: `
-You don't need a promise for something that finishes instantly — wrapping
-simple, immediate work in one just adds overhead. And in most modern code
-you'll rarely write \`.then()\` chains by hand; reach for \`async/await\` on top
-of promises instead, and use raw promises mainly when building the
-underlying async function itself.
+Don't wrap work that finishes instantly in a promise; it only adds overhead.
+In modern code you'll rarely write \`.then()\` chains by hand. Use
+\`async/await\` instead, and write raw promises mainly when building the
+underlying async function.
     `.trim(),
     commonMistakes: [
       "Forgetting to add a `.catch()`, so errors disappear silently.",
-      "Nesting `.then()` calls instead of chaining them, recreating the exact mess promises were meant to fix.",
-      "Forgetting to `return` a value inside a `.then()`, breaking the chain for the next `.then()`.",
+      "Nesting `.then()` calls instead of chaining them, which brings back the mess promises were meant to fix.",
+      "Forgetting to `return` a value inside a `.then()`, so the next `.then()` gets nothing.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Create a promise that resolves with your name after 500ms, and log it with `.then()`." },
@@ -107,40 +106,40 @@ underlying async function itself.
       { difficulty: "Hard", prompt: "Chain three promises together, each depending on the previous result, using `.then()`." },
     ],
     interviewQuestions: [
-      { question: "What are the three states a promise can be in, and can it move backward between them?", answer: "Pending, fulfilled, and rejected. A promise can only move forward — pending to fulfilled, or pending to rejected — and once it lands on either settled state it stays there forever; nothing can move it back to pending or flip it to the other outcome." },
-      { question: "What's the difference between `.then()` and `.catch()`?", answer: "`.then(onFulfilled, onRejected)` can handle both outcomes directly; `.catch(onRejected)` is really just shorthand for `.then(undefined, onRejected)`, handling only the rejection path. `.catch()` is preferred for readability because it also catches rejections and thrown errors from earlier `.then()` callbacks in the chain, not just the original promise." },
-      { question: "What does `Promise.all()` do, and how does it behave if one promise rejects?", answer: "It takes an iterable of promises and returns a single promise that fulfills with an array of all the results, but only once every one of them fulfills. If any single promise rejects, `Promise.all()` immediately rejects with that same reason — it doesn't wait for the others to settle, though their work keeps running in the background since promises can't be cancelled." },
-      { question: "What does `Promise.allSettled()` do, and how does it differ from `Promise.all()`?", answer: "It waits for every promise to settle, whether fulfilled or rejected, and always resolves (never rejects) with an array of result objects like `{status: 'fulfilled', value}` or `{status: 'rejected', reason}`. Unlike `Promise.all()`, one failure doesn't short-circuit the whole thing — you get a full report of every outcome." },
-      { question: "What does `Promise.race()` do?", answer: "It returns a promise that settles as soon as the first of the input promises settles, adopting that one's outcome — fulfilled or rejected — whichever gets there first wins, and the rest are simply ignored once that happens." },
-      { question: "What does `Promise.any()` do, and how is it different from `Promise.race()`?", answer: "It resolves as soon as the first promise fulfills, ignoring rejections along the way. Unlike `Promise.race()`, a single rejection doesn't end things early — `Promise.any()` only rejects if every promise in the input rejects, and it does so with an `AggregateError` bundling all the individual reasons." },
-      { question: "You need to run four independent API calls and proceed only if all succeed, failing fast if any fails. Which combinator fits, and why not the others?", answer: "`Promise.all()` — it gives you all four results together and rejects immediately on the first failure, matching 'all must succeed.' `Promise.allSettled()` wouldn't fail fast, since it always waits for every one to finish; `Promise.race()`/`Promise.any()` only care about a single winner, not all four." },
-      { question: "Once a promise has settled, can calling `resolve()` again change its value?", answer: "No. A promise can only settle once — after the first call to `resolve` or `reject` inside the executor, every later call to either is silently ignored. This is what makes a promise's outcome immutable once decided." },
-      { question: "What is a 'thenable', and why does it matter for promises?", answer: "Any object with a `.then(onFulfilled, onRejected)` method, even if it isn't a real `Promise` instance. Promise machinery treats thenables specially — `Promise.resolve(thenable)` and returning a thenable from a `.then()` callback both 'unwrap' it by waiting for it to settle, rather than treating it as a plain value, which is how other libraries interoperate with native promises." },
-      { question: "What happens if you `return` a promise from inside a `.then()` callback?", answer: "The outer chain waits for that returned promise to settle before moving on, and its resolved value — not the promise itself — is passed to the next `.then()`. This automatic flattening is what lets you chain sequential async steps instead of ending up with nested promises." },
-      { question: "Predict the output: a chain starts with `Promise.resolve(1)`, then adds 1, then throws inside the next `.then()`, then has a final `.then()` that logs, then a `.catch()` that logs the error message. What actually logs?", answer: "Only the `.catch()` handler's log runs. The thrown error inside the second `.then()` rejects the chain at that point, which skips every following `.then()` — they only run on fulfillment — until it reaches the first handler that can deal with a rejection, the `.catch()`." },
-      { question: "If you forget to add a `.catch()` to a chain that ends up rejecting, what actually happens?", answer: "It becomes an 'unhandled promise rejection.' In a browser this fires an `unhandledrejection` event and typically logs a warning; in Node.js it logs a warning by default and, depending on version and configuration, can crash the process. It isn't silently swallowed — it's meant to surface as a bug." },
-      { question: "Can a `.catch()` handler catch an error thrown by an earlier `.then()` in the same chain?", answer: "Yes — a rejection or thrown error at any point in a chain skips forward past every `.then()` until it finds the next rejection handler, whether that's the `onRejected` argument to `.then()` or a `.catch()`. A single `.catch()` at the end of a chain can therefore catch failures from any step before it." },
-      { question: "What does `.finally()` do, and does its callback receive the resolved value or rejection reason?", answer: "It runs after the promise settles regardless of outcome, useful for cleanup like hiding a loading spinner. Its callback receives no arguments at all, and `.finally()` passes the original outcome through unchanged to the next link in the chain — unless the `.finally()` callback itself throws or returns a rejected promise, which overrides it." },
-      { question: "What's the difference between `Promise.resolve(x)` when `x` is a plain value versus when `x` is already a promise?", answer: "If `x` is a plain value, you get a new promise already fulfilled with it. If `x` is already a promise or thenable, `Promise.resolve(x)` doesn't wrap it in another layer — it returns a promise that follows `x`'s own eventual state, so you never end up with a 'promise of a promise.'" },
-      { question: "Does the executor function passed to `new Promise((resolve, reject) => {...})` run immediately, or only once something calls `.then()`?", answer: "Immediately, synchronously, the moment the promise is constructed — promises are eager, not lazy. `.then()` only controls when you're notified of the result; it doesn't trigger the work to start." },
-      { question: "Predict the output: a synchronous log, then constructing a `new Promise` whose executor logs synchronously before resolving, with a `.then()` attached, then a final synchronous log after the constructor call.", answer: "The order is: the first log, the executor's own log, the final log, then the `.then()` callback's log last. The executor body runs synchronously the instant the promise is constructed, but the `.then()` callback is queued as a microtask and only runs after all the current synchronous code finishes." },
-      { question: "If the executor function passed to `new Promise()` throws synchronously, what happens to the promise?", answer: "It's automatically caught and treated the same as calling `reject(error)` — the promise settles as rejected with that thrown error. You don't need a manual try/catch inside the executor purely to convert a synchronous throw into a rejection." },
-      { question: "What happens if a `.then()` callback itself throws an error?", answer: "The promise returned by that `.then()` call rejects with the thrown error, which then propagates down the chain the same way an explicit `reject()` would, until something catches it." },
-      { question: "You call `.then()` twice on the same promise from two separate variables, instead of chaining them. Does the second `.then()` see the value transformed by the first?", answer: "No — calling `.then()` twice on the same promise creates two independent branches that both receive the original promise's resolved value, not each other's return values. Only chaining, `promise.then(...).then(...)`, passes a value from one step into the next." },
-      { question: "How would you convert an older callback-style function into one that returns a promise?", answer: "Wrap the call in `new Promise((resolve, reject) => {...})`, where the executor calls the original function and its error-first callback drives `resolve`/`reject` based on whether an error came back. Node's built-in `util.promisify` automates exactly this pattern." },
-      { question: "How would you add a timeout to a promise-based operation that might hang forever?", answer: "Race it against a promise that rejects after a delay, using `Promise.race()` on an array containing both the real operation and a `setTimeout`-based rejection. Whichever settles first — the real result or the timeout — determines the outcome, though the loser keeps running in the background since it can't be cancelled." },
-      { question: "Since regular JavaScript promises can't be cancelled, how do people typically stop unneeded async work early anyway?", answer: "By using a separate cooperative-cancellation signal, most commonly `AbortController`/`AbortSignal` — the promise-producing operation (like `fetch`) checks the signal and rejects or stops on its own when told to abort; the promise object itself never gains a real 'cancel' method." },
-      { question: "What does `Promise.all()` resolve with when the input array mixes real promises with plain, non-promise values?", answer: "A plain, non-promise value is treated as already-resolved with itself, so it passes straight through in the results array alongside the resolved values of the actual promises, in the same positions they were given." },
-      { question: "Why does `Promise.any()` reject with an `AggregateError` instead of a single error?", answer: "Because it only fails when every input promise has rejected, and no single reason fully explains the failure — an `AggregateError` bundles all the individual rejection reasons into one object, via its `.errors` array, so none of that information is lost." },
-      { question: "You have three independent, unrelated async calls that don't depend on each other's results. What's wrong with awaiting them one at a time instead of using `Promise.all()`?", answer: "Awaiting them sequentially runs them one after another, so the total time is roughly the sum of all three durations. Starting them together, or wrapping them in `Promise.all()`, lets them run concurrently, so the total time is closer to the slowest single one, not the sum." },
-      { question: "What's the difference in behavior between attaching two separate `.then()` calls to the same promise versus chaining them?", answer: "Attaching two separate `.then()` calls creates two independent listeners that both receive the same original resolved value. Chaining them makes the second one run only after the first finishes, and it receives whatever the first one returned, not the original value." },
-      { question: "Why is nesting `.then()` calls inside other `.then()` calls considered bad practice, even when it reaches the same result as a flat chain?", answer: "Nesting recreates the same deeply indented, hard-to-follow shape that promises were introduced to fix in the first place. Returning a promise from a `.then()` and continuing the chain flat achieves the same sequencing without the nesting, and keeps error handling centralized in one `.catch()` instead of scattered across nested blocks." },
-      { question: "Does an error thrown inside a `.catch()` handler get caught by that same `.catch()`, or does it propagate further?", answer: "It propagates further down the chain — a `.catch()` block, like any `.then()` handler, produces a new promise, and if the code inside it throws, that new promise rejects and needs its own downstream `.catch()` to handle it." },
-      { question: "How can you make sure an expensive async setup operation only actually runs once, even if multiple parts of the code request it around the same time?", answer: "Cache the promise itself the first time it's created, not just its eventual value, and hand that same promise out to every caller. Since a promise remembers its settled value and can have any number of `.then()` listeners, every caller gets the one real result once it resolves, and the underlying work only runs once." },
-      { question: "What does it mean, from the promise API's own perspective, that `.then()`/`.catch()`/`.finally()` callbacks always run as microtasks?", answer: "It means those callbacks are never invoked synchronously, even for an already-settled promise — they're always deferred to run after the currently executing code finishes, but before anything else the engine has queued afterward, which is why they reliably run 'soon' but never in the middle of other running code." },
-      { question: "Predict the output: two already-resolved promises each get a `.then(console.log)` attached, followed by a plain synchronous `console.log`.", answer: "The synchronous log runs first, then the two `.then()` callbacks run in the order they were scheduled. Both callbacks are deferred as microtasks regardless of the fact that both promises are already resolved — being 'already resolved' doesn't make `.then()` run synchronously." },
-      { question: "You need to run a list of async tasks one at a time, in order, without async/await. How do you chain them dynamically using only promises?", answer: "Fold the array into a single chain with `reduce`: each step's `.then()` waits for the previous task's promise before starting the next one, seeded with an already-resolved promise as the starting point — building a fully sequential chain from a list of tasks of any length." },
-      { question: "Is there any meaningful difference between `Promise.resolve('done')` and manually writing `new Promise(resolve => resolve('done'))`?", answer: "Functionally almost none — both give you an already-fulfilled promise with the value `'done'`. `Promise.resolve()` is just a shorter, more direct way to wrap an already-known value or existing thenable, without the ceremony of writing out an executor function." },
+      { question: "What are the three states a promise can be in, and can it move backward between them?", answer: "Pending, fulfilled and rejected. A promise only moves forward: pending to fulfilled, or pending to rejected. Once settled it stays there; it can't go back to pending or flip to the other outcome." },
+      { question: "What's the difference between `.then()` and `.catch()`?", answer: "`.then(onFulfilled, onRejected)` can handle both outcomes. `.catch(onRejected)` is shorthand for `.then(undefined, onRejected)` and handles only rejection. `.catch()` is preferred because it also catches rejections and thrown errors from earlier `.then()` callbacks in the chain, not just the original promise." },
+      { question: "What does `Promise.all()` do, and how does it behave if one promise rejects?", answer: "It takes an iterable of promises and returns one promise that fulfills with an array of all results, once every promise fulfills. If any promise rejects, `Promise.all()` rejects right away with that reason. It doesn't wait for the others, but their work keeps running because promises can't be cancelled." },
+      { question: "What does `Promise.allSettled()` do, and how does it differ from `Promise.all()`?", answer: "It waits for every promise to settle and always resolves (never rejects) with an array of objects like `{status: 'fulfilled', value}` or `{status: 'rejected', reason}`. Unlike `Promise.all()`, one failure doesn't stop it; you get a report of every outcome." },
+      { question: "What does `Promise.race()` do?", answer: "It returns a promise that settles as soon as the first input promise settles, with that promise's outcome, fulfilled or rejected. The rest are ignored." },
+      { question: "What does `Promise.any()` do, and how is it different from `Promise.race()`?", answer: "It resolves as soon as the first promise fulfills and ignores rejections along the way. Unlike `Promise.race()`, one rejection doesn't end it. It only rejects if every promise rejects, with an `AggregateError` holding all the reasons." },
+      { question: "You need to run four independent API calls and proceed only if all succeed, failing fast if any fails. Which combinator fits, and why not the others?", answer: "`Promise.all()`. It gives you all four results and rejects on the first failure, which matches 'all must succeed'. `Promise.allSettled()` doesn't fail fast because it waits for every call. `Promise.race()` and `Promise.any()` only care about one winner, not all four." },
+      { question: "Once a promise has settled, can calling `resolve()` again change its value?", answer: "No. A promise settles only once. After the first `resolve` or `reject` call in the executor, later calls are silently ignored, so the outcome can't change." },
+      { question: "What is a 'thenable', and why does it matter for promises?", answer: "Any object with a `.then(onFulfilled, onRejected)` method, even if it isn't a real `Promise`. `Promise.resolve(thenable)` and returning a thenable from a `.then()` callback both wait for it to settle instead of treating it as a plain value. That is how other libraries work with native promises." },
+      { question: "What happens if you `return` a promise from inside a `.then()` callback?", answer: "The chain waits for the returned promise to settle, then passes its resolved value (not the promise) to the next `.then()`. This flattening lets you chain async steps instead of nesting promises." },
+      { question: "Predict the output: a chain starts with `Promise.resolve(1)`, then adds 1, then throws inside the next `.then()`, then has a final `.then()` that logs, then a `.catch()` that logs the error message. What actually logs?", answer: "Only the `.catch()` log runs. The error thrown in the second `.then()` rejects the chain there. Every later `.then()` is skipped, since they only run on fulfillment, until the `.catch()` handles the rejection." },
+      { question: "If you forget to add a `.catch()` to a chain that ends up rejecting, what actually happens?", answer: "It becomes an 'unhandled promise rejection'. In a browser this fires an `unhandledrejection` event and usually logs a warning. In Node.js it logs a warning by default and, depending on version and configuration, can crash the process. It is meant to surface as a bug, not be silently swallowed." },
+      { question: "Can a `.catch()` handler catch an error thrown by an earlier `.then()` in the same chain?", answer: "Yes. A rejection or thrown error anywhere in a chain skips past every `.then()` until it reaches the next rejection handler (an `onRejected` argument or a `.catch()`). So one `.catch()` at the end can catch failures from any earlier step." },
+      { question: "What does `.finally()` do, and does its callback receive the resolved value or rejection reason?", answer: "It runs after the promise settles, whatever the outcome, which is useful for cleanup like hiding a spinner. Its callback gets no arguments, and `.finally()` passes the original outcome through unchanged. The exception: if the callback throws or returns a rejected promise, that overrides it." },
+      { question: "What's the difference between `Promise.resolve(x)` when `x` is a plain value versus when `x` is already a promise?", answer: "If `x` is a plain value, you get a new promise already fulfilled with it. If `x` is a promise or thenable, `Promise.resolve(x)` doesn't add another layer; it returns a promise that follows `x`'s state. You never get a 'promise of a promise'." },
+      { question: "Does the executor function passed to `new Promise((resolve, reject) => {...})` run immediately, or only once something calls `.then()`?", answer: "Immediately and synchronously, when the promise is constructed. Promises are eager, not lazy. `.then()` only controls when you hear about the result; it doesn't start the work." },
+      { question: "Predict the output: a synchronous log, then constructing a `new Promise` whose executor logs synchronously before resolving, with a `.then()` attached, then a final synchronous log after the constructor call.", answer: "The order is: the first log, the executor's log, the final log, then the `.then()` log. The executor runs synchronously when the promise is created, but the `.then()` callback is queued as a microtask and runs after the current synchronous code finishes." },
+      { question: "If the executor function passed to `new Promise()` throws synchronously, what happens to the promise?", answer: "The throw is caught automatically and treated like `reject(error)`, so the promise is rejected with that error. You don't need a try/catch in the executor just to turn a synchronous throw into a rejection." },
+      { question: "What happens if a `.then()` callback itself throws an error?", answer: "The promise returned by that `.then()` rejects with the error. It then travels down the chain like an explicit `reject()` until something catches it." },
+      { question: "You call `.then()` twice on the same promise from two separate variables, instead of chaining them. Does the second `.then()` see the value transformed by the first?", answer: "No. Two `.then()` calls on the same promise create two independent branches, and both get the original resolved value. Only chaining, `promise.then(...).then(...)`, passes a value from one step to the next." },
+      { question: "How would you convert an older callback-style function into one that returns a promise?", answer: "Wrap the call in `new Promise((resolve, reject) => {...})`. The executor calls the original function, and its error-first callback calls `reject` on error or `resolve` otherwise. Node's built-in `util.promisify` does exactly this." },
+      { question: "How would you add a timeout to a promise-based operation that might hang forever?", answer: "Use `Promise.race()` with the real operation and a promise that rejects after a `setTimeout` delay. Whichever settles first decides the outcome. The loser keeps running in the background because it can't be cancelled." },
+      { question: "Since regular JavaScript promises can't be cancelled, how do people typically stop unneeded async work early anyway?", answer: "With a separate cancellation signal, usually `AbortController`/`AbortSignal`. The operation (like `fetch`) checks the signal and stops or rejects when told to abort. The promise itself never gets a real 'cancel' method." },
+      { question: "What does `Promise.all()` resolve with when the input array mixes real promises with plain, non-promise values?", answer: "A plain value is treated as already resolved with itself. It appears in the results array next to the resolved values of the real promises, in the same position it was given." },
+      { question: "Why does `Promise.any()` reject with an `AggregateError` instead of a single error?", answer: "It only fails when every input promise has rejected, so no single reason explains the failure. An `AggregateError` keeps all the rejection reasons in its `.errors` array, so nothing is lost." },
+      { question: "You have three independent, unrelated async calls that don't depend on each other's results. What's wrong with awaiting them one at a time instead of using `Promise.all()`?", answer: "Awaiting them one at a time runs them in sequence, so the total time is roughly the sum of all three. Starting them together, for example with `Promise.all()`, runs them concurrently, so the total is closer to the slowest one." },
+      { question: "What's the difference in behavior between attaching two separate `.then()` calls to the same promise versus chaining them?", answer: "Two separate `.then()` calls are independent listeners that both get the original resolved value. Chained, the second runs only after the first finishes and gets whatever the first returned." },
+      { question: "Why is nesting `.then()` calls inside other `.then()` calls considered bad practice, even when it reaches the same result as a flat chain?", answer: "Nesting brings back the deeply indented, hard-to-follow code promises were meant to fix. Returning a promise from `.then()` and keeping the chain flat gives the same order, and keeps error handling in one `.catch()` instead of spread across nested blocks." },
+      { question: "Does an error thrown inside a `.catch()` handler get caught by that same `.catch()`, or does it propagate further?", answer: "It propagates further down the chain. Like any `.then()` handler, `.catch()` returns a new promise. If its code throws, that promise rejects and needs its own later `.catch()`." },
+      { question: "How can you make sure an expensive async setup operation only actually runs once, even if multiple parts of the code request it around the same time?", answer: "Cache the promise itself the first time, not just its value, and give that same promise to every caller. A promise remembers its settled value and can have any number of `.then()` listeners, so every caller gets the one result and the work runs only once." },
+      { question: "What does it mean, from the promise API's own perspective, that `.then()`/`.catch()`/`.finally()` callbacks always run as microtasks?", answer: "These callbacks never run synchronously, even for an already-settled promise. They always wait until the current code finishes, but run before anything else queued after that. That's why they run 'soon' but never in the middle of other running code." },
+      { question: "Predict the output: two already-resolved promises each get a `.then(console.log)` attached, followed by a plain synchronous `console.log`.", answer: "The synchronous log runs first, then the two `.then()` callbacks in the order they were scheduled. Both are deferred as microtasks; being already resolved doesn't make `.then()` run synchronously." },
+      { question: "You need to run a list of async tasks one at a time, in order, without async/await. How do you chain them dynamically using only promises?", answer: "Fold the array into one chain with `reduce`, starting from an already-resolved promise. Each step's `.then()` waits for the previous task before starting the next, giving a sequential chain for a list of any length." },
+      { question: "Is there any meaningful difference between `Promise.resolve('done')` and manually writing `new Promise(resolve => resolve('done'))`?", answer: "Almost none: both give an already-fulfilled promise with the value `'done'`. `Promise.resolve()` is just a shorter way to wrap a known value or existing thenable without writing an executor." },
     ],
     prerequisites: ["functions"],
     relatedTopics: ["async-await", "event-loop", "error-handling"],
@@ -152,18 +151,16 @@ underlying async function itself.
     level: "advanced",
     description: "A cleaner way to write asynchronous code so it reads like normal, step-by-step code.",
     explanation: `
-Promises solved the "callback mess" problem, but chaining many \`.then()\`
-calls can still be hard to read. **async/await** is newer syntax built on
-top of promises that lets you write asynchronous code that *looks*
-synchronous — top to bottom, like normal steps — while still not blocking
-the rest of the program.
+Promises fixed the "callback mess", but long \`.then()\` chains can still be
+hard to read. **async/await** is syntax built on promises that lets async
+code *look* synchronous, reading top to bottom, without blocking the rest of
+the program.
 
-You mark a function as \`async\`, and inside it you use \`await\` before a
-promise to pause that function (and only that function) until the promise
-settles.
+Mark a function \`async\`. Inside it, put \`await\` before a promise to pause
+that function (and only that function) until the promise settles.
     `.trim(),
     analogy:
-      "It's like a recipe written as a checklist instead of a tangle of arrows: 'wait for the water to boil, then add pasta, then wait 10 minutes.' Each step waits for the previous one, written in plain, readable order.",
+      "It's like a recipe written as a checklist instead of a tangle of arrows: 'wait for the water to boil, then add pasta, then wait 10 minutes.' Each step waits for the one before, in plain order.",
     examples: [
       {
         title: "Using async/await",
@@ -173,10 +170,10 @@ settles.
   return data;
 }`,
         walkthrough: [
-          { code: "async function getUserData() {", explanation: "Marks this function as async, allowing await inside it and making it always return a promise." },
+          { code: "async function getUserData() {", explanation: "Marks the function async, so it can use await and always returns a promise." },
           { code: 'const response = await fetch("/api/user");', explanation: "Pauses this function only (not the whole program) until the network request settles." },
           { code: "const data = await response.json();", explanation: "Pauses again while the response body is parsed as JSON." },
-          { code: "return data;", explanation: "Sends the parsed data back to whoever called and awaited getUserData()." },
+          { code: "return data;", explanation: "Returns the parsed data to whoever awaited getUserData()." },
         ],
       },
       {
@@ -193,33 +190,30 @@ settles.
       },
     ],
     howItWorks: `
-When JavaScript hits \`await somePromise\`, it pauses that async function's
-progress right there — without freezing the rest of the program — and lets
-other code keep running. Once the promise settles, the function resumes
-exactly where it left off, with the resolved value in hand (or an error, if
+At \`await somePromise\`, JavaScript pauses that async function while the
+rest of the program keeps running. When the promise settles, the function
+resumes where it left off with the resolved value (or throws the error if
 it was rejected).
     `.trim(),
     whyItExists: `
-async/await exists purely to make promise-based code easier to read and
-reason about. It doesn't replace promises — it's built entirely on top of
-them — but it removes a lot of the \`.then()\` chaining boilerplate.
+async/await makes promise-based code easier to read. It doesn't replace
+promises (it's built on them), but it removes most of the \`.then()\`
+boilerplate.
     `.trim(),
     whenToUse: `
-Use async/await whenever you have a sequence of asynchronous steps that
-depend on each other — fetch a user, then fetch their orders, then display
-them — and you want that sequence to read top-to-bottom like ordinary
-code.
+Use async/await for async steps that depend on each other (fetch a user,
+then their orders, then show them) when you want them to read top to bottom
+like normal code.
     `.trim(),
     whenNotToUse: `
-Skip async/await for synchronous code that never needs to wait on
-anything — adding \`async\` gains you nothing there. And when several async
-tasks don't depend on each other, awaiting them one at a time is slower
-than starting them together with \`Promise.all\`.
+Skip it for synchronous code that never waits; \`async\` gains you nothing
+there. When async tasks don't depend on each other, awaiting them one at a
+time is slower than starting them together with \`Promise.all\`.
     `.trim(),
     commonMistakes: [
       "Forgetting the `async` keyword on a function that uses `await` inside it.",
       "Forgetting to wrap `await` calls in `try/catch`, so rejected promises crash the function silently.",
-      "Using `await` in a loop when the calls don't actually depend on each other, making things slower than necessary (running them in parallel with `Promise.all` would be faster).",
+      "Using `await` in a loop when the calls don't depend on each other. Running them in parallel with `Promise.all` is faster.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Convert a `.then()`-based promise chain into an `async/await` function." },
@@ -227,37 +221,37 @@ than starting them together with \`Promise.all\`.
       { difficulty: "Hard", prompt: "Write an async function that runs three independent async tasks in parallel using `Promise.all`, instead of `await`-ing them one by one." },
     ],
     interviewQuestions: [
-      { question: "How does `async/await` relate to promises?", answer: "It's syntax sugar built entirely over promises — an `async` function always returns a promise, and `await` pauses that function's own progress until the promise it's given settles, then resumes with the resolved value (or throws the rejection)." },
-      { question: "Does an `async` function always return a promise, even if you `return` a plain, non-promise value?", answer: "Yes. Whatever you `return` from an `async` function is automatically wrapped in a resolved promise if it isn't already one — callers always get a promise back, never the raw value directly, even for a function that never awaits anything." },
-      { question: "How do you handle errors in async/await code, and how does that compare to `.catch()` on a promise chain?", answer: "Wrap the `await` calls in a `try/catch` block, the same way you'd handle a synchronous throw. A rejected awaited promise is converted into a thrown error at that point, so `try/catch` catches it exactly like `.catch()` would catch a rejection further down a promise chain — it's the same underlying mechanism with different syntax." },
-      { question: "Does `await` block the entire program?", answer: "No — it only pauses the current `async` function's own execution. Control returns to whatever called it, and the rest of the program, including the browser's UI, keeps running normally until the awaited promise settles and the function resumes." },
-      { question: "What does `await` actually do, mechanically, when it hits a promise?", answer: "It suspends the `async` function at that point, registers a continuation on the promise (conceptually like a `.then()`), and immediately returns control to the caller. Once the promise settles, the rest of the function's body is scheduled to resume as a microtask, picking up exactly where it left off." },
-      { question: "What happens if you `await` a value that isn't a promise at all, like a plain number?", answer: "It works fine — `await` treats a non-promise value as already resolved, wraps it as if via `Promise.resolve()`, and the function still yields control briefly (the resumption is still scheduled as a microtask) before continuing with that same value." },
-      { question: "What happens if you use `await` inside a function that isn't marked `async`?", answer: "It's a syntax error — `await` is only valid syntax inside an `async` function (or, in modules, at the top level). The engine won't let you write it in a plain function; you have to add `async` first." },
-      { question: "Can you use `await` at the top level of a file, outside any function?", answer: "Yes, in an ES module — this is 'top-level await.' It lets a module perform asynchronous setup before its exports are considered ready, but it comes with a cost: any module that imports it also has to wait for that `await` to resolve before it finishes loading." },
-      { question: "Why is putting `await` inside a `for` loop for several independent async tasks often a performance mistake?", answer: "Each iteration waits for the previous call to fully settle before even starting the next one, so the tasks run strictly one after another instead of concurrently. If the tasks don't depend on each other's results, starting them all first and awaiting them together (for example with `Promise.all`) finishes in roughly the time of the slowest one instead of the sum of all of them." },
-      { question: "How do you run several independent async calls in parallel while still writing await-based code?", answer: "Start all the calls first without awaiting each one immediately, collecting the returned promises, and then await them together — typically with `await Promise.all([...])` — so they all begin running concurrently instead of one only starting after the previous one finishes." },
-      { question: "Predict the output: an `async` function logs 'A', then awaits a resolved promise, then logs 'B'; right after calling that function (without awaiting it), the calling code logs 'C'.", answer: "The order is 'A', 'C', 'B'. Everything before the first `await` inside an async function runs synchronously the moment it's called, so 'A' logs immediately. The function then suspends at the `await`, control returns to the caller, which logs 'C' next; only once the current synchronous code finishes does the suspended function resume and log 'B'." },
-      { question: "If an `async` function has no `await` inside it at all, does calling it still behave asynchronously in any way?", answer: "Yes — even with zero `await`s, an `async` function's return value is always wrapped in a promise, and any `.then()` attached to that promise still runs as a microtask rather than synchronously, so callers can never rely on the result being available the instant the call returns." },
-      { question: "What happens to an error thrown inside an `async` function if there's no `try/catch` around it?", answer: "It doesn't crash the program synchronously — it's converted into a rejection of the promise the `async` function returns. Whoever called that function needs to handle the rejection, either by awaiting it inside their own `try/catch` or attaching a `.catch()`, or it becomes an unhandled promise rejection." },
-      { question: "Is an unhandled rejection from an async function any different, mechanically, from one that comes out of a raw `.then()` chain?", answer: "No — under the hood they're the same thing. An `async` function's returned promise rejecting with no handler produces exactly the same 'unhandled promise rejection' as any other rejected promise nobody attached a `.catch()` (or awaiting `try/catch`) to." },
-      { question: "Does `Array.prototype.forEach` wait for an `async` callback to finish before moving to the next item?", answer: "No — `forEach` doesn't know or care that its callback returns a promise; it fires off every call back-to-back without waiting, so all the async callbacks effectively start almost simultaneously and finish in whatever order their own work completes, not in array order." },
-      { question: "Given that `forEach` doesn't await async callbacks, how would you process an array's items one at a time, waiting for each before starting the next?", answer: "Use a `for...of` loop with `await` inside it: `for (const item of items) { await process(item); }`. Because a `for` loop's body genuinely pauses on each `await`, this processes strictly in order, unlike `forEach`." },
-      { question: "How would you process every item in an array concurrently and collect all the results with async/await?", answer: "Map the array to an array of promises by calling the async function on each item without awaiting individually, then await the whole array at once with `Promise.all`, for example `await Promise.all(items.map(process))` — this starts all the work together instead of serially." },
-      { question: "Inside a `try` block, is there a meaningful difference between `return await somePromise;` and `return somePromise;`?", answer: "Outside a try/catch, generally no — both eventually resolve to the same value from the caller's perspective. Inside a try/catch, though, `return await` matters: it keeps the function running long enough for a rejection to be caught by that same `catch` block, whereas a bare `return somePromise` immediately hands the (still-pending) promise back to the caller, so any later rejection is no longer caught locally." },
-      { question: "Debugging: a teammate wrote `items.forEach(async (item) => { await save(item); })` expecting the items to be saved one at a time, in order — what's actually happening, and how would you fix it?", answer: "Because `forEach` ignores the promise its callback returns, all the `save()` calls are effectively kicked off together rather than sequentially, and `forEach` itself doesn't wait for any of them to finish before returning. Replacing it with a `for...of` loop containing `await save(item)` (for strict order) or `Promise.all(items.map(save))` (for concurrency) fixes it, depending on which behavior was actually intended." },
-      { question: "Why is code written with async/await generally easier to debug with breakpoints than an equivalent `.then()` chain?", answer: "Because it reads and steps like ordinary sequential code — you can set a breakpoint on any line and step over each `await` one at a time, watching local variables persist naturally, instead of jumping between separate callback functions that each have their own scope and appear as new stack frames in a `.then()` chain." },
-      { question: "Is it valid to use `await` inside a `.then()` callback? Is that a normal pattern to write?", answer: "It's only valid if that callback itself is an `async` function, and while it works, mixing the two styles in the same piece of code is generally discouraged — it's clearer to commit to one style (usually async/await) for a given block of logic rather than switching back and forth." },
-      { question: "If an `async` function throws before reaching its first `await`, is that throw synchronous, or does it still produce a rejected promise?", answer: "It still produces a rejected promise, not a synchronous throw the immediate caller can catch with a plain `try/catch` around the call. Because the function is `async`, JavaScript always wraps its outcome — success or failure — in a promise, even for a throw that happens before any `await` is reached." },
-      { question: "How would you retry a flaky async operation up to a fixed number of times using async/await?", answer: "Wrap the attempt in a loop with a `try/catch`: on success, `return` the result immediately; on failure, catch the error, and either continue to the next loop iteration to retry or, once the retry limit is reached, rethrow (or return a failure value) instead of retrying again." },
-      { question: "What's the benefit of using `Promise.allSettled()` together with async/await over wrapping each individual `await` in its own `try/catch`?", answer: "`Promise.allSettled()` lets several independent async operations run concurrently and reports every outcome — success or failure — without one failure preventing you from seeing the others' results, whereas awaiting each one in its own try/catch (especially sequentially) is more verbose and, if done naively in a loop, can also lose the concurrency benefit." },
-      { question: "Predict the output: an `async` IIFE logs 'start', awaits a `setTimeout`-based promise, then logs 'end'; right after invoking it, the outer code logs 'after call'.", answer: "'start', 'after call', then 'end' last. 'start' runs synchronously as soon as the IIFE begins; hitting the `await` suspends it and hands control back, so 'after call' logs next; only once the timer fires and its promise resolves does the IIFE resume and log 'end'." },
-      { question: "Can an `async` function be combined with generator syntax, and is that something typical application code reaches for?", answer: "Yes — an `async generator function` (`async function*`) combines both, yielding values over time with `for await...of` on the consuming side. It's a more specialized tool, mainly useful for consuming asynchronous streams of values (like paginated API results), and much less common in everyday code than a plain `async function`." },
-      { question: "Why does wrapping every single `await` in the codebase in its own try/catch, versus one try/catch around several sequential awaits, matter for how precisely you can respond to failures?", answer: "A single try/catch around several awaits catches a failure from any of them but loses information about which specific step failed unless you inspect the error itself; wrapping each await individually (or tagging errors) lets you respond differently — retry just the failed step, supply a specific fallback — instead of treating the whole block as one all-or-nothing unit." },
-      { question: "If two unrelated `await` calls are written back-to-back in an `async` function without `Promise.all`, does the second one start only after the first fully resolves, or do they overlap at all?", answer: "The second call's own async work doesn't even begin — the expression that creates its promise isn't evaluated — until the function resumes after the first `await`, so there's no overlap at all; they run strictly one after the other in real time." },
-      { question: "What determines whether the code immediately after calling an `async` function (without awaiting the call) runs before or after the code inside that function?", answer: "Everything inside the async function up to its first `await` runs synchronously before control ever returns to the caller, so any code in the async function before its first `await` runs first; everything after that first `await` is deferred, so the caller's subsequent code generally runs before the async function resumes." },
-      { question: "Why doesn't marking a function `async` change how long its non-async internal work takes to execute?", answer: "`async` only changes how the function's *result* is delivered — wrapped in a promise, with pauses at `await` points — it doesn't make any of the function's own synchronous computation faster or run on a separate thread; a slow synchronous loop inside an async function still blocks everything else exactly as it would in a regular function." },
-      { question: "You need to fetch a user, then, only once you have their ID, fetch their orders. Why can't you simply start both fetches at the same time with `Promise.all`?", answer: "Because the second request genuinely depends on data (the user's ID) that only exists after the first one completes — there's a real sequential dependency, so `await`ing the first call before starting the second is correct here; `Promise.all` is only a win when the calls are truly independent of each other." },
+      { question: "How does `async/await` relate to promises?", answer: "It's syntax sugar on top of promises. An `async` function always returns a promise, and `await` pauses that function until the given promise settles, then resumes with the value (or throws the rejection)." },
+      { question: "Does an `async` function always return a promise, even if you `return` a plain, non-promise value?", answer: "Yes. Whatever you `return` is wrapped in a resolved promise if it isn't one already. Callers always get a promise, never the raw value, even if the function never awaits anything." },
+      { question: "How do you handle errors in async/await code, and how does that compare to `.catch()` on a promise chain?", answer: "Wrap the `await` calls in `try/catch`, like a synchronous throw. A rejected awaited promise becomes a thrown error at that line, so `try/catch` catches it just as `.catch()` would in a chain. Same mechanism, different syntax." },
+      { question: "Does `await` block the entire program?", answer: "No. It only pauses the current `async` function. Control returns to the caller, and the rest of the program, including the browser UI, keeps running until the promise settles and the function resumes." },
+      { question: "What does `await` actually do, mechanically, when it hits a promise?", answer: "It suspends the `async` function, registers a continuation on the promise (like a `.then()`), and returns control to the caller. When the promise settles, the rest of the function is scheduled as a microtask and picks up where it left off." },
+      { question: "What happens if you `await` a value that isn't a promise at all, like a plain number?", answer: "It works. `await` treats it as already resolved, as if via `Promise.resolve()`. The function still yields briefly (resuming as a microtask) and then continues with that value." },
+      { question: "What happens if you use `await` inside a function that isn't marked `async`?", answer: "It's a syntax error. `await` is only valid inside an `async` function (or at the top level of a module). Add `async` first." },
+      { question: "Can you use `await` at the top level of a file, outside any function?", answer: "Yes, in an ES module. This is 'top-level await'. It lets a module do async setup before its exports are ready. The cost: any module that imports it must also wait for that `await` before it finishes loading." },
+      { question: "Why is putting `await` inside a `for` loop for several independent async tasks often a performance mistake?", answer: "Each iteration waits for the previous call to finish before starting the next, so the tasks run one after another. If they're independent, start them all first and await them together (for example with `Promise.all`). That takes about as long as the slowest one, not the sum." },
+      { question: "How do you run several independent async calls in parallel while still writing await-based code?", answer: "Start all the calls without awaiting each one, keep the promises, then await them together, usually with `await Promise.all([...])`. They all run at once instead of one after another." },
+      { question: "Predict the output: an `async` function logs 'A', then awaits a resolved promise, then logs 'B'; right after calling that function (without awaiting it), the calling code logs 'C'.", answer: "'A', 'C', 'B'. Code before the first `await` runs synchronously when the function is called, so 'A' logs first. The function then suspends and the caller logs 'C'. Once the current synchronous code finishes, the function resumes and logs 'B'." },
+      { question: "If an `async` function has no `await` inside it at all, does calling it still behave asynchronously in any way?", answer: "Yes. Its return value is still wrapped in a promise, and any `.then()` on it runs as a microtask, not synchronously. Callers can't rely on the result being ready when the call returns." },
+      { question: "What happens to an error thrown inside an `async` function if there's no `try/catch` around it?", answer: "It doesn't crash the program synchronously. It becomes a rejection of the promise the function returns. The caller must handle it, with `try/catch` around an `await` or with `.catch()`, or it becomes an unhandled promise rejection." },
+      { question: "Is an unhandled rejection from an async function any different, mechanically, from one that comes out of a raw `.then()` chain?", answer: "No, they're the same thing. An `async` function's promise rejecting with no handler is the same 'unhandled promise rejection' as any other rejected promise with no `.catch()` or awaiting `try/catch`." },
+      { question: "Does `Array.prototype.forEach` wait for an `async` callback to finish before moving to the next item?", answer: "No. `forEach` ignores the promise its callback returns and fires every call back to back. All the callbacks start almost at once and finish in whatever order their work completes, not array order." },
+      { question: "Given that `forEach` doesn't await async callbacks, how would you process an array's items one at a time, waiting for each before starting the next?", answer: "Use `for...of` with `await` inside: `for (const item of items) { await process(item); }`. A `for` loop really pauses at each `await`, so items are processed in order, unlike `forEach`." },
+      { question: "How would you process every item in an array concurrently and collect all the results with async/await?", answer: "Call the async function on each item without awaiting, which gives an array of promises, then await them all with `Promise.all`, for example `await Promise.all(items.map(process))`. All the work starts together instead of one by one." },
+      { question: "Inside a `try` block, is there a meaningful difference between `return await somePromise;` and `return somePromise;`?", answer: "Outside a try/catch, usually no; the caller gets the same value. Inside a try/catch, `return await` matters: the function waits for the promise, so a rejection is caught by that `catch` block. A bare `return somePromise` hands back the pending promise right away, so a later rejection isn't caught locally." },
+      { question: "Debugging: a teammate wrote `items.forEach(async (item) => { await save(item); })` expecting the items to be saved one at a time, in order — what's actually happening, and how would you fix it?", answer: "`forEach` ignores the promise its callback returns, so all the `save()` calls start together, and `forEach` returns without waiting for any of them. Use a `for...of` loop with `await save(item)` for strict order, or `Promise.all(items.map(save))` for concurrency, depending on what was intended." },
+      { question: "Why is code written with async/await generally easier to debug with breakpoints than an equivalent `.then()` chain?", answer: "It steps like ordinary sequential code. You can set a breakpoint on any line and step over each `await` while local variables stay in scope. With a `.then()` chain you jump between separate callbacks, each with its own scope and stack frame." },
+      { question: "Is it valid to use `await` inside a `.then()` callback? Is that a normal pattern to write?", answer: "Only if that callback is itself `async`. It works, but mixing the two styles in one piece of code is discouraged. Pick one style (usually async/await) for a block of logic." },
+      { question: "If an `async` function throws before reaching its first `await`, is that throw synchronous, or does it still produce a rejected promise?", answer: "It still produces a rejected promise, not a synchronous throw that a plain `try/catch` around the call could catch. An `async` function always wraps its outcome, success or failure, in a promise, even before any `await`." },
+      { question: "How would you retry a flaky async operation up to a fixed number of times using async/await?", answer: "Put the attempt in a loop with `try/catch`. On success, `return` the result. On failure, catch the error and loop again, or once the retry limit is reached, rethrow (or return a failure value)." },
+      { question: "What's the benefit of using `Promise.allSettled()` together with async/await over wrapping each individual `await` in its own `try/catch`?", answer: "`Promise.allSettled()` runs independent operations concurrently and reports every outcome, so one failure doesn't hide the others. Wrapping each `await` in its own try/catch is more verbose, and done naively in a loop it also loses the concurrency." },
+      { question: "Predict the output: an `async` IIFE logs 'start', awaits a `setTimeout`-based promise, then logs 'end'; right after invoking it, the outer code logs 'after call'.", answer: "'start', 'after call', then 'end'. 'start' runs synchronously when the IIFE begins. The `await` suspends it and returns control, so 'after call' logs next. Only when the timer fires and its promise resolves does the IIFE resume and log 'end'." },
+      { question: "Can an `async` function be combined with generator syntax, and is that something typical application code reaches for?", answer: "Yes. An `async generator function` (`async function*`) yields values over time, and the consumer reads them with `for await...of`. It's a specialized tool for async streams of values (like paginated API results) and much less common than a plain `async function`." },
+      { question: "Why does wrapping every single `await` in the codebase in its own try/catch, versus one try/catch around several sequential awaits, matter for how precisely you can respond to failures?", answer: "One try/catch around several awaits catches a failure from any of them, but doesn't tell you which step failed unless you inspect the error. Wrapping each await (or tagging errors) lets you respond per step, like retrying just that step or using a specific fallback, instead of treating the block as all-or-nothing." },
+      { question: "If two unrelated `await` calls are written back-to-back in an `async` function without `Promise.all`, does the second one start only after the first fully resolves, or do they overlap at all?", answer: "No overlap at all. The second call's promise isn't even created until the function resumes after the first `await`, so they run strictly one after the other." },
+      { question: "What determines whether the code immediately after calling an `async` function (without awaiting the call) runs before or after the code inside that function?", answer: "Code inside the async function up to its first `await` runs synchronously before control returns to the caller, so it runs first. Everything after that first `await` is deferred, so the caller's next code usually runs before the function resumes." },
+      { question: "Why doesn't marking a function `async` change how long its non-async internal work takes to execute?", answer: "`async` only changes how the *result* is delivered (wrapped in a promise, with pauses at `await`). It doesn't speed up the function's synchronous work or move it to another thread. A slow synchronous loop in an async function still blocks everything, just like in a regular function." },
+      { question: "You need to fetch a user, then, only once you have their ID, fetch their orders. Why can't you simply start both fetches at the same time with `Promise.all`?", answer: "The second request needs the user's ID, which only exists after the first one finishes. That's a real dependency, so awaiting the first call before starting the second is correct. `Promise.all` only helps when the calls are truly independent." },
     ],
     prerequisites: ["promises"],
     relatedTopics: ["promises", "event-loop", "error-handling"],
@@ -269,17 +263,15 @@ than starting them together with \`Promise.all\`.
     level: "advanced",
     description: "The mechanism that lets JavaScript handle many tasks without ever running two at once.",
     explanation: `
-JavaScript can only do one thing at a time — it has a single "thread" of
-execution. And yet it can handle things like timers, network requests, and
-user clicks all seemingly "at once" without freezing the page. The
-**event loop** is the mechanism that makes this possible.
+JavaScript does one thing at a time: it has a single "thread". Yet it
+handles timers, network requests and clicks seemingly "at once" without
+freezing the page. The **event loop** makes this possible.
 
-It works by separating "run this code right now" from "run this code later,
-once something else finishes" — and constantly checking whether it's time
-to run any of that waiting code.
+It separates "run this now" from "run this later, once something finishes",
+and keeps checking whether any waiting code is ready to run.
     `.trim(),
     analogy:
-      "Imagine a single chef in a kitchen who can only cook one dish at a time, but has an oven timer for things in the background. The chef finishes the current dish, checks if any timers have gone off, handles those, then moves to the next task — never doing two things simultaneously, but never sitting idle either.",
+      "Picture one chef who cooks one dish at a time but has an oven timer for things in the background. The chef finishes the current dish, checks whether any timers went off, handles those, then moves on. Never two things at once, but never idle.",
     examples: [
       {
         title: "Order of execution",
@@ -296,12 +288,12 @@ console.log("3: end");
 // 3: end
 // 2: timeout callback`,
         explanation:
-          "Even with a 0ms delay, the timeout callback runs after all the regular code — because it has to wait for the main code to finish first.",
+          "Even with a 0ms delay, the timeout callback runs after all the regular code, because it waits for the main code to finish.",
         walkthrough: [
-          { code: 'console.log("1: start");', explanation: "Runs immediately — the first line on the call stack." },
-          { code: "setTimeout(() => {...}, 0);", explanation: "Hands the callback to the browser to run later, even with a 0ms delay — JavaScript doesn't wait here." },
-          { code: 'console.log("3: end");', explanation: "Also runs immediately, since it doesn't wait on the timer at all." },
-          { code: "// 2: timeout callback", explanation: "Only runs once the current code finishes and the call stack is completely empty." },
+          { code: 'console.log("1: start");', explanation: "Runs immediately, as the first line on the call stack." },
+          { code: "setTimeout(() => {...}, 0);", explanation: "Hands the callback to the browser to run later, even with a 0ms delay. JavaScript doesn't wait here." },
+          { code: 'console.log("3: end");', explanation: "Also runs immediately; it doesn't wait for the timer." },
+          { code: "// 2: timeout callback", explanation: "Runs only once the current code finishes and the call stack is empty." },
         ],
       },
       {
@@ -316,21 +308,21 @@ console.log("4: end");
 
 // Output order: 1, 4, 3, 2`,
         explanation:
-          "Promise callbacks (microtasks) are always drained before the next timer callback (a macrotask) runs, even if both were scheduled at roughly the same time.",
+          "Promise callbacks (microtasks) always run before the next timer callback (a macrotask), even if both were scheduled at about the same time.",
       },
     ],
     howItWorks: `
-JavaScript runs your main code on something called the **call stack**. When
-it encounters something asynchronous (like \`setTimeout\` or a network
-request), that task is handed off to the browser, and JavaScript keeps
-running the rest of the main code. Once the async task finishes, its
-callback is placed in a queue — but there are actually two of them, checked
-in a strict order. Promise callbacks go into the **microtask queue**;
-timers, network events, and clicks go into the **macrotask queue**. The
-event loop's job is: once the call stack is empty, drain the *entire*
-microtask queue first — running every waiting promise callback, even ones
-added while draining — and only once it's completely empty does it run a
-single macrotask, before checking the microtask queue again.
+JavaScript runs your main code on the **call stack**. Async work (like
+\`setTimeout\` or a network request) is handed to the browser, and
+JavaScript keeps running the rest of the code. When the async task
+finishes, its callback goes into one of two queues:
+
+- **Microtask queue**: promise callbacks.
+- **Macrotask queue**: timers, network events and clicks.
+
+Once the call stack is empty, the event loop drains the *entire* microtask
+queue, including microtasks added while draining. Only then does it run a
+single macrotask, and then it checks the microtask queue again.
     `.trim(),
     diagram: `
 Call stack (running now)
@@ -342,27 +334,24 @@ Queue has a waiting callback? ──▶ run it on the call stack
 keep checking
     `.trim(),
     whyItExists: `
-Without the event loop, any slow task (like a network request) would
-freeze the entire page until it finished. The event loop lets JavaScript
-start slow tasks, move on immediately, and come back to handle the result
-later — keeping the page responsive the whole time.
+Without it, any slow task (like a network request) would freeze the page
+until it finished. The event loop lets JavaScript start slow tasks, move on,
+and handle the result later, so the page stays responsive.
     `.trim(),
     whenToUse: `
-You reach for this mental model any time you're debugging unexpected
-ordering — why a \`console.log\` ran before a network response, why a
-\`setTimeout(fn, 0)\` didn't run immediately, or why the page froze during a
-long calculation.
+Use this mental model when debugging surprising order: why a
+\`console.log\` ran before a network response, why \`setTimeout(fn, 0)\`
+didn't run immediately, or why the page froze during a long calculation.
     `.trim(),
     whenNotToUse: `
-Day-to-day, you don't manage the event loop directly — there's no API to
-configure it. It's not something you "use"; it's something you understand
-so that async code (promises, timers, events) makes sense instead of
-feeling random.
+You never manage the event loop directly; there's no API to configure it.
+You don't "use" it. You understand it so that promises, timers and events
+make sense instead of feeling random.
     `.trim(),
     commonMistakes: [
-      "Assuming `setTimeout(fn, 0)` runs immediately — it still waits for the current code to finish first.",
-      "Not realizing that a long-running synchronous loop can freeze the page, since nothing else can run until the call stack is clear.",
-      "Confusing the order of promise callbacks (microtasks) and timer callbacks (macrotasks) — microtasks always finish draining before the next macrotask runs, it's not just a usual tendency.",
+      "Assuming `setTimeout(fn, 0)` runs immediately. It still waits for the current code to finish.",
+      "Not realizing a long synchronous loop can freeze the page, since nothing else runs until the call stack is clear.",
+      "Mixing up the order of promise callbacks (microtasks) and timer callbacks (macrotasks). Microtasks always finish draining before the next macrotask runs; it's a rule, not a tendency.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Predict, then verify, the console output order of a mix of `console.log` and `setTimeout` calls." },

@@ -9,8 +9,8 @@ const docs: ToolDocs = {
     'Copy the result, **Download .json**, or use **Send to…** to open it in another tool.',
   ],
   howItWorks:
-    'The input is checked by a strict JSON parser (RFC 8259) written for this tool. It reads the text in one pass without recursion, so very deeply nested documents can’t overflow the stack, and it stops at the first error with a specific message, such as a trailing comma, single quotes, a comment or a missing comma, plus its line and column.\n\n' +
-    'Numbers and strings keep the exact text they were written with. A long ID such as `12345678901234567890` isn’t rounded the way `JSON.parse` would round it, and escapes like `\\u00fc` stay as escapes. Formatting rewrites only the whitespace between values, and sorting reorders properties by key, comparing the keys character by character (so uppercase letters come before lowercase). Everything runs on the page, on a deferred copy of the input so typing stays responsive.',
+    'A strict JSON parser (RFC 8259) written for this tool checks the input. It reads the text in one pass without recursion, so very deeply nested documents can’t overflow the stack. It stops at the first error with a specific message (such as a trailing comma, single quotes, a comment or a missing comma) and its line and column.\n\n' +
+    'Numbers and strings keep their exact text. A long ID such as `12345678901234567890` isn’t rounded the way `JSON.parse` would round it, and escapes like `\\u00fc` stay as escapes. Formatting changes only the whitespace between values. Sorting compares keys character by character, so uppercase letters come before lowercase. Everything runs on the page, on a deferred copy of the input so typing stays responsive.',
   limits: [
     'Strict JSON only: comments, trailing commas, single quotes, unquoted keys, `NaN` and `Infinity` are reported as errors. JSON5, JSONC and JSON Lines aren’t supported.',
     'Input over 20,000,000 characters (about 20 MB) isn’t processed. Opened or dropped files can be up to 10 MB.',

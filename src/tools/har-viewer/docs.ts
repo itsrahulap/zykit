@@ -8,7 +8,9 @@ const docs: ToolDocs = {
     'Click a URL to see its headers, query string, post data and a text preview of the response. The **Summary** lists totals, the slowest 10 requests and counts by domain and type.',
   ],
   howItWorks:
-    'The file is parsed as JSON in a background worker, and the worker keeps the full entries so only a small row per request reaches the page. Size uses the transfer size when the HAR has one, otherwise the body size, otherwise the content size. Request start times are measured from the first request. HAR’s `connect` time includes SSL, so SSL is shown separately and subtracted from connect. Only the rows on screen are drawn, so large recordings stay responsive.\n\nResponse bodies are shown as text only: text, JSON, XML, JavaScript and similar types are decoded (base64 too) and shown as plain text; images and other binary content are not rendered.',
+    'The file is parsed as JSON in a background worker, which keeps the full entries; only a small row per request reaches the page. Only the rows on screen are drawn, so large recordings stay responsive.\n\n' +
+    'Size uses the transfer size if the HAR has one, otherwise the body size, otherwise the content size. Start times are measured from the first request. HAR’s `connect` time includes SSL, so SSL is shown separately and subtracted from connect.\n\n' +
+    'Response bodies are shown as plain text only. Text, JSON, XML, JavaScript and similar types are decoded (base64 too); images and other binary content are not rendered.',
   limits: [
     'Files up to 200 MB can be opened.',
     'The response preview shows at most the first 100,000 characters of a body, and only when the HAR saved the body at all.',
@@ -17,7 +19,7 @@ const docs: ToolDocs = {
     'Entries that have no timing data are drawn as one “wait” bar covering their total time.',
   ],
   privacy:
-    'HAR files can contain cookies, authorization headers, tokens, form data and response bodies. The file is read and parsed in your browser, in a worker, and is never uploaded or stored; nothing is sent anywhere. Be careful sharing a HAR file itself, and note that this tool has no share link for that reason.',
+    'HAR files can contain cookies, authorization headers, tokens, form data and response bodies. The file is parsed in your browser, in a worker, and is never uploaded or stored. Be careful sharing a HAR file itself; for that reason this tool has no share link.',
   faqs: [
     {
       question: 'Why is a request shown as “failed”?',

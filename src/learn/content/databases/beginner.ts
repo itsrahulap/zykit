@@ -5,27 +5,22 @@ export const databasesBeginnerTopics: Topic[] = [
     id: "what-is-a-database",
     title: "What is a Database?",
     level: "beginner",
-    description: "A system that stores your data in an organized shape you can search, filter, and change directly — not just a file you save data into.",
+    description: "Software that stores data in an organized shape you can search, filter, and change directly.",
     explanation: `
-Imagine you kept all your app's data in a giant text file — every user on
-one line, every order on another. To find "all orders placed by Amara
-last week," you'd have to open the file and read through every single
-line yourself, by hand, every time.
+Imagine keeping all your app's data in one big text file. To find "all
+orders Amara placed last week," you'd have to read every line yourself,
+every time.
 
-A **database** is software built specifically to avoid that. It stores
-your data broken up into organized, labeled structures (most commonly
-**tables**, which look a lot like spreadsheets), and it comes with its
-own language for asking questions of that data — "give me every order
-from Amara, sorted by date" — without you ever having to manually scan
-anything. The database does the searching, and it does it fast, even
-across millions of records.
+A **database** is software that avoids this. It stores data in organized,
+labeled structures (usually **tables**, which look like spreadsheets). It
+also has its own language for asking questions, like "give me every order
+from Amara, sorted by date." The database does the searching for you, and
+fast, even across millions of records.
 
-This is the hands-on side of databases: you don't just store data
-somewhere for safekeeping, you *query* it directly, using a language
-built for exactly that purpose.
+So you don't just store data in a database. You *query* it.
     `.trim(),
     analogy:
-      "A pile of receipts shoved in a shoebox technically 'stores' your spending data, but finding anything means digging through the whole box. A database is like a well-organized filing cabinet with labeled folders, an index at the front, and a clerk who can hand you exactly the folder you ask for in seconds.",
+      "A shoebox of receipts 'stores' your spending, but finding anything means digging through the whole box. A database is a filing cabinet with labeled folders, an index at the front, and a clerk who hands you the folder you ask for in seconds.",
     examples: [
       {
         title: "Asking a database a question directly",
@@ -33,11 +28,11 @@ built for exactly that purpose.
 FROM users
 WHERE signed_up_at > '2026-01-01';`,
         language: "sql",
-        explanation: "This is a real query, not pseudocode. It asks the database directly for every user who signed up after a certain date — the database handles the searching.",
+        explanation: "A real query, not pseudocode. It asks for every user who signed up after a date, and the database does the searching.",
         walkthrough: [
-          { code: "SELECT name, email", explanation: "Says which pieces of information you want back — just the name and email, not everything." },
+          { code: "SELECT name, email", explanation: "Which information you want back: just the name and email." },
           { code: "FROM users", explanation: "Tells the database which table to look in." },
-          { code: "WHERE signed_up_at > '2026-01-01';", explanation: "Narrows the results down to only the rows that match this condition." },
+          { code: "WHERE signed_up_at > '2026-01-01';", explanation: "Keeps only the rows that match this condition." },
         ],
       },
       {
@@ -47,66 +42,65 @@ users        (people who use the app)
 orders       (purchases people have made)
 products     (items available to buy)
 reviews      (feedback people left on products)`,
-        explanation: "A real database usually isn't just one table — it's a whole collection of related tables that together represent your application's data.",
+        explanation: "A real database is usually a collection of related tables that together hold your app's data.",
       },
     ],
     howItWorks: `
-A database runs as its own piece of software (like PostgreSQL, MySQL, or
-SQLite), usually separate from your application code. Your application
-connects to it over a connection, sends it a query written in **SQL**
-(Structured Query Language), and the database figures out the fastest
-way to find and return exactly the data that was asked for.
+A database runs as its own program (like PostgreSQL, MySQL, or SQLite),
+usually separate from your app. Your app connects to it and sends a query
+written in **SQL** (Structured Query Language). The database works out the
+fastest way to find and return the data you asked for.
 
-Because the database itself understands the structure of the data (which
-columns exist, what type each one is, how tables relate to each other),
-it can search, filter, sort, and combine data far more efficiently than
-your own application code scanning through everything manually.
+The database knows the data's structure: which columns exist, their types,
+and how tables relate. So it can search, filter, sort, and combine data far
+faster than your own code scanning everything.
     `.trim(),
     whyItExists: `
-Applications need to store data that outlives a single run of the
-program, that many users can read and write at once, and that can be
-searched in flexible ways nobody fully predicted up front. Plain files
-struggle with all three: they're slow to search, they get corrupted
-easily under concurrent writes, and answering a new kind of question
-usually means writing brand-new, one-off code. Databases exist to solve
-storage, search, and safe concurrent access all at once, with a standard
-query language instead of custom code for every question.
+Apps need data that:
+
+- outlives a single run of the program
+- many users can read and write at once
+- can be searched in ways nobody predicted up front
+
+Plain files struggle with all three. They're slow to search, concurrent
+writes can corrupt them, and each new question needs new one-off code. A
+database solves storage, search, and safe concurrent access together, with
+one standard query language.
     `.trim(),
     whenToUse: `
-Reach for a database as soon as your application has data that needs to
-persist between runs, that multiple people or processes might read or
-write at the same time, or that you'll need to search and filter in
-ways you can't fully predict today.
+Use a database once your data must persist between runs, may be read or
+written by several people or processes at once, or needs searching in ways
+you can't fully predict.
     `.trim(),
     whenNotToUse: `
-For truly tiny, single-user, throwaway scripts — a quick one-off
-calculation, a config file that never changes — a plain file or an
-in-memory variable is simpler and a database is unnecessary overhead.
+For tiny, single-user, throwaway scripts (a quick calculation, a config
+file that never changes), a plain file or in-memory variable is simpler. A
+database there is unnecessary overhead.
     `.trim(),
     commonMistakes: [
-      "Thinking a database is just 'a place files are stored' rather than a system you actively query.",
-      "Assuming you need to write custom search code, when the database can already do filtering and sorting for you.",
-      "Confusing a spreadsheet file with a database — a spreadsheet has no query language and no safe way for multiple people to write at once.",
+      "Thinking a database is just 'a place files are stored' instead of a system you query.",
+      "Writing custom search code when the database can already filter and sort for you.",
+      "Treating a spreadsheet file as a database. A spreadsheet has no query language and no safe way for several people to write at once.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "List three questions you might want to ask about data in a to-do list app (e.g. 'show me all incomplete tasks'). For each, name which pieces of data you'd need." },
-      { difficulty: "Medium", prompt: "Explain, in your own words, why searching a large text file by hand is slower than asking a database the same question." },
-      { difficulty: "Hard", prompt: "Sketch (in words) what tables a simple blog application would need, and what kind of question you'd ask each one." },
+      { difficulty: "Easy", prompt: "List three questions you might ask about data in a to-do list app (e.g. 'show me all incomplete tasks'). For each, name the data you'd need." },
+      { difficulty: "Medium", prompt: "In your own words, explain why searching a large text file by hand is slower than asking a database." },
+      { difficulty: "Hard", prompt: "Describe the tables a simple blog app would need, and a question you'd ask each one." },
     ],
     interviewQuestions: [
-      { question: "What is a database, in plain terms?", answer: "Software that stores data in an organized, structured way and provides a query language to search, filter, and modify that data directly, rather than requiring you to scan through it manually." },
-      { question: "Why not just store application data in a plain text file?", answer: "Plain files don't offer fast searching (you'd scan the whole file for every question), don't safely handle multiple simultaneous writers (two processes writing at once can corrupt the file), and require brand-new custom code for every new kind of question — a database solves all three by understanding the data's structure and providing a shared query language." },
-      { question: "What's the difference between a database and a spreadsheet file like Excel?", answer: "A spreadsheet is a single file with no query language and no safe way for multiple people to write to it at the same time — 'querying' it means manually filtering or scrolling. A database is a running piece of software that understands the structure of the data and lets many clients read and write concurrently through a standard query language like SQL." },
-      { question: "What does it mean to *query* a database, as opposed to just reading data from it?", answer: "Querying means describing *what* result you want — 'every order from Amara, sorted by date' — and letting the database figure out *how* to find it, rather than your own code opening the data and manually looping through it to find matches." },
-      { question: "Why can a database search millions of rows faster than application code scanning them one by one?", answer: "The database understands the data's structure (types, relationships) and can use techniques like indexes to jump toward matching rows instead of checking every one; application code manually looping through raw data has no such shortcut unless it reimplements one itself." },
-      { question: "What is SQL, and why does it matter that so many different databases understand it?", answer: "SQL (Structured Query Language) is a standardized language for describing what data you want or how you want to change it. Because most relational databases understand it (with minor dialect differences), the skills and even much of the query code transfer across products like PostgreSQL, MySQL, and SQLite." },
-      { question: "You're building a to-do list app. What kind of data belongs in a database rather than just in application variables?", answer: "Anything that needs to survive after the app closes and be found again later — the tasks themselves, their completed/incomplete status, due dates — because a database persists data between runs and lets you query it later ('show me all incomplete tasks'), which a variable in memory can't do." },
-      { question: "A teammate says a small app can just keep all its data in an in-memory array instead of a database. What breaks first as that app grows?", answer: "The data disappears the moment the process restarts, two requests modifying the array at the same time can race and corrupt it, and any new kind of question about the data means writing new manual search code instead of just asking for it — exactly the three problems databases exist to solve." },
-      { question: "What does it mean that a database usually runs as its own separate piece of software from your application?", answer: "Your application connects to the database over a connection (often a network connection, even if it's on the same machine) and sends it queries; the database process itself owns the data files and is responsible for storing, searching, and protecting them, independent of any one application process's lifecycle." },
-      { question: "Why does a plain file struggle when two processes try to write to it at the same time, but a database generally doesn't?", answer: "A plain file has no built-in coordination — two simultaneous writes can interleave and corrupt the file's contents. A database manages concurrent access internally (locking, isolation) so simultaneous writers are handled safely instead of stepping on each other." },
-      { question: "Is a database the same thing as a table?", answer: "No — a table is one organized structure for one kind of record (like `users`); a database is the overall system (and often a specific named collection of many related tables, like `users`, `orders`, and `products`) that stores and lets you query all of them together." },
-      { question: "What's the practical risk of writing your own ad-hoc 'search' logic over a JSON file instead of reaching for a real database?", answer: "You end up slowly reimplementing what a database already does well — filtering, sorting, safe concurrent writes — but without years of engineering behind it, so it tends to be slower, more bug-prone, and harder to extend as new questions come up." },
-      { question: "When would a plain file or an in-memory variable actually be the right choice over a database?", answer: "For a genuinely tiny, single-user, throwaway script — a quick calculation or a config file nobody else reads or writes concurrently — a database is unnecessary overhead; it earns its keep once data needs to persist, be shared, or be queried flexibly." },
+      { question: "What is a database, in plain terms?", answer: "Software that stores data in an organized structure and gives you a query language to search, filter, and change it directly, instead of scanning it by hand." },
+      { question: "Why not just store application data in a plain text file?", answer: "Plain files are slow to search (you scan the whole file every time), can be corrupted when two processes write at once, and need new custom code for every new question. A database solves all three by understanding the data's structure and offering a shared query language." },
+      { question: "What's the difference between a database and a spreadsheet file like Excel?", answer: "A spreadsheet is a single file with no query language and no safe way for several people to write at once. 'Querying' it means filtering or scrolling by hand. A database is running software that understands the data's structure and lets many clients read and write at once through a standard language like SQL." },
+      { question: "What does it mean to *query* a database, as opposed to just reading data from it?", answer: "You describe *what* you want ('every order from Amara, sorted by date') and the database works out *how* to find it. Your code doesn't loop through the data looking for matches." },
+      { question: "Why can a database search millions of rows faster than application code scanning them one by one?", answer: "The database knows the data's structure (types, relationships) and can use indexes to jump to matching rows instead of checking each one. Code looping over raw data has no such shortcut unless it builds one itself." },
+      { question: "What is SQL, and why does it matter that so many different databases understand it?", answer: "SQL (Structured Query Language) is a standard language for saying what data you want or how to change it. Most relational databases understand it (with small dialect differences), so your skills and much of your query code carry over between PostgreSQL, MySQL, and SQLite." },
+      { question: "You're building a to-do list app. What kind of data belongs in a database rather than just in application variables?", answer: "Anything that must survive after the app closes and be found later: the tasks, their completed status, due dates. A database keeps data between runs and lets you query it ('show me all incomplete tasks'). An in-memory variable can't." },
+      { question: "A teammate says a small app can just keep all its data in an in-memory array instead of a database. What breaks first as that app grows?", answer: "The data vanishes when the process restarts. Two requests changing the array at once can race and corrupt it. And every new question needs new search code. These are exactly the three problems databases solve." },
+      { question: "What does it mean that a database usually runs as its own separate piece of software from your application?", answer: "Your app connects to the database (often over a network connection, even on the same machine) and sends queries. The database process owns the data files and stores, searches, and protects them, independent of any one app process's lifecycle." },
+      { question: "Why does a plain file struggle when two processes try to write to it at the same time, but a database generally doesn't?", answer: "A plain file has no coordination, so two writes at once can interleave and corrupt it. A database manages concurrent access internally (locking, isolation), so simultaneous writers don't step on each other." },
+      { question: "Is a database the same thing as a table?", answer: "No. A table holds one kind of record (like `users`). A database is the whole system, often a named collection of related tables like `users`, `orders`, and `products`, that you can query together." },
+      { question: "What's the practical risk of writing your own ad-hoc 'search' logic over a JSON file instead of reaching for a real database?", answer: "You slowly rebuild what a database already does well (filtering, sorting, safe concurrent writes) without years of engineering behind it. The result is usually slower, buggier, and harder to extend." },
+      { question: "When would a plain file or an in-memory variable actually be the right choice over a database?", answer: "For a tiny, single-user, throwaway script, like a quick calculation or a config file nobody else writes to. A database earns its keep once data must persist, be shared, or be queried flexibly." },
     ],
     relatedTopics: ["tables-rows-columns", "basic-sql-queries"],
     keywords: ["database", "SQL", "data storage", "query"],
@@ -115,24 +109,21 @@ in-memory variable is simpler and a database is unnecessary overhead.
     id: "tables-rows-columns",
     title: "Tables, Rows & Columns",
     level: "beginner",
-    description: "The basic grid shape — like a spreadsheet — that relational databases use to organize data.",
+    description: "The spreadsheet-like grid that relational databases use to organize data.",
     explanation: `
-Once you know a database stores organized data, the next question is:
-organized *how*? In a **relational database**, data is organized into
-**tables**, and each table looks a lot like a spreadsheet.
+In a **relational database**, data lives in **tables**, and each table
+looks like a spreadsheet.
 
-Each table has **columns**, which define what pieces of information are
-tracked (like \`name\`, \`email\`, \`age\`) and what type of data each one
-holds. Each table also has **rows**, where every row is one individual
-record — one specific user, one specific order, one specific product.
-Every row in a table has a value for every column (or is explicitly left
-empty).
+- **Columns** define what information is tracked (like \`name\`, \`email\`,
+\`age\`) and what type of data each holds.
+- **Rows** are individual records: one user, one order, one product.
 
-A table named \`users\` with columns \`id\`, \`name\`, and \`email\` might have
-one row per actual person who signed up.
+Every row has a value for every column (or the value is explicitly left
+empty). A \`users\` table with columns \`id\`, \`name\`, and \`email\` might have
+one row per person who signed up.
     `.trim(),
     analogy:
-      "Think of a table like a class attendance sheet. The columns are the headers across the top — name, student ID, grade — and each row underneath is one specific student's information filled into those same columns.",
+      "A table is like a class attendance sheet. The columns are the headers across the top (name, student ID, grade), and each row is one student's details filled into those columns.",
     examples: [
       {
         title: "A users table",
@@ -143,7 +134,7 @@ one row per actual person who signed up.
   age INTEGER
 );`,
         language: "sql",
-        explanation: "This defines the shape of the table: every row stored here will have exactly these four columns, each holding a specific kind of value.",
+        explanation: "This defines the table's shape: every row will have exactly these four columns, each holding a specific kind of value.",
         walkthrough: [
           { code: "CREATE TABLE users (", explanation: "Starts the definition of a new table named users." },
           { code: "id INTEGER,", explanation: "A column named id that will always hold a whole number." },
@@ -160,75 +151,71 @@ one row per actual person who signed up.
 1  | Amara   | amara@example.com   | 29
 2  | Kenji   | kenji@example.com   | 34
 3  | Priya   | priya@example.com   | 41`,
-        explanation: "Each row is one complete record, and every row lines up under the same set of columns defined by the table.",
+        explanation: "Each row is one complete record, lined up under the same columns the table defines.",
       },
     ],
     howItWorks: `
-When a table is created, you (or whoever designed the schema) decide its
-columns up front: their names and the type of value each will hold (text,
-integer, date, and so on). From then on, every row added to that table
-must fit that same shape — one value per column, of the right type.
+When a table is created, its designer picks the columns up front: their
+names and the type of value each holds (text, integer, date, and so on).
+After that, every row must fit that shape: one value per column, of the
+right type.
 
-The database stores rows efficiently on disk and keeps track of the
-table's structure (called its **schema**) so it always knows what a row
-is supposed to look like.
+The database stores rows efficiently on disk and tracks the table's
+structure (its **schema**), so it always knows what a row should look
+like.
     `.trim(),
     whyItExists: `
-Giving every row in a table the exact same shape is what lets the
-database reason about the data reliably — it always knows, for the
-\`users\` table, that column 3 is an email and should be treated as text,
-without checking each row individually. That consistency is also what
-makes fast searching and predictable querying possible.
+Giving every row the same shape lets the database reason about data
+reliably. It always knows that, in \`users\`, column 3 is an email and is
+text, without checking each row. That consistency is what makes fast,
+predictable queries possible.
     `.trim(),
     whenToUse: `
-Reach for the rows-and-columns model whenever your data is naturally
-made of many similar records that share the same fields — users, orders,
-products, log entries. That covers the vast majority of application
-data.
+Use rows and columns when your data is many similar records with the same
+fields: users, orders, products, log entries. That covers most app data.
     `.trim(),
     whenNotToUse: `
-If your data is wildly irregular — every record has a completely
-different, unpredictable set of fields — forcing it into fixed columns
-can be awkward, and a more flexible, document-style structure (as used
-in some NoSQL databases) may fit better.
+If every record has a different, unpredictable set of fields, fixed columns
+get awkward. A flexible, document-style structure (used by some NoSQL
+databases) may fit better.
     `.trim(),
     commonMistakes: [
-      "Confusing a column with a row — a column is a field shared across all records, a row is one specific record.",
-      "Trying to store multiple unrelated pieces of information crammed into a single column instead of splitting them into their own columns.",
-      "Assuming every row must physically look identical in the raw file — the database, not the disk layout, guarantees the row shape.",
+      "Mixing up columns and rows. A column is a field shared by all records; a row is one record.",
+      "Cramming several unrelated pieces of information into one column instead of giving each its own column.",
+      "Assuming every row must look identical in the raw file. The database, not the disk layout, guarantees the row shape.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Design the columns for a 'books' table in a personal library app. List each column name and what kind of value it holds." },
-      { difficulty: "Medium", prompt: "Write out (as a small text table) three example rows that would fit your 'books' table from the previous exercise." },
-      { difficulty: "Hard", prompt: "Explain why storing 'first name and last name' as one combined column is usually a worse design than two separate columns." },
+      { difficulty: "Easy", prompt: "Design the columns for a 'books' table in a personal library app. List each column name and the kind of value it holds." },
+      { difficulty: "Medium", prompt: "Write three example rows (as a small text table) that fit your 'books' table from the previous exercise." },
+      { difficulty: "Hard", prompt: "Explain why one combined 'first name and last name' column is usually worse than two separate columns." },
     ],
     interviewQuestions: [
-      { question: "What is the difference between a row and a column in a database table?", answer: "A column defines one field shared by every record in the table (like email); a row is one individual record with a value for each column." },
-      { question: "What is a table's schema?", answer: "The definition of a table's structure — its columns, and the type of data each column holds." },
-      { question: "Why does every row in a table need to follow the same set of columns?", answer: "So the database can reliably interpret and search every row the same way, which is what makes fast, predictable queries possible." },
-      { question: "What does it mean for a column to hold `NULL`, versus an empty string or the number 0?", answer: "`NULL` means 'no value, unknown, or not applicable' — it is a distinct marker, not the same as an empty string (a real, zero-length text value) or 0 (a real number). Comparisons and calculations treat `NULL` specially instead of as 'nothing at all'." },
-      { question: "Why would you mark a column `NOT NULL`?", answer: "So the database itself rejects any row that doesn't supply a real value for that column, guaranteeing every row always has an actual value there instead of relying on application code to remember to set it." },
-      { question: "If a column has no `NOT NULL` constraint, what happens if an INSERT statement omits it?", answer: "The database stores `NULL` there (or the column's `DEFAULT` value, if one is defined) instead of raising an error." },
-      { question: "What's the difference between a column's `DEFAULT` value and simply allowing `NULL`?", answer: "`DEFAULT` supplies a real, concrete value automatically when none is given, so the column still ends up holding actual data. Allowing `NULL` instead permits 'no value' to be stored explicitly. A column can have neither, either, or — less commonly — both configured." },
-      { question: "Why is storing money as an integer number of cents safer than storing it as a floating-point number of dollars?", answer: "Binary floating-point numbers can't represent many decimal fractions exactly, so arithmetic like 0.10 + 0.20 can silently produce a value that isn't exactly 0.30. Integers avoid this entirely, since a whole number of cents has no fractional part to round incorrectly." },
-      { question: "Why does declaring `age` as `INTEGER` instead of `TEXT` matter, beyond just being 'a number'?", answer: "It lets the database enforce that only valid numeric values are stored, compare and sort values numerically rather than character-by-character, and use numeric operations like `age + 1` directly without first converting anything." },
-      { question: "What would go wrong if `age` were stored as `TEXT` instead of `INTEGER`?", answer: "Sorting and comparisons would happen character-by-character instead of numerically, so the text '9' would sort after '10' and '80' (because '1' comes before '9' as a character), and arithmetic like `age + 1` wouldn't reliably work without converting the value first." },
-      { question: "What breaks if you cram multiple unrelated pieces of information into one column, like a single text value holding a name, age, and city together?", answer: "Nothing stops you at the database level since it's just text, but you lose the ability to filter, sort, or update any one piece of that information independently — every query needing just the age or just the city would first have to parse the combined value back apart." },
-      { question: "Why is splitting 'first name' and 'last name' into two separate columns usually better than one combined column?", answer: "It lets you sort, search, and format by either part independently — for example, alphabetizing by last name — without parsing a combined string every time, which gets error-prone with names that have multiple parts, prefixes, or suffixes." },
-      { question: "Can you add a new column to a table that already has rows in it? What happens to those existing rows for the new column?", answer: "Yes, using `ALTER TABLE ... ADD COLUMN`. Existing rows get `NULL` (or the column's `DEFAULT` value, if one is specified) in the new column, since there's no way to know retroactively what value they should have had." },
-      { question: "Why can't two rows in the same table have a different set of columns?", answer: "Because the table's schema fixes the set of columns once for the whole table — every row is a record in that structure, so the database, and every query written against it, can rely on a given column always meaning the same thing for every row." },
-      { question: "What's a practical downside of making too many columns on a table nullable 'just in case'?", answer: "It becomes ambiguous whether a `NULL` means 'this genuinely doesn't apply' or 'nobody ever set this,' and every query touching that column has to account for `NULL` possibly showing up, adding complexity and bugs throughout the application." },
-      { question: "Give an example where `NULL` in a column is the correct design choice rather than a mistake.", answer: "A `middle_name` column being `NULL` for someone with no middle name is legitimate — it genuinely doesn't apply — unlike, say, an `email` column marked `NOT NULL` being left empty by accident, which should never be allowed to happen." },
-      { question: "Does `WHERE middle_name = ''` match rows where `middle_name` was never set (is `NULL`)?", answer: "No. An empty string is a real, zero-length value and is not equal to `NULL` — a row where `middle_name` is `NULL` won't match `= ''`, and in fact it wouldn't match `= NULL` either; finding it requires `IS NULL`." },
-      { question: "What does it mean that a table's schema is decided 'up front,' and who typically decides it?", answer: "Before any data is inserted, whoever designs the table chooses its columns, names, and types via `CREATE TABLE`. From then on every row added must conform to that shape, though the schema can still be changed later with commands like `ALTER TABLE`." },
-      { question: "Why might a flexible, document-style structure fit better than fixed columns for some data?", answer: "When records are naturally irregular — each one might have a completely different, unpredictable set of fields — forcing them all into the same fixed columns leads to lots of unused `NULL` columns or awkward workarounds; a document model lets each record carry only the fields it actually needs." },
-      { question: "In `CREATE TABLE users (id INTEGER, name TEXT, email TEXT, age INTEGER);`, does the order the columns are declared in matter for storing or querying data?", answer: "Not semantically — every clause (`SELECT`, `WHERE`, `SET`, and so on) can refer to columns by name, so declaration order is mostly a readability choice. It does matter, though, for statements like `INSERT ... VALUES` that supply values positionally with no explicit column list." },
-      { question: "Are `age = NULL` and `age = 0` the same thing for a row?", answer: "No. `0` is an actual, known value — the age is genuinely zero — while `NULL` means the age is unknown or was never recorded. Treating them as interchangeable would incorrectly imply you know something you don't." },
-      { question: "Why does the database, rather than the raw disk layout, guarantee that every row matches the declared columns?", answer: "Rows are stored internally however the engine finds efficient — variable-length encoding, compression, and other storage tricks — so no two rows need to occupy identical physical bytes. The guarantee that every row conceptually has a value for every column comes from the schema the engine enforces, not from the file layout." },
-      { question: "What's the risk of designing a `tags` column that holds a comma-separated list of values?", answer: "You can't easily filter for 'rows containing tag X' with a simple, index-friendly condition, can't guarantee uniqueness or consistent formatting within the string, and any query working with individual tags first has to split the string apart — a related table (or an array/JSON type, if supported) is a better fit." },
-      { question: "Why does storing a date in a proper `DATE` or `TIMESTAMP` type matter, rather than storing it as `TEXT`?", answer: "A real date type lets the database validate that the value is an actual calendar date, compare and range-filter dates correctly regardless of formatting, and use date-specific operations like extracting the year. With a plain `TEXT` column, correctness depends entirely on consistent formatting, and nothing stops an invalid value like '13/45/2026' from being stored." },
-      { question: "Does every database have a native `BOOLEAN` type?", answer: "No — some databases, like SQLite, have no distinct boolean storage type and represent true/false as the integers 1 and 0 instead. The value still behaves like a boolean in queries, but the underlying representation can differ by database." },
-      { question: "What is a `CHECK` constraint, and how does it relate to schema design?", answer: "A rule attached to a column or table that the database enforces on every insert or update, beyond just type and nullability — for example, `CHECK (age >= 0)` rejects any row that would set a negative age, letting a basic business rule live in the schema itself instead of relying on every piece of application code to remember to validate it." },
+      { question: "What is the difference between a row and a column in a database table?", answer: "A column is one field shared by every record (like email). A row is one record, with a value for each column." },
+      { question: "What is a table's schema?", answer: "The definition of a table's structure: its columns and the type of data each holds." },
+      { question: "Why does every row in a table need to follow the same set of columns?", answer: "So the database can read and search every row the same way. That's what makes queries fast and predictable." },
+      { question: "What does it mean for a column to hold `NULL`, versus an empty string or the number 0?", answer: "`NULL` means 'no value, unknown, or not applicable'. It's a distinct marker, not an empty string (a real, zero-length text value) or 0 (a real number). Comparisons and calculations treat `NULL` specially." },
+      { question: "Why would you mark a column `NOT NULL`?", answer: "So the database rejects any row without a real value there. Every row is guaranteed a value, instead of relying on app code to remember to set it." },
+      { question: "If a column has no `NOT NULL` constraint, what happens if an INSERT statement omits it?", answer: "The database stores `NULL` there (or the column's `DEFAULT` value, if one is defined). No error is raised." },
+      { question: "What's the difference between a column's `DEFAULT` value and simply allowing `NULL`?", answer: "`DEFAULT` fills in a real value automatically when none is given, so the column still holds actual data. Allowing `NULL` lets 'no value' be stored. A column can have neither, either, or (less commonly) both." },
+      { question: "Why is storing money as an integer number of cents safer than storing it as a floating-point number of dollars?", answer: "Binary floating point can't represent many decimal fractions exactly, so 0.10 + 0.20 may not be exactly 0.30. A whole number of cents has no fraction to round wrongly." },
+      { question: "Why does declaring `age` as `INTEGER` instead of `TEXT` matter, beyond just being 'a number'?", answer: "The database can then reject non-numeric values, compare and sort numerically instead of character by character, and run math like `age + 1` without converting first." },
+      { question: "What would go wrong if `age` were stored as `TEXT` instead of `INTEGER`?", answer: "Sorting would go character by character, so '9' sorts after '10' and '80' (because '1' comes before '9'). Math like `age + 1` wouldn't work reliably without converting first." },
+      { question: "What breaks if you cram multiple unrelated pieces of information into one column, like a single text value holding a name, age, and city together?", answer: "The database allows it (it's just text), but you can no longer filter, sort, or update one piece on its own. Any query that needs just the age or city must first parse the value apart." },
+      { question: "Why is splitting 'first name' and 'last name' into two separate columns usually better than one combined column?", answer: "You can sort, search, and format by either part (say, alphabetize by last name) without parsing a combined string. Parsing gets error-prone with multi-part names, prefixes, or suffixes." },
+      { question: "Can you add a new column to a table that already has rows in it? What happens to those existing rows for the new column?", answer: "Yes, with `ALTER TABLE ... ADD COLUMN`. Existing rows get `NULL` (or the column's `DEFAULT`, if set), since there's no way to know what value they should have had." },
+      { question: "Why can't two rows in the same table have a different set of columns?", answer: "The schema fixes the columns for the whole table. So the database and every query can rely on a column meaning the same thing in every row." },
+      { question: "What's a practical downside of making too many columns on a table nullable 'just in case'?", answer: "A `NULL` becomes ambiguous: 'doesn't apply' or 'nobody set it'? Every query on that column must also handle `NULL`, adding complexity and bugs across the app." },
+      { question: "Give an example where `NULL` in a column is the correct design choice rather than a mistake.", answer: "`middle_name` being `NULL` for someone with no middle name is fine; it really doesn't apply. Compare an `email` column that should be `NOT NULL` and is left empty by accident, which should never be allowed." },
+      { question: "Does `WHERE middle_name = ''` match rows where `middle_name` was never set (is `NULL`)?", answer: "No. An empty string is a real, zero-length value, not `NULL`. A `NULL` row won't match `= ''`, or even `= NULL`. You need `IS NULL`." },
+      { question: "What does it mean that a table's schema is decided 'up front,' and who typically decides it?", answer: "Before any data goes in, the table's designer chooses its columns, names, and types with `CREATE TABLE`. Every row must then fit that shape, though the schema can still change later with commands like `ALTER TABLE`." },
+      { question: "Why might a flexible, document-style structure fit better than fixed columns for some data?", answer: "When each record has a different, unpredictable set of fields, fixed columns lead to lots of unused `NULL` columns or awkward workarounds. A document model lets each record carry only the fields it needs." },
+      { question: "In `CREATE TABLE users (id INTEGER, name TEXT, email TEXT, age INTEGER);`, does the order the columns are declared in matter for storing or querying data?", answer: "Not for meaning. Every clause (`SELECT`, `WHERE`, `SET`, and so on) refers to columns by name, so order is mostly about readability. It does matter for `INSERT ... VALUES` with no column list, which matches values by position." },
+      { question: "Are `age = NULL` and `age = 0` the same thing for a row?", answer: "No. `0` is a known value: the age really is zero. `NULL` means the age is unknown or never recorded. Treating them as the same implies you know something you don't." },
+      { question: "Why does the database, rather than the raw disk layout, guarantee that every row matches the declared columns?", answer: "The engine stores rows however is efficient (variable-length encoding, compression, and so on), so rows don't need identical bytes on disk. The guarantee that every row has a value for every column comes from the schema the engine enforces." },
+      { question: "What's the risk of designing a `tags` column that holds a comma-separated list of values?", answer: "You can't easily filter for 'rows with tag X' using a simple, index-friendly condition. You can't enforce uniqueness or consistent formatting inside the string. Every query has to split it apart first. Use a related table (or an array/JSON type, if supported) instead." },
+      { question: "Why does storing a date in a proper `DATE` or `TIMESTAMP` type matter, rather than storing it as `TEXT`?", answer: "A real date type lets the database check that the value is a real calendar date, compare and range-filter dates correctly regardless of format, and use date functions like extracting the year. With `TEXT`, correctness depends on consistent formatting, and nothing stops an invalid value like '13/45/2026'." },
+      { question: "Does every database have a native `BOOLEAN` type?", answer: "No. SQLite, for example, has no separate boolean storage type and stores true/false as the integers 1 and 0. It still acts like a boolean in queries, but the storage differs by database." },
+      { question: "What is a `CHECK` constraint, and how does it relate to schema design?", answer: "A rule on a column or table that the database enforces on every insert or update, beyond type and nullability. For example, `CHECK (age >= 0)` rejects negative ages. This puts a basic business rule in the schema instead of relying on all app code to validate it." },
     ],
     prerequisites: ["what-is-a-database"],
     relatedTopics: ["what-is-a-database", "primary-and-foreign-keys", "basic-sql-queries"],
@@ -238,23 +225,20 @@ in some NoSQL databases) may fit better.
     id: "primary-and-foreign-keys",
     title: "Primary Keys & Foreign Keys",
     level: "beginner",
-    description: "How a database uniquely identifies one specific row, and how rows in different tables point to each other.",
+    description: "How a database identifies one exact row, and how rows in different tables point to each other.",
     explanation: `
-If a table has two customers both named "Sam Lee," how does the database
-tell them apart? It needs some column whose value is guaranteed to be
-unique for every single row — no two rows ever share it. That column is
-the table's **primary key**, most commonly an auto-generated \`id\` number.
+If two customers are both named "Sam Lee," how does the database tell them
+apart? It needs a column whose value is unique for every row. That column
+is the **primary key**, usually an auto-generated \`id\` number.
 
-Once every row can be uniquely identified, tables can *reference* each
-other. Say an \`orders\` table needs to record which user placed each
-order. Instead of copying that user's whole name and email into every
-order row, the \`orders\` table just stores the user's \`id\` in a column
-like \`user_id\`. That column is called a **foreign key** — it "points to"
-a primary key in another table, linking the two rows together without
-duplicating data.
+Once every row has a unique id, tables can *reference* each other. An
+\`orders\` table doesn't copy the user's name and email into every order. It
+stores the user's \`id\` in a column like \`user_id\`. That column is a
+**foreign key**: it points to a primary key in another table, linking the
+rows without duplicating data.
     `.trim(),
     analogy:
-      "A primary key is like a person's unique student ID number — no two students share one, even if their names are identical. A foreign key is like writing that student ID on a library book's checkout card instead of writing out the student's full name and address every time — it just points back to the one record that already has all the details.",
+      "A primary key is like a student ID number: no two students share one, even with the same name. A foreign key is like writing that ID on a library checkout card instead of the student's full name and address. It points back to the one record that has all the details.",
     examples: [
       {
         title: "A primary key",
@@ -264,10 +248,10 @@ duplicating data.
   email TEXT
 );`,
         language: "sql",
-        explanation: "Marking id as the PRIMARY KEY tells the database this column uniquely identifies each row, and it will enforce that no two rows share the same id.",
+        explanation: "PRIMARY KEY tells the database that id uniquely identifies each row. It won't allow two rows with the same id.",
         walkthrough: [
           { code: "CREATE TABLE users (", explanation: "Begins the users table definition." },
-          { code: "id INTEGER PRIMARY KEY,", explanation: "This column uniquely identifies each row; the database rejects any attempt to insert a duplicate id." },
+          { code: "id INTEGER PRIMARY KEY,", explanation: "Uniquely identifies each row. Inserting a duplicate id is rejected." },
           { code: "name TEXT,", explanation: "A regular column, not required to be unique." },
           { code: "email TEXT", explanation: "Another regular column." },
           { code: ");", explanation: "Closes the definition." },
@@ -287,50 +271,46 @@ duplicating data.
 -- 2  | 2       | 1200
 -- 3  | 3       | 800`,
         language: "sql",
-        explanation: "Each order row stores just the id of the user who placed it. Orders 1 and 2 both belong to the user with id 2, without repeating that user's name or email in every row.",
+        explanation: "Each order stores only the id of the user who placed it. Orders 1 and 2 both belong to user 2, without repeating that user's name or email.",
       },
     ],
     howItWorks: `
-A primary key is enforced by the database itself: it refuses to let you
-insert (or update) a row that would create a duplicate value in that
-column. Most tables use a simple auto-incrementing integer id for this,
-since it's guaranteed unique and never changes.
+The database enforces a primary key itself. It refuses any insert or
+update that would duplicate a value in that column. Most tables use an
+auto-incrementing integer id, since it's unique and never changes.
 
-A foreign key is just a regular column whose values are expected to
-match a primary key value in another table. Many databases can enforce
-this too — refusing to insert an order with a user_id that doesn't
-actually exist in the users table — which keeps the two tables
-consistent with each other.
+A foreign key is a regular column whose values should match a primary key
+in another table. Many databases enforce this too, refusing an order whose
+user_id doesn't exist in users. That keeps the two tables consistent.
     `.trim(),
     whyItExists: `
-Without a reliable way to uniquely identify a row, you couldn't safely
-update or delete "this one specific record" — you'd risk accidentally
-matching several rows that look similar. And without foreign keys,
-you'd be forced to copy full details (name, email, address) into every
-related table, which wastes space and creates a mess the moment any of
-that copied data changes.
+Without a unique id, you couldn't safely update or delete "this one
+record." You might match several similar rows by accident.
+
+Without foreign keys, you'd copy full details (name, email, address) into
+every related table. That wastes space and becomes a mess as soon as the
+copied data changes.
     `.trim(),
     whenToUse: `
-Give every table a primary key, essentially always — it's the foundation
-for updating, deleting, and linking specific rows. Use a foreign key any
-time one table's rows naturally "belong to" or reference a row in
-another table, like an order belonging to a user.
+Give almost every table a primary key. It's the basis for updating,
+deleting, and linking specific rows. Add a foreign key whenever a row
+"belongs to" or references a row in another table, like an order belonging
+to a user.
     `.trim(),
     whenNotToUse: `
-There's rarely a reason to skip a primary key on a real table. Foreign
-keys can be left out for small, throwaway, or purely denormalized
-datasets where you've deliberately decided the tables don't need to stay
-in sync with each other.
+There's rarely a reason to skip a primary key on a real table. You can
+skip foreign keys for small, throwaway, or deliberately denormalized
+datasets where the tables don't need to stay in sync.
     `.trim(),
     commonMistakes: [
-      "Using a naturally occurring value like an email address as the primary key, then having it break when a user changes their email.",
-      "Forgetting to add a foreign key column, and instead duplicating a related row's full details everywhere it's needed.",
-      "Assuming a foreign key column automatically keeps data in sync on its own — it only links rows; your queries still have to join them together to see combined data.",
+      "Using a real-world value like an email as the primary key, which breaks when a user changes their email.",
+      "Skipping the foreign key column and copying a related row's full details everywhere instead.",
+      "Thinking a foreign key keeps data in sync on its own. It only links rows; queries still need a join to show combined data.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain why an auto-incrementing id is usually a better primary key choice than a person's name." },
-      { difficulty: "Medium", prompt: "Design a 'comments' table that belongs to both a 'posts' table and a 'users' table (who wrote the comment, and on which post). Name the foreign key columns you'd add." },
-      { difficulty: "Hard", prompt: "Describe what could go wrong in your database if you inserted a comment with a user_id that doesn't correspond to any real user." },
+      { difficulty: "Easy", prompt: "Explain why an auto-incrementing id is usually a better primary key than a person's name." },
+      { difficulty: "Medium", prompt: "Design a 'comments' table that belongs to both a 'posts' table and a 'users' table (who wrote it, and on which post). Name the foreign key columns you'd add." },
+      { difficulty: "Hard", prompt: "Describe what could go wrong if you inserted a comment whose user_id doesn't match any real user." },
     ],
     interviewQuestions: [
       { question: "What is a primary key?", answer: "A column (or set of columns) whose value uniquely identifies each row in a table, enforced by the database to never have duplicates." },

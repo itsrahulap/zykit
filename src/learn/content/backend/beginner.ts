@@ -5,32 +5,28 @@ export const backendBeginnerTopics: Topic[] = [
     id: "what-is-backend",
     title: "What is Backend Development?",
     level: "beginner",
-    description: "The part of an application that runs on a server rather than in the user's browser — handling logic, data, and rules the user should never see or control directly.",
+    description: "The part of an app that runs on a server, not in the browser. It handles the logic, data and rules users should never see or control.",
     explanation: `
-When you use an app — say, a shopping site — a lot of what you see and
-click happens right there in your browser: buttons animate, forms
-validate as you type, pages update instantly. But some things can't
-safely or sensibly happen on your device. Charging your credit card,
-checking whether an item is actually in stock, deciding whether your
-password is correct — these need to happen somewhere the user can't
-peek into or tamper with, and somewhere that can talk to a shared
-database that every user's app depends on.
+On a shopping site, much of what you see runs in your browser: buttons
+animate, forms check your input, pages update. But some things can't
+safely happen on your device: charging your card, checking real stock,
+or checking your password. These must happen somewhere the user can't
+see or tamper with, and that can reach a shared database.
 
-That "somewhere else" is a **server**: another computer, usually sitting
-in a data center, that your app's browser code sends requests to over
-the internet. The code that runs on that server — deciding what to do
-with a request, reading and writing shared data, enforcing the rules of
-the business — is called the **backend**. The part running in the
-user's browser, by contrast, is the **frontend**.
+That place is a **server**: another computer, usually in a data center,
+that the browser sends requests to over the internet. The code running
+there is the **backend**. The code running in the user's browser is the
+**frontend**.
 
-A backend typically does a few recurring jobs: it stores and retrieves
-data (usually in a database), it applies business logic ("can this user
-actually cancel this order?"), it talks to other systems (payment
-providers, email services), and it decides what to send back to whoever
-asked.
+A backend usually does a few jobs:
+
+- Stores and reads data, usually in a database.
+- Applies business logic ("can this user cancel this order?").
+- Talks to other systems, like payment providers or email services.
+- Decides what to send back to the caller.
     `.trim(),
     analogy:
-      "Think of a restaurant. The dining room — the menu, the table, the person taking your order — is the frontend: what you directly see and interact with. The kitchen is the backend: it's where the actual food gets made, the fridge (database) gets opened, and decisions get made about substitutions or what's out of stock. You never walk into the kitchen yourself; you send a request through a waiter and wait for a response.",
+      "Think of a restaurant. The dining room (menu, table, the person taking your order) is the frontend: what you see and use. The kitchen is the backend: where the food is made, the fridge (database) is opened, and decisions about substitutions or sold-out items are made. You never walk into the kitchen; you send a request through a waiter and wait for a response.",
     examples: [
       {
         title: "A frontend action that needs a backend",
@@ -43,11 +39,11 @@ button.addEventListener("click", async () => {
   const result = await response.json();
   showConfirmation(result);
 });`,
-        explanation: "The browser can't safely check stock levels or charge a card itself — it sends a request to a server and waits for an answer.",
+        explanation: "The browser can't safely check stock or charge a card itself, so it sends a request to a server and waits for an answer.",
         walkthrough: [
-          { code: 'fetch("https://api.shop.com/orders", { ... })', explanation: "The frontend sends a request over the network to a server it doesn't control the internals of." },
-          { code: "method: \"POST\"", explanation: "Tells the server this request is asking it to create something (an order), not just fetch data." },
-          { code: "const result = await response.json();", explanation: "The frontend waits for the backend to do its work and reply before showing the user anything." },
+          { code: 'fetch("https://api.shop.com/orders", { ... })', explanation: "The frontend sends a request over the network to a server whose internals it doesn't control." },
+          { code: "method: \"POST\"", explanation: "Tells the server to create something (an order), not just fetch data." },
+          { code: "const result = await response.json();", explanation: "The frontend waits for the backend's reply before showing the user anything." },
         ],
       },
       {
@@ -64,42 +60,37 @@ app.post("/orders", async (req, res) => {
   const order = await db.orders.create({ itemId, quantity });
   res.status(201).json(order);
 });`,
-        explanation: "This code never runs on the user's device — it lives on the server, where it can be trusted to check real, shared, up-to-date data before deciding what happens.",
+        explanation: "This code never runs on the user's device. It runs on the server, where it can be trusted to check real, shared, current data before deciding what happens.",
       },
     ],
     howItWorks: `
-A backend is just a program, like any other, except it's designed to sit
-and wait for incoming requests rather than to be opened by a user
-directly. It listens on the network for messages, does some work when
-one arrives (read a database, run a calculation, call another service),
-and sends a message back. It keeps running continuously, serving many
-different users' requests, often at the same time.
+A backend is a program like any other, but it waits for incoming
+requests instead of being opened by a user. When a request arrives, it
+does some work (reads a database, runs a calculation, calls another
+service) and sends a reply. It runs all the time and serves many users,
+often at once.
     `.trim(),
     whyItExists: `
-Some things simply cannot be trusted to code running on a stranger's
-device: that code can be inspected, modified, or bypassed entirely by
-anyone with a browser's developer tools. Backends exist to keep
-sensitive logic, shared data, and trust boundaries in a place the
-business actually controls — a server it owns or rents — rather than in
-the hands of every individual user.
+Code on a user's device can't be trusted: anyone with browser developer
+tools can inspect, change or skip it. Backends keep sensitive logic,
+shared data and trust checks on a server the business controls (owns or
+rents), not in every user's hands.
     `.trim(),
     whenToUse: `
-Any time an app needs to store data that outlives a single visit, needs
-to enforce a rule that a user shouldn't be able to bypass, needs to keep
-a secret (like an API key or password hash), or needs multiple users to
-see the same shared state, that logic belongs on a backend.
+Put logic on a backend when the app needs to store data beyond one
+visit, enforce a rule users can't bypass, keep a secret (like an API key
+or password hash), or let many users see the same shared state.
     `.trim(),
     whenNotToUse: `
-Purely visual behavior — animating a menu, validating that a text field
-isn't empty before the user even submits, remembering a UI preference
-for just this one session — doesn't need a round trip to a server. Doing
-everything on the backend when nothing shared or sensitive is involved
-just adds needless network delay.
+Purely visual behavior doesn't need a server round trip: animating a
+menu, checking a field isn't empty before submit, or remembering a UI
+preference for one session. Sending these to the backend when nothing
+shared or sensitive is involved just adds network delay.
     `.trim(),
     commonMistakes: [
-      "Assuming that because a rule is enforced in the frontend's JavaScript, it's actually enforced — a user can bypass frontend code entirely.",
-      "Believing 'backend' means one specific technology — it's a role a program plays, not a single language or framework.",
-      "Putting secrets (API keys, database passwords) into frontend code, where anyone can view them, instead of keeping them on the server.",
+      "Assuming a rule is enforced because the frontend JavaScript checks it. A user can bypass frontend code entirely.",
+      "Thinking 'backend' means one technology. It's a role a program plays, not a language or framework.",
+      "Putting secrets (API keys, database passwords) in frontend code, where anyone can see them, instead of on the server.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "List three things a shopping app's backend needs to do that its frontend cannot safely do alone." },
@@ -107,24 +98,24 @@ just adds needless network delay.
       { difficulty: "Hard", prompt: "Describe what could go wrong if a banking app calculated your account balance entirely in frontend JavaScript instead of on a backend." },
     ],
     interviewQuestions: [
-      { question: "What is backend development?", answer: "Building the part of an application that runs on a server: business logic, data storage, and communication with other systems, as opposed to the frontend, which runs in the user's browser." },
-      { question: "Why can't sensitive business logic be trusted to run only in the browser?", answer: "Browser code executes on the user's own device, where it can be inspected, modified, or bypassed entirely using developer tools — so anything that must be trusted, kept secret, or checked against real shared data needs to run on a server the business controls instead." },
-      { question: "Give an example of something that must happen on a backend, and explain why.", answer: "Charging a payment: it requires a secret API key for the payment provider and must use the real, current price and order total, none of which can be safely handed to or verified by code running on the customer's own device." },
-      { question: "What's the core difference between a frontend and a backend in terms of where the code executes and who controls that environment?", answer: "Frontend code runs on the user's own device, inside an environment the user (or anyone with dev tools) fully controls; backend code runs on a server the business owns or rents, so only the business can inspect or change it." },
-      { question: "Why does checking whether an item is \"in stock\" need to happen on a backend rather than in the browser?", answer: "Stock is shared data that every user's app depends on and that changes as other people buy the item — a browser only has whatever data it was last given, so only a backend talking to the live, shared database can give an accurate, trustworthy answer." },
-      { question: "Using the restaurant analogy, why does a customer never walk into the kitchen themselves?", answer: "The kitchen represents the backend, where the actual work happens on shared resources like the fridge (the database); letting customers directly control it would mean no consistency or trust, so requests are routed through a waiter (the network request) instead." },
-      { question: "Why is it incorrect to say \"backend\" refers to one specific language or framework?", answer: "Backend describes a role a program plays — handling requests, applying business logic, and managing shared data — not a technology choice; that role can be filled by Node.js, Python, Java, Go, or many other stacks." },
-      { question: "A backend trusts a `role: \"admin\"` value sent by the frontend in the request body to decide access. What's wrong with this?", answer: "Anything sent from the frontend can be edited by the user before it's sent, so trusting a client-supplied role field lets any user grant themselves admin access; the backend must instead look up the user's actual role from its own trusted, server-side data (like a session or database record)." },
-      { question: "Why does validating a form field in frontend JavaScript still have value even though it isn't a real security measure?", answer: "It gives the user immediate feedback without a network round trip, improving the experience — but the backend must repeat the same validation itself, since the frontend check can be bypassed entirely." },
-      { question: "What risk does hardcoding a database password directly into frontend source code create?", answer: "Frontend code ships to and runs on every user's browser, where its full source is visible via developer tools; embedding a secret there exposes it to anyone who looks, effectively publishing that password." },
-      { question: "If two users try to buy the last unit of an item at the same moment, why must the stock check happen on a shared backend rather than in each user's own browser?", answer: "Each browser only knows its own local, possibly stale view of stock; only a backend talking to one shared, authoritative database can see both attempts and correctly allow just one of them to succeed." },
-      { question: "What does it mean for a backend to \"enforce a rule the user shouldn't be able to bypass,\" and why can't that same rule live only in frontend code?", answer: "It means the rule is checked somewhere the user can't tamper with or skip — frontend code runs entirely under the user's control, so any check placed only there can be disabled, edited, or ignored by directly calling the backend without going through the frontend at all." },
-      { question: "Why does a backend typically need access to a shared database, while a purely frontend app usually doesn't?", answer: "A backend serves many users who all need to see and affect the same underlying data (orders, inventory, accounts); a frontend only needs to display and collect data for the one user currently using it, which it gets by asking the backend." },
-      { question: "Name a UI behavior that doesn't need a backend round trip, and explain what makes it safe to keep client-side only.", answer: "Animating a menu opening, or checking that a text field isn't empty before the user submits — these affect only the current user's own screen, involve no shared data, and reveal or risk nothing if done entirely in the browser." },
-      { question: "Why is \"the frontend already validated this\" never a safe assumption for backend code to make?", answer: "A request can reach the backend without ever going through the intended frontend at all — via a tool like curl or Postman, or a modified version of the app — so the backend must independently validate anything it can't afford to get wrong." },
-      { question: "Beyond \"it's more secure,\" why must charging a credit card run on a backend rather than in the browser?", answer: "Charging a card requires a secret merchant API key that must never be exposed to users, and needs to use the real, server-verified order total rather than whatever amount the browser happens to send." },
-      { question: "What's the practical consequence of a backend being the one thing every user's frontend talks to, rather than each user running their own private copy of the logic?", answer: "It means there's exactly one place enforcing the rules and one shared source of truth for the data, so all users see consistent results — a fix or rule change made once on the backend applies to everyone immediately, without updating every user's device." },
-      { question: "Why might a backend also be described as running on \"a server,\" and is that a specific machine?", answer: "\"Server\" describes the role of continuously listening for and responding to requests, not a particular piece of hardware — it could be a physical machine in a data center, a virtual machine, or a container, as long as something is running the backend program and reachable over the network." },
+      { question: "What is backend development?", answer: "Building the part of an app that runs on a server: business logic, data storage and talking to other systems. The frontend, by contrast, runs in the user's browser." },
+      { question: "Why can't sensitive business logic be trusted to run only in the browser?", answer: "Browser code runs on the user's own device, where dev tools can inspect, change or skip it. Anything that must be trusted, kept secret or checked against real shared data has to run on a server the business controls." },
+      { question: "Give an example of something that must happen on a backend, and explain why.", answer: "Charging a payment. It needs a secret API key for the payment provider and the real, current price and total. None of that can be safely given to, or checked by, code on the customer's device." },
+      { question: "What's the core difference between a frontend and a backend in terms of where the code executes and who controls that environment?", answer: "Frontend code runs on the user's device, which the user (or anyone with dev tools) fully controls. Backend code runs on a server the business owns or rents, so only the business can inspect or change it." },
+      { question: "Why does checking whether an item is \"in stock\" need to happen on a backend rather than in the browser?", answer: "Stock is shared data that changes as other people buy. A browser only has the data it was last given, so only a backend talking to the live, shared database can give a trustworthy answer." },
+      { question: "Using the restaurant analogy, why does a customer never walk into the kitchen themselves?", answer: "The kitchen is the backend, where the real work happens on shared resources like the fridge (the database). Letting customers control it directly would destroy consistency and trust, so requests go through a waiter (the network request) instead." },
+      { question: "Why is it incorrect to say \"backend\" refers to one specific language or framework?", answer: "Backend is a role a program plays (handling requests, applying business logic, managing shared data), not a technology. Node.js, Python, Java, Go and many other stacks can fill it." },
+      { question: "A backend trusts a `role: \"admin\"` value sent by the frontend in the request body to decide access. What's wrong with this?", answer: "Users can edit anything the frontend sends, so trusting a client-supplied role lets anyone make themselves admin. The backend must look up the user's real role from its own trusted data, like a session or database record." },
+      { question: "Why does validating a form field in frontend JavaScript still have value even though it isn't a real security measure?", answer: "It gives the user instant feedback without a network round trip. But the backend must repeat the same check, because the frontend check can be bypassed." },
+      { question: "What risk does hardcoding a database password directly into frontend source code create?", answer: "Frontend code runs in every user's browser, where dev tools show the full source. A secret there is visible to anyone who looks, so the password is effectively public." },
+      { question: "If two users try to buy the last unit of an item at the same moment, why must the stock check happen on a shared backend rather than in each user's own browser?", answer: "Each browser only has its own, possibly stale, view of stock. Only a backend using one shared, authoritative database can see both attempts and let just one succeed." },
+      { question: "What does it mean for a backend to \"enforce a rule the user shouldn't be able to bypass,\" and why can't that same rule live only in frontend code?", answer: "The rule is checked somewhere the user can't tamper with or skip. Frontend code runs fully under the user's control, so a check there can be disabled, edited, or skipped by calling the backend directly." },
+      { question: "Why does a backend typically need access to a shared database, while a purely frontend app usually doesn't?", answer: "A backend serves many users who all see and change the same data (orders, inventory, accounts). A frontend only shows and collects data for one user, and gets that data from the backend." },
+      { question: "Name a UI behavior that doesn't need a backend round trip, and explain what makes it safe to keep client-side only.", answer: "Animating a menu, or checking a text field isn't empty before submit. These only affect the current user's screen, touch no shared data, and risk nothing if done in the browser." },
+      { question: "Why is \"the frontend already validated this\" never a safe assumption for backend code to make?", answer: "A request can reach the backend without going through your frontend at all, via curl, Postman or a modified app. So the backend must validate anything it can't afford to get wrong." },
+      { question: "Beyond \"it's more secure,\" why must charging a credit card run on a backend rather than in the browser?", answer: "It needs a secret merchant API key that users must never see, and it must use the real, server-checked order total, not whatever amount the browser sends." },
+      { question: "What's the practical consequence of a backend being the one thing every user's frontend talks to, rather than each user running their own private copy of the logic?", answer: "There's one place enforcing the rules and one shared source of truth, so all users see consistent results. A fix or rule change on the backend applies to everyone at once, without updating any user's device." },
+      { question: "Why might a backend also be described as running on \"a server,\" and is that a specific machine?", answer: "\"Server\" is a role (always listening for and answering requests), not specific hardware. It can be a physical machine, a virtual machine or a container, as long as it runs the backend and is reachable over the network." },
     ],
     relatedTopics: ["servers-and-web-frameworks", "request-response-lifecycle"],
     keywords: ["backend", "server-side", "frontend vs backend", "client-server"],
@@ -133,26 +124,21 @@ just adds needless network delay.
     id: "servers-and-web-frameworks",
     title: "Servers & Web Frameworks",
     level: "beginner",
-    description: "What a web framework like Express actually does for you, versus the raw, repetitive plumbing you'd otherwise have to write by hand.",
+    description: "What a web framework like Express does for you, compared with the repetitive plumbing you'd otherwise write by hand.",
     explanation: `
-At its core, a web server just needs to do one thing: listen for
-incoming network connections, read the request that arrives, and send
-back a response. Node.js gives you a built-in way to do exactly that
-with its \`http\` module — but if you use it directly, you quickly notice
-that *every single thing* is your job: figuring out which URL was
-requested, which HTTP method was used, parsing the body of the request
-yourself, handling errors so one bad request doesn't crash the whole
-server, and so on.
+A web server has one core job: listen for connections, read each
+request, and send back a response. Node.js can do this with its built-in
+\`http\` module. But used directly, *everything* is your job: working out
+the URL and HTTP method, parsing the request body, and handling errors
+so one bad request doesn't crash the server.
 
-A **web framework** (Express is the most common one in the Node.js
-world) is a library that has already solved that repetitive plumbing
-for you. It gives you a clean way to say "when a GET request comes in
-for /users, run this function" and takes care of the underlying request
-parsing, so you can focus on what your app should actually do rather
-than how HTTP messages are structured.
+A **web framework** is a library that already solves this plumbing.
+Express is the most common one for Node.js. It lets you say "when a GET
+request comes in for /users, run this function" and handles the request
+parsing, so you can focus on what your app does.
     `.trim(),
     analogy:
-      "Writing a server with raw Node.js is like building a house by mining your own ore to forge nails. A framework like Express is a fully stocked hardware store: the nails, screws, and pre-cut lumber already exist, so you spend your time designing the house instead of smelting metal.",
+      "Writing a server with raw Node.js is like building a house by mining your own ore to forge nails. A framework like Express is a stocked hardware store: the nails, screws and pre-cut lumber already exist, so you spend your time designing the house.",
     examples: [
       {
         title: "Raw Node.js — doing everything yourself",
@@ -169,11 +155,11 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(3000);`,
-        explanation: "You have to manually check the method and URL, manually set status codes and headers, and manually handle every path that isn't matched.",
+        explanation: "You must check the method and URL, set status codes and headers, and handle every unmatched path yourself.",
         walkthrough: [
-          { code: "http.createServer((req, res) => {...})", explanation: "Creates a raw server. Every incoming request funnels through this one function, no matter what URL or method it uses." },
-          { code: 'if (req.method === "GET" && req.url === "/hello")', explanation: "You are responsible for manually checking the method and path — there's no built-in routing." },
-          { code: 'res.writeHead(200, { "Content-Type": "text/plain" });', explanation: "You must set the status code and headers by hand for every response." },
+          { code: "http.createServer((req, res) => {...})", explanation: "Creates a raw server. Every request goes through this one function, whatever its URL or method." },
+          { code: 'if (req.method === "GET" && req.url === "/hello")', explanation: "You check the method and path yourself. There's no built-in routing." },
+          { code: 'res.writeHead(200, { "Content-Type": "text/plain" });', explanation: "You set the status code and headers by hand for every response." },
         ],
       },
       {
@@ -186,69 +172,62 @@ app.get("/hello", (req, res) => {
 });
 
 app.listen(3000);`,
-        explanation: "Express matches the method and path for you, defaults to a 200 status and sensible headers, and automatically returns a 404 for anything unmatched.",
+        explanation: "Express matches the method and path for you, defaults to a 200 status and sensible headers, and returns a 404 for anything unmatched.",
       },
     ],
     howItWorks: `
-Under the hood, a framework like Express is still built on top of
-Node's raw \`http\` module — it hasn't replaced it, it's layered on top of
-it. When a request arrives, Express looks through the routes you've
-registered, finds the one whose method and path match, and calls your
-function with convenient \`req\` and \`res\` objects that already have
-helper methods (\`res.json()\`, \`res.status()\`, and so on) instead of the
-raw, low-level ones.
+Express is built on top of Node's \`http\` module; it doesn't replace it.
+When a request arrives, Express finds the registered route whose method
+and path match. It then calls your function with \`req\` and \`res\` objects
+that have helper methods like \`res.json()\` and \`res.status()\`.
     `.trim(),
     whyItExists: `
-Nearly every backend needs the same basic scaffolding: routing requests
-to handlers, parsing request bodies, setting consistent headers,
-handling errors gracefully. Writing that from scratch for every project
-is repetitive and error-prone. A framework exists so thousands of
-developers don't each re-solve the same low-level problems, and so code
-across different projects looks familiar and predictable.
+Almost every backend needs the same scaffolding: routing, body parsing,
+consistent headers and error handling. Writing it from scratch each time
+is repetitive and error-prone. Frameworks solve it once, and make code
+across projects look familiar.
     `.trim(),
     whenToUse: `
-Reach for a web framework for essentially any real backend project —
-even small ones benefit from not having to hand-roll routing and error
-handling. It's the default starting point unless you have a very
-specific reason not to use one.
+Use a web framework for almost any real backend, even a small one, so
+you don't hand-roll routing and error handling. It's the default unless
+you have a specific reason not to.
     `.trim(),
     whenNotToUse: `
-For a tiny script that just needs to respond to one fixed request (a
-health-check endpoint with no other logic, for instance), pulling in a
-full framework can be overkill — Node's raw \`http\` module or a
-minimal library might be all that's needed.
+For a tiny script that answers one fixed request (like a health check
+with no other logic), a full framework can be overkill. Node's \`http\`
+module or a minimal library may be enough.
     `.trim(),
     commonMistakes: [
-      "Thinking a framework replaces Node.js — it's built on top of it, not instead of it.",
-      "Assuming Express is the only option — other frameworks (Fastify, Koa, NestJS) solve the same problem with different trade-offs.",
-      "Not realizing that a framework still runs your own code — it organizes and simplifies, but the business logic is still yours to write.",
+      "Thinking a framework replaces Node.js. It's built on top of it.",
+      "Assuming Express is the only option. Fastify, Koa and NestJS solve the same problem with different trade-offs.",
+      "Forgetting that a framework still runs your code. It organizes things, but you still write the business logic.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a raw Node.js `http` server that responds with \"pong\" to any request." },
       { difficulty: "Medium", prompt: "Rewrite that same server using Express, and add a second route that returns JSON." },
-      { difficulty: "Hard", prompt: "List three specific things Express does for you automatically that you would otherwise have to write by hand in raw Node.js." },
+      { difficulty: "Hard", prompt: "List three things Express does automatically that you'd otherwise write by hand in raw Node.js." },
     ],
     interviewQuestions: [
-      { question: "What problem does a web framework solve?", answer: "It handles the repetitive low-level plumbing of building a server — routing, parsing request data, response helpers, error handling — so developers can focus on application logic instead of rebuilding that scaffolding for every project." },
-      { question: "Is Express a replacement for Node.js?", answer: "No — Express is a library layered on top of Node's built-in `http` module; it simplifies working with raw requests and responses but still relies on Node underneath to actually create the server and handle connections." },
-      { question: "Name one thing you'd have to write manually with raw Node.js that a framework provides out of the box.", answer: "Routing requests to the right handler based on method and path — with raw Node you must check `req.method` and `req.url` yourself with if-statements, while a framework lets you declare `app.get(\"/path\", handler)` directly." },
-      { question: "What does `app.listen(3000)` in Express correspond to under the hood in raw Node.js?", answer: "It ultimately calls the same underlying mechanism as `http.createServer(...).listen(3000)` — Express builds its app object on top of Node's http server rather than replacing it." },
-      { question: "Why does raw `http.createServer` funnel every request through a single callback function, and what problem does that create as an app grows?", answer: "Node's http module is deliberately low-level: it hands you one entry point and expects you to branch on method and URL yourself, so as more endpoints are added, that one function fills up with more and more if-statements, becoming harder to read and maintain." },
-      { question: "In raw Node.js, what happens to a request for a URL you never explicitly checked with an if-statement?", answer: "It falls into whatever `else` branch (or lack of one) you wrote — if you didn't handle the case, the response could hang or default to whatever your final fallback logic does, since Node itself provides no automatic \"not found\" behavior." },
-      { question: "Compare `res.send(\"Hello!\")` in Express to what you'd write manually with raw `http` to send the same response.", answer: "With raw `http` you'd need to call `res.writeHead(200, { \"Content-Type\": \"text/plain\" })` and then `res.end(\"Hello!\")` yourself; `res.send()` picks a sensible status code and content type automatically and ends the response for you." },
-      { question: "Why is it wrong to think of Express and Node.js as two competing ways to build a server?", answer: "They aren't alternatives — Express is built using Node's own `http` module internally, so using Express still means using Node; you're choosing whether to work with Node's low-level API directly or through Express's higher-level convenience layer." },
-      { question: "Where do the `req` and `res` objects in an Express handler actually come from?", answer: "They originate from Node's underlying `http` module's request and response objects; Express wraps and extends them with convenience methods like `res.json()` and `res.status()` rather than replacing them with something unrelated." },
-      { question: "Name two other Node.js web frameworks besides Express, and what does having multiple options tell you about framework choice?", answer: "Fastify and Koa (also NestJS) are common alternatives; the existence of several frameworks shows there's no single \"correct\" one — each makes different trade-offs (performance, structure, minimalism) while solving the same underlying routing-and-request-handling problem." },
-      { question: "A raw Node http server needs a 10th route added by hand. What specifically gets harder as each new `if` branch is added?", answer: "The single handler function grows linearly with every new route, making it harder to see which condition matches which URL, easier to introduce bugs in the ordering of checks, and harder for multiple developers to work on different routes without touching the same function." },
-      { question: "Why does Express automatically respond with 404 to an unmatched route, when raw `http.createServer` does not do this automatically?", answer: "Express includes default fallback behavior as part of its routing system, since \"no route matched\" is such a common case that solving it once, framework-wide, saves every project from writing that same catch-all logic by hand." },
-      { question: "What does it mean that \"a framework still runs your own code\"? What decisions does it not make for you?", answer: "A framework handles structural concerns — matching requests to handlers, formatting responses — but it has no idea what your application should actually do; the business logic inside each route handler (what to fetch, what to compute, what rules to apply) is still entirely up to you." },
-      { question: "When would using raw Node's http module instead of a framework actually make sense?", answer: "For something extremely small and fixed, like a single health-check endpoint with no other logic — pulling in a full framework's routing and middleware machinery for one static response is more overhead than the raw module's few lines of code." },
-      { question: "If you removed the `else` branch from a raw Node http server that checks `req.method === \"GET\" && req.url === \"/hello\"`, what would happen to an unmatched request?", answer: "No response would ever be written or ended for that request, so the client would hang waiting indefinitely — Node doesn't send any default response on its own, unlike a framework's built-in 404 fallback." },
-      { question: "Why do frameworks provide convenience methods like `res.json()` instead of just handing you Node's raw response object?", answer: "Sending JSON manually would require setting the `Content-Type` header, calling `JSON.stringify`, and ending the response in the right order every time; `res.json()` bundles that repeated sequence into one call so you can't forget a step." },
-      { question: "What's a concrete cost of pulling in a full framework for a project that only ever needs one fixed health-check endpoint?", answer: "You add a dependency (and its own transitive dependencies) to install, update, and trust, plus a small amount of startup overhead and unused features, for a case simple enough that a few lines of raw Node code would do the same job." },
-      { question: "Why is raw Node http described as \"mining your own ore to forge nails\" compared to a framework?", answer: "It's illustrating that with raw Node, even the most basic, universally-needed pieces (routing, header handling, error fallbacks) have to be built from scratch every time, whereas a framework supplies those already-solved basics so you can focus on the actual application." },
-      { question: "If you swapped Express for Fastify in a project, what would change, and what would stay solved either way?", answer: "The specific API for defining routes and middleware would change since each framework has its own syntax and conventions, but the underlying problem — routing requests to handlers without hand-rolling the plumbing — would remain solved by whichever framework you chose." },
-      { question: "What's the risk of a team writing its own ad hoc routing and parsing logic instead of adopting an existing, widely used framework?", answer: "They'd be re-solving problems (routing, error handling, header parsing) that thousands of other developers have already solved and battle-tested, spending time on infrastructure instead of features, and likely introducing edge-case bugs an established framework has long since fixed." },
+      { question: "What problem does a web framework solve?", answer: "It handles the repetitive low-level plumbing of a server (routing, parsing request data, response helpers, error handling), so developers can focus on app logic instead of rebuilding it each project." },
+      { question: "Is Express a replacement for Node.js?", answer: "No. Express is a library on top of Node's built-in `http` module. It simplifies raw requests and responses, but Node still creates the server and handles connections." },
+      { question: "Name one thing you'd have to write manually with raw Node.js that a framework provides out of the box.", answer: "Routing requests by method and path. In raw Node you check `req.method` and `req.url` with if-statements; a framework lets you write `app.get(\"/path\", handler)`." },
+      { question: "What does `app.listen(3000)` in Express correspond to under the hood in raw Node.js?", answer: "It uses the same mechanism as `http.createServer(...).listen(3000)`. Express builds its app on Node's http server rather than replacing it." },
+      { question: "Why does raw `http.createServer` funnel every request through a single callback function, and what problem does that create as an app grows?", answer: "Node's http module is low-level: it gives you one entry point and you branch on method and URL yourself. As endpoints grow, that one function fills with if-statements and gets hard to read and maintain." },
+      { question: "In raw Node.js, what happens to a request for a URL you never explicitly checked with an if-statement?", answer: "It falls into whatever `else` branch you wrote, if any. If you didn't handle it, the response may hang, because Node has no automatic \"not found\" behavior." },
+      { question: "Compare `res.send(\"Hello!\")` in Express to what you'd write manually with raw `http` to send the same response.", answer: "With raw `http` you call `res.writeHead(200, { \"Content-Type\": \"text/plain\" })` then `res.end(\"Hello!\")`. `res.send()` picks a sensible status and content type and ends the response for you." },
+      { question: "Why is it wrong to think of Express and Node.js as two competing ways to build a server?", answer: "Express uses Node's own `http` module internally, so using Express still means using Node. You're only choosing between Node's low-level API and Express's higher-level layer." },
+      { question: "Where do the `req` and `res` objects in an Express handler actually come from?", answer: "From Node's `http` module. Express wraps and extends them with helpers like `res.json()` and `res.status()`; it doesn't replace them." },
+      { question: "Name two other Node.js web frameworks besides Express, and what does having multiple options tell you about framework choice?", answer: "Fastify and Koa (also NestJS). Having several shows there's no single \"correct\" choice: each makes different trade-offs (performance, structure, minimalism) while solving the same routing and request-handling problem." },
+      { question: "A raw Node http server needs a 10th route added by hand. What specifically gets harder as each new `if` branch is added?", answer: "The single handler grows with every route. It gets harder to see which condition matches which URL, easier to get check order wrong, and harder for several developers to work on routes without editing the same function." },
+      { question: "Why does Express automatically respond with 404 to an unmatched route, when raw `http.createServer` does not do this automatically?", answer: "\"No route matched\" is so common that Express handles it once, in its routing system, so no project has to write that catch-all by hand." },
+      { question: "What does it mean that \"a framework still runs your own code\"? What decisions does it not make for you?", answer: "The framework handles structure (matching requests to handlers, formatting responses), but it doesn't know what your app should do. The business logic in each handler (what to fetch, compute, or enforce) is still yours." },
+      { question: "When would using raw Node's http module instead of a framework actually make sense?", answer: "For something tiny and fixed, like one health-check endpoint with no other logic. A full framework's routing and middleware is more overhead than a few lines of raw Node." },
+      { question: "If you removed the `else` branch from a raw Node http server that checks `req.method === \"GET\" && req.url === \"/hello\"`, what would happen to an unmatched request?", answer: "No response would be written or ended, so the client would hang indefinitely. Node sends no default response, unlike a framework's built-in 404." },
+      { question: "Why do frameworks provide convenience methods like `res.json()` instead of just handing you Node's raw response object?", answer: "Sending JSON by hand means setting `Content-Type`, calling `JSON.stringify`, and ending the response in the right order every time. `res.json()` does it in one call, so you can't forget a step." },
+      { question: "What's a concrete cost of pulling in a full framework for a project that only ever needs one fixed health-check endpoint?", answer: "You add a dependency (plus its own dependencies) to install, update and trust, along with some startup overhead and unused features, when a few lines of raw Node would do the job." },
+      { question: "Why is raw Node http described as \"mining your own ore to forge nails\" compared to a framework?", answer: "With raw Node, even basic pieces everyone needs (routing, headers, error fallbacks) must be built from scratch. A framework supplies them so you can focus on the app." },
+      { question: "If you swapped Express for Fastify in a project, what would change, and what would stay solved either way?", answer: "The API for defining routes and middleware would change, since each framework has its own syntax. The core problem (routing requests without hand-rolled plumbing) stays solved either way." },
+      { question: "What's the risk of a team writing its own ad hoc routing and parsing logic instead of adopting an existing, widely used framework?", answer: "They'd re-solve problems (routing, error handling, header parsing) that established frameworks have already battle-tested. That costs time better spent on features and likely brings edge-case bugs those frameworks fixed long ago." },
     ],
     prerequisites: ["what-is-backend"],
     relatedTopics: ["what-is-backend", "routing", "middleware"],
@@ -258,21 +237,19 @@ minimal library might be all that's needed.
     id: "routing",
     title: "Routing",
     level: "beginner",
-    description: "The way a server decides which piece of code should handle a given URL and HTTP method.",
+    description: "How a server decides which code handles a given URL and HTTP method.",
     explanation: `
-A backend usually needs to do many different things: fetch a list of
-users, create a new order, delete a comment, and so on. Every incoming
-request arrives with a **path** (like \`/users\` or \`/orders/42\`) and a
-**method** (GET, POST, PUT, DELETE...) that together describe what the
-caller wants. The server needs a way to look at those two pieces of
-information and decide exactly which function should run.
+A backend does many things: list users, create orders, delete comments.
+Every request arrives with a **path** (like \`/users\` or \`/orders/42\`)
+and a **method** (GET, POST, PUT, DELETE...). Together they say what the
+caller wants, and the server uses them to pick which function runs.
 
-That mapping — from "method + path" to "the function that handles it" —
-is called **routing**. Each individual mapping (like "a GET request to
-/users runs this function") is called a **route**.
+That mapping from "method + path" to a handler function is **routing**.
+Each single mapping (like "GET /users runs this function") is a
+**route**.
     `.trim(),
     analogy:
-      "A router is like the directory board in an office lobby: you tell it who you want to see and what you're there for (a delivery vs. a meeting), and it tells you exactly which floor and room to go to. Without it, you'd have to knock on every door in the building.",
+      "A router is like the directory board in an office lobby: you say who you want to see and why (a delivery or a meeting), and it tells you which floor and room to go to. Without it, you'd knock on every door in the building.",
     examples: [
       {
         title: "Basic routes by method and path",
@@ -289,11 +266,11 @@ app.delete("/users/:id", (req, res) => {
   deleteUser(req.params.id);
   res.status(204).end();
 });`,
-        explanation: "The same path, /users, behaves completely differently depending on the HTTP method — routing is what tells them apart.",
+        explanation: "The same path, /users, does different things depending on the HTTP method. Routing tells them apart.",
         walkthrough: [
           { code: 'app.get("/users", ...)', explanation: "Registers a route: when a GET request arrives for /users, call this function." },
-          { code: 'app.post("/users", ...)', explanation: "A different route for the same path, but a different method — creating a user instead of listing them." },
-          { code: 'app.delete("/users/:id", ...)', explanation: "The :id part is a route parameter — it matches any value in that position, like /users/42, and makes it available as req.params.id." },
+          { code: 'app.post("/users", ...)', explanation: "Same path, different method: this route creates a user instead of listing them." },
+          { code: 'app.delete("/users/:id", ...)', explanation: "The :id part is a route parameter. It matches any value in that position, like /users/42, and is available as req.params.id." },
         ],
       },
       {
@@ -304,71 +281,66 @@ app.get("/products/:id", (req, res) => {
   const color = req.query.color;     // "red"
   res.json(findProduct(productId, color));
 });`,
-        explanation: "Route parameters (:id) capture parts of the path itself, while query strings (?color=red) capture extra optional filters after a question mark.",
+        explanation: "Route parameters (:id) capture parts of the path. Query strings (?color=red) carry optional extras after a question mark.",
       },
     ],
     howItWorks: `
-When a request arrives, the framework walks through the routes you've
-registered, in the order you defined them, checking each one's method
-and path pattern against the incoming request. As soon as it finds a
-match, it runs that route's handler function and stops looking (unless
-that handler explicitly passes control onward). If nothing matches, the
-framework falls back to a default "not found" response.
+When a request arrives, the framework checks your routes in the order
+you defined them, comparing each one's method and path pattern. At the
+first match, it runs that handler and stops looking (unless the handler
+passes control on). If nothing matches, it sends a default "not found"
+response.
     `.trim(),
     whyItExists: `
-Without routing, every request would have to be handled by one giant
-function containing endless if-statements checking the method and path
-by hand. Routing exists to let you declare, in a clear and organized
-way, exactly which code is responsible for which kind of request —
-making the codebase easier to navigate as it grows to dozens or hundreds
-of endpoints.
+Without routing, one giant function would check the method and path
+with endless if-statements. Routing lets you declare clearly which code
+handles which request, so the codebase stays easy to navigate as it
+grows to dozens or hundreds of endpoints.
     `.trim(),
     whenToUse: `
-Every backend endpoint you build needs a route: any time you want a
-client to be able to reach a specific piece of server logic via a
-specific URL and method, you define a route for it.
+Every endpoint needs a route. Whenever a client should reach some server
+logic through a specific URL and method, define a route for it.
     `.trim(),
     whenNotToUse: `
-Routing doesn't apply to logic that isn't triggered by an incoming
-request — a scheduled background job or an internal helper function
-doesn't need a route, since nothing external is calling it by URL.
+Logic not triggered by a request doesn't need a route. A scheduled job
+or internal helper isn't called by URL.
     `.trim(),
     commonMistakes: [
-      "Defining a more general route (like /users/:id) before a more specific one (like /users/me), causing the general one to match first and swallow requests meant for the specific one.",
-      "Forgetting that the same path can have entirely different meanings depending on the HTTP method.",
+      "Defining a general route (like /users/:id) before a specific one (like /users/me). The general one matches first and swallows requests meant for the specific one.",
+      "Forgetting that the same path can mean different things for different HTTP methods.",
       "Confusing route parameters (part of the path, like :id) with query strings (the ?key=value part after the path).",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a route that responds to a GET request at /ping with the text \"pong\"." },
       { difficulty: "Medium", prompt: "Write a route /articles/:slug that reads the slug from the URL and returns it in a JSON response." },
-      { difficulty: "Hard", prompt: "Explain why placing app.get(\"/users/:id\") before app.get(\"/users/me\") could cause a bug, and show how to fix the ordering." },
+      { difficulty: "Hard", prompt: "Explain why putting app.get(\"/users/:id\") before app.get(\"/users/me\") causes a bug, and show how to fix the order." },
     ],
     interviewQuestions: [
       { question: "What is routing in a web server?", answer: "The mechanism that maps an incoming request's method and URL path to the specific function that should handle it." },
       { question: "What's the difference between a route parameter and a query string?", answer: "A route parameter is a named part of the path itself, like `:id` in `/users/:id`, while a query string is optional key-value data appended after a question mark, like `?sort=asc`." },
       { question: "What typically happens if no route matches an incoming request?", answer: "The framework falls back to a default handler, usually responding with a 404 Not Found status." },
-      { question: "Why does the exact same URL path behave completely differently depending on the HTTP method used?", answer: "Because a route is defined as a combination of method *and* path together — `GET /users` and `POST /users` are two entirely separate routes that just happen to share a path, each pointing at its own handler." },
-      { question: "Given `app.get(\"/users/:id\", handler1)` registered before `app.get(\"/users/me\", handler2)`, which handler runs for a GET request to `/users/me`, and why?", answer: "`handler1` runs, because `:id` matches any value in that position including the literal text \"me\" — the framework checks routes in registration order and stops at the first match, so the more general pattern wins even though `/users/me` was probably meant to hit `handler2`." },
-      { question: "How would you fix the ordering bug from the previous question so `/users/me` reaches the correct handler?", answer: "Register the more specific route, `app.get(\"/users/me\", handler2)`, before the more general `app.get(\"/users/:id\", handler1)`, so the exact match is checked first." },
-      { question: "In `app.get(\"/users/:id\", ...)`, what does `req.params.id` contain for a request to `/users/42`?", answer: "The string `\"42\"` — route parameters are captured as strings taken directly from the URL, not automatically converted to numbers or other types." },
-      { question: "For a request to `/products/17?color=red`, what does `req.query` contain, and how does that differ from `req.params`?", answer: "`req.query` would be `{ color: \"red\" }` — data from after the `?`, typically optional filters or options — while `req.params` holds `{ id: \"17\" }`, the value captured from the path pattern itself; params are usually required to identify a resource, query strings are usually optional refinements." },
-      { question: "Why does a framework generally stop looking for further route matches once it finds the first one that matches?", answer: "Running a request through every matching route would be wasteful and ambiguous — a request should be handled once, so as soon as the framework finds the first route whose method and path match, it runs that handler and considers the request handled." },
-      { question: "Why does it matter that a route to delete a resource uses the DELETE method rather than just reusing GET for everything?", answer: "Routing distinguishes intent by method as well as path, so using DELETE (rather than overloading GET) lets the exact same URL safely support multiple different operations, and lets tools, caches, and other developers understand what a request is meant to do without inspecting its body." },
-      { question: "A route is defined as `app.post(\"/users\", ...)`, but a client sends a GET request to `/users` and no other route matches. What happens?", answer: "The request doesn't match any registered route, since the method doesn't line up, so it falls through to the framework's default \"not found\" behavior, typically a 404 response." },
-      { question: "Why is it a mistake to think of a route path as matching regardless of HTTP method?", answer: "A route registration always pairs a specific method with a specific path pattern; a path alone isn't a complete route, so `/users` registered only under GET simply won't match a POST request to the same path." },
-      { question: "Why does the order in which routes are registered matter, if the framework is just checking each one against the request?", answer: "Because the framework stops at the first match rather than finding the best match, a more general pattern registered earlier can intercept requests meant for a more specific pattern registered later — order acts as an implicit priority." },
-      { question: "A team registers `app.get(\"/articles/:slug\", handler1)` before `app.get(\"/articles/featured\", handler2)`. What bug will `/articles/featured` hit?", answer: "Requests to `/articles/featured` will always be caught by the `:slug` route first, since `:slug` matches the literal text \"featured\" just as well as any other value, so `handler2` never runs." },
-      { question: "What general rule of thumb avoids the \"general route matches before specific route\" bug?", answer: "Register more specific, literal routes before more general, parameterized ones that could also match the same requests." },
-      { question: "Can a single path like `/users` have more than one route registered against it?", answer: "Yes — since a route is method plus path together, `/users` can have separate GET, POST, DELETE (and other) routes all registered against the same path, each with its own handler." },
-      { question: "Why can a route parameter like `:id` match values you didn't expect, such as non-numeric text where you assumed a number, and what problem can that cause?", answer: "A route parameter captures whatever text appears in that segment of the URL with no automatic type or format checking, so `/users/:id` matches `/users/abc` just as readily as `/users/42` — the handler must validate or convert the value itself, or it may crash or behave incorrectly on unexpected input." },
-      { question: "What's the difference in purpose between a route parameter and a query string, beyond syntax — when would you reach for one over the other?", answer: "A route parameter typically identifies which resource you're operating on, so it's part of the path's identity (`/orders/42`); a query string typically expresses optional modifiers to a request that don't change which resource you're looking at, like sorting or filtering (`/orders?status=shipped`)." },
-      { question: "Is there a meaningful difference between `/users/:id` and `/users?id=42` achieving something similar?", answer: "Yes — conventionally, `/users/:id` communicates \"this URL identifies one specific user resource,\" while `/users?id=42` reads more like \"list users, filtered by id\"; the two forms carry different intent even when the underlying data returned might overlap." },
-      { question: "Why does a framework need a \"no routes matched\" fallback at all, rather than assuming a route always exists?", answer: "Clients can request any arbitrary path, including typos, outdated URLs, or malicious probing — a server has no way to guarantee a matching route exists for every possible request, so it needs defined behavior for the case where nothing matches." },
-      { question: "Walk through what happens, in order, when a `DELETE /users/42` request arrives.", answer: "The framework looks through registered routes in the order they were defined, checking each one's method and path pattern against `DELETE` and `/users/42`; when it reaches a route like `app.delete(\"/users/:id\", ...)` whose method and pattern both match, it runs that handler with `req.params.id` set to `\"42\"` and stops looking further." },
-      { question: "If two routes are registered for the exact same method and path — `app.get(\"/x\", a)` then `app.get(\"/x\", b)` — which one runs, and why might this be a bug?", answer: "Handler `a` runs, since it was registered first and the framework stops at the first match; `b` becomes dead code that never executes for that path, which is almost always an unintentional mistake rather than a deliberate design." },
-      { question: "Why is routing described as replacing \"one giant function with endless if-statements\"? What would that alternative look like, and why is it harder to maintain?", answer: "Without routing, a single handler would need something like checking `method === \"GET\" && url === \"/users\"`, then `method === \"POST\" && url === \"/users\"`, and so on for every endpoint — as endpoints grow into the dozens, that one function becomes long, hard to navigate, and easy to introduce ordering or typo bugs in, whereas separate route declarations keep each endpoint's logic isolated and easy to locate." },
-      { question: "Why doesn't routing logic apply to a scheduled background job, even though that job also runs backend code?", answer: "Routing exists specifically to map an incoming HTTP request's method and path to a handler; a background job isn't triggered by any incoming request or URL, so there's nothing for a route to match against — it's simply invoked directly, like any regular function call, on a timer or trigger." },
-      { question: "How is routing conceptually similar to a JavaScript `switch` statement, and how is it different?", answer: "Both pick one branch to execute out of several based on matching some incoming value — but a `switch` typically matches a single value exactly, while routing matches on two dimensions at once (method and path pattern), and path patterns can include parameters that match a whole range of possible values rather than one exact literal." },
+      { question: "Why does the exact same URL path behave completely differently depending on the HTTP method used?", answer: "A route is method *and* path together. `GET /users` and `POST /users` are two separate routes that share a path, each with its own handler." },
+      { question: "Given `app.get(\"/users/:id\", handler1)` registered before `app.get(\"/users/me\", handler2)`, which handler runs for a GET request to `/users/me`, and why?", answer: "`handler1` runs. `:id` matches any value there, including the text \"me\". The framework checks routes in registration order and stops at the first match, so the general pattern wins even though `/users/me` was meant for `handler2`." },
+      { question: "How would you fix the ordering bug from the previous question so `/users/me` reaches the correct handler?", answer: "Register the specific route, `app.get(\"/users/me\", handler2)`, before the general `app.get(\"/users/:id\", handler1)`, so the exact match is checked first." },
+      { question: "In `app.get(\"/users/:id\", ...)`, what does `req.params.id` contain for a request to `/users/42`?", answer: "The string `\"42\"`. Route parameters are strings taken from the URL; they aren't converted to numbers or other types." },
+      { question: "For a request to `/products/17?color=red`, what does `req.query` contain, and how does that differ from `req.params`?", answer: "`req.query` is `{ color: \"red\" }`, the data after the `?`, usually optional filters. `req.params` is `{ id: \"17\" }`, captured from the path pattern. Params usually identify the resource and are required; query strings are usually optional refinements." },
+      { question: "Why does a framework generally stop looking for further route matches once it finds the first one that matches?", answer: "A request should be handled once. Running it through every matching route would be wasteful and ambiguous, so the framework runs the first match and treats the request as handled." },
+      { question: "Why does it matter that a route to delete a resource uses the DELETE method rather than just reusing GET for everything?", answer: "Routing uses the method as well as the path, so DELETE lets one URL safely support several operations. It also lets tools, caches and other developers see what a request does without reading its body." },
+      { question: "A route is defined as `app.post(\"/users\", ...)`, but a client sends a GET request to `/users` and no other route matches. What happens?", answer: "The method doesn't match, so no route matches. The request falls through to the framework's default \"not found\" behavior, usually a 404." },
+      { question: "Why is it a mistake to think of a route path as matching regardless of HTTP method?", answer: "A route always pairs a method with a path pattern. A path alone isn't a full route, so `/users` registered only for GET won't match a POST to that path." },
+      { question: "Why does the order in which routes are registered matter, if the framework is just checking each one against the request?", answer: "The framework stops at the first match, not the best match. A general pattern registered earlier can catch requests meant for a specific one registered later, so order acts as priority." },
+      { question: "A team registers `app.get(\"/articles/:slug\", handler1)` before `app.get(\"/articles/featured\", handler2)`. What bug will `/articles/featured` hit?", answer: "Requests to `/articles/featured` are always caught by the `:slug` route, since `:slug` matches the text \"featured\" like any other value. `handler2` never runs." },
+      { question: "What general rule of thumb avoids the \"general route matches before specific route\" bug?", answer: "Register specific, literal routes before general, parameterized ones that could match the same requests." },
+      { question: "Can a single path like `/users` have more than one route registered against it?", answer: "Yes. A route is method plus path, so `/users` can have separate GET, POST, DELETE (and other) routes, each with its own handler." },
+      { question: "Why can a route parameter like `:id` match values you didn't expect, such as non-numeric text where you assumed a number, and what problem can that cause?", answer: "A route parameter captures whatever text is in that URL segment, with no type or format check. `/users/:id` matches `/users/abc` as readily as `/users/42`, so the handler must validate or convert the value, or it may crash or misbehave." },
+      { question: "What's the difference in purpose between a route parameter and a query string, beyond syntax — when would you reach for one over the other?", answer: "A route parameter usually identifies which resource you're working on, so it's part of the path's identity (`/orders/42`). A query string usually adds optional modifiers, like sorting or filtering, that don't change which resource it is (`/orders?status=shipped`)." },
+      { question: "Is there a meaningful difference between `/users/:id` and `/users?id=42` achieving something similar?", answer: "Yes. By convention, `/users/:id` says \"this URL is one specific user\", while `/users?id=42` reads as \"list users, filtered by id\". The intent differs even if the data returned overlaps." },
+      { question: "Why does a framework need a \"no routes matched\" fallback at all, rather than assuming a route always exists?", answer: "Clients can request any path: typos, old URLs, malicious probes. A server can't guarantee a route exists for every request, so it needs defined behavior when nothing matches." },
+      { question: "Walk through what happens, in order, when a `DELETE /users/42` request arrives.", answer: "The framework checks routes in the order defined, comparing each method and path pattern with `DELETE` and `/users/42`. When it reaches a match like `app.delete(\"/users/:id\", ...)`, it runs that handler with `req.params.id` set to `\"42\"` and stops looking." },
+      { question: "If two routes are registered for the exact same method and path — `app.get(\"/x\", a)` then `app.get(\"/x\", b)` — which one runs, and why might this be a bug?", answer: "Handler `a` runs, because it was registered first and the framework stops at the first match. `b` is dead code for that path, which is almost always a mistake." },
+      { question: "Why is routing described as replacing \"one giant function with endless if-statements\"? What would that alternative look like, and why is it harder to maintain?", answer: "Without routing, one handler would check `method === \"GET\" && url === \"/users\"`, then `method === \"POST\" && url === \"/users\"`, and so on for every endpoint. With dozens of endpoints, that function becomes long, hard to navigate, and prone to ordering and typo bugs. Separate routes keep each endpoint's logic isolated and easy to find." },
+      { question: "Why doesn't routing logic apply to a scheduled background job, even though that job also runs backend code?", answer: "Routing maps an incoming HTTP request's method and path to a handler. A background job isn't triggered by a request or URL, so there's nothing to match. It's called directly on a timer or trigger, like any function." },
+      { question: "How is routing conceptually similar to a JavaScript `switch` statement, and how is it different?", answer: "Both pick one branch from several by matching an incoming value. But a `switch` usually matches one exact value, while routing matches two things at once (method and path pattern), and path patterns can include parameters that match many values." },
     ],
     prerequisites: ["servers-and-web-frameworks"],
     relatedTopics: ["servers-and-web-frameworks", "middleware", "request-response-lifecycle"],
@@ -378,23 +350,20 @@ doesn't need a route, since nothing external is calling it by URL.
     id: "middleware",
     title: "Middleware",
     level: "beginner",
-    description: "Small functions that run before a request reaches its final route handler, each able to inspect, modify, or stop the request.",
+    description: "Small functions that run before a request reaches its route handler. Each one can inspect, change or stop the request.",
     explanation: `
-Lots of behavior needs to happen on *every* (or almost every) request,
-regardless of which specific route it's headed for: logging that a
-request came in, checking whether the user is logged in, parsing the
-raw body of the request into usable data. Repeating that logic inside
-every single route handler would be tedious and error-prone.
+Some work must happen on *every* (or almost every) request, whatever the
+route: logging it, checking the user is logged in, parsing the raw body.
+Repeating that in every handler is tedious and error-prone.
 
-**Middleware** are functions that sit in between the request arriving
-and the route handler that ultimately deals with it. Each middleware
-function gets a chance to look at the request, do some work, and then
-either pass control on to the next thing in line, or stop the chain
-early (for example, rejecting an unauthenticated request before it ever
-reaches the route).
+**Middleware** are functions that sit between the incoming request and
+its route handler. Each one can look at the request, do some work, and
+then either pass control to the next function or stop the chain (for
+example, rejecting an unauthenticated request before it reaches the
+route).
     `.trim(),
     analogy:
-      "Think of airport security checkpoints between the entrance and your gate: one checks your ticket, another scans your bag, another checks your ID. Each checkpoint either waves you through to the next one, or stops you right there if something's wrong. Your route handler is the gate — middleware is everything you pass through to get there.",
+      "Think of airport security between the entrance and your gate: one checkpoint checks your ticket, another scans your bag, another checks your ID. Each one waves you on or stops you if something's wrong. Your route handler is the gate; middleware is everything you pass through to get there.",
     examples: [
       {
         title: "A simple logging middleware",
@@ -408,11 +377,11 @@ app.use(logger);
 app.get("/users", (req, res) => {
   res.json(allUsers);
 });`,
-        explanation: "logger runs before every single route in this app, since it's registered with app.use() rather than tied to one specific path.",
+        explanation: "logger runs before every route in this app, because it's registered with app.use() instead of tied to one path.",
         walkthrough: [
-          { code: "function logger(req, res, next) {", explanation: "Middleware functions receive req and res, just like route handlers, plus a third argument: next." },
-          { code: "console.log(`${req.method} ${req.url}`);", explanation: "Does its one job — recording that a request arrived — without needing to know what will happen after it." },
-          { code: "next();", explanation: "Hands control to whatever comes next in the chain. Forgetting this line would leave the request hanging forever." },
+          { code: "function logger(req, res, next) {", explanation: "Middleware receives req and res, like a route handler, plus a third argument: next." },
+          { code: "console.log(`${req.method} ${req.url}`);", explanation: "Does its one job (recording the request) without knowing what happens after it." },
+          { code: "next();", explanation: "Hands control to the next function in the chain. Without this line, the request hangs forever." },
         ],
       },
       {
@@ -427,17 +396,18 @@ app.get("/users", (req, res) => {
 app.get("/orders", requireAuth, (req, res) => {
   res.json(getOrdersFor(req.user));
 });`,
-        explanation: "requireAuth is attached to just this one route. If the check fails, it sends a response and never calls next(), so the route handler never runs at all.",
+        explanation: "requireAuth is attached to this one route only. If the check fails, it sends a response and never calls next(), so the route handler never runs.",
       },
     ],
     howItWorks: `
-Middleware functions run in the exact order they're registered,
-forming a chain. Each one receives \`(req, res, next)\` — the same request
-and response objects as a route handler, plus a \`next\` function. Calling
-\`next()\` moves on to the next middleware (or, at the end of the chain,
-the matching route handler). *Not* calling \`next()\` — for example, because
-you called \`res.send()\` instead — stops the chain right there, so nothing
-further down the line ever runs for that request.
+Middleware runs in the order it's registered, forming a chain. Each
+function receives \`(req, res, next)\`: the same request and response as a
+route handler, plus a \`next\` function.
+
+Calling \`next()\` moves on to the next middleware, or to the matching
+route handler at the end of the chain. *Not* calling \`next()\` (for
+example, because you called \`res.send()\`) stops the chain, so nothing
+after it runs for that request.
     `.trim(),
     diagram: `
 Request
@@ -452,32 +422,28 @@ Request
 [route handler]  → sends the final response
     `.trim(),
     whyItExists: `
-Middleware exists so that cross-cutting behavior — logging, auth checks,
-parsing request bodies, compressing responses — can be written once and
-applied to many routes, instead of being copy-pasted into every route
-handler individually.
+Middleware lets you write cross-cutting behavior once (logging, auth
+checks, body parsing, response compression) and apply it to many routes,
+instead of copy-pasting it into every handler.
     `.trim(),
     whenToUse: `
-Use middleware for anything that needs to happen consistently across
-multiple routes: authentication checks, request logging, parsing
-incoming JSON bodies, or rejecting malformed requests before they reach
-your business logic.
+Use middleware for anything that should happen the same way across many
+routes: auth checks, request logging, parsing JSON bodies, or rejecting
+malformed requests before they reach your business logic.
     `.trim(),
     whenNotToUse: `
-Logic that's truly specific to one single route — and unlikely to ever
-be reused elsewhere — is usually simpler to just write directly inside
-that route's handler rather than extracting it into a separate
-middleware function.
+Logic specific to one route, and unlikely to be reused, is usually
+simpler to write inside that route's handler.
     `.trim(),
     commonMistakes: [
-      "Forgetting to call `next()`, which leaves the request hanging with no response ever sent.",
-      "Calling `next()` *after* also sending a response, which can cause confusing \"headers already sent\" errors.",
-      "Registering middleware in the wrong order — for example, putting a route before the auth-check middleware that's supposed to protect it.",
+      "Forgetting to call `next()`, which leaves the request hanging with no response.",
+      "Calling `next()` *after* sending a response, which causes confusing \"headers already sent\" errors.",
+      "Registering middleware in the wrong order, such as putting a route before the auth middleware meant to protect it.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a middleware function that logs the current timestamp for every incoming request." },
-      { difficulty: "Medium", prompt: "Write a middleware function that rejects any request missing a `x-api-key` header with a 401 response." },
-      { difficulty: "Hard", prompt: "Explain what would happen if a middleware function neither calls `next()` nor sends a response, and why that's a bug." },
+      { difficulty: "Easy", prompt: "Write a middleware function that logs the current timestamp for every request." },
+      { difficulty: "Medium", prompt: "Write a middleware function that rejects any request missing an `x-api-key` header with a 401 response." },
+      { difficulty: "Hard", prompt: "Explain what happens if a middleware function neither calls `next()` nor sends a response, and why that's a bug." },
     ],
     interviewQuestions: [
       { question: "What is middleware in a web framework?", answer: "A function that runs between an incoming request and its final route handler, able to inspect, modify, or halt the request before it continues down the chain." },

@@ -5,21 +5,20 @@ export const urlShortenerCaseStudy: CaseStudy = {
   title: "URL Shortener",
   difficulty: "Easy",
   summary:
-    "Turn a long URL into a short code that redirects back to it — the classic first system design interview question.",
+    "Turn a long URL into a short code that redirects back to it. The classic first system design question.",
   problemStatement: `
-Someone pastes a long URL like
+A user pastes a long URL like
 \`https://example.com/blog/2026/08/29/a-very-long-post-title-about-something\`
-into your service, and gets back something short, like \`https://sho.rt/aZ9k2\`.
-Later, anyone who visits that short link should land on the original long
-URL. That's the whole product from a user's point of view — but "generate a
-short code and redirect" hides a surprising number of real decisions: how do
-you generate codes that don't collide, how fast can a redirect happen at
-scale, and what happens when the same URL is shortened twice?
+and gets back a short one, like \`https://sho.rt/aZ9k2\`. Anyone who visits
+the short link lands on the original URL.
 
-This is usually the first system design question anyone gets asked, because
-it's small enough to fully design in 45 minutes but still touches
-capacity estimation, data modeling, caching, and a couple of genuine
-trade-offs — the same skills bigger designs need.
+"Generate a short code and redirect" hides real decisions. How do you make
+codes that never collide? How fast can a redirect be at scale? What happens
+when the same URL is shortened twice?
+
+It's often the first system design question people get. It's small enough
+to design fully in 45 minutes, but still covers capacity estimation, data
+modeling, caching, and real trade-offs.
   `.trim(),
   requirements: {
     functional: [
@@ -64,7 +63,7 @@ trade-offs — the same skills bigger designs need.
     },
   ],
   capacityNotes:
-    "The numbers all point the same direction: this is a read-heavy system where the data itself is tiny. That combination is exactly what caching is built for — cache the small number of hot links that account for most of the 1,200 redirects/second, and the origin database barely feels the read load at all.",
+    "This is a read-heavy system with tiny data, which is exactly what caching is for. Cache the few hot links behind most of the 1,200 redirects/second, and the database barely feels the read load.",
   apiDesign: [
     { method: "POST", path: "/api/v1/shorten", description: "Body: { longUrl, customAlias?, expiresAt? }. Returns the short URL." },
     { method: "GET", path: "/{shortCode}", description: "Looks up shortCode and responds with an HTTP redirect to the long URL." },
@@ -85,20 +84,19 @@ no joins needed to serve a redirect. A redirect is a single lookup by
 primary key, which is exactly what makes this workload so cache-friendly.
   `.trim(),
   highLevelDesign: `
-Two paths through the system, and they have almost nothing in common:
+The system has two paths with almost nothing in common.
 
 **Write path** (rare): a client POSTs a long URL. The server generates a
 unique short code, writes \`{short_code, long_url}\` to the database, and
 returns the short URL.
 
 **Read path** (99% of traffic): a client GETs \`/{shortCode}\`. The server
-looks up \`shortCode\`, and if found, responds with an HTTP redirect to the
-long URL — ideally without ever touching the database, because the answer
-was already sitting in a cache.
+looks it up and responds with an HTTP redirect to the long URL, ideally
+straight from the cache without touching the database.
 
-A load balancer sits in front of a pool of stateless application servers,
-so any server can handle either kind of request; the servers share a cache
-layer (e.g. Redis) in front of the database, plus the database itself.
+A load balancer fronts a pool of stateless app servers, so any server can
+handle either request. The servers share a cache (e.g. Redis) in front of
+the database.
   `.trim(),
   highLevelDiagram: `
                       ┌───────────────┐
@@ -129,128 +127,109 @@ layer (e.g. Redis) in front of the database, plus the database itself.
     {
       title: "Generating short codes without collisions",
       explanation: `
-There are three common ways to turn a long URL into a short code, and they
-trade off differently:
+There are three common ways to make a short code:
 
-- **Hash the long URL** (e.g. MD5, then take the first 7 characters,
-  base62-encoded). Simple, and the same long URL always produces the same
-  code — but truncating a hash means two *different* URLs can collide on
-  the same short prefix, so every write still needs a "does this code
-  already exist?" check, and a retry-with-a-different-slice-of-the-hash
-  loop on collision.
-- **Random string generation** (pick 7 random base62 characters). Simpler
-  to reason about, but has the same collision problem as truncated hashing
-  — just less likely, not impossible — and still needs a uniqueness check
-  per write.
-- **A counter, base62-encoded** — the approach most real systems actually
-  use. A single monotonically increasing counter (e.g. from a dedicated ID
-  generator service, or pre-allocated ranges handed out to each app server)
-  is converted to base62 (0-9, a-z, A-Z). Counter 125 becomes a short code
-  like "cb". This *guarantees* uniqueness by construction — no collision
-  check needed at all — at the cost of short codes being predictable and
-  sequential, which leaks how many URLs exist and in what order they were
-  created.
+- **Hash the long URL** (e.g. MD5, take the first 7 characters,
+  base62-encoded). The same URL always gets the same code. But truncating
+  a hash means two *different* URLs can collide, so every write needs a
+  "does this code exist?" check and a retry with a different slice of the
+  hash.
+- **Random string** (7 random base62 characters). Easier to reason about,
+  but collisions are still possible, just less likely. Every write still
+  needs a uniqueness check.
+- **A counter, base62-encoded**, which most real systems use. A
+  monotonically increasing counter (from a dedicated ID service, or
+  pre-allocated ranges given to each app server) is converted to base62
+  (0-9, a-z, A-Z). Counter 125 becomes a code like "cb". Uniqueness is
+  *guaranteed* by construction, with no collision check. The cost: codes
+  are sequential and predictable, which leaks how many URLs exist and
+  their order.
 
-Most production systems pick counter-based generation for the guaranteed
-uniqueness and skip the collision-retry loop entirely, accepting the
-predictability as a minor, acceptable leak.
+Most production systems choose the counter and accept the predictability
+as a minor leak.
       `.trim(),
     },
     {
       title: "Making the redirect itself fast",
       explanation: `
-Because reads outnumber writes 100:1, the entire performance story of this
-system is about the read path. The redirect handler does one thing: look up
-\`short_code\` and respond with a 301 or 302. To make that lookup fast at
-1,200+ QPS:
+Reads outnumber writes 100:1, so performance is all about the read path.
+The redirect handler looks up \`short_code\` and responds with a 301 or
+302. To keep that fast at 1,200+ QPS:
 
 - Put a cache (Redis or Memcached) in front of the database, keyed by
   \`short_code\`, holding the hottest links.
-- Because the mapping is nearly a pure key-value lookup with no relational
-  structure, a key-value store or even a CDN edge cache can serve most
-  redirects without the origin server being involved at all.
-- Popularity follows a power-law distribution — a small fraction of links
-  (a viral tweet's link, say) account for a large fraction of the clicks —
-  which is exactly the pattern a cache is good at absorbing: cache misses
-  stay rare even with a modest cache size, because the "long tail" of
-  rarely-clicked links contributes little total traffic.
+- The mapping is a pure key-value lookup, so a key-value store or even a
+  CDN edge cache can serve most redirects without the origin server.
+- Popularity follows a power law: a few links (say, a viral tweet's)
+  get most of the clicks. Caches handle this well. Misses stay rare even
+  with a modest cache, because the long tail of rarely-clicked links adds
+  little traffic.
       `.trim(),
     },
     {
       title: "301 vs 302 redirect, and why it matters here",
       explanation: `
-An HTTP 301 ("Moved Permanently") tells the visitor's browser it's safe to
-cache the redirect and skip your server entirely on the next visit to that
-same short link. A 302 ("Found" / temporary) tells the browser to check
-with your server every single time.
+An HTTP 301 ("Moved Permanently") lets the browser cache the redirect and
+skip your server on the next visit. A 302 ("Found" / temporary) makes the
+browser ask your server every time.
 
-That single status code is a real trade-off: 301 reduces load on your
-servers dramatically (repeat visitors never hit you again for that link),
-but it also means you lose the ability to count those cached-away repeat
-clicks in your analytics, and you can't redirect a link somewhere new later
-without waiting for browser caches to expire. 302 keeps you in full control
-of every click and its accounting, at the cost of serving every single
-redirect yourself, forever.
+301 cuts server load a lot, since repeat visitors never hit you again.
+But you can't count those repeat clicks, and you can't point the link
+somewhere new until browser caches expire. 302 keeps you in control of
+every click and its count, but you serve every redirect yourself.
       `.trim(),
     },
     {
       title: "Handling custom aliases and expiration",
       explanation: `
-A custom alias (a user asking for \`/my-brand\` instead of an auto-generated
-code) is just a short code supplied by the client instead of generated by
-the server — but now a uniqueness check against the database genuinely is
-required, since two different users could ask for the same alias. This is
-the one write-path operation that can't be made collision-free by
-construction the way counter-based generation can.
+A custom alias (\`/my-brand\` instead of a generated code) is a short code
+the client supplies. It needs a real uniqueness check against the
+database, because two users could ask for the same alias. This is the one
+write that can't be collision-free by construction.
 
-Expiration is handled without a background job scanning the whole table:
-store \`expires_at\` alongside each row, check it at read time (an expired
-link is treated as "not found"), and let an occasional cleanup job or
-TTL-based cache eviction reclaim expired rows lazily rather than on a strict
-schedule — nothing about the read path needs to change to support this.
+Expiration needs no background job scanning the table. Store
+\`expires_at\` on each row and check it at read time (an expired link is
+"not found"). An occasional cleanup job or TTL-based cache eviction
+removes expired rows lazily. The read path doesn't change.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-At the traffic levels estimated above, a single well-indexed database and a
-modest cache tier can genuinely handle this system — the real bottleneck
-this design has to defend against is a "hot key": one link going viral and
-receiving a disproportionate share of the 1,200 QPS all at once.
+At the estimated traffic, one well-indexed database and a modest cache can
+handle this system. The real risk is a "hot key": one viral link taking a
+large share of the 1,200 QPS at once.
 
-A cache absorbs that automatically as long as the hot key's value fits in
-cache, which it always does here (it's just a short string). If the app
-servers or the cache itself become the bottleneck instead of the database,
-both are stateless/shardable: add more app server instances behind the load
-balancer, and shard the cache (and, eventually, the database) by hashing
-\`short_code\`, so any given key deterministically lands on one shard and
-the system scales horizontally rather than needing a bigger single machine.
-For click analytics specifically, writes are moved off the hot path
-entirely — pushed onto a queue and processed asynchronously — so a spike in
-clicks never risks slowing down the redirect that produced them.
+The cache absorbs that, since the hot value is just a short string. If app
+servers or the cache become the bottleneck, both scale out. Add app
+servers behind the load balancer, and shard the cache (and later the
+database) by hashing \`short_code\`, so each key always lands on one shard.
+
+Click analytics writes go to a queue and are processed asynchronously, so
+a spike in clicks never slows down the redirects.
   `.trim(),
   tradeOffs: [
     {
       decision: "Counter-based ID generation vs. hashing the long URL",
       explanation:
-        "Counter-based generation was chosen: it guarantees uniqueness with no collision-check loop on every write, at the cost of short codes being sequential and therefore predictable/guessable. Hashing avoids that predictability but reintroduces a collision-retry loop on every single write — a worse trade for a system whose writes are already the rare, non-bottleneck path.",
+        "Choose the counter. It guarantees uniqueness with no collision check, but codes are sequential and guessable. Hashing avoids that but brings back a collision-retry loop on every write, a worse trade when writes are already the rare path.",
     },
     {
       decision: "301 (permanent) vs. 302 (temporary) redirect",
       explanation:
-        "302 was chosen for the default case, despite the extra server load, because it keeps click analytics accurate and keeps every link changeable after creation — both explicit product requirements here. A link-shortening product with no analytics requirement would reasonably choose 301 instead to minimize server load.",
+        "Default to 302, despite the extra load. It keeps click analytics accurate and links changeable, both requirements here. A shortener with no analytics requirement could choose 301 to cut server load.",
     },
     {
       decision: "SQL vs. NoSQL for the urls table",
       explanation:
-        "Either works, because the access pattern is a pure key-value lookup with no joins — this is one of the rare cases where the choice barely matters. A key-value store (DynamoDB, Cassandra) is a slightly more natural fit and scales horizontally with less operational effort than sharding a relational database by hand, but a single well-indexed SQL table comfortably handles the estimated load too.",
+        "Either works. The access pattern is a key-value lookup with no joins, so the choice barely matters. A key-value store (DynamoDB, Cassandra) fits slightly better and scales out more easily than hand-sharding SQL, but one well-indexed SQL table handles the estimated load too.",
     },
   ],
   interviewTips: [
-    "Do the capacity estimation early and out loud — it's what justifies every later decision (why caching matters, why writes aren't a concern).",
-    "Name the read:write ratio explicitly; it's the single number that most shapes this design.",
-    "Bring up the collision problem before the interviewer does, and compare at least two ID-generation strategies.",
-    "Mention 301 vs 302 unprompted — it's a small detail that signals real HTTP knowledge.",
-    "Don't over-engineer: this system does not need microservices, a message queue for every write, or multi-region active-active from day one. Say so, and explain what growth would actually force those additions.",
+    "Do the capacity estimation early and out loud. It justifies every later decision (why caching matters, why writes don't).",
+    "Name the read:write ratio. It's the number that most shapes this design.",
+    "Raise the collision problem before the interviewer does, and compare at least two ID-generation strategies.",
+    "Mention 301 vs 302 unprompted. It signals real HTTP knowledge.",
+    "Don't over-engineer. You don't need microservices, a queue for every write, or multi-region active-active on day one. Say so, and explain what growth would force them.",
   ],
   relatedTopics: ["caching", "database-replication", "sharding", "load-balancing", "consistent-hashing"],
   keywords: ["url shortener", "tinyurl", "bitly", "base62", "redirect", "system design interview"],

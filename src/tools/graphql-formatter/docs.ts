@@ -8,7 +8,9 @@ const docs: ToolDocs = {
     "Copy the result, **Download** it or **Send to…** another tool.",
   ],
   howItWorks:
-    "A lexer turns the text into tokens (names, numbers, strings, block strings, punctuators; commas and whitespace are insignificant) and a recursive-descent parser checks them against the GraphQL grammar for executable documents and schema definitions: operations, variables and defaults, aliases, arguments, fragments, inline fragments, directives, descriptions, type, interface, union, enum, input, scalar, schema and directive definitions, and `extend`. The printer then lays the document out again. Argument lists and unions that don’t fit in 80 columns are broken over several lines, and block-string descriptions are re-indented. Minify drops comments and commas and keeps a space only where two tokens would merge. Everything runs in your browser, with no GraphQL library.",
+    "A lexer turns the text into tokens (names, numbers, strings, block strings, punctuators; commas and whitespace are insignificant). A recursive-descent parser checks them against the GraphQL grammar for executable documents and schema definitions: operations, variables and defaults, aliases, arguments, fragments, inline fragments, directives, descriptions, type, interface, union, enum, input, scalar, schema and directive definitions, and `extend`.\n\n" +
+    "The printer then lays the document out again. Argument lists and unions longer than 80 columns are split over several lines, and block-string descriptions are re-indented. Minify drops comments and commas and keeps a space only where two tokens would merge.\n\n" +
+    "Everything runs in your browser, with no GraphQL library.",
   limits: [
     "Input can be up to 5,000,000 characters (about 5 MB).",
     "Comments are kept before definitions, fields and members, and before a closing brace. Comments anywhere else (for example inside an argument list) are removed, and the page tells you how many.",
@@ -16,7 +18,7 @@ const docs: ToolDocs = {
     "Minify keeps string and block-string contents exactly as written.",
   ],
   privacy:
-    "Your GraphQL is formatted in your browser and never uploaded or stored. **Share** puts the input and options in the link’s `#` fragment, which browsers don’t send to servers; long inputs show *Too large to share*. Text sent here or from here with **Send to…** passes through this tab’s session storage and is removed as soon as the receiving tool reads it.",
+    "Your GraphQL is formatted in your browser and never uploaded or stored. **Share** puts the input and options in the link’s `#` fragment, which browsers don’t send to servers; long inputs show *Too large to share*. Text moved with **Send to…** passes through this tab’s session storage and is removed as soon as the receiving tool reads it.",
   faqs: [
     { question: "Does it format schemas as well as queries?", answer: "Yes: type definitions, descriptions, directives definitions and `extend` are all supported, alone or mixed with operations." },
     { question: "Will formatting change what my query does?", answer: "No. Only whitespace, commas and the layout of descriptions change; names, values and strings are kept." },

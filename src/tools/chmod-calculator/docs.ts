@@ -9,8 +9,13 @@ const docs: ToolDocs = {
     'Enter a **umask** in the **umask calculator** to see the default mode of **New files** and **New directories**, and press **Use** to load one.',
   ],
   howItWorks:
-    'A Unix mode is 12 bits: three bits (read 4, write 2, execute 1) each for owner, group and others, plus setuid (4000), setgid (2000) and sticky (1000). Octal is those bits written in base 8. In the symbolic form a special bit replaces the matching execute position: `s` or `t` when execute is also set, capital `S` or `T` when it isn’t. When you paste an `ls -l` string, the first character is read as the file type (`- d l c b p s`) and a trailing `.`, `+` or `@` (SELinux, ACL or extended attributes) is ignored.\n\n' +
-    'Expressions follow POSIX and GNU `chmod` rules. Each comma-separated clause is `[ugoa][+-=][rwxXst]`, applied in order to the current mode. `X` adds execute only for a directory or when someone already has execute, permissions can be copied from another class (`o=g`, `go=u-w`), and `=` on a directory keeps its setgid bit, as GNU chmod does. A clause that is only digits replaces the whole mode.\n\n' +
+    'A Unix mode is 12 bits: three bits (read 4, write 2, execute 1) each for owner, group and others, plus setuid (4000), setgid (2000) and sticky (1000). Octal is those bits written in base 8. In the symbolic form a special bit replaces the matching execute position: `s` or `t` when execute is also set, capital `S` or `T` when it isn’t.\n\n' +
+    'In a pasted `ls -l` string, the first character is the file type (`- d l c b p s`). A trailing `.`, `+` or `@` (SELinux, ACL or extended attributes) is ignored.\n\n' +
+    'Expressions follow POSIX and GNU `chmod` rules. Each comma-separated clause is `[ugoa][+-=][rwxXst]`, applied in order to the current mode:\n\n' +
+    '- `X` adds execute only for a directory or when someone already has execute.\n' +
+    '- Permissions can be copied from another class (`o=g`, `go=u-w`).\n' +
+    '- `=` on a directory keeps its setgid bit, as GNU chmod does.\n' +
+    '- A clause that is only digits replaces the whole mode.\n\n' +
     'The umask calculator removes the umask’s bits from `666` for files and `777` for directories. Everything is calculated instantly in your browser.',
   limits: [
     'Octal modes are 1 to 4 digits from 0 to 7, with an optional `0o` prefix. Symbolic input must be exactly 9 characters, or 10 (11 with a trailing `.`, `+` or `@`) for an `ls -l` string.',

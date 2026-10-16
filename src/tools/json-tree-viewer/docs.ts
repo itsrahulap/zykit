@@ -9,7 +9,8 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'The text is parsed by the same strict, non-recursive RFC 8259 parser the JSON Formatter uses, so very deep documents don’t overflow the stack and numbers keep the digits you wrote (`12345678901234567890` is not rounded). Input over 1,000,000 characters is parsed in a background worker so the page stays responsive.\n\n' +
-    'The tree is virtualised: only the rows on screen (plus a few above and below) are put in the page, so a document with hundreds of thousands of rows scrolls smoothly. Search walks the whole document once for keys and for decoded string, number and literal values, ignoring case. It reports up to 10,000 matches. Paths use dot notation for plain names and `[\'name\']` for keys with spaces or symbols. The tree follows the WAI-ARIA tree pattern, so screen readers announce levels and expanded state.',
+    'The tree is virtualised: only the rows on screen (plus a few above and below) are in the page, so hundreds of thousands of rows scroll smoothly.\n\n' +
+    'Search scans the whole document once for keys and decoded string, number and literal values, ignoring case, and reports up to 10,000 matches. Paths use dot notation for plain names and `[\'name\']` for keys with spaces or symbols. The tree follows the WAI-ARIA tree pattern, so screen readers announce levels and expanded state.',
   limits: [
     'Files up to 100 MB can be opened. Files over 1,000,000 characters are loaded without showing them in a text box, and need enough free memory to hold the parsed tree, which is several times the file size.',
     'Strict JSON only: comments, trailing commas, single quotes and `NaN` are reported as errors with a line and column (pasted input). JSON5 and JSON Lines are not supported.',

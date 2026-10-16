@@ -9,7 +9,9 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'The file is read in a background Web Worker. A structure walker for each format (JPEG segments, PNG chunks, WebP RIFF chunks) classifies every container as metadata or image data, and parsers read EXIF, XMP, IPTC, ICC and C2PA from the metadata containers.\n\n' +
-    'Cleaning removes containers instead of re-encoding: the new file is rebuilt from the original’s kept byte ranges, so the compressed pixel data is copied unchanged and there is no quality loss. The result is then parsed again and validated: its image-data containers must be byte-identical to the original’s, and the remaining metadata must match what was asked for. If validation fails, the output is discarded and you see an error. If the original EXIF orientation isn’t 1, a minimal EXIF block containing only the Orientation tag can be written so the image still displays the right way up (for WebP, only when the file already uses the extended VP8X format).',
+    'Cleaning removes containers instead of re-encoding. The new file is rebuilt from the original’s kept byte ranges, so the compressed pixel data is copied unchanged and there is no quality loss.\n\n' +
+    'The result is then parsed again and validated: its image-data containers must be byte-identical to the original’s, and the remaining metadata must match what you asked for. If validation fails, the output is discarded and you see an error.\n\n' +
+    'If the original EXIF orientation isn’t 1, a minimal EXIF block with only the Orientation tag can be written so the image still shows the right way up. For WebP, this only happens when the file already uses the extended VP8X format.',
   limits: [
     'JPEG, PNG and WebP only. HEIC/HEIF, AVIF and TIFF are not supported yet.',
     'Up to 50 MB and 100 megapixels per file. For images over 60 megapixels, the check that your browser can decode the cleaned file is skipped to limit memory use; the other validation checks still run.',
@@ -38,7 +40,7 @@ const docs: ToolDocs = {
     {
       question: 'Can this remove AI watermarks?',
       answer:
-        'No. It removes AI and provenance information stored as metadata, such as Content Credentials, IPTC digital-source-type labels and generator parameters. Invisible watermarks like Google’s SynthID are embedded in the pixels themselves, and AI detectors analyze pixels, so cleaning metadata does not change a detector’s result. The image content is not altered.',
+        'No. It removes AI and provenance information stored as metadata, such as Content Credentials, IPTC digital-source-type labels and generator parameters. Invisible watermarks like Google’s SynthID live in the pixels, and AI detectors analyze pixels, so cleaning metadata does not change a detector’s result. The image content is not altered.',
     },
     {
       question: 'Why is the cleaned file smaller?',

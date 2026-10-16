@@ -8,7 +8,7 @@ export const awsIntermediateTopics: Topic[] = [
     level: "intermediate",
     description: "Add and remove EC2 capacity automatically and spread traffic across it with Elastic Load Balancing.",
     explanation: md(
-      "**Elasticity** means capacity follows demand. Two services work together to deliver it: **Amazon EC2 Auto Scaling** changes the number of instances, and **Elastic Load Balancing (ELB)** spreads incoming requests across whichever instances exist.",
+      "**Elasticity** means capacity follows demand. **Amazon EC2 Auto Scaling** changes how many instances run. **Elastic Load Balancing (ELB)** spreads requests across them.",
       "An Auto Scaling group has three key numbers:",
       "- **Minimum**: the fewest instances ever running.\n- **Desired**: how many you want right now.\n- **Maximum**: the ceiling, which protects your budget.",
       "Scaling approaches:",
@@ -16,14 +16,14 @@ export const awsIntermediateTopics: Topic[] = [
       "**Load balancer types**:",
       "- **Application Load Balancer (ALB)**: layer 7 (HTTP/HTTPS). Routes by path, host, headers; good for web apps and microservices.\n- **Network Load Balancer (NLB)**: layer 4 (TCP/UDP/TLS). Very high throughput, low latency, static IPs.\n- **Gateway Load Balancer (GWLB)**: sends traffic through third-party virtual appliances such as firewalls and inspection tools.\n- Classic Load Balancer is the legacy option.",
       "Load balancers also run **health checks** and stop sending traffic to unhealthy targets.",
-      "Exam angle: Auto Scaling is about **capacity and cost** (run only what you need right now), while ELB is about **availability** (one entry point, traffic spread across healthy targets in several AZs). The service is called Elastic Load Balancing; ALB, NLB, GWLB and CLB are its load balancer types.",
-      "Distinguishing details the exam likes:",
-      "- **ALB** supports content-based routing rules (host, path, headers, query strings) and can be protected by **AWS WAF**.\n- **NLB** handles millions of requests per second and sudden spikes with ultra-low latency, and gives you a **static IP per AZ**. It suits gaming, IoT and other non-HTTP traffic.\n- **GWLB** deploys and scales fleets of third-party firewalls and intrusion detection/prevention appliances, using the GENEVE protocol.\n- **CLB** (legacy) registers instances directly instead of using target groups; AWS recommends moving to ALB or NLB.",
-      "A load balancer is worth having even in front of a single instance: it gives you one stable DNS name, makes it easy to add instances later, and lets you attach AWS WAF and free **AWS Certificate Manager (ACM)** TLS certificates.",
-      "Launch **templates** are the current way to describe what to launch (AMI, instance type, key pair, security groups). They are versioned, and the group points at a specific version or at the latest. The older launch *configurations* are deprecated.",
+      "Exam angle: Auto Scaling is about **capacity and cost** (run only what you need now). ELB is about **availability** (one entry point, traffic spread across healthy targets in several AZs). The service is Elastic Load Balancing; ALB, NLB, GWLB and CLB are its load balancer types.",
+      "Details the exam likes:",
+      "- **ALB** supports content-based routing (host, path, headers, query strings) and can be protected by **AWS WAF**.\n- **NLB** handles millions of requests per second and sudden spikes with ultra-low latency, and gives a **static IP per AZ**. Good for gaming, IoT and other non-HTTP traffic.\n- **GWLB** deploys and scales fleets of third-party firewalls and intrusion detection/prevention appliances, using the GENEVE protocol.\n- **CLB** (legacy) registers instances directly, without target groups. AWS recommends moving to ALB or NLB.",
+      "A load balancer helps even in front of one instance. You get a stable DNS name, can add instances later, and can attach AWS WAF and free **AWS Certificate Manager (ACM)** TLS certificates.",
+      "**Launch templates** describe what to launch (AMI, instance type, key pair, security groups). They are versioned; the group uses a specific version or the latest. The older launch *configurations* are deprecated.",
     ),
     analogy:
-      "Imagine an airport check-in hall. The load balancer is the person at the entrance who points each traveler to the shortest open desk and stops pointing at a desk whose agent stepped away. Auto Scaling is the manager who opens more desks when the line grows and closes them when it empties - never fewer than two, never more than the hall can hold.",
+      "Think of an airport check-in hall. The load balancer is the person at the entrance who sends each traveler to the shortest open desk, and skips any desk whose agent stepped away. Auto Scaling is the manager who opens desks when the line grows and closes them when it empties: never fewer than two, never more than the hall can hold.",
     examples: [
       {
         title: "Auto Scaling group with target tracking (CLI)",
@@ -58,11 +58,11 @@ Insert a firewall appliance into the path      GWLB`,
       },
     ],
     howItWorks: md(
-      "Metrics (such as CPU or request count per target) flow to CloudWatch. A scaling policy compares the metric with its target and changes the desired capacity within min and max. The group launches instances from a **launch template** or terminates the least useful ones, balancing across AZs.",
-      "The load balancer sits in front, registers new instances in a **target group**, health-checks them, and distributes requests. Because instances are interchangeable, the application should keep session data outside the server (for example in a cache or database).",
-      "A **listener** (for example HTTP on port 80 or HTTPS on 443) receives traffic and forwards it to a target group according to its rules. Targets can be EC2 instances, IP addresses, Lambda functions or even another ALB. The target group's health check calls a path and expects a healthy response (such as HTTP 200) a set number of times in a row.",
-      "By default an Auto Scaling group only uses **EC2 status checks** (is the instance running?). Switch it to **ELB health checks** so instances whose application has stopped answering are also replaced. **Scale-in protection** marks specific instances so they are never chosen for termination.",
-      "When an instance is removed, **deregistration delay** (connection draining) lets in-flight requests finish first. Users reach the app through a Route 53 **alias** record pointing at the load balancer's DNS name, never at individual instance IPs.",
+      "Metrics (such as CPU or requests per target) flow to CloudWatch. A scaling policy compares the metric with its target and changes desired capacity, staying within min and max. The group launches instances from a **launch template** or terminates the least useful ones, balancing across AZs.",
+      "The load balancer registers new instances in a **target group**, health-checks them and spreads requests. Instances are interchangeable, so keep session data off the server (for example in a cache or database).",
+      "A **listener** (such as HTTP on port 80 or HTTPS on 443) receives traffic and forwards it to a target group by its rules. Targets can be EC2 instances, IP addresses, Lambda functions or another ALB. The health check calls a path and expects a healthy response (such as HTTP 200) a set number of times in a row.",
+      "By default an Auto Scaling group uses only **EC2 status checks** (is the instance running?). Switch to **ELB health checks** so instances whose app stopped answering are replaced too. **Scale-in protection** stops chosen instances from being terminated.",
+      "When an instance is removed, **deregistration delay** (connection draining) lets in-flight requests finish. Users reach the app through a Route 53 **alias** record to the load balancer's DNS name, never to instance IPs.",
     ),
     diagram: `         users
            |
@@ -74,13 +74,13 @@ Insert a firewall appliance into the path      GWLB`,
    AZ-a    AZ-b    AZ-a
        ^ CloudWatch metric drives desired count`,
     whyItExists: md(
-      "Fixed capacity is wasteful when traffic is low and an outage when traffic spikes. Together these services keep cost proportional to demand and keep the application available when individual servers fail.",
+      "Fixed capacity wastes money when traffic is low and causes outages when it spikes. These services keep cost in line with demand and keep the app up when single servers fail.",
     ),
     whenToUse: md(
-      "Use them for any stateless web or API tier with variable load, and whenever you need self-healing: a failed instance is replaced automatically.",
+      "Use them for any stateless web or API tier with changing load, and whenever you want self-healing: failed instances are replaced automatically.",
     ),
     whenNotToUse: md(
-      "A single stateful server (like a lone database on EC2) does not benefit from simply adding more copies. Very small, constant workloads may not need scaling at all. Serverless options like Lambda scale without you managing groups.",
+      "A single stateful server (like a lone database on EC2) gains nothing from extra copies. Small, steady workloads may not need scaling. Serverless options like Lambda scale without groups to manage.",
     ),
     commonMistakes: [
       "Setting min = max = 1 and believing that is 'highly available'.",
@@ -123,16 +123,16 @@ Insert a firewall appliance into the path      GWLB`,
     level: "intermediate",
     description: "Decouple components with queues and publish/subscribe topics so one failure does not cascade.",
     explanation: md(
-      "In a **tightly coupled** design, service A calls service B directly and waits. If B is slow or down, A suffers. In a **loosely coupled** design, A drops a message somewhere durable and moves on; B picks it up when it can.",
-      "- **Amazon SQS** (Simple Queue Service): a managed **queue**. Producers send messages, consumers poll and process them, then delete them. Messages are stored until processed. *Standard* queues offer very high throughput with at-least-once delivery and best-effort ordering; *FIFO* queues give ordering and exactly-once processing semantics with lower throughput. A **dead-letter queue** collects messages that keep failing.\n- **Amazon SNS** (Simple Notification Service): **publish/subscribe**. A publisher sends one message to a *topic*, and SNS pushes copies to every subscriber (SQS queues, Lambda, HTTPS endpoints, email, SMS, mobile push).\n- **Amazon EventBridge**: an event bus that routes events from AWS services, SaaS apps, and your code to targets based on rules, with schedules and filtering.",
-      "Combining SNS and SQS gives **fan-out**: one event, many independent queues, each processed at its own pace.",
+      "In a **tightly coupled** design, service A calls service B and waits. If B is slow or down, A suffers. In a **loosely coupled** design, A leaves a message somewhere durable and moves on; B picks it up when it can.",
+      "- **Amazon SQS** (Simple Queue Service): a managed **queue**. Producers send messages; consumers poll, process and delete them. Messages are stored until processed. *Standard* queues: very high throughput, at-least-once delivery, best-effort order. *FIFO* queues: ordering and exactly-once processing, lower throughput. A **dead-letter queue** collects messages that keep failing.\n- **Amazon SNS** (Simple Notification Service): **publish/subscribe**. A publisher sends one message to a *topic*, and SNS pushes a copy to every subscriber (SQS queues, Lambda, HTTPS endpoints, email, SMS, mobile push).\n- **Amazon EventBridge**: an event bus that routes events from AWS services, SaaS apps and your code to targets by rules, with schedules and filtering.",
+      "SNS plus SQS gives **fan-out**: one event, many independent queues, each processed at its own pace.",
       "The exam groups messaging into three patterns:",
-      "- **Queuing (SQS)**: consumers *pull* messages; each message is processed and then deleted. Not real-time. Classic use: hand off slow background work (sending a sign-up or password-reset email) so the web request returns quickly.\n- **Pub/sub (SNS)**: SNS *pushes* each message straight away to all subscribers. Publishers do not know who the subscribers are, and filter policies let each subscriber receive only what it wants. SNS retries failed deliveries but does not store messages for later reading.\n- **Streaming (Amazon Kinesis Data Streams)**: producers write events into a stream split into shards; many consumers can read the *same* events, which are kept for a retention period so they can be replayed. Used for real-time analytics, clickstreams and IoT data, and costs more than simple queuing.",
-      "SNS is also the notification backbone for other AWS services: CloudWatch alarms and AWS Budgets alerts typically send their emails through an SNS topic. SNS email is plain-text and meant for internal or operational alerts, not for polished customer-facing email.",
-      "Fun fact that sometimes appears in study material: SQS was the first AWS service to launch, in 2004.",
+      "- **Queuing (SQS)**: consumers *pull* messages; each is processed, then deleted. Not real-time. Classic use: hand off slow background work (a sign-up or password-reset email) so the web request returns fast.\n- **Pub/sub (SNS)**: SNS *pushes* each message at once to all subscribers. Publishers don't know who subscribes, and filter policies let each subscriber get only what it wants. SNS retries failed deliveries but does not store messages for later.\n- **Streaming (Amazon Kinesis Data Streams)**: producers write events into a stream split into shards. Many consumers can read the *same* events, which are kept for a retention period and can be replayed. Used for real-time analytics, clickstreams and IoT data; costs more than simple queuing.",
+      "SNS also carries notifications for other AWS services: CloudWatch alarms and AWS Budgets alerts usually email through an SNS topic. SNS email is plain text, meant for internal or operational alerts, not polished customer email.",
+      "Fun fact from some study material: SQS was the first AWS service to launch, in 2004.",
     ),
     analogy:
-      "A queue is a ticket spindle in a repair workshop: customers pin job slips, and any mechanic grabs the next slip when free; slips wait safely if everyone is busy. A topic is a notice-board announcement: one note, and every team that signed up for those announcements gets its own copy.",
+      "A queue is a ticket spindle in a repair shop: customers pin job slips, and any free mechanic grabs the next one. Slips wait safely if everyone is busy. A topic is a notice-board announcement: one note, and every team that signed up gets its own copy.",
     examples: [
       {
         title: "Queue basics with the CLI",
@@ -176,21 +176,21 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
       },
     ],
     howItWorks: md(
-      "SQS stores each message redundantly across AZs. A consumer receives it, the message turns invisible for a *visibility timeout*, and the consumer deletes it when done. If the consumer crashes, the timeout expires and the message is retried. After a configured number of failed receives, it moves to the dead-letter queue.",
-      "SNS delivers each published message to all subscriptions, with retries and optional filter policies so subscribers only get what they care about. EventBridge evaluates rules against event patterns and forwards matches to targets.",
+      "SQS stores each message redundantly across AZs. When a consumer receives it, the message is hidden for a *visibility timeout*; the consumer deletes it when done. If the consumer crashes, the timeout expires and the message is retried. After a set number of failed receives, it moves to the dead-letter queue.",
+      "SNS delivers each message to all subscriptions, with retries and optional filter policies. EventBridge matches events against rule patterns and forwards matches to targets.",
     ),
     diagram: `  Producer --> [ SNS topic ] --+--> [ SQS billing ]  --> Billing workers
                                +--> [ SQS shipping ] --> Shipping workers
                                +--> Lambda (audit)
   Failed 3x ... --> [ Dead-letter queue ]`,
     whyItExists: md(
-      "Direct calls tie components' availability and speed together. Messaging absorbs bursts, hides slow consumers, enables retries, and lets teams change one component without breaking others.",
+      "Direct calls tie components' availability and speed together. Messaging absorbs bursts, hides slow consumers, allows retries, and lets teams change one part without breaking others.",
     ),
     whenToUse: md(
-      "Use SQS to buffer work (image processing, order handling). Use SNS for notifications and fan-out. Use EventBridge for event-driven integrations across services and SaaS, rule-based routing, and scheduled events.",
+      "- SQS: buffer work (image processing, order handling).\n- SNS: notifications and fan-out.\n- EventBridge: event-driven integrations across services and SaaS, rule-based routing, scheduled events.",
     ),
     whenNotToUse: md(
-      "When the caller truly needs an immediate answer (a login check), use a synchronous call. For high-volume streaming analytics with replay, consider a streaming service such as Kinesis instead of a queue.",
+      "If the caller needs an immediate answer (a login check), use a synchronous call. For high-volume streaming analytics with replay, use a streaming service such as Kinesis instead of a queue.",
     ),
     commonMistakes: [
       "Assuming Standard SQS never delivers a message twice - consumers must be idempotent.",
@@ -228,27 +228,30 @@ aws sqs receive-message --queue-url "$QUEUE_URL" \\
     level: "intermediate",
     description: "Lambda, ECS, EKS and Fargate: running code without managing servers, and choosing the right compute.",
     explanation: md(
-      "**Serverless** does not mean no servers - it means *you* do not provision, patch, or scale them. You provide code; the service runs it when needed and bills for use.",
-      "**AWS Lambda** runs a function in response to events (an HTTP request, a queue message, a file upload, a schedule). Key traits: you pay per invocation and duration, it scales automatically, and each invocation is short-lived. Invocations have limits - for example a maximum run time of 15 minutes and configurable memory - so long, heavy jobs belong elsewhere.",
+      "**Serverless** does not mean no servers. It means *you* don't provision, patch or scale them. You provide code; the service runs it when needed and bills for use.",
+      "**AWS Lambda** runs a function in response to events (an HTTP request, a queue message, a file upload, a schedule). You pay per invocation and duration, it scales automatically, and each run is short. Limits apply, such as a 15-minute maximum run time and configurable memory, so long, heavy jobs belong elsewhere.",
       "**Containers** package an app with its dependencies so it runs the same everywhere.",
-      "- **Amazon ECS**: AWS's own container orchestrator, simple and tightly integrated.\n- **Amazon EKS**: managed Kubernetes, for teams that want the Kubernetes API and ecosystem.\n- **AWS Fargate**: a serverless compute engine for containers; you define CPU and memory and it runs the tasks without you managing EC2 hosts (works with ECS and EKS).\n- **Amazon ECR**: a registry to store container images.",
-      "Choosing compute: EC2 for maximum control, containers for portable packaged services, Lambda for event-driven short tasks.",
+      "- **Amazon ECS**: AWS's own container orchestrator, simple and tightly integrated.\n- **Amazon EKS**: managed Kubernetes, for teams that want the Kubernetes API and ecosystem.\n- **AWS Fargate**: serverless compute for containers. You set CPU and memory; it runs tasks without EC2 hosts for you to manage (works with ECS and EKS).\n- **Amazon ECR** (Elastic Container Registry): a managed registry to store, scan and share container images for ECS, EKS and Fargate.",
       "**More compute options**",
-      "- **AWS Batch**: runs batch jobs at any scale. You submit jobs; Batch provisions the right amount of EC2 or Fargate capacity (including Spot) and queues them, so you do not manage a scheduler.\n- **Amazon Lightsail**: simple virtual servers, containers, databases, storage and static IPs with predictable monthly pricing and a friendly console; a good fit for small websites, blogs and learning projects.\n- **Amazon ECR** (Elastic Container Registry): a managed registry for storing, scanning and sharing container images used by ECS, EKS and Fargate.\n- **AWS Outposts**: AWS infrastructure and services running in your own data center for hybrid needs.",
-      "**Choosing compute**: EC2 for full control of virtual servers, containers (ECS/EKS/Fargate) for packaged applications, Lambda for short event-driven code, Elastic Beanstalk for deploying web apps without managing the infrastructure details, and Lightsail for a simple fixed-price start.",
+      "- **AWS Batch**: runs batch jobs at any scale. You submit jobs; Batch queues them and provisions the right EC2 or Fargate capacity (including Spot), so you don't manage a scheduler.\n- **Amazon Lightsail**: simple virtual servers, containers, databases, storage and static IPs with predictable monthly pricing and a friendly console. Good for small websites, blogs and learning projects.\n- **AWS Outposts**: AWS infrastructure and services in your own data center for hybrid needs.",
+      "**Choosing compute**:",
+      "- EC2: full control of virtual servers.\n- Containers (ECS/EKS/Fargate): portable, packaged applications.\n- Lambda: short, event-driven code.\n- Elastic Beanstalk: deploy web apps without managing infrastructure details.\n- Lightsail: a simple fixed-price start.",
       "**Virtual machines vs containers**",
-      "- A **VM** runs on a hypervisor with its own full guest operating system. You usually size it with spare headroom that you pay for even when unused, and several apps sharing one VM are not isolated from each other (one can hog resources or break another's configuration).\n- A **container** runs on a container runtime (such as Docker Engine) and shares the host's OS kernel. Each container bundles its own libraries and dependencies, is isolated from its neighbours, packs more densely and starts much faster than a VM.",
-      "**Docker** popularised containers: a *Dockerfile* describes how to build an image, *Docker Compose* runs multi-container apps, and *Docker Hub* is a public image registry. The **Open Container Initiative (OCI)** standardises image formats and runtimes, so OCI images run with any compatible tool. **Kubernetes** (K8s) is the open-source orchestration standard, originally from Google and now run by the CNCF; it runs containers across many nodes in *pods* (one or more containers sharing network and storage) and shines when you have many microservices. **Bottlerocket** is AWS's open-source Linux OS built just for hosting containers.",
-      "**Monolith vs microservices**: a monolith is one tightly coupled application doing everything. Microservices split it into small, independently deployable (often stateless) services, each doing one job and often built from managed pieces such as containers, Lambda, SQS, ELB and RDS.",
+      "- A **VM** runs on a hypervisor with its own full guest OS. You usually size it with spare headroom that you pay for even when unused. Apps sharing one VM are not isolated: one can hog resources or break another's configuration.\n- A **container** runs on a container runtime (such as Docker Engine) and shares the host's OS kernel. Each bundles its own libraries and dependencies, is isolated from its neighbours, packs more densely and starts much faster than a VM.",
+      "**Docker** popularised containers: a *Dockerfile* describes how to build an image, *Docker Compose* runs multi-container apps, and *Docker Hub* is a public image registry. The **Open Container Initiative (OCI)** standardises image formats and runtimes, so OCI images run with any compatible tool.",
+      "**Kubernetes** (K8s) is the open-source orchestration standard, originally from Google and now run by the CNCF. It runs containers across many nodes in *pods* (one or more containers sharing network and storage) and shines with many microservices. **Bottlerocket** is AWS's open-source Linux OS built just for hosting containers.",
+      "**Monolith vs microservices**: a monolith is one tightly coupled app doing everything. Microservices split it into small, independently deployable (often stateless) services, each doing one job, often built from managed pieces such as containers, Lambda, SQS, ELB and RDS.",
       "**ECS building blocks**",
       "- A **cluster** provides capacity: Fargate, EC2 instances you manage, or a mix through *capacity providers*.\n- A **task definition** is the blueprint: image, CPU and memory, ports and IAM roles.\n- A **task** runs containers until they finish (good for one-off jobs). A **service** keeps a desired number of tasks running long term, such as a web server, and replaces failed ones using health checks.\n- Images come from Amazon ECR or a public registry such as Docker Hub. Container logs normally go to CloudWatch Logs.",
-      "Cost trap: an ECS cluster backed by EC2 instances bills for those instances the whole time, even with no tasks running (the upside is no cold start). A Fargate-only cluster with nothing running costs nothing, because Fargate bills for the vCPU and memory your running tasks request.",
-      "**Lambda details**: you pick a runtime (Node.js, Python, Java, .NET, Ruby, Go, or a custom runtime), memory and a timeout. Billing is number of requests plus duration, measured in **1 ms increments** (older material says 'rounded up to 100 ms'; that changed in December 2020). Small functions can be edited in the console's built-in VS Code-based code editor; bigger ones are uploaded as a .zip file, from S3, or as a **container image**. You test by sending a JSON test event and reading the output in CloudWatch Logs. For longer-running serverless container work, use Fargate instead.",
-      "**Other container helpers**: **AWS App Runner** deploys containerised web apps and APIs from an image or source code without you seeing any underlying resources (unlike Elastic Beanstalk, which shows you the EC2 instances and load balancer it creates). **AWS Step Functions** orchestrates Lambda functions and ECS/Fargate tasks as state machines, and **AWS X-Ray** traces requests across microservices.",
-      "**Serverless is a spectrum**, not a yes/no. Typical traits: high elasticity and availability, durable, secure by default, no infrastructure to see, **scale to zero** (no cost when idle) and paying for value instead of idle servers. Services commonly called serverless include Lambda, Fargate, S3, DynamoDB, Aurora Serverless, Step Functions, API Gateway, AppSync, Amplify, SQS and SNS.",
+      "Cost trap: an ECS cluster on EC2 instances bills for them all the time, even with no tasks running (the upside: no cold start). A Fargate-only cluster with nothing running costs nothing, because Fargate bills for the vCPU and memory running tasks request.",
+      "**Lambda details**: you pick a runtime (Node.js, Python, Java, .NET, Ruby, Go, or a custom runtime), memory and a timeout. Billing is requests plus duration, measured in **1 ms increments** (older material says 'rounded up to 100 ms'; that changed in December 2020).",
+      "Edit small functions in the console's built-in VS Code-based editor. Upload bigger ones as a .zip file, from S3, or as a **container image**. Test by sending a JSON test event and reading the output in CloudWatch Logs. For longer-running serverless container work, use Fargate.",
+      "**Other container helpers**:",
+      "- **AWS App Runner**: deploys containerised web apps and APIs from an image or source code, with no underlying resources for you to see (unlike Elastic Beanstalk, which shows the EC2 instances and load balancer it creates).\n- **AWS Step Functions**: orchestrates Lambda functions and ECS/Fargate tasks as state machines.\n- **AWS X-Ray**: traces requests across microservices.",
+      "**Serverless is a spectrum**, not a yes/no. Typical traits: high elasticity and availability, durable, secure by default, no infrastructure to see, **scale to zero** (no cost when idle), and paying for value instead of idle servers. Services often called serverless: Lambda, Fargate, S3, DynamoDB, Aurora Serverless, Step Functions, API Gateway, AppSync, Amplify, SQS and SNS.",
     ),
     analogy:
-      "EC2 is renting a whole kitchen: full control, but you clean and maintain it. Containers are meal-prep boxes that can be reheated in any kitchen. Lambda is ordering a single dish from a ghost kitchen - it appears when you ask and you pay just for that dish.",
+      "EC2 is renting a whole kitchen: full control, but you clean and maintain it. Containers are meal-prep boxes you can reheat in any kitchen. Lambda is ordering one dish from a ghost kitchen: it appears when you ask, and you pay just for that dish.",
     examples: [
       {
         title: "A Lambda handler",
@@ -297,8 +300,8 @@ Containers but no hosts to patch                 Fargate`,
       },
     ],
     howItWorks: md(
-      "When an event arrives, Lambda finds or creates an execution environment, loads your code, and runs the handler. The first call in a new environment includes a *cold start* delay. Concurrency scales out by adding environments. You pay for requests and execution time.",
-      "ECS and EKS schedule containers onto capacity. With EC2 launch types you manage the hosts; with Fargate AWS supplies the capacity per task.",
+      "When an event arrives, Lambda finds or creates an execution environment, loads your code and runs the handler. The first call in a new environment has a *cold start* delay. Lambda scales out by adding environments. You pay for requests and run time.",
+      "ECS and EKS schedule containers onto capacity. With the EC2 launch type you manage the hosts; with Fargate AWS supplies capacity per task.",
     ),
     diagram: `  Event (HTTP, S3, SQS, schedule)
           |
@@ -309,13 +312,13 @@ Containers but no hosts to patch                 Fargate`,
                                    |-- EC2 hosts you manage
                                    '-- Fargate (managed)`,
     whyItExists: md(
-      "Managing servers is undifferentiated work. Serverless and managed containers let teams focus on code, scale to zero when idle, and pay for useful work rather than idle hosts.",
+      "Managing servers is undifferentiated work. Serverless and managed containers let teams focus on code, scale to zero when idle, and pay for useful work instead of idle hosts.",
     ),
     whenToUse: md(
-      "Lambda: APIs, glue code, file processing, scheduled jobs, event handlers. Containers: long-running services, portable workloads, microservices. Fargate: containers without cluster-host management.",
+      "- Lambda: APIs, glue code, file processing, scheduled jobs, event handlers.\n- Containers: long-running services, portable workloads, microservices.\n- Fargate: containers without hosts to manage.",
     ),
     whenNotToUse: md(
-      "Avoid Lambda for jobs longer than its time limit, constant heavy compute where reserved servers would cost less, or workloads needing special OS or hardware. Avoid EKS if your team has no Kubernetes need; ECS is simpler.",
+      "Avoid Lambda for jobs longer than its time limit, steady heavy compute where reserved servers cost less, or workloads needing a special OS or hardware. Skip EKS if your team doesn't need Kubernetes; ECS is simpler.",
     ),
     commonMistakes: [
       "Treating Lambda as stateful - local memory and disk do not persist reliably between invocations.",
@@ -363,18 +366,20 @@ Containers but no hosts to patch                 Fargate`,
     level: "intermediate",
     description: "Your private network in AWS: subnets, internet and NAT gateways, VPN, and Direct Connect.",
     explanation: md(
-      "An **Amazon VPC** (Virtual Private Cloud) is a logically isolated network you define inside a Region. You choose its IP range in **CIDR** notation (for example `10.0.0.0/16`) and carve it into **subnets**, each living in a single AZ.",
-      "- **Public subnet**: has a route to an **Internet Gateway (IGW)**, so resources with public IPs can reach and be reached from the internet.\n- **Private subnet**: no direct route from the internet; ideal for databases and app servers.\n- **NAT gateway**: lets private resources start outbound connections (for updates, APIs) without accepting inbound connections. It lives in a public subnet.\n- **Route tables**: decide where traffic from a subnet goes.\n- **Virtual private gateway + Site-to-Site VPN**: an encrypted tunnel over the internet to your on-premises network.\n- **AWS Direct Connect**: a dedicated private network connection from your site to AWS, with more consistent performance than the internet.",
-      "Other connectors you will meet: **VPC peering** (connect two VPCs), **Transit Gateway** (a hub for many VPCs and networks), and **VPC endpoints** (reach AWS services privately without the internet).",
-      "**Scope and sizing**: a VPC belongs to one Region; each subnet sits in exactly one AZ, which is how you choose the AZ an EC2 instance lands in. In CIDR notation a *bigger* suffix means a *smaller* range: a `/16` holds 65,536 addresses, a `/24` holds 256, a `/32` is a single IPv4 address and `/0` means every address. A subnet's range must fit inside its VPC's range.",
-      "AWS does not enforce 'public' or 'private' on a subnet; those words describe its routing. To make a subnet public you (1) create an internet gateway and attach it to the VPC, (2) add a route `0.0.0.0/0 -> IGW` to the subnet's route table, and (3) give instances public IPs, for example by turning on auto-assign public IPv4 for the subnet. A brand-new route table has only the `local` route.",
+      "An **Amazon VPC** (Virtual Private Cloud) is an isolated network you define inside a Region. You pick its IP range in **CIDR** notation (for example `10.0.0.0/16`) and split it into **subnets**, each in a single AZ.",
+      "- **Public subnet**: has a route to an **Internet Gateway (IGW)**, so resources with public IPs can reach the internet and be reached from it.\n- **Private subnet**: no direct route from the internet; ideal for databases and app servers.\n- **NAT gateway**: lets private resources open outbound connections (updates, APIs) without accepting inbound ones. It lives in a public subnet.\n- **Route tables**: decide where a subnet's traffic goes.\n- **Virtual private gateway + Site-to-Site VPN**: an encrypted tunnel over the internet to your on-premises network.\n- **AWS Direct Connect**: a dedicated private connection from your site to AWS, steadier than the internet.",
+      "Other connectors: **VPC peering** (connect two VPCs), **Transit Gateway** (a hub for many VPCs and networks), and **VPC endpoints** (reach AWS services privately, without the internet).",
+      "**Scope and sizing**: a VPC belongs to one Region. Each subnet sits in exactly one AZ, which is how you choose an EC2 instance's AZ. In CIDR, a *bigger* suffix means a *smaller* range: `/16` holds 65,536 addresses, `/24` holds 256, `/32` is one IPv4 address and `/0` is every address. A subnet's range must fit inside its VPC's range.",
+      "AWS doesn't enforce 'public' or 'private'; the words describe a subnet's routing. To make a subnet public:",
+      "- Create an internet gateway and attach it to the VPC.\n- Add a route `0.0.0.0/0 -> IGW` to the subnet's route table.\n- Give instances public IPs, for example by turning on auto-assign public IPv4 for the subnet.",
+      "A brand-new route table has only the `local` route.",
       "**Hybrid connectivity options**",
-      "- **AWS Site-to-Site VPN**: connects an office or data center network to a VPC.\n- **AWS Client VPN**: connects individual users (remote employees) to AWS or on-premises networks.\n- Both create encrypted tunnels over the internet using **IPsec**, a protocol suite that authenticates and encrypts IP packets.\n- **AWS Direct Connect**: a dedicated private line from your data center, office or a colocation facility (a shared data center where you rent space and bandwidth) into AWS, bypassing the public internet. It gives higher, more consistent bandwidth and lower latency, and can lower data transfer costs. Lower-bandwidth *hosted* connections come through AWS partners; higher-bandwidth *dedicated* connections come straight from AWS.\n- **AWS PrivateLink** (interface VPC endpoints): reach AWS services or partner services from your VPC without traffic crossing the public internet.",
-      "Exam trap: Direct Connect is **private but not encrypted by default**. When encryption is required, run a Site-to-Site VPN over it, or use MACsec on supported connections.",
-      "Practical notes: resource 'names' in the console are just the `Name` tag. Many managed services (S3, DynamoDB, Lambda by default) run in AWS-managed networks, so you do not pick a VPC for them. You cannot delete a VPC while instances still run in it.",
+      "- **AWS Site-to-Site VPN**: connects an office or data center network to a VPC.\n- **AWS Client VPN**: connects individual users (remote employees) to AWS or on-premises networks.\n- Both build encrypted tunnels over the internet with **IPsec**, a protocol suite that authenticates and encrypts IP packets.\n- **AWS Direct Connect**: a dedicated private line from your data center, office or a colocation facility (a shared data center where you rent space and bandwidth) into AWS, bypassing the public internet. Higher, steadier bandwidth, lower latency, and possibly lower data transfer costs. Lower-bandwidth *hosted* connections come through AWS partners; higher-bandwidth *dedicated* ones come straight from AWS.\n- **AWS PrivateLink** (interface VPC endpoints): reach AWS or partner services from your VPC without crossing the public internet.",
+      "Exam trap: Direct Connect is **private but not encrypted by default**. If you need encryption, run a Site-to-Site VPN over it, or use MACsec on supported connections.",
+      "Practical notes: resource 'names' in the console are just the `Name` tag. Many managed services (S3, DynamoDB, Lambda by default) run in AWS-managed networks, so you don't pick a VPC for them. You can't delete a VPC while instances still run in it.",
     ),
     analogy:
-      "A VPC is a gated campus. The main gate (internet gateway) opens onto a public plaza (public subnet) with the reception and cafe. Behind it sit private office buildings (private subnets) with no street entrance; staff walk out through a controlled side door (NAT) when they need something, but strangers cannot walk in. A private tunnel to head office is the VPN; a dedicated road is Direct Connect.",
+      "A VPC is a gated campus. The main gate (internet gateway) opens onto a public plaza (public subnet) with reception and a cafe. Behind it are private office buildings (private subnets) with no street entrance. Staff leave through a controlled side door (NAT), but strangers can't walk in. A private tunnel to head office is the VPN; a dedicated road is Direct Connect.",
     examples: [
       {
         title: "Planning a VPC",
@@ -403,8 +408,9 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
       },
     ],
     howItWorks: md(
-      "Every packet leaving a subnet is matched against that subnet's **route table**; the most specific matching route wins. `local` routes keep traffic inside the VPC. A route to an IGW makes a subnet public (instances also need a public or Elastic IP). A route to a NAT gateway lets private instances initiate outbound traffic: the NAT translates their private addresses to its own public one and returns replies.",
-      "For on-premises connectivity, a VPN gives encrypted connectivity quickly over the internet, while Direct Connect takes longer to set up but gives a private, steadier link. Many designs use both: Direct Connect primary, VPN backup.",
+      "Every packet leaving a subnet is matched against its **route table**; the most specific route wins. `local` routes keep traffic inside the VPC. A route to an IGW makes a subnet public (instances also need a public or Elastic IP).",
+      "A route to a NAT gateway lets private instances start outbound traffic. The NAT swaps their private addresses for its own public one and passes replies back.",
+      "For on-premises links, a VPN is quick to set up and encrypted over the internet. Direct Connect takes longer but gives a private, steadier link. Many designs use both: Direct Connect primary, VPN backup.",
     ),
     diagram: `   Internet
       |
@@ -420,13 +426,13 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
    [Virtual private gateway]  [Direct Connect]
         VPN tunnel -------- On-premises network`,
     whyItExists: md(
-      "Early cloud servers sat on flat shared networks. A VPC gives you the equivalent of your own network design - address ranges, routing, segmentation - so you can expose only what must be public and keep the rest isolated.",
+      "Early cloud servers sat on flat shared networks. A VPC gives you your own network design (address ranges, routing, segmentation), so you expose only what must be public and isolate the rest.",
     ),
     whenToUse: md(
-      "Every workload on EC2, RDS, and many other services lives in a VPC. Use public subnets for load balancers, private subnets for apps and data, NAT for outbound access, VPN or Direct Connect for hybrid.",
+      "Every workload on EC2, RDS and many other services lives in a VPC. Use public subnets for load balancers, private subnets for apps and data, NAT for outbound access, and VPN or Direct Connect for hybrid.",
     ),
     whenNotToUse: md(
-      "Do not put databases in public subnets 'for convenience'. Do not choose Direct Connect for a quick proof of concept (lead time) - start with VPN. Avoid NAT gateways for AWS service traffic if a VPC endpoint can keep it private and cheaper.",
+      "Don't put databases in public subnets 'for convenience'. Don't pick Direct Connect for a quick proof of concept (it has lead time); start with VPN. Skip NAT gateways for AWS service traffic when a VPC endpoint keeps it private and cheaper.",
     ),
     commonMistakes: [
       "Overlapping CIDR ranges that block later VPC peering or VPN connectivity.",
@@ -469,15 +475,15 @@ aws ec2 associate-route-table --route-table-id "$RT" --subnet-id "$SUBNET"`,
     description: "Two firewall layers in a VPC: stateful security groups on resources and stateless network ACLs on subnets.",
     explanation: md(
       "AWS gives you two built-in packet filters inside a VPC:",
-      "- **Security group (SG)**: attached to an instance's network interface. **Stateful**: if you allow a request in, the reply is automatically allowed out, and vice versa. Only *allow* rules exist; anything not allowed is denied.\n- **Network ACL (NACL)**: attached to a subnet. **Stateless**: inbound and outbound are judged separately, so you must also allow return traffic (usually ephemeral ports). It supports *allow* and *deny* rules evaluated in number order.",
-      "**Default behavior**: a new security group denies all inbound and allows all outbound. The *default* NACL of a default VPC allows all traffic in and out; a NACL you create yourself starts by denying everything.",
-      "Security groups can reference *other security groups* as sources, which lets you say 'the app tier may talk to the database tier' without hard-coding IPs.",
-      "Exam favourite: **to block one specific IP address, use a NACL**. Security groups cannot deny, so they cannot block a single address. A NACL rule targets a range in CIDR form, and `/32` means exactly one IPv4 address (while `/0` means all addresses).",
+      "- **Security group (SG)**: attached to an instance's network interface. **Stateful**: if a request is allowed in, its reply is allowed out automatically, and vice versa. Only *allow* rules exist; anything not allowed is denied.\n- **Network ACL (NACL)**: attached to a subnet. **Stateless**: inbound and outbound are judged separately, so you must also allow return traffic (usually ephemeral ports). Has *allow* and *deny* rules, checked in number order.",
+      "**Defaults**: a new security group denies all inbound and allows all outbound. The *default* NACL of a default VPC allows all traffic both ways; a NACL you create starts by denying everything.",
+      "Security groups can use *other security groups* as sources, so you can say 'the app tier may talk to the database tier' without hard-coding IPs.",
+      "Exam favourite: **to block one specific IP address, use a NACL**. Security groups can't deny, so they can't block a single address. NACL rules target CIDR ranges: `/32` is exactly one IPv4 address, `/0` is all addresses.",
       "More details:",
-      "- NACL rules are checked from the lowest number up and the first match wins. Number them with gaps (100, 150, 200) so you can slot new rules in later.\n- A NACL applies to everything in its subnet, never to one instance. Each subnet uses the VPC's default NACL unless you associate a different one.\n- Security group rules name a protocol and port (SSH 22, HTTP 80, HTTPS 443, PostgreSQL 5432) and a source (a CIDR range, 'My IP', or another security group).\n- Every VPC comes with a default security group that cannot be deleted. A group that another group references cannot be deleted until that reference is removed.",
+      "- NACL rules are checked from the lowest number up; the first match wins. Leave gaps (100, 150, 200) so you can slot rules in later.\n- A NACL applies to everything in its subnet, never one instance. Each subnet uses the VPC's default NACL unless you associate another.\n- Security group rules name a protocol and port (SSH 22, HTTP 80, HTTPS 443, PostgreSQL 5432) and a source (a CIDR range, 'My IP', or another security group).\n- Every VPC has a default security group that can't be deleted. A group referenced by another group can't be deleted until the reference is removed.",
     ),
     analogy:
-      "A subnet's NACL is the guard at an office building's front desk who checks every person in and every person out against a written list, and treats the two directions as separate decisions. A security group is the receptionist at each company's door who remembers 'I invited this visitor' - so when the visitor leaves, no re-check is needed.",
+      "A subnet's NACL is the guard at a building's front desk who checks everyone in and everyone out against a list, treating each direction separately. A security group is the receptionist at each company's door who remembers 'I invited this visitor', so no re-check is needed when they leave.",
     examples: [
       {
         title: "A web tier security group",
@@ -504,7 +510,7 @@ Inbound    TCP       5432   source = web-sg          only app tier may connect
 100   Outbound TCP       1024-65535   0.0.0.0/0        ALLOW   <- replies to clients
 110   Outbound TCP       443          0.0.0.0/0        ALLOW
 *     Both     All       All          0.0.0.0/0        DENY    (implicit final rule)`,
-        explanation: "Rule 120 would never match traffic already allowed by rule 100/110 - NACL rules are processed by number. Put specific denies at lower numbers than broad allows.",
+        explanation: "Rule 120 never matches traffic already allowed by rule 100 or 110, because NACL rules run in number order. Give specific denies lower numbers than broad allows.",
       },
       {
         title: "Create and open a security group",
@@ -516,20 +522,21 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       },
     ],
     howItWorks: md(
-      "Walk a request through: a client sends HTTPS to a web server in a subnet. Traffic first meets the **subnet's NACL inbound rules**; if allowed, it reaches the instance's **security group**, which checks inbound rules. The response skips the security group's outbound evaluation (it is tracked as part of the connection), but it must pass the **NACL outbound rules** because NACLs do not track connections.",
-      "Because NACLs are blunt (per subnet, IP/port based), most day-to-day control uses security groups; NACLs are an extra layer, handy for blocking a specific IP range at the subnet edge.",
+      "Follow one request: a client sends HTTPS to a web server in a subnet. It first meets the **subnet's NACL inbound rules**. If allowed, it reaches the instance's **security group** inbound rules.",
+      "The reply skips the security group's outbound check (it is tracked as part of the connection). It must still pass the **NACL outbound rules**, because NACLs don't track connections.",
+      "NACLs are blunt (per subnet, IP/port based), so most daily control uses security groups. NACLs are an extra layer, handy for blocking an IP range at the subnet edge.",
     ),
     diagram: `  client --> [ NACL in ] --> [ SG in ] --> instance
   client <-- [ NACL out ] <-- (reply auto-allowed by SG)
               ^ stateless: needs its own rule`,
     whyItExists: md(
-      "Defense in depth: a mistake in one control should not expose everything. Instance-level and subnet-level filters give layered protection and different tools - SGs for precise allow-lists, NACLs for coarse allow/deny at the boundary.",
+      "Defense in depth: one mistake shouldn't expose everything. Instance-level and subnet-level filters give layered protection: SGs for precise allow-lists, NACLs for coarse allow/deny at the boundary.",
     ),
     whenToUse: md(
-      "Use security groups on every resource, with tight sources. Use NACLs when you need explicit deny rules or a coarse subnet-level guard.",
+      "Use security groups on every resource, with tight sources. Use NACLs when you need explicit denies or a coarse subnet-level guard.",
     ),
     whenNotToUse: md(
-      "Do not rely on a NACL alone to protect instances, and do not open `0.0.0.0/0` on administrative ports like SSH or RDP; use Systems Manager Session Manager or a bastion with restricted sources.",
+      "Don't rely on a NACL alone to protect instances. Don't open `0.0.0.0/0` on admin ports like SSH or RDP; use Systems Manager Session Manager or a bastion with restricted sources.",
     ),
     commonMistakes: [
       "Forgetting ephemeral-port return rules in a NACL and wondering why connections hang.",
@@ -566,19 +573,19 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
     level: "intermediate",
     description: "Translate names to addresses with Route 53, and serve content from edge locations with CloudFront.",
     explanation: md(
-      "**DNS** (Domain Name System) turns a name like `www.example.com` into an IP address. A resolver asks a chain of servers: the root, then the top-level domain (`.com`), then the domain's **authoritative** name server, and caches the answer for the record's **TTL**.",
-      "**Amazon Route 53** is AWS's DNS service. It registers domains, hosts DNS zones, and checks the health of endpoints. Its **routing policies** decide which answer to return:",
+      "**DNS** (Domain Name System) turns a name like `www.example.com` into an IP address. A resolver asks a chain of servers (the root, then the top-level domain `.com`, then the domain's **authoritative** name server) and caches the answer for the record's **TTL**.",
+      "**Amazon Route 53** is AWS's DNS service. It registers domains, hosts DNS zones and health-checks endpoints. Its **routing policies** decide which answer to return:",
       "- **Simple**: one answer.\n- **Weighted**: split traffic by percentage (canary releases).\n- **Latency-based**: send users to the Region with the lowest latency.\n- **Failover**: primary/secondary, switching on failed health checks.\n- **Geolocation / Geoproximity**: route by where the user or resource is.\n- **Multivalue answer**: return several healthy records.",
-      "**Amazon CloudFront** is a **content delivery network (CDN)**. It caches copies of your content (static files, video, even API responses) in **edge locations** near users, fetching from your **origin** (S3, an ALB, any HTTP server) only on a cache miss. It also provides TLS termination, DDoS absorption, and integration with AWS WAF.",
-      "Between the origin and the edge locations sit **regional edge caches**: larger caches that hold less popular content, so fewer requests travel all the way back to the origin.",
+      "**Amazon CloudFront** is a **content delivery network (CDN)**. It caches your content (static files, video, even API responses) in **edge locations** near users. It fetches from your **origin** (S3, an ALB, any HTTP server) only on a cache miss. It also handles TLS termination, absorbs DDoS traffic and integrates with AWS WAF.",
+      "**Regional edge caches** sit between the origin and edge locations. These larger caches hold less popular content, so fewer requests go all the way back to the origin.",
       "**CloudFront features to know**",
-      "- **Distribution**: the CloudFront configuration. It can have several origins (and origin groups for failover) and custom error pages. Changes take a while to deploy worldwide.\n- **Behaviors**: per-path settings such as the protocol policy (for example redirect HTTP to HTTPS) and how long content stays cached.\n- **Invalidations**: remove cached files (such as `/image.jpg`) so the next request fetches a fresh copy from the origin.\n- **Geographic restrictions**: an allow list or block list of countries.\n- **Code at the edge**: **CloudFront Functions** run lightweight JavaScript at edge locations; **Lambda@Edge** is more powerful and can read and change requests and responses. Both cut latency compared with calling a Lambda function in one Region.",
+      "- **Distribution**: the CloudFront configuration. It can have several origins (and origin groups for failover) and custom error pages. Changes take a while to deploy worldwide.\n- **Behaviors**: per-path settings, such as the protocol policy (for example redirect HTTP to HTTPS) and how long content stays cached.\n- **Invalidations**: remove cached files (such as `/image.jpg`) so the next request gets a fresh copy from the origin.\n- **Geographic restrictions**: an allow list or block list of countries.\n- **Code at the edge**: **CloudFront Functions** run lightweight JavaScript at edge locations. **Lambda@Edge** is more powerful and can read and change requests and responses. Both cut latency compared with calling a Lambda function in one Region.",
       "**Other services that use edge locations**",
-      "- **AWS Global Accelerator**: users enter the AWS network at the nearest edge location and then travel over the AWS backbone to your application. It improves performance and availability for global users (for example a single-Region app with worldwide customers, or non-HTTP traffic) without building in other Regions. It does not cache.\n- **Amazon S3 Transfer Acceleration**: a special bucket endpoint so distant users upload to a nearby edge location, after which data rides the AWS backbone to the bucket.",
-      "Exam tip: services with 'accelerat' in the name use edge locations as an **on-ramp** into AWS. CloudFront uses them as an **off-ramp**, delivering cached content out to users.",
+      "- **AWS Global Accelerator**: users enter the AWS network at the nearest edge location, then travel over the AWS backbone to your app. It improves performance and availability for global users (for example a single-Region app with worldwide customers, or non-HTTP traffic) without building in other Regions. It does not cache.\n- **Amazon S3 Transfer Acceleration**: a special bucket endpoint. Distant users upload to a nearby edge location, and the data then rides the AWS backbone to the bucket.",
+      "Exam tip: services with 'accelerat' in the name use edge locations as an **on-ramp** into AWS. CloudFront uses them as an **off-ramp**, delivering cached content to users.",
     ),
     analogy:
-      "DNS is a phone book that you consult before every call. The CDN is a chain of local libraries that keep copies of popular books, so most readers borrow from the branch around the corner instead of ordering from the central archive across the world.",
+      "DNS is a phone book you check before every call. A CDN is a chain of local libraries holding copies of popular books, so most readers borrow from the branch around the corner instead of ordering from a central archive across the world.",
     examples: [
       {
         title: "A weighted DNS record (canary)",
@@ -611,8 +618,8 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
       },
     ],
     howItWorks: md(
-      "A browser asks its resolver for the address of your name. Route 53, as the authoritative server, evaluates the routing policy and health checks and returns an answer, which the resolver caches until the TTL expires. The browser then connects to that address.",
-      "With CloudFront, the name resolves to a nearby edge location. If the edge has a fresh copy it responds immediately (a *cache hit*). Otherwise it fetches from the origin, stores the result according to cache headers and policies, and responds. You can invalidate cached objects when content changes.",
+      "A browser asks its resolver for your name's address. Route 53, as the authoritative server, applies the routing policy and health checks and returns an answer. The resolver caches it until the TTL expires, and the browser connects to that address.",
+      "With CloudFront, the name resolves to a nearby edge location. If the edge has a fresh copy, it responds at once (a *cache hit*). Otherwise it fetches from the origin, stores the result according to cache headers and policies, and responds. You can invalidate cached objects when content changes.",
     ),
     diagram: `  Browser -> Resolver -> Root -> .com TLD -> Route 53 (authoritative)
                                                 |
@@ -623,13 +630,13 @@ aws ec2 authorize-security-group-ingress --group-id "$SG" \\
                    v
                Origin (S3 / ALB)`,
     whyItExists: md(
-      "People remember names, computers use numbers, and DNS bridges them. Distance adds latency, and the speed of light is not negotiable; copying content near users is the only way to make far-away users feel close.",
+      "People remember names, computers use numbers, and DNS bridges them. Distance adds latency, and the speed of light is fixed; copying content near users is the only way to make far-away users feel close.",
     ),
     whenToUse: md(
-      "Use Route 53 for domains, failover, and traffic shifting. Use CloudFront for global static assets, media streaming, accelerating dynamic sites, and shielding origins from load.",
+      "Use Route 53 for domains, failover and traffic shifting. Use CloudFront for global static assets, media streaming, speeding up dynamic sites and shielding origins from load.",
     ),
     whenNotToUse: md(
-      "A CDN adds little for audiences in one location that is already next to the origin, or for content that is unique per request and uncacheable. Very low TTLs everywhere increase DNS query cost and latency.",
+      "A CDN adds little when your audience is in one place next to the origin, or when content is unique per request and can't be cached. Very low TTLs everywhere raise DNS query cost and latency.",
     ),
     commonMistakes: [
       "Setting a long TTL, then needing to repoint quickly during an incident.",

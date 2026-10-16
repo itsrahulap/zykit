@@ -8,18 +8,16 @@ export const javascriptBeginnerTopics: Topic[] = [
     description:
       "The programming language that makes websites interactive.",
     explanation: `
-A website starts as plain text and images — that's what HTML and CSS give you.
-But nothing on the page can *react* to you. Nothing changes when you click a
-button, type in a form, or scroll down.
+HTML and CSS give you a page of text and images. But on their own, nothing
+on the page *reacts* to you when you click, type or scroll.
 
-JavaScript is the piece that adds that behavior. It's a programming language
-that runs inside your web browser and lets a page respond to what you do:
-show a menu, validate a form, update a price, load new content without
-reloading the page.
+JavaScript adds that behavior. It's a programming language that runs in your
+browser and lets a page respond to you: show a menu, check a form, update a
+price, or load new content without reloading.
 
-It also runs outside the browser now — on servers (using Node.js), in mobile
-apps, and even on some hardware. But it started, and is still mostly known,
-as "the language of the web."
+It also runs outside the browser: on servers (with Node.js), in mobile apps
+and even on some hardware. But it's still best known as "the language of the
+web."
     `.trim(),
     analogy:
       "If HTML is the skeleton of a page and CSS is its clothing, JavaScript is the muscles — it's what makes things actually move.",
@@ -28,11 +26,11 @@ as "the language of the web."
         title: "A tiny piece of JavaScript",
         code: `alert("Hello! This popped up because of JavaScript.");`,
         explanation:
-          "This one line, placed in a webpage, would show a popup box. Nothing complicated — just an instruction the browser understands and runs.",
+          "Put this one line in a webpage and it shows a popup box. It's just an instruction the browser understands and runs.",
         walkthrough: [
-          { code: "alert(...)", explanation: "Calls a function built into every browser that shows a small popup box on screen." },
-          { code: '"Hello! This popped up..."', explanation: "The text inside the quotes is exactly what appears in that popup." },
-          { code: ";", explanation: "The semicolon marks the end of this instruction, the same way a period ends a sentence." },
+          { code: "alert(...)", explanation: "Calls a built-in browser function that shows a small popup box." },
+          { code: '"Hello! This popped up..."', explanation: "The text in quotes is what appears in the popup." },
+          { code: ";", explanation: "The semicolon ends the instruction, like a period ends a sentence." },
         ],
       },
       {
@@ -43,13 +41,13 @@ button.addEventListener("click", () => {
   alert("You clicked the button!");
 });`,
         explanation:
-          "This is closer to what JavaScript is actually used for day to day: finding a piece of the page, then telling it what to do when the user interacts with it.",
+          "This is closer to everyday JavaScript: find a piece of the page, then tell it what to do when the user interacts with it.",
       },
     ],
     howItWorks: `
-Every browser (Chrome, Firefox, Safari, Edge) has a built-in program called a
-JavaScript engine. When a webpage loads, the browser reads any JavaScript
-code on the page and hands it to this engine, which runs it line by line.
+Every browser (Chrome, Firefox, Safari, Edge) has a built-in JavaScript
+engine. When a page loads, the browser hands the page's JavaScript to this
+engine, which runs it line by line.
     `.trim(),
     diagram: `
 Browser loads page
@@ -63,25 +61,21 @@ Engine runs the instructions
 Page updates / responds
     `.trim(),
     whyItExists: `
-Early websites were static — you could read them, but not interact with
-them. JavaScript was created to let pages respond to the user directly, in
-the browser, without needing to ask a server and reload the whole page for
-every small change.
+Early websites were static: you could read them, but not interact with
+them. JavaScript lets pages respond to the user right in the browser,
+without asking a server and reloading the whole page for every small change.
     `.trim(),
     whenToUse: `
-Reach for JavaScript when you're building something that needs to run in a
-web browser and react to the user right away — validating a form as someone
-types, updating a page without reloading it, or building an entire
-single-page app. It's also a reasonable choice for the server side (via
-Node.js) if you'd rather use one language for both the client and the
-server.
+Use JavaScript for anything that runs in a browser and reacts to the user
+right away: checking a form as someone types, updating a page without
+reloading, or building a whole single-page app. It's also a good fit for
+the server (via Node.js) if you want one language for client and server.
     `.trim(),
     whenNotToUse: `
-If you're building something CPU-heavy — video processing, machine
-learning, low-level system code — JavaScript usually isn't the first
-choice; languages built for that kind of raw performance (C++, Rust, Go)
-fit better. And a purely informational page with no interactivity at all
-may not need JavaScript beyond a tiny script, if any.
+For CPU-heavy work (video processing, machine learning, low-level system
+code), languages built for raw speed like C++, Rust or Go usually fit
+better. A purely informational page with no interactivity may need little
+or no JavaScript.
     `.trim(),
     commonMistakes: [
       "Thinking JavaScript and Java are related — they only share part of a name.",
@@ -97,129 +91,129 @@ may not need JavaScript beyond a tiny script, if any.
       {
         question: "What is JavaScript used for?",
         answer:
-          "Making web pages interactive in the browser — validating forms, updating content, responding to clicks — and, via Node.js, building servers, command-line tools, and scripts outside the browser too.",
+          "Making web pages interactive (checking forms, updating content, responding to clicks). Via Node.js, it also builds servers, command-line tools and scripts outside the browser.",
       },
       {
         question: "Is JavaScript the same as Java?",
         answer:
-          "No. They're unrelated languages with different creators, syntax, and use cases. The similar name was a marketing decision by Netscape in the 90s to ride Java's popularity, not a sign of shared heritage.",
+          "No. They're unrelated languages with different creators, syntax and uses. Netscape picked the similar name in the 90s as marketing, to ride Java's popularity.",
       },
       {
         question: "Where does JavaScript code run?",
         answer:
-          "Primarily inside a browser's built-in JavaScript engine, but also on servers and in tools via Node.js, and in other embedded runtimes (Deno, Bun, some IoT devices) — the language is the same everywhere; what differs is which extra APIs (DOM, file system, etc.) the environment provides.",
+          "Mostly in a browser's built-in JavaScript engine, but also on servers and in tools via Node.js, and in other runtimes (Deno, Bun, some IoT devices). The language is the same everywhere. What differs is which extra APIs (DOM, file system, etc.) the environment provides.",
       },
       {
         question: "Is JavaScript compiled or interpreted?",
         answer:
-          "Neither in the traditional sense — modern engines like V8 use just-in-time (JIT) compilation: code is parsed and initially run through an interpreter, and any code path that runs often (\"hot\" code) gets compiled to optimized machine code on the fly. It's not compiled ahead of time like C++, but it's not purely line-by-line interpreted either.",
+          "Neither, strictly. Modern engines like V8 use just-in-time (JIT) compilation: code first runs through an interpreter, and code that runs often (\"hot\" code) is compiled to optimized machine code on the fly. It isn't compiled ahead of time like C++, nor purely interpreted line by line.",
       },
       {
         question: "What is the relationship between JavaScript and ECMAScript?",
         answer:
-          "ECMAScript is the standardized specification (maintained by the TC39 committee) that defines the language's syntax and behavior. JavaScript is the most common implementation of that spec — in practice the two names are used almost interchangeably, and version names like ES6/ES2015 refer to specific yearly releases of the spec.",
+          "ECMAScript is the standard (maintained by the TC39 committee) that defines the language's syntax and behavior. JavaScript is its most common implementation, and the two names are used almost interchangeably. Names like ES6/ES2015 refer to specific yearly releases of the spec.",
       },
       {
         question: "What is a JavaScript engine? Can you name one?",
         answer:
-          "A program built into a browser or runtime that parses and executes JavaScript code according to the ECMAScript spec, plus its own performance optimizations. V8 (Chrome, Node.js), SpiderMonkey (Firefox), and JavaScriptCore (Safari) are the major ones.",
+          "A program in a browser or runtime that parses and runs JavaScript according to the ECMAScript spec, with its own performance optimizations. The major ones are V8 (Chrome, Node.js), SpiderMonkey (Firefox) and JavaScriptCore (Safari).",
       },
       {
         question: "Is JavaScript single-threaded?",
         answer:
-          "Yes — the language itself runs one operation at a time on a single call stack. Apparent concurrency (timers, network requests, click handling) comes from the surrounding runtime (the browser's Web APIs, or Node's libuv), which hands finished work back to that one thread through the event loop.",
+          "Yes. The language runs one operation at a time on a single call stack. Apparent concurrency (timers, network requests, clicks) comes from the runtime (the browser's Web APIs, or Node's libuv), which hands finished work back to that one thread through the event loop.",
       },
       {
         question: "What does it mean that JavaScript is dynamically typed?",
         answer:
-          "A variable's type isn't declared ahead of time and can change as the program runs — `let x = 5; x = \"now text\";` is perfectly legal. The type lives with the value at any given moment, not with the variable itself.",
+          "A variable's type isn't declared ahead of time and can change while the program runs: `let x = 5; x = \"now text\";` is legal. The type belongs to the value, not the variable.",
       },
       {
         question: "What does it mean that JavaScript is weakly typed?",
         answer:
-          "Many operations automatically convert values between types instead of raising an error — e.g. `\"5\" - 1` becomes `4` because `-` coerces the string to a number first. This is convenient in small cases but a frequent source of subtle bugs, which is part of why TypeScript exists.",
+          "Many operations convert values between types automatically instead of raising an error. For example, `\"5\" - 1` becomes `4` because `-` turns the string into a number first. Handy at times, but a common source of subtle bugs, which is part of why TypeScript exists.",
       },
       {
         question: "What is Node.js, and how does it differ from JavaScript in a browser?",
         answer:
-          "Node.js is a runtime for executing JavaScript outside the browser, built on the V8 engine plus its own APIs — file system access, networking, process control — instead of browser APIs like the DOM. The core language is identical; only the surrounding built-in objects differ.",
+          "Node.js runs JavaScript outside the browser. It's built on the V8 engine and adds its own APIs (file system, networking, process control) instead of browser APIs like the DOM. The core language is identical; only the built-in objects around it differ.",
       },
       {
         question: "What is `\"use strict\"`, and why would you use it?",
         answer:
-          "A directive that opts a script or function into a stricter mode of JavaScript, turning common mistakes — like assigning to an undeclared variable — into thrown errors instead of silently doing something unintended. Modules and class bodies are strict mode automatically, even without writing it explicitly.",
+          "A directive that switches a script or function into strict mode. Common mistakes, like assigning to an undeclared variable, then throw errors instead of silently doing the wrong thing. Modules and class bodies are always strict, even without it.",
       },
       {
         question: "Why is JavaScript described as a multi-paradigm language?",
         answer:
-          "It supports procedural code, object-oriented code (via prototypes and classes), and functional-style code (functions as first-class values, higher-order functions) without forcing any single style — a single program can freely mix all three.",
+          "It supports procedural, object-oriented (prototypes and classes) and functional styles (first-class and higher-order functions) without forcing one. A single program can mix all three.",
       },
       {
         question: "What's the difference between client-side and server-side JavaScript?",
         answer:
-          "Client-side JavaScript runs in the user's browser, manipulating the page and reacting to user events. Server-side JavaScript (via Node.js) runs on a server, handling things like databases, file access, and APIs. The language is the same; the responsibilities and available APIs differ.",
+          "Client-side JavaScript runs in the user's browser, changing the page and reacting to user events. Server-side JavaScript (via Node.js) runs on a server and handles databases, files and APIs. Same language; different jobs and available APIs.",
       },
       {
         question: "Why do teams use tools like Babel or TypeScript alongside plain JavaScript?",
         answer:
-          "Babel transpiles newer JavaScript syntax down to an older version so it runs in browsers that don't yet support the newest features. TypeScript adds a static type system checked before the code ever runs, then compiles down to plain JavaScript — neither replaces JavaScript, both build on top of it.",
+          "Babel converts newer syntax into older JavaScript so it runs in browsers that lack the newest features. TypeScript adds static types checked before the code runs, then compiles to plain JavaScript. Neither replaces JavaScript; both build on it.",
       },
       {
         question:
           "Output-prediction: what does `console.log(typeof undeclaredVar)` print if `undeclaredVar` was never declared anywhere?",
         answer:
-          "It logs `\"undefined\"` rather than throwing a `ReferenceError`. `typeof` is specifically designed to be safe on identifiers that don't exist at all — one of the very few operations in JavaScript that doesn't throw on a missing variable.",
+          "It logs `\"undefined\"` instead of throwing a `ReferenceError`. `typeof` is designed to be safe on names that don't exist, one of the few operations that doesn't throw on a missing variable.",
       },
       {
         question: "Is JavaScript case-sensitive?",
         answer:
-          "Yes — `myVariable` and `myvariable` are two completely different identifiers, and every keyword must be written in its exact casing.",
+          "Yes. `myVariable` and `myvariable` are different names, and keywords must use their exact casing.",
       },
       {
         question: "Why do some JavaScript files use semicolons and others don't?",
         answer:
-          "JavaScript has Automatic Semicolon Insertion (ASI), which inserts missing semicolons for you at line breaks under certain rules, so code without explicit semicolons often still runs correctly. ASI has edge cases — like a line starting with `(` or `[` merging with the previous line — that can silently change meaning, which is why many style guides still write semicolons explicitly.",
+          "Automatic Semicolon Insertion (ASI) adds missing semicolons at line breaks under certain rules, so code without them usually still works. But ASI has edge cases: a line starting with `(` or `[` can merge with the previous line and silently change meaning. That's why many style guides still write semicolons.",
       },
       {
         question: "Who created JavaScript, and why does that history come up in interviews?",
         answer:
-          "Brendan Eich created it at Netscape in 1995, reportedly in about ten days. That rushed origin explains several of the language's inconsistent design choices (like `typeof null` being `\"object\"`) that persist today purely for backward compatibility.",
+          "Brendan Eich created it at Netscape in 1995, reportedly in about ten days. That rush explains several odd design choices (like `typeof null` being `\"object\"`) that remain today only for backward compatibility.",
       },
       {
         question: "What's the difference between \"JavaScript\" and \"ES6\"/\"ES2015+\"?",
         answer:
-          "ES6 (also called ES2015) is one specific yearly release of the ECMAScript spec that introduced major features like `let`/`const`, arrow functions, classes, and promises. \"JavaScript\" refers to the language as a whole across every one of these yearly spec updates, past and future.",
+          "ES6 (ES2015) is one yearly release of the ECMAScript spec. It added major features like `let`/`const`, arrow functions, classes and promises. \"JavaScript\" means the language as a whole, across all yearly releases.",
       },
       {
         question: "Can JavaScript run without a browser?",
         answer:
-          "Yes — Node.js, Deno, Bun, and various embedded scripting engines all run JavaScript entirely outside any browser context.",
+          "Yes. Node.js, Deno, Bun and various embedded engines all run JavaScript outside a browser.",
       },
       {
         question: "What's the difference between the DOM and JavaScript itself?",
         answer:
-          "The DOM is a browser-provided object representation of a page's HTML structure; JavaScript is the language used to read and change it. The language itself has no built-in idea of a webpage — the DOM API is something the browser environment adds on top.",
+          "The DOM is the browser's object version of a page's HTML; JavaScript is the language you use to read and change it. The language itself knows nothing about webpages. The browser adds the DOM API on top.",
       },
       {
         question:
           "Scenario: a team is choosing between vanilla JavaScript and a framework like React. What does JavaScript itself provide, and what does the framework add?",
         answer:
-          "JavaScript provides the core language — variables, functions, control flow, and, in the browser, direct DOM APIs for finding and changing elements by hand. A framework adds a structured way to build UI out of reusable components and a more efficient system for updating the DOM as data changes — but it's still generating and running plain JavaScript underneath.",
+          "JavaScript gives you the core language (variables, functions, control flow) and, in the browser, DOM APIs for finding and changing elements by hand. A framework adds a structured way to build UI from reusable components and a more efficient way to update the DOM as data changes. Underneath, it's still plain JavaScript.",
       },
       {
         question: "Why can the same JavaScript code sometimes behave slightly differently across browsers?",
         answer:
-          "Each browser ships its own engine and its own implementation of Web APIs (DOM, `fetch`, storage). Core language behavior is nearly identical thanks to the shared ECMAScript spec, but engine-specific performance quirks, timing details, or not-yet-implemented newer syntax can still cause visible differences.",
+          "Each browser ships its own engine and its own Web APIs (DOM, `fetch`, storage). The shared ECMAScript spec keeps core behavior nearly identical, but performance quirks, timing details or missing newer syntax can still cause visible differences.",
       },
       {
         question: "What is JSON's relationship to JavaScript, given the name?",
         answer:
-          "JSON's syntax was inspired by JavaScript's object and array literals, but JSON is a language-independent, text-based data format used across nearly every programming language — it isn't JavaScript code, and parsing it never executes anything.",
+          "JSON's syntax comes from JavaScript's object and array literals, but JSON is a language-independent text data format used by nearly every language. It isn't JavaScript code, and parsing it never runs anything.",
       },
       {
         question: "How does JavaScript's execution model compare to a language like Python's?",
         answer:
-          "Both are typically run by an interpreter/JIT rather than compiled fully ahead of time, but JavaScript was designed specifically to be embedded in a host environment (a browser or Node.js) and relies entirely on that host for I/O — the language spec itself defines no built-in way to read a file or make a network request.",
+          "Both usually run through an interpreter/JIT rather than full ahead-of-time compilation. But JavaScript was designed to be embedded in a host (a browser or Node.js) and relies entirely on that host for I/O. The spec itself has no built-in way to read a file or make a network request.",
       },
     ],
     relatedTopics: ["variables", "functions"],
@@ -231,17 +225,17 @@ may not need JavaScript beyond a tiny script, if any.
     level: "beginner",
     description: "A named container for storing a value your program can reuse.",
     explanation: `
-Programs need to remember things — a username, a score, an item price. A
-variable is simply a name you give to a piece of information so you can use
-it again later, without retyping the value every time.
+Programs need to remember things: a username, a score, a price. A variable
+is a name for a piece of information, so you can reuse it without retyping
+the value.
 
 In JavaScript, you create a variable with \`let\` or \`const\`:
 
 - Use **let** when the value might change later.
 - Use **const** when the value should stay the same after it's set.
 
-There's also an older keyword, \`var\`, but modern JavaScript mostly avoids it
-in favor of \`let\` and \`const\`, which behave more predictably.
+There's also an older keyword, \`var\`. Modern code mostly avoids it, because
+\`let\` and \`const\` behave more predictably.
     `.trim(),
     analogy:
       "A variable is like a labeled jar. You write a label on it (the variable name) and put something inside (the value). Later, you just read the label to find what's inside.",
@@ -256,10 +250,10 @@ const username = "amara";
         explanation:
           "`score` can change because it's declared with `let`. `username` cannot be reassigned because it's declared with `const`.",
         walkthrough: [
-          { code: "let score = 0;", explanation: "Creates a variable named score, starting at 0, that's allowed to change later." },
-          { code: "score = score + 10;", explanation: "Reads the current value of score, adds 10, and stores the result back in score." },
-          { code: 'const username = "amara";', explanation: "Creates a variable that cannot be reassigned after this line." },
-          { code: "// username = ...", explanation: "Commented out — uncommenting it would throw an error, since const variables can't be reassigned." },
+          { code: "let score = 0;", explanation: "Creates score, starting at 0. It can change later." },
+          { code: "score = score + 10;", explanation: "Reads score, adds 10, and stores the result back in score." },
+          { code: 'const username = "amara";', explanation: "Creates a variable that can't be reassigned after this line." },
+          { code: "// username = ...", explanation: "Commented out. Uncommenting it would throw an error, since const variables can't be reassigned." },
         ],
       },
       {
@@ -272,31 +266,29 @@ const total1 = price1 + price1 * taxRate;
 const price2 = 45;
 const total2 = price2 + price2 * taxRate;`,
         explanation:
-          "`taxRate` is defined once and reused in both calculations — if the tax rate ever changes, there's exactly one place to update it.",
+          "`taxRate` is defined once and used in both calculations. If the rate changes, you update it in one place.",
       },
     ],
     howItWorks: `
-When JavaScript sees \`let score = 0\`, it sets aside a small space in memory,
-labels that space "score", and stores the value 0 there. Whenever your code
-uses the word \`score\` afterward, JavaScript looks up that labeled space and
-uses whatever value currently lives there.
+When JavaScript sees \`let score = 0\`, it sets aside a space in memory,
+labels it "score" and stores 0 there. Whenever your code later uses
+\`score\`, JavaScript looks up that space and uses its current value.
     `.trim(),
     whyItExists: `
-Without variables, you'd have to write the same literal values everywhere,
-and you'd have no way to store something that changes while the program
-runs — like a running total or the current user's name.
+Without variables, you'd repeat the same values everywhere, and you couldn't
+store anything that changes while the program runs, like a running total or
+the current user's name.
     `.trim(),
     whenToUse: `
-Use a variable any time you need to store a value so you can use it again
-later — a running total, a piece of user input, a flag that tracks whether
-something happened. Reach for \`const\` by default, and switch to \`let\` only
-once you know the value genuinely needs to change.
+Use a variable whenever you need to store a value to use again: a running
+total, user input, a flag that tracks whether something happened. Use
+\`const\` by default, and switch to \`let\` only when the value really needs
+to change.
     `.trim(),
     whenNotToUse: `
-You don't need a variable for a value you use exactly once and never refer
-to again — sometimes it's clearer to just write the value directly where
-it's needed. And avoid \`var\` in new code: there's no situation in modern
-JavaScript where \`var\` behaves better than \`let\`/\`const\`.
+A value you use exactly once may be clearer written directly where it's
+needed. And avoid \`var\` in new code: it's never better than
+\`let\`/\`const\` in modern JavaScript.
     `.trim(),
     commonMistakes: [
       "Trying to reassign a `const` variable — it will throw an error.",
@@ -309,41 +301,41 @@ JavaScript where \`var\` behaves better than \`let\`/\`const\`.
       { difficulty: "Hard", prompt: "Write a small script that stores a product's `price` and `quantity` in variables and logs the total cost." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between `var`, `let`, and `const`?", answer: "`var` is function-scoped (or global) and can be redeclared and reassigned; `let` is block-scoped and can be reassigned but not redeclared in the same scope; `const` is block-scoped like `let` but cannot be reassigned after its initial value is set. All three differ mainly in scope and whether reassignment/redeclaration is allowed — not in what kinds of values they can hold." },
-      { question: "Can you declare the same variable name twice in the same scope with `let`?", answer: "No — redeclaring a `let` (or `const`) binding in the same scope throws a `SyntaxError` (\"Identifier has already been declared\"). `var`, by contrast, allows redeclaring the same name in the same scope with no error at all." },
-      { question: "What happens if you try to reassign a `const` variable?", answer: "JavaScript throws a `TypeError: Assignment to constant variable.` at the moment the reassignment runs — `const` locks the binding itself, not just discourages changing it." },
-      { question: "What's the difference between declaring a variable and initializing it?", answer: "Declaration is telling the engine a name exists in a scope (e.g. `let x`); initialization is giving it its first value (e.g. `x = 5`, or combined as `let x = 5`). The two can happen on separate lines for `var` and `let` — a `var` starts as `undefined` between declaration and initialization, while a `let`/`const` stays inaccessible (in the TDZ) until the initialization line actually runs." },
-      { question: "What is variable scope, in plain terms?", answer: "Scope is the region of code where a given variable name is visible and usable. Code outside that region either can't see the variable at all, or sees a different variable that happens to share the name." },
-      { question: "What is function scope, and which keyword creates it?", answer: "Function scope means a variable is visible anywhere inside the function it was declared in, regardless of how many nested blocks (`if`, `for`, etc.) it passes through — `var` is function-scoped, so a `var` declared inside an `if` block is still visible for the rest of the whole function." },
-      { question: "What is block scope, and which keywords create it?", answer: "Block scope means a variable is only visible inside the nearest pair of curly braces `{ }` it was declared in — an `if` block, a `for` loop body, or any standalone `{ }`. `let` and `const` are block-scoped." },
-      { question: "What is global scope?", answer: "The outermost scope, not nested inside any function or block — a variable declared there is visible from anywhere else in the file (and, for `var` or an implicit global, becomes a property of the global object in non-module scripts)." },
-      { question: "What happens if you try to use a variable that was never declared anywhere?", answer: "JavaScript throws a `ReferenceError: x is not defined` the moment that line runs — there's no fallback value, unlike a declared-but-unassigned variable which is simply `undefined`." },
-      { question: "What does a `ReferenceError` actually indicate?", answer: "That the code referenced a name that doesn't exist as a binding in any scope currently visible to it — either it was never declared, or it's a `let`/`const` being accessed before its declaration has run (the TDZ case), which throws this same error type." },
-      { question: "Are `let` and `const` hoisted the same way `var` is?", answer: "They're hoisted in the sense that the engine registers the binding at the top of the scope during compilation, but unlike `var` they are not initialized to `undefined` at that point — they stay uninitialized in the Temporal Dead Zone until the actual declaration line executes, so accessing them earlier throws instead of returning `undefined`." },
-      { question: "What is the Temporal Dead Zone (TDZ)?", answer: "The span of code between the start of a scope and the line where a `let`/`const` variable is actually declared, during which the variable exists (it's hoisted) but cannot be read or written — any access in that window throws a `ReferenceError`." },
-      { question: "If `var`, `let`, and `const` are all hoisted, why does only `var` let you access the variable before its declaration line?", answer: "Hoisting for `var` initializes the binding to `undefined` immediately, so an early read just gets `undefined`. Hoisting for `let`/`const` only reserves the name — it deliberately leaves it uninitialized until the declaration line runs, so an early read hits the TDZ and throws instead." },
-      { question: "What's the difference between reassignment and mutation?", answer: "Reassignment replaces what a variable points to entirely (`x = newValue`); mutation changes the contents of the value a variable already points to, without changing which value that is (e.g. `arr.push(1)` or `obj.key = 2`). `const` blocks reassignment but has no say over mutation." },
-      { question: "Can you change a property on an object declared with `const`? Can you reassign the variable to a different object?", answer: "You can freely change, add, or delete its properties (`obj.name = \"new\"`) because that's mutation, not reassignment. You cannot do `obj = { other: \"object\" }` — that's a reassignment of the binding itself, which `const` forbids." },
-      { question: "Can you `.push()` to a `const` array? Can you reassign it to a new array?", answer: "Yes to pushing (and `.pop()`, `.splice()`, index assignment, etc.) — those mutate the existing array in place. No to reassigning it to a different array or a new literal (`arr = [1, 2]`) — `const` only ever locks the binding, not the array's contents." },
-      { question: "What is variable shadowing?", answer: "When a variable declared in an inner scope has the same name as one in an outer scope, the inner one shadows the outer one for the rest of that inner scope — code inside sees only the inner variable, and the outer one is unaffected and reappears once the inner scope ends." },
-      { question: "What happens when you declare a `var` inside an `if` block?", answer: "It's not scoped to that block at all — because `var` is function-scoped, the declaration is hoisted to the top of the nearest enclosing function (or the global scope), so the variable is accessible even outside and after the `if` block, which frequently surprises people expecting block scoping." },
-      { question: "What is lexical scope?", answer: "Scope determined by where code is physically written in the source, not by how or from where it's called — a function can access variables from the scopes it was literally nested inside when it was defined, regardless of where it's later invoked from." },
-      { question: "What does it mean for scopes to be nested?", answer: "An inner scope (a function or block) sits inside an outer one and can read variables from every scope surrounding it, out to the global scope — but the reverse isn't true: an outer scope can't see variables declared inside an inner one." },
-      { question: "If you declare a variable with `let` inside a function, can code outside that function access it?", answer: "No — once the function (or block) ends, that variable is out of scope and inaccessible from the outside; there is no way to reach it except by the function explicitly returning or exposing its value." },
-      { question: "What happens if you assign to a name with no `let`, `const`, or `var` at all, like `total = 5;`?", answer: "In non-strict mode, JavaScript silently creates an undeclared global variable — no error, but a variable that pollutes the global scope and wasn't intentionally declared anywhere. In strict mode (`\"use strict\"`, or inside any ES module or class), the same line throws a `ReferenceError` instead." },
-      { question: "Why is relying on implicit globals (assigning without a declaration keyword) considered risky?", answer: "It creates a variable outside of any controlled scope, invisible at a glance to anyone reading the surrounding function, and it can silently collide with a same-named variable elsewhere in a large codebase — bugs from this are exactly what strict mode's `ReferenceError` behavior for undeclared assignment is designed to catch early." },
-      { question: "Explain the TDZ in terms of lexical environments.", answer: "When the engine enters a scope, it creates a lexical environment and immediately registers every `let`/`const` name declared anywhere in that scope, but marks each one's binding as uninitialized rather than giving it a value. Only when execution actually reaches the declaration statement does the binding get marked initialized and receive its value — any lookup of that name before that point finds an uninitialized binding and throws, which is the TDZ in mechanical terms." },
-      { question: "Why does JavaScript bother having a TDZ instead of just initializing `let`/`const` to `undefined` like `var`?", answer: "It turns a class of bugs — reading a variable before the line that's supposed to set it up — into an immediate, loud error instead of a silent `undefined` that might not surface a problem until much later. It also keeps `const` semantically consistent: a `const` implicitly initialized to `undefined` and then \"assigned\" its real value later would effectively be reassigned, which `const` isn't supposed to allow." },
-      { question: "What's the key hoisting difference between a function declaration and a `let`/`var` declaration?", answer: "A function declaration is hoisted along with its entire body, so it can be called before the line it's written on. A `var` declaration is hoisted but only initialized to `undefined`, and a `let`/`const` declaration is hoisted but left uninitialized (TDZ) — only the function declaration gives you working behavior early; the others just give you the name reserved." },
-      { question: "Why does using `let` instead of `var` fix the classic loop-and-`setTimeout` bug?", answer: "With `var`, there's a single shared binding for the whole loop, so by the time any callback runs, every one of them sees the loop variable's final value. With `let`, the loop creates a brand-new binding scoped to each individual iteration, so each callback closes over its own separate copy holding that iteration's value." },
-      { question: "Can two variables with the same name coexist in nested scopes at the same moment?", answer: "Yes — each scope has its own independent binding, so an inner `let x` and an outer `let x` are genuinely two different storage locations that happen to share a name. Which one a piece of code sees is resolved lexically: the engine looks for the name starting in the current scope and works outward, stopping at the first match — the innermost one wins for any code inside it." },
-      { question: "Output-prediction: what does `console.log(x); var x = 5;` print, and why not a `ReferenceError`?", answer: "It logs `undefined`, not a `ReferenceError`. `var x` is hoisted to the top of the scope and initialized to `undefined` immediately, so the `console.log` sees that placeholder value — the assignment `x = 5` hasn't run yet at that point." },
-      { question: "Output-prediction: what does `console.log(y); let y = 5;` do?", answer: "It throws `ReferenceError: Cannot access 'y' before initialization`. `y` is hoisted but stays in the Temporal Dead Zone until its declaration line runs, so reading it one line earlier hits the TDZ instead of returning `undefined`." },
-      { question: "Output-prediction: what does `let count = 1; { let count = 2; console.log(count); } console.log(count);` log?", answer: "It logs `2`, then `1`. The `{ }` block creates a new scope, and `let count = 2` inside it shadows the outer `count` for the duration of that block; once the block ends, that inner binding is gone and the final `console.log` sees the untouched outer `count`, still `1`." },
-      { question: "Output-prediction: what does `for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }` log?", answer: "It logs `3, 3, 3`. All three callbacks close over the same single `var i` binding (function-scoped, shared across every iteration), and by the time any of them actually runs — after the loop has finished — `i` has already reached `3`." },
-      { question: "Output-prediction: if you replace `var i` with `let i` in the same loop, `for (let i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }`, what does it log now, and why?", answer: "It logs `0, 1, 2`. `let` in a `for` loop's header creates a fresh binding for each iteration, so each arrow function captures a separate `i` holding that iteration's own value at the time it was created." },
-      { question: "Output-prediction: why does `const point = { x: 1 }; point = { x: 2 };` throw, and what's the exact error?", answer: "It throws `TypeError: Assignment to constant variable.` — `point =` is a reassignment of the binding itself, which `const` forbids, regardless of the fact that the new value is a similarly-shaped object. Writing `point.x = 2` instead would work fine, since that mutates the existing object rather than reassigning the binding." },
-      { question: "Trap: a teammate declares a loop counter with `const i` in a classic `for` loop and it immediately throws. Why?", answer: "A standard `for (const i = 0; i < 3; i++)` throws a `TypeError` on the very first iteration, because `i++` tries to reassign `i`, which `const` doesn't allow. `const` only works as a `for` loop variable in a `for...of`/`for...in` loop, where a fresh, separately-initialized binding is created for each iteration rather than being reassigned in place." },
+      { question: "What's the difference between `var`, `let`, and `const`?", answer: "`var` is function-scoped (or global) and can be redeclared and reassigned. `let` is block-scoped and can be reassigned but not redeclared in the same scope. `const` is block-scoped and can't be reassigned after it's set. They differ in scope and in what reassignment/redeclaration they allow, not in what values they can hold." },
+      { question: "Can you declare the same variable name twice in the same scope with `let`?", answer: "No. Redeclaring a `let` (or `const`) in the same scope throws a `SyntaxError` (\"Identifier has already been declared\"). `var` allows it with no error." },
+      { question: "What happens if you try to reassign a `const` variable?", answer: "JavaScript throws `TypeError: Assignment to constant variable.` when the reassignment runs. `const` locks the binding itself." },
+      { question: "What's the difference between declaring a variable and initializing it?", answer: "Declaring tells the engine a name exists in a scope (`let x`). Initializing gives it its first value (`x = 5`, or both at once: `let x = 5`). For `var` and `let` these can be on separate lines. A `var` is `undefined` until then, while a `let`/`const` is inaccessible (in the TDZ) until its declaration line runs." },
+      { question: "What is variable scope, in plain terms?", answer: "Scope is the region of code where a variable name is visible. Code outside it either can't see the variable, or sees a different variable with the same name." },
+      { question: "What is function scope, and which keyword creates it?", answer: "A function-scoped variable is visible anywhere in the function it was declared in, through any nested blocks (`if`, `for`, etc.). `var` is function-scoped, so a `var` declared inside an `if` is visible in the rest of the function." },
+      { question: "What is block scope, and which keywords create it?", answer: "A block-scoped variable is only visible inside the nearest `{ }` it was declared in: an `if` block, a `for` loop body or a standalone `{ }`. `let` and `const` are block-scoped." },
+      { question: "What is global scope?", answer: "The outermost scope, outside any function or block. A variable declared there is visible everywhere in the file. In non-module scripts, a `var` or implicit global also becomes a property of the global object." },
+      { question: "What happens if you try to use a variable that was never declared anywhere?", answer: "JavaScript throws `ReferenceError: x is not defined` when that line runs. There's no fallback, unlike a declared-but-unassigned variable, which is just `undefined`." },
+      { question: "What does a `ReferenceError` actually indicate?", answer: "The code used a name that doesn't exist in any visible scope. Either it was never declared, or it's a `let`/`const` accessed before its declaration ran (the TDZ case), which throws the same error type." },
+      { question: "Are `let` and `const` hoisted the same way `var` is?", answer: "Partly. The engine registers the name at the top of the scope, but unlike `var` it isn't set to `undefined`. It stays uninitialized in the Temporal Dead Zone until the declaration line runs, so earlier access throws instead of returning `undefined`." },
+      { question: "What is the Temporal Dead Zone (TDZ)?", answer: "The stretch between the start of a scope and the line that declares a `let`/`const`. The variable exists (it's hoisted) but can't be read or written there; any access throws a `ReferenceError`." },
+      { question: "If `var`, `let`, and `const` are all hoisted, why does only `var` let you access the variable before its declaration line?", answer: "A hoisted `var` is set to `undefined` right away, so an early read gets `undefined`. A hoisted `let`/`const` only reserves the name and stays uninitialized until its declaration runs, so an early read hits the TDZ and throws." },
+      { question: "What's the difference between reassignment and mutation?", answer: "Reassignment points the variable at a new value (`x = newValue`). Mutation changes the contents of the value it already points to (`arr.push(1)`, `obj.key = 2`). `const` blocks reassignment but not mutation." },
+      { question: "Can you change a property on an object declared with `const`? Can you reassign the variable to a different object?", answer: "You can change, add or delete its properties (`obj.name = \"new\"`), because that's mutation. You can't do `obj = { other: \"object\" }`: that reassigns the binding, which `const` forbids." },
+      { question: "Can you `.push()` to a `const` array? Can you reassign it to a new array?", answer: "Yes to pushing (and `.pop()`, `.splice()`, index assignment, etc.), which change the array in place. No to reassigning it (`arr = [1, 2]`). `const` locks the binding, not the array's contents." },
+      { question: "What is variable shadowing?", answer: "When an inner-scope variable has the same name as an outer one, the inner one hides (shadows) the outer one inside that scope. The outer variable is unaffected and is visible again once the inner scope ends." },
+      { question: "What happens when you declare a `var` inside an `if` block?", answer: "It isn't scoped to the block. `var` is function-scoped, so it's hoisted to the top of the enclosing function (or global scope) and is usable outside and after the `if`. This often surprises people who expect block scoping." },
+      { question: "What is lexical scope?", answer: "Scope set by where code is written, not where it's called from. A function can use variables from the scopes it was nested in when defined, wherever it's later called." },
+      { question: "What does it mean for scopes to be nested?", answer: "An inner scope (a function or block) sits inside an outer one and can read variables from every surrounding scope, out to global. The reverse isn't true: an outer scope can't see an inner scope's variables." },
+      { question: "If you declare a variable with `let` inside a function, can code outside that function access it?", answer: "No. Outside the function (or block), the variable is out of scope. The only way to reach its value is for the function to return or expose it." },
+      { question: "What happens if you assign to a name with no `let`, `const`, or `var` at all, like `total = 5;`?", answer: "In non-strict mode, JavaScript silently creates a global variable. No error, but it pollutes the global scope. In strict mode (`\"use strict\"`, or inside any ES module or class), the same line throws a `ReferenceError`." },
+      { question: "Why is relying on implicit globals (assigning without a declaration keyword) considered risky?", answer: "It creates a variable outside any controlled scope, easy to miss when reading the function, and it can silently collide with a same-named variable elsewhere in a large codebase. Strict mode throws a `ReferenceError` on undeclared assignment to catch exactly these bugs early." },
+      { question: "Explain the TDZ in terms of lexical environments.", answer: "On entering a scope, the engine creates a lexical environment and registers every `let`/`const` name in it, marked uninitialized. Only when execution reaches the declaration does the binding become initialized and get its value. A lookup before that finds an uninitialized binding and throws. That's the TDZ." },
+      { question: "Why does JavaScript bother having a TDZ instead of just initializing `let`/`const` to `undefined` like `var`?", answer: "It turns reading a variable before its setup line into an immediate error, instead of a silent `undefined` that causes problems later. It also keeps `const` consistent: a `const` that started as `undefined` and later got its real value would effectively be reassigned, which `const` doesn't allow." },
+      { question: "What's the key hoisting difference between a function declaration and a `let`/`var` declaration?", answer: "A function declaration is hoisted with its whole body, so you can call it before the line it's on. A `var` is hoisted as `undefined`, and a `let`/`const` is hoisted but uninitialized (TDZ). Only the function works early; the others just reserve the name." },
+      { question: "Why does using `let` instead of `var` fix the classic loop-and-`setTimeout` bug?", answer: "With `var`, the whole loop shares one binding, so when the callbacks run they all see its final value. With `let`, each iteration gets a new binding, so each callback closes over its own copy with that iteration's value." },
+      { question: "Can two variables with the same name coexist in nested scopes at the same moment?", answer: "Yes. Each scope has its own binding, so an inner `let x` and an outer `let x` are two separate variables with the same name. The engine looks up a name from the current scope outward and stops at the first match, so the innermost one wins." },
+      { question: "Output-prediction: what does `console.log(x); var x = 5;` print, and why not a `ReferenceError`?", answer: "It logs `undefined`. `var x` is hoisted and set to `undefined` right away, and the assignment `x = 5` hasn't run yet when `console.log` reads it." },
+      { question: "Output-prediction: what does `console.log(y); let y = 5;` do?", answer: "It throws `ReferenceError: Cannot access 'y' before initialization`. `y` is hoisted but stays in the Temporal Dead Zone until its declaration runs, so reading it earlier throws." },
+      { question: "Output-prediction: what does `let count = 1; { let count = 2; console.log(count); } console.log(count);` log?", answer: "It logs `2`, then `1`. The `{ }` block is a new scope where `let count = 2` shadows the outer `count`. After the block, the last `console.log` sees the untouched outer `count`, still `1`." },
+      { question: "Output-prediction: what does `for (var i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }` log?", answer: "It logs `3, 3, 3`. All three callbacks share the one function-scoped `var i`, and by the time they run (after the loop ends), `i` is already `3`." },
+      { question: "Output-prediction: if you replace `var i` with `let i` in the same loop, `for (let i = 0; i < 3; i++) { setTimeout(() => console.log(i), 0); }`, what does it log now, and why?", answer: "It logs `0, 1, 2`. `let` in a `for` header creates a new binding per iteration, so each arrow function captures its own `i` with that iteration's value." },
+      { question: "Output-prediction: why does `const point = { x: 1 }; point = { x: 2 };` throw, and what's the exact error?", answer: "It throws `TypeError: Assignment to constant variable.` `point =` reassigns the binding, which `const` forbids, even though the new object looks the same. `point.x = 2` would work, since it mutates the existing object." },
+      { question: "Trap: a teammate declares a loop counter with `const i` in a classic `for` loop and it immediately throws. Why?", answer: "`for (const i = 0; i < 3; i++)` throws a `TypeError` after the first iteration, when `i++` tries to reassign `i`. `const` only works as a loop variable in `for...of`/`for...in`, where each iteration gets a fresh binding instead of reassigning one." },
     ],
     prerequisites: ["what-is-javascript"],
     relatedTopics: ["data-types", "scope"],

@@ -8,9 +8,9 @@ const docs: ToolDocs = {
     'Check **Most frequent words** for the top 10 words; untick **Ignore common words (the, and, of…)** to include words like *the* and *and*.',
   ],
   howItWorks:
-    'Words are found with the browser’s `Intl.Segmenter` in word mode, which follows Unicode word-boundary rules and also splits languages written without spaces, such as Chinese and Japanese. Only word-like segments count, so punctuation and emoji aren’t words. **Characters** counts grapheme clusters, what you see as one character, so an emoji or an accented letter counts once. **UTF-16 code units** is the JavaScript string length, and **Size (UTF-8)** is the encoded byte size.\n\n' +
-    'A sentence ends at `.`, `!`, `?`, `…` or the CJK `。！？`, optionally followed by a closing quote or bracket, and then a space or the end of the text; text after the last one still counts if it contains a letter or digit. Paragraphs are separated by a blank line, and lines are counted at every line break.\n\n' +
-    'Reading time assumes 238 words per minute and speaking time 150, rounded up to the second and shown in minutes after the first minute. Most frequent words are compared in lowercase; common words are skipped using a built-in English list of 126 words. Counting runs in your browser on a deferred copy of the text, so typing stays responsive.',
+    'Words are found with the browser’s `Intl.Segmenter` in word mode. It follows Unicode word-boundary rules and also splits languages written without spaces, such as Chinese and Japanese. Only word-like segments count, so punctuation and emoji aren’t words. **Characters** counts grapheme clusters (what you see as one character), so an emoji or accented letter counts once. **UTF-16 code units** is the JavaScript string length; **Size (UTF-8)** is the encoded byte size.\n\n' +
+    'A sentence ends at `.`, `!`, `?`, `…` or the CJK `。！？`, optionally followed by a closing quote or bracket, then a space or the end of the text. Text after the last one still counts if it has a letter or digit. A blank line separates paragraphs, and every line break starts a new line.\n\n' +
+    'Reading time assumes 238 words per minute and speaking time 150. Both are rounded up to the second and shown in minutes after the first minute. Most frequent words are compared in lowercase, and common words are skipped using a built-in English list of 126 words. Counting runs in your browser on a deferred copy of the text, so typing stays responsive.',
   limits: [
     'Abbreviations such as `e.g.` or `Dr.` followed by a space count as the end of a sentence.',
     '**Characters (no spaces)** is counted in UTF-16 code units, so an emoji counts as two there, unlike in **Characters**.',
@@ -20,7 +20,7 @@ const docs: ToolDocs = {
     'Dropped or opened files are limited to 10 MB and must be text.',
   ],
   privacy:
-    'Counting happens entirely in your browser; your text is never uploaded or stored. The **Share** button copies a link with your text in its `#` fragment, which browsers don’t send to servers, but anyone you give the link to can read it. Text sent here from another tool with **Send to…** passes through this tab’s session storage and is removed as soon as this page reads it.',
+    'Counting happens in your browser; your text is never uploaded or stored. **Share** copies a link with your text in its `#` fragment; browsers don’t send that to servers, but anyone you give the link to can read it. Text sent here with **Send to…** passes through this tab’s session storage and is removed as soon as this page reads it.',
   faqs: [
     {
       question: 'How is reading time calculated?',

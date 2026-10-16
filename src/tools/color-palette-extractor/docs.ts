@@ -8,8 +8,10 @@ const docs: ToolDocs = {
     'Under **Export**, choose CSS variables, SCSS, a Tailwind theme or JSON, set a **Name**, then copy or download it.',
   ],
   howItWorks:
-    'The image is decoded in your browser and shrunk to at most 128 pixels on its longest side. Pixels that are mostly transparent are ignored, and the rest are grouped into 5-bit-per-channel buckets, each keeping its exact average colour and pixel count, so a few thousand weighted points stand in for the whole image.\n\n' +
-    '**k-means** converts those points to OKLab, a perceptually uniform colour space, picks starting colours with k-means++ using a seeded random generator (the same image and seed always give the same palette), then repeats assign-and-average steps until nothing changes (at most 40 rounds). **Median cut** works in sRGB: it keeps splitting the box with the most pixels and widest colour range at its weighted median until there are as many boxes as colours, and averages each box. A swatch’s share is the fraction of opaque pixels in its cluster. Contrast is the WCAG 2.1 ratio against white and black, graded AAA (7:1), AA (4.5:1), AA large (3:1) or Fail.',
+    'The image is decoded in your browser and shrunk to at most 128 pixels on its longest side. Mostly transparent pixels are ignored. The rest are grouped into 5-bit-per-channel buckets, each keeping its exact average colour and pixel count, so a few thousand weighted points stand in for the whole image.\n\n' +
+    '**k-means** converts those points to OKLab, a perceptually uniform colour space. It picks starting colours with k-means++ using a seeded random generator (the same image and seed always give the same palette), then repeats assign-and-average steps until nothing changes (at most 40 rounds).\n\n' +
+    '**Median cut** works in sRGB. It keeps splitting the box with the most pixels and widest colour range at its weighted median until there are as many boxes as colours, then averages each box.\n\n' +
+    'A swatch’s share is the fraction of opaque pixels in its cluster. Contrast is the WCAG 2.1 ratio against white and black, graded AAA (7:1), AA (4.5:1), AA large (3:1) or Fail.',
   limits: [
     'Images up to 50 MB and 100 megapixels, as in the other image tools. Only one image is read at a time; an animated image uses its first frame.',
     'The image is sampled at 128 pixels, so tiny details such as a small logo on a large photo may not form their own colour.',

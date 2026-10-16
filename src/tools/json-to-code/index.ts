@@ -5,7 +5,7 @@ const jsonToCode: ToolDefinition = {
   name: 'JSON to Code',
   tagline: 'Generate Go, Python, Rust, Java, C# and Kotlin models from JSON',
   description:
-    'Paste JSON and get typed models: Go structs with json tags, Python dataclasses or Pydantic, Rust serde structs, Java records or POJOs with Jackson, C# with System.Text.Json and Kotlin with kotlinx.serialization.',
+    'Turn JSON into typed models: Go structs, Python dataclasses or Pydantic, Rust serde structs, Java records or POJOs, C# classes and Kotlin data classes.',
   category: 'Data',
   icon: 'braces',
   tags: ['JSON', 'Go', 'Python', 'Rust', 'Java', 'C#', 'Kotlin', 'Structs'],
