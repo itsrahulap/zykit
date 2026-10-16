@@ -53,13 +53,13 @@ export interface ColumnOption {
 export const refKey = (r: ColRef) => `${r.sourceId}|${r.columnId}`;
 
 /** Every column of every table in the query, labelled the way SQL will refer to it. */
-export function columnOptions(schema: Schema, sources: QuerySource[]): ColumnOption[] {
+export function columnOptions(schema: Schema, sources: QuerySource[], qualify = sources.length > 1): ColumnOption[] {
   return sources.flatMap((s) => {
     const t = findTable(schema, s.tableId);
     const name = sourceName(schema, s);
     return (t?.columns ?? []).map((c) => {
       const ref = { sourceId: s.id, columnId: c.id };
-      return { value: refKey(ref), label: sources.length > 1 ? `${name}.${c.name}` : c.name, ref };
+      return { value: refKey(ref), label: qualify ? `${name}.${c.name}` : c.name, ref };
     });
   });
 }

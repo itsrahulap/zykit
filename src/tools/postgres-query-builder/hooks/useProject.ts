@@ -58,16 +58,22 @@ export function useProject() {
   const undo = useCallback(() => setState((s) => (s.past.length ? { past: s.past.slice(0, -1), present: s.past[s.past.length - 1], future: [s.present, ...s.future] } : s)), []);
   const redo = useCallback(() => setState((s) => (s.future.length ? { past: [...s.past, s.present], present: s.future[0], future: s.future.slice(1) } : s)), []);
 
-  // Save shortly after changes settle (dragging fires many updates).
+  // Save shortly after changes settle (dragging fires many updates), and right away if the page is
+  // closed or reloaded before then.
   useEffect(() => {
-    const t = setTimeout(() => {
+    const save = () => {
       try {
         localStorage.setItem(STORAGE_KEY, exportProject(state.present));
       } catch {
         // Storage full or blocked: the project still works for this visit.
       }
-    }, 400);
-    return () => clearTimeout(t);
+    };
+    const t = setTimeout(save, 400);
+    window.addEventListener('pagehide', save);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('pagehide', save);
+    };
   }, [state.present]);
 
   return { project: state.present, apply, applyLive, endGesture, undo, redo, canUndo: state.past.length > 0, canRedo: state.future.length > 0 };

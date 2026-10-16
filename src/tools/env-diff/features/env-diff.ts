@@ -97,6 +97,9 @@ export function parseEnv(text: string): ParsedEnv {
       issues.push({ line: lineNo, severity: 'error', message: `“${key}” isn’t a valid variable name (letters, digits and _ ; not starting with a digit).` });
       continue;
     }
+    if (sep[2] === '=' && /\s=|=[ \t]/.test(sep[0] + (rest[sep[0].length] ?? ''))) {
+      issues.push({ line: lineNo, severity: 'warning', message: `${key}: spaces around “=”. dotenv accepts them, but shells and Docker’s --env-file don’t.` });
+    }
     let value = rest.slice(sep[0].length).replace(/^[ \t]+/, '');
     let quote: Quote | null = null;
     let endLine = lineNo;
@@ -136,6 +139,9 @@ export function parseEnv(text: string): ParsedEnv {
         }
         value = kept;
       } else value = value.trim();
+      if (/^[A-Za-z_][A-Za-z0-9_]*=/.test(value)) {
+        issues.push({ line: lineNo, severity: 'warning', message: `${key}: the value starts with “${value.split('=')[0]}=”. Two assignments on one line? Quote it if that’s intended.` });
+      }
       if (/\s/.test(value)) {
         // Allowed by dotenv, but shells split it; worth a hint.
         issues.push({ line: lineNo, severity: 'warning', message: `${key}: the unquoted value contains spaces; quote it so shells and Docker read it the same way.` });
@@ -151,6 +157,10 @@ export function parseEnv(text: string): ParsedEnv {
     seen.set(e.key, [...(seen.get(e.key) ?? []), e.line]);
   }
   const duplicates = [...seen].filter(([, l]) => l.length > 1).map(([key, l]) => ({ key, lines: l }));
+  const plain = entries.find((e) => !e.exported);
+  if (plain && entries.some((e) => e.exported)) {
+    issues.push({ line: plain.line, severity: 'warning', message: 'Some lines use “export” and others don’t. Pick one style so the file behaves the same when sourced by a shell.' });
+  }
   return { entries, values, issues, duplicates };
 }
 
@@ -240,4 +250,75 @@ export function toExample(text: string): string {
   }
   while (out.length && !out[out.length - 1].trim()) out.pop();
   return out.length ? `${out.join('\n')}\n` : '';
+}
+
+// ---------------------------------------------------------------------------------------------
+// Normalising and reporting
+
+const SAFE = /^[A-Za-z0-9_./:@,+%-]*$/;
+
+/** One assignment with quoting that dotenv reads back as exactly `e.value`. */
+function serialize(e: EnvEntry): string {
+  const v = e.value;
+  let out: string;
+  if (SAFE.test(v)) out = v;
+  // Single quotes keep `$` literal; a single-quoted value can't contain `'`.
+  else if (e.quote === "'" || (!e.refs.length && v.includes('$') && !v.includes("'"))) out = `'${v}'`;
+  else out = `"${v.replace(e.refs.length ? /[\\"]/g : /[\\"$]/g, '\\$&').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')}"`;
+  return `${e.exported ? 'export ' : ''}${e.key}=${out}`;
+}
+
+export interface Normalized {
+  text: string;
+  /** Earlier assignments of a repeated key that were dropped. */
+  dropped: number;
+  /** False if re-parsing the output doesn't give back the same values (then don't offer it). */
+  safe: boolean;
+}
+
+/**
+ * Rewrites the file with consistent quoting and one assignment per key (the last, which is the one
+ * dotenv uses). Comments are kept in place unless `sort` is on; invalid lines are dropped.
+ */
+export function normalizeEnv(parsed: ParsedEnv, text: string, sort = false): Normalized {
+  const final = [...parsed.values.values()];
+  const dropped = parsed.entries.length - final.length;
+  let out: string[];
+  if (sort) out = final.sort((x, y) => x.key.localeCompare(y.key)).map(serialize);
+  else {
+    const keep = new Set(final);
+    const byLine = new Map(parsed.entries.map((e) => [e.line, e]));
+    const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+    out = [];
+    for (let i = 0; i < lines.length; i++) {
+      const e = byLine.get(i + 1);
+      if (e) {
+        if (keep.has(e)) out.push(serialize(e));
+        i = e.endLine - 1;
+      } else if (!lines[i].trim() || lines[i].trim().startsWith('#')) out.push(lines[i].trimEnd());
+    }
+    while (out.length && !out[out.length - 1]) out.pop();
+  }
+  const result = out.length ? `${out.join('\n')}\n` : '';
+  const back = parseEnv(result).values;
+  const safe = back.size === parsed.values.size && [...parsed.values].every(([k, e]) => back.get(k)?.value === e.value);
+  return { text: result, dropped, safe };
+}
+
+/** A shareable plain-text report: problems and key differences, every value masked. */
+export function envReport(a: ParsedEnv, b: ParsedEnv, rows: DiffRow[], keysOnly: boolean): string {
+  const out = ['.env comparison report (values masked)', ''];
+  for (const [name, p] of [['File A', a], ['File B', b]] as const) {
+    out.push(`${name}: ${p.values.size} variables, ${p.issues.length} problems, ${p.duplicates.length} duplicated keys`);
+    for (const i of p.issues) out.push(`  line ${i.line} ${i.severity}: ${i.message}`);
+    for (const d of p.duplicates) out.push(`  ${d.key} set on lines ${d.lines.join(', ')}`);
+  }
+  out.push('', 'Differences:');
+  for (const r of rows) {
+    if (r.status === 'same' || (keysOnly && r.status === 'changed')) continue;
+    const vals = keysOnly ? '' : ` A=${r.left ? maskValue(r.left.value) : '—'} B=${r.right ? maskValue(r.right.value) : '—'}`;
+    out.push(`  ${r.status.padEnd(7)} ${r.key}${vals}${r.secret ? ' (looks secret)' : ''}`);
+  }
+  if (out[out.length - 1] === 'Differences:') out.push('  none');
+  return `${out.join('\n')}\n`;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import postgresQueryBuilder from './index';
 import { RelationshipPanel } from './components/RelationshipPanel';
 import { QueryBuilder } from './components/QueryBuilder';
@@ -13,7 +13,6 @@ import { generateQuery } from './features/query';
 import { SAMPLES } from './features/samples';
 import { useProject } from './hooks/useProject';
 import { ErrorAlert, Headline, StatusStrip } from '../../shared/ui/page';
-import { FilePickerButton } from '../../shared/ui/ImageBatch';
 import { Select } from '../../shared/ui/Select';
 import { Tabs } from '../../shared/ui/Tabs';
 import { Breadcrumb } from '../../shared/ui/tool';
@@ -52,6 +51,7 @@ export default function PostgresQueryBuilderPage() {
   const [selectedRel, setSelectedRel] = useState<string | null>(null);
   const [draft, setDraft] = useState<RelationshipDraft>(emptyDraft);
   const [error, setError] = useState('');
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const setSchema = (fn: (s: Schema) => Schema, mergeKey?: string) => apply((p) => ({ ...p, schema: fn(p.schema) }), mergeKey);
   const table = selectedTable ? findTable(schema, selectedTable) : undefined;
@@ -132,10 +132,24 @@ export default function PostgresQueryBuilderPage() {
         <SmallButton onClick={redo} disabled={!canRedo}>
           Redo
         </SmallButton>
-        <FilePickerButton variant="secondary" accept=".json,application/json" multiple={false} label="Import JSON" onFiles={importFile} />
-        <Button variant="secondary" disabled={isEmpty(project)} onClick={() => downloadText(exportProject(project), 'postgres-project.json', 'application/json')}>
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".json,application/json"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+          onChange={(e) => {
+            importFile(Array.from(e.target.files ?? []));
+            e.target.value = '';
+          }}
+        />
+        <SmallButton onClick={() => fileInput.current?.click()}>
+          <Icon name="upload" className="h-4 w-4" /> Import JSON
+        </SmallButton>
+        <SmallButton disabled={isEmpty(project)} onClick={() => downloadText(exportProject(project), 'postgres-project.json', 'application/json')}>
           <Icon name="download" className="h-4 w-4" /> Export JSON
-        </Button>
+        </SmallButton>
         <SmallButton
           tone="danger"
           disabled={isEmpty(project) && !query.sources.length}
@@ -171,7 +185,7 @@ export default function PostgresQueryBuilderPage() {
             ) : (
               <QueryBuilder schema={schema} query={query} onChange={(fn, k) => apply((p) => ({ ...p, query: fn(p.query) }), k)} />
             )}
-            <div className="lg:sticky lg:top-4 lg:self-start">
+            <div className="min-w-0 lg:sticky lg:top-4 lg:self-start">
               <SqlPanel schema={schema} query={query} view={sqlView} onView={setSqlView} />
             </div>
           </div>
@@ -195,7 +209,7 @@ export default function PostgresQueryBuilderPage() {
               onConnect={(a, b) => setDraft(draftFromConnect(schema, a, b))}
             />
             <div className="grid gap-6 xl:grid-cols-2">
-              <div className="space-y-6">
+              <div className="min-w-0 space-y-6">
                 <Section
                   title={table ? `Edit table: ${table.name || '(unnamed)'}` : 'Table editor'}
                   action={
@@ -228,7 +242,7 @@ export default function PostgresQueryBuilderPage() {
                 </Section>
                 <RelationshipPanel schema={schema} draft={draft} onDraft={setDraft} onChange={setSchema} selectedId={selectedRel} onSelect={setSelectedRel} />
               </div>
-              <div className="xl:sticky xl:top-4 xl:self-start">
+              <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
                 <SqlPanel schema={schema} query={query} view={sqlView} onView={setSqlView} />
               </div>
             </div>

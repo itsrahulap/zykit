@@ -53,7 +53,7 @@ export function QueryBuilder({ schema, query, onChange }: Props) {
       <Section title="1. Tables and joins">
         {query.sources.map((s, i) => {
           const t = findTable(schema, s.tableId);
-          const earlier = columnOptions(schema, query.sources.slice(0, i));
+          const earlier = columnOptions(schema, query.sources.slice(0, i), true);
           const own = (t?.columns ?? []).map((c) => ({ value: c.id, label: `${sourceName(schema, s)}.${c.name}` }));
           return (
             <div key={s.id} className="space-y-2 rounded-xl border border-slate-200 p-3 dark:border-slate-800">

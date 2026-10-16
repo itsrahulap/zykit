@@ -21,7 +21,7 @@ test('builds queries and schema SQL from a sample, locally', async ({ page, cont
   await expect(sql).toHaveText(
     'SELECT\n    u.name,\n    COUNT(o.id) AS order_count\nFROM users AS u\nLEFT JOIN orders AS o\n    ON o.user_id = u.id\nGROUP BY\n    u.id\nORDER BY\n    order_count DESC\nLIMIT 10;',
   );
-  await expect(page.getByText('What this query does')).toBeVisible();
+  await expect(page.locator('#panel-query').getByText('What this query does')).toBeVisible();
 
   // Add a WHERE filter.
   const where = page.getByRole('group', { name: 'WHERE conditions' });
@@ -32,10 +32,10 @@ test('builds queries and schema SQL from a sample, locally', async ({ page, cont
   await expect(sql).toContainText("WHERE u.email ILIKE '%@example.com'\nGROUP BY");
 
   // Invalid configuration shows problems instead of SQL.
-  await page.getByLabel('LIMIT').fill('-1');
+  await page.getByRole('textbox', { name: 'LIMIT' }).fill('-1');
   await expect(page.getByText('Fix these to generate SQL')).toBeVisible();
   await expect(sql).toHaveCount(0);
-  await page.getByLabel('LIMIT').fill('5');
+  await page.getByRole('textbox', { name: 'LIMIT' }).fill('5');
   await expect(sql).toContainText('LIMIT 5;');
 
   // Re-join orders: the suggestion comes from the relationship and must be confirmed.
@@ -63,9 +63,9 @@ test('builds queries and schema SQL from a sample, locally', async ({ page, cont
   await page.getByRole('button', { name: '+ Add column' }).click();
   await page.getByLabel('Column name').last().fill('product_id');
   await page.getByLabel('Type').last().selectOption('BIGINT');
-  await page.getByLabel('Child table').selectOption({ label: 'reviews' });
-  await page.getByLabel('Foreign key column').selectOption({ label: 'product_id (bigint)' });
-  await page.getByLabel('Parent table').selectOption({ label: 'products' });
+  await page.getByLabel('Child table', { exact: true }).selectOption({ label: 'reviews' });
+  await page.getByLabel('Foreign key column', { exact: true }).selectOption({ label: 'product_id (bigint)' });
+  await page.getByLabel('Parent table', { exact: true }).selectOption({ label: 'products' });
   await page.getByRole('button', { name: 'Add relationship' }).click();
   await expect(ddl).toContainText('CREATE TABLE reviews (');
   await expect(ddl).toContainText('CONSTRAINT reviews_product_id_fkey FOREIGN KEY (product_id) REFERENCES products (id)');

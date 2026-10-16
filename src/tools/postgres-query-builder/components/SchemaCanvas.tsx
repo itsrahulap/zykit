@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type PointerEvent as RPointerEvent } from 
 import { isForeignKey, type Schema, type Table } from '../features/model';
 import { Button, Icon } from '../../../shared/ui/ui';
 
-export const CARD_W = 240;
+export const CARD_W = 264;
 const HEADER_H = 40;
 const ROW_H = 28;
 const cardHeight = (t: Table) => HEADER_H + Math.max(1, t.columns.length) * ROW_H + 8;
@@ -154,12 +154,14 @@ export function SchemaCanvas({ schema, selectedTableId, selectedRelationshipId, 
               const child = schema.tables.find((t) => t.id === r.fromTableId);
               const parent = schema.tables.find((t) => t.id === r.toTableId);
               if (!child || !parent) return null;
-              const rightward = parent.x >= child.x + CARD_W / 2;
-              const a = anchor(child, r.fromColumnId, rightward ? 'right' : 'left');
-              const b = anchor(parent, r.toColumnId, child.id === parent.id ? 'right' : rightward ? 'left' : 'right');
-              const bend = child.id === parent.id ? 60 : Math.max(40, Math.abs(b.x - a.x) / 2);
-              const ax = a.x + (rightward || child.id === parent.id ? bend : -bend);
-              const bx = b.x + (child.id === parent.id ? bend : rightward ? -bend : bend);
+              // Stacked tables (and self-references) connect on their right edges with a loop; otherwise facing edges.
+              const stacked = Math.abs(parent.x - child.x) < CARD_W;
+              const rightward = !stacked && parent.x > child.x;
+              const a = anchor(child, r.fromColumnId, stacked || rightward ? 'right' : 'left');
+              const b = anchor(parent, r.toColumnId, stacked || !rightward ? 'right' : 'left');
+              const bend = stacked ? 60 : Math.max(40, Math.abs(b.x - a.x) / 2);
+              const ax = a.x + (stacked || rightward ? bend : -bend);
+              const bx = b.x + (stacked || !rightward ? bend : -bend);
               const active = r.id === selectedRelationshipId;
               return (
                 <g key={r.id} className={active ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-500'}>
@@ -174,10 +176,10 @@ export function SchemaCanvas({ schema, selectedTableId, selectedRelationshipId, 
                   >
                     <title>Select this relationship</title>
                   </path>
-                  <text x={a.x + (rightward ? 6 : -14)} y={a.y - 6} fontSize="12" fill="currentColor">
+                  <text x={a.x + (stacked || rightward ? 6 : -14)} y={a.y - 6} fontSize="12" fill="currentColor">
                     {r.kind === 'one-to-one' ? '1' : 'N'}
                   </text>
-                  <text x={b.x + (rightward && child.id !== parent.id ? -14 : 6)} y={b.y - 6} fontSize="12" fill="currentColor">
+                  <text x={b.x + (stacked || !rightward ? 6 : -14)} y={b.y - 6} fontSize="12" fill="currentColor">
                     1
                   </text>
                 </g>
