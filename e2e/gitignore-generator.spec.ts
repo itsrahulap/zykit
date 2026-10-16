@@ -27,6 +27,16 @@ test('gitignore Generator works locally', async ({ page }) => {
   await expect(results.getByRole('listitem').nth(2)).toContainText('Not ignored');
   await expect(results.getByRole('listitem').nth(3)).toContainText('Matched line');
 
+  // Hand edits are kept, used by the tester and the download, and survive a template change.
+  const editor = page.getByLabel('Edit .gitignore');
+  await editor.fill('src/\n');
+  await expect(results.getByRole('listitem').nth(1)).toContainText('Ignored');
+  await page.getByLabel('Python', { exact: true }).uncheck();
+  await expect(page.getByText('Templates changed since you edited')).toBeVisible();
+  await expect(editor).toHaveValue('src/\n');
+  await page.getByRole('button', { name: 'Reset to generated' }).click();
+  await expect(editor).toHaveValue(/# === Node\.js ===/);
+
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: /Download \.gitignore/ }).click();
   expect((await download).suggestedFilename()).toMatch(/gitignore/);

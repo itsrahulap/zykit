@@ -118,6 +118,7 @@ import pdfToImages from './pdf-to-images';
 import excelToCsv from './excel-to-csv';
 import sipCalculator from './sip-calculator';
 import ageCalculator from './age-calculator';
+import postgresQueryBuilder from './postgres-query-builder';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -236,6 +237,7 @@ export const TOOLS: ToolDefinition[] = [
   excelToCsv,
   sipCalculator,
   ageCalculator,
+  postgresQueryBuilder,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

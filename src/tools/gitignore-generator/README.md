@@ -15,7 +15,7 @@ Builds a `.gitignore` from ~75 bundled templates (languages, frameworks, editors
 
 ## Core Logic
 
-`merge` joins sections under `# === Name ===` headers and drops repeated pattern lines. `parseRules` turns each line into a rule (negated, dirOnly, anchored, regex built by `globToRegex`). `testPath` checks each parent directory first (an excluded parent wins), then the path itself; the last matching rule decides.
+`merge` joins sections under `# === Name ===` headers and drops repeated pattern lines. `parseRules` turns each line into a rule (negated, dirOnly, anchored, regex built by `globToRegex`). `testPath` checks each parent directory first (an excluded parent wins), then the path itself; the last matching rule decides. `STARTERS` lists one-click template combinations. The page keeps hand edits as `{ text, base }`: `text` replaces the generated output everywhere (copy, download, tester), and `base` is the generated text the edits started from, so a template change shows a notice instead of overwriting them. `OutputPanel` takes the editor as `children`.
 
 ## Limits
 
@@ -28,4 +28,4 @@ Single root rule list only: no nested `.gitignore`, `.git/info/exclude` or globa
 
 ## Known Gaps
 
-No directory detection from disk, no case-folding for non-ASCII, templates are hand-curated rather than synced from an upstream list.
+No directory detection from disk, no case-folding for non-ASCII, templates are hand-curated rather than synced from an upstream list. Hand edits are not merged with later template changes (keep or reset) and are not included in share links.
