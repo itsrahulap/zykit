@@ -1003,10 +1003,10 @@ const reranked = candidates.map((c) => ({ ...c, s2: crossScore(query, c.text) })
   .sort((a, b) => b.s2 - a.s2).slice(0, 2);
 console.log("After reranking, top-2 sent to the LLM:");
 reranked.forEach((c, i) => console.log("  " + (i + 1) + ". [" + c.s2 + "] " + c.text));`,
-        explanation: "Stage 1 ranks a vague chunk at the top because it repeats many of the query's words ('how', 'leave', 'days', 'employees') without answering anything, while the real answer uses different words ('staff member', 'entitled'). The reranker reads query and chunk together, rewards the phrase 'annual leave', and notices the question asks 'how many' while the answer chunk contains a number - so the chunk that actually answers the question moves to first place. A real cross-encoder learns these signals (and many more) from training data instead of hand-written rules.",
+        explanation: "Stage 1 puts a vague chunk on top because it repeats many query words ('how', 'leave', 'days', 'employees') without answering anything, while the real answer uses different words ('staff member', 'entitled'). The reranker reads query and chunk together, rewards the phrase 'annual leave', and notices the question asks 'how many' while the answer chunk has a number. So the chunk that actually answers moves to first place. A real cross-encoder learns these signals (and many more) from training data, not hand-written rules.",
         walkthrough: [
-          { code: "stage1(query, 5)", explanation: "Cheap scoring of every chunk on its own. In production: vector or hybrid search over millions of chunks." },
-          { code: "crossScore(q, text)", explanation: "The reranker sees both texts at once, so it can check phrases, question type and negation - things that need the pair, not two separate summaries." },
+          { code: "stage1(query, 5)", explanation: "Cheap scoring of each chunk on its own. In production: vector or hybrid search over millions of chunks." },
+          { code: "crossScore(q, text)", explanation: "The reranker sees both texts at once, so it can check phrases, question type and negation: things that need the pair, not two separate summaries." },
           { code: ".sort((a, b) => b.s2 - a.s2).slice(0, 2)", explanation: "Reorder only the 5 candidates and keep the best 2 for the prompt." },
         ],
       },
@@ -1044,7 +1044,7 @@ const candidates = [
   "Shipping takes 3 to 5 days.",
 ];
 console.log(llmRerank("How many days do I have to get a refund?", candidates, 2));`,
-        explanation: "A listwise LLM reranker: number the passages, ask for scores as JSON, validate the indexes the model returns (never trust them blindly), sort and keep the best. In production use structured output (see structured-output) so the reply is guaranteed to match the schema.",
+        explanation: "A listwise LLM reranker: number the passages, ask for scores as JSON, validate the returned indexes (never trust them blindly), sort, and keep the best. In production, use structured output (see structured-output) so the reply is guaranteed to match the schema.",
       },
       {
         title: "Cross-encoder reranking with sentence-transformers (Python)",
@@ -1076,7 +1076,7 @@ def search(question: str, fetch_k: int = 30, keep: int = 5, min_score: float | N
 
 for r in search("How many vacation days do new employees get?"):
     print(f"{r['score']:7.3f}  {r['meta'].get('source')}  {r['text'][:80]}")`,
-        explanation: "Load both models once at startup, not per request. The cross-encoder outputs one relevance score per pair (higher is more relevant); the scale depends on the model, so compare scores within a query and calibrate any min_score threshold on your own data. Batch the pairs as shown - predict() processes the list efficiently, and a GPU makes it much faster.",
+        explanation: "Load both models once at startup, not per request. The cross-encoder outputs one relevance score per pair (higher is more relevant). The scale depends on the model, so compare scores within a query and calibrate any min_score threshold on your own data. Batch the pairs as shown; predict() handles the list efficiently, and a GPU makes it much faster.",
       },
       {
         title: "LLM reranking with Claude and structured output (Python)",
@@ -1111,11 +1111,11 @@ def llm_rerank(question: str, passages: list[str], keep: int = 5) -> list[tuple[
       },
     ],
     howItWorks: md(
-      "**Stage 1 (recall):** hybrid or vector search returns `fetch_k` candidates, typically 20-100. Cost is roughly constant in corpus size thanks to the index.",
-      "**Stage 2 (precision):** for each candidate, build the pair (query, chunk text) and run the reranker. A cross-encoder feeds `[query] [SEP] [chunk]` through a transformer and a small output layer produces a single relevance number. Cost is linear in `fetch_k` and in chunk length, which is why you rerank tens of candidates, not thousands, and why chunks should not be huge.",
-      "**Selection:** sort by reranker score, optionally drop candidates below a calibrated threshold, deduplicate near-identical chunks, and keep the top `keep` (often 3-8) for the prompt. Some systems also put the best chunks at the start and end of the context, because models can pay less attention to the middle of very long contexts.",
-      "**Latency budget:** a small cross-encoder on a CPU can take tens to hundreds of milliseconds for a few dozen short pairs; a GPU or hosted reranker is much faster. Measure on your hardware and reduce `fetch_k` or chunk length if needed.",
-      "**Training data note:** MS MARCO-trained cross-encoders are good general-purpose web-search rerankers. For specialised domains (legal, medical, code), evaluate them on your own questions; domain-specific or fine-tuned rerankers, or an LLM reranker, may do better.",
+      "**Stage 1 (recall):** hybrid or vector search returns `fetch_k` candidates, typically 20-100. Thanks to the index, cost stays roughly constant as the corpus grows.",
+      "**Stage 2 (precision):** for each candidate, build the pair (query, chunk text) and run the reranker. A cross-encoder feeds `[query] [SEP] [chunk]` through a transformer, and a small output layer produces one relevance number. Cost is linear in `fetch_k` and chunk length, which is why you rerank tens of candidates, not thousands, and why chunks shouldn't be huge.",
+      "**Selection:** sort by reranker score, optionally drop candidates below a calibrated threshold, remove near-identical chunks, and keep the top `keep` (often 3-8) for the prompt. Some systems put the best chunks at the start and end of the context, since models can pay less attention to the middle of very long contexts.",
+      "**Latency budget:** a small cross-encoder on CPU can take tens to hundreds of milliseconds for a few dozen short pairs; a GPU or hosted reranker is much faster. Measure on your hardware and cut `fetch_k` or chunk length if needed.",
+      "**Training data note:** MS MARCO-trained cross-encoders are good general-purpose web-search rerankers. For specialised domains (legal, medical, code), test them on your own questions; domain-specific or fine-tuned rerankers, or an LLM reranker, may do better.",
     ),
     diagram: `question
    |
@@ -1133,13 +1133,13 @@ def llm_rerank(question: str, passages: list[str], keep: int = 5) -> list[tuple[
    v
  top 5 --> prompt --> LLM`,
     whyItExists: md(
-      "Scalable search must pre-compute document representations, which caps how well it can judge relevance; accurate relevance judgement needs to read query and document together, which cannot scale to the whole corpus. Two-stage retrieval gets the best of both: the index finds a manageable shortlist, the reranker makes the final call.",
+      "Scalable search must pre-compute document representations, which limits how well it judges relevance. Accurate judgement needs to read query and document together, which can't scale to the whole corpus. Two-stage retrieval gets both: the index finds a manageable shortlist, and the reranker makes the final call.",
     ),
     whenToUse: md(
-      "Add a reranker when the right chunk is usually somewhere in the top 20-50 but often not in the top 3-5 (measure recall@k for both), when you want to send fewer chunks to cut cost and latency, or when you need a trustworthy score for 'nothing relevant found'. It is one of the highest-impact, lowest-effort upgrades to a basic RAG pipeline.",
+      "Add a reranker when the right chunk is usually in the top 20-50 but often not the top 3-5 (measure recall@k for both), when you want to send fewer chunks to cut cost and latency, or when you need a trustworthy score for 'nothing relevant found'. It's one of the highest-impact, lowest-effort upgrades to a basic RAG pipeline.",
     ),
     whenNotToUse: md(
-      "Skip it when first-stage retrieval already puts the answer at rank 1-3 almost always, when the latency budget is extremely tight, or when the corpus is so small that you can send all candidates to the LLM anyway. Do not use a reranker to compensate for a first stage that never finds the right chunk - fix recall first.",
+      "Skip it when first-stage retrieval almost always puts the answer at rank 1-3, when the latency budget is extremely tight, or when the corpus is so small you can send all candidates to the LLM anyway. Don't use a reranker to make up for a first stage that never finds the right chunk; fix recall first.",
     ),
     commonMistakes: [
       "Reranking only the top 5 from stage 1, which leaves nothing to reorder - fetch 20-50 candidates.",
@@ -1176,18 +1176,18 @@ def llm_rerank(question: str, passages: list[str], keep: int = 5) -> list[tuple[
     level: "intermediate",
     description: "End to end: load, clean, chunk, embed and store documents, then retrieve, rerank, build a grounded prompt and get a cited answer from Claude - as a full Python project and a runnable offline JavaScript version.",
     explanation: md(
-      "This topic puts every previous RAG lesson together into one working system. By the end you will have a small but complete project: drop PDFs, Markdown or text files in a folder, run `python ingest.py`, then ask `python query.py \"your question\"` and get an answer written by Claude that cites the exact file and page it came from - or says it does not know.",
-      "A RAG system has two separate pipelines that share a vector store:",
-      "- **The ingestion (indexing) pipeline** runs ahead of time, whenever documents change: **load** files into text + metadata (see document-loading), **clean** the text, **chunk** it with overlap (see chunking), **embed** each chunk (see embeddings), and **store** id + vector + text + metadata in a vector database (see vector-databases).\n- **The query pipeline** runs on every question: **embed** the question with the *same* embedding model, **retrieve** the top-k most similar chunks (see retrieval-strategies), optionally **rerank** them with a cross-encoder (see reranking), **build a prompt** containing numbered sources and strict instructions (see grounded-generation-and-citations), **call the LLM** (see calling-an-llm-api), and **show the answer with citations** mapped back to file and page.",
+      "This topic combines every earlier RAG lesson into one working system. You'll end up with a small, complete project: drop PDFs, Markdown or text files in a folder, run `python ingest.py`, then ask `python query.py \"your question\"`. Claude answers and cites the exact file and page, or says it doesn't know.",
+      "A RAG system has two separate pipelines sharing a vector store:",
+      "- **The ingestion (indexing) pipeline** runs ahead of time, whenever documents change: **load** files into text + metadata (see document-loading), **clean** the text, **chunk** it with overlap (see chunking), **embed** each chunk (see embeddings), and **store** id + vector + text + metadata in a vector database (see vector-databases).\n- **The query pipeline** runs on every question: **embed** the question with the *same* embedding model, **retrieve** the top-k most similar chunks (see retrieval-strategies), optionally **rerank** them with a cross-encoder (see reranking), **build a prompt** with numbered sources and strict instructions (see grounded-generation-and-citations), **call the LLM** (see calling-an-llm-api), and **show the answer with citations** mapped back to file and page.",
       "**The tech stack for the Python project** (all free to run locally except the Claude calls):",
-      "- `pypdf` - extracts text from PDF pages.\n- `sentence-transformers` - runs the `all-MiniLM-L6-v2` embedding model (384-dimensional vectors) and the `cross-encoder/ms-marco-MiniLM-L-6-v2` reranker on your own machine. Anthropic does not offer its own embedding model; hosted embedding APIs from other providers are drop-in alternatives.\n- `chromadb` - an embedded vector database that persists to a local folder.\n- `anthropic` - the official SDK for calling Claude.",
-      "**Design decisions baked into the project** (and why):",
-      "- **One shared module (`common.py`) owns the embedding model name and the collection.** The single most damaging RAG bug is embedding queries with a different model than the documents; putting the choice in one place prevents it.\n- **Chunk ids are deterministic** (`path::page::chunk`) and every chunk carries `source`, `path` and `page` metadata, so citations can point to a page and a file can be re-ingested by deleting its old chunks first.\n- **Retrieve wide, send narrow**: fetch 20 candidates, rerank, send the best 5. Good recall from stage one, good precision in the prompt.\n- **Sources are numbered and wrapped in XML-style tags** in the prompt, and the system prompt requires a `[n]` citation on every claim and an exact 'I don't know' sentence when the sources are insufficient.\n- **Citations are validated in code**: every `[n]` in the answer is checked against the sources actually sent, and invalid numbers are flagged rather than trusted.",
-      "Below you will first run the **whole pipeline offline in JavaScript** (toy bag-of-words embeddings, an in-memory store and a fake `llm()` so it runs in your browser), then build the **real Python project** step by step. The JavaScript version mirrors the Python one function for function, so you can see each stage's inputs and outputs before you install anything.",
-      "Once it works, improving it is a matter of swapping components: hybrid search instead of pure vector search, structure-aware chunking, a hosted embedding model, conversation history (see conversational-rag), incremental re-indexing and permissions (see rag-in-production), and measuring quality with an evaluation set (see evaluating-rag).",
+      "- `pypdf`: extracts text from PDF pages.\n- `sentence-transformers`: runs the `all-MiniLM-L6-v2` embedding model (384-dimensional vectors) and the `cross-encoder/ms-marco-MiniLM-L-6-v2` reranker on your machine. Anthropic doesn't offer its own embedding model; hosted embedding APIs from other providers are drop-in alternatives.\n- `chromadb`: an embedded vector database that persists to a local folder.\n- `anthropic`: the official SDK for calling Claude.",
+      "**Design decisions in the project** (and why):",
+      "- **One shared module (`common.py`) owns the embedding model name and the collection.** The most damaging RAG bug is embedding queries with a different model than the documents; one place for the choice prevents it.\n- **Chunk ids are deterministic** (`path::page::chunk`), and every chunk carries `source`, `path` and `page` metadata. Citations can point to a page, and a file can be re-ingested by first deleting its old chunks.\n- **Retrieve wide, send narrow**: fetch 20 candidates, rerank, send the best 5. Good recall from stage one, good precision in the prompt.\n- **Sources are numbered and wrapped in XML-style tags** in the prompt. The system prompt requires a `[n]` citation on every claim and an exact 'I don't know' sentence when sources are insufficient.\n- **Citations are validated in code**: every `[n]` in the answer is checked against the sources actually sent, and invalid numbers are flagged, not trusted.",
+      "First you'll run the **whole pipeline offline in JavaScript** (toy bag-of-words embeddings, an in-memory store and a fake `llm()`, so it runs in your browser). Then you'll build the **real Python project** step by step. The JavaScript version mirrors the Python one function for function, so you see each stage's inputs and outputs before installing anything.",
+      "Once it works, improving it means swapping components: hybrid search instead of pure vector search, structure-aware chunking, a hosted embedding model, conversation history (see conversational-rag), incremental re-indexing and permissions (see rag-in-production), and measuring quality with an evaluation set (see evaluating-rag).",
     ),
     analogy:
-      "A RAG pipeline is a research assistant with a filing cabinet. Ingestion is the night shift: every new document is photocopied, cut into index cards, each card labelled with the document and page, and filed by topic. The query pipeline is the day shift: a question comes in, the assistant pulls the 20 cards from the matching drawers, reads them properly to pick the best 5, hands those to the expert (the LLM) with the instruction 'answer only from these cards and say which card each fact came from', and staples the card references to the answer.",
+      "A RAG pipeline is a research assistant with a filing cabinet. Ingestion is the night shift: each new document is photocopied, cut into index cards labelled with document and page, and filed by topic. The query pipeline is the day shift: a question comes in, the assistant pulls 20 cards from the matching drawers, reads them properly to pick the best 5, and hands those to the expert (the LLM) with 'answer only from these cards and say which card each fact came from'. Then the card references are stapled to the answer.",
     examples: [
       {
         title: "The whole pipeline offline: ingest, embed, store, retrieve, rerank, prompt, answer, cite",
@@ -1300,15 +1300,15 @@ ask("How long do I have to submit receipts?");
 ask("Can I work remotely?");
 ask("What is the parental leave policy?");
 ask("Who won the football world cup?");`,
-        explanation: "Every stage of a real RAG system is here in miniature, with the same function boundaries as the Python project below. Note the two 'I don't know' paths: the parental-leave question retrieves leave chunks but none actually answers it, so the (fake) model declines; the football question retrieves nothing above the minimum score, so the pipeline declines before calling the model at all.",
+        explanation: "Every stage of a real RAG system is here in miniature, with the same function boundaries as the Python project below. Note the two 'I don't know' paths. The parental-leave question retrieves leave chunks but none answers it, so the (fake) model declines. The football question retrieves nothing above the minimum score, so the pipeline declines before calling the model at all.",
         walkthrough: [
           { code: "chunkDoc(source, text, size = 20, overlap = 5)", explanation: "Splits each file by its '# ' headings, then into 20-word windows with 5 words of overlap. The heading is prepended to each chunk and kept in metadata." },
-          { code: "fitVocab(...); embed(text)", explanation: "A toy embedding: count how often each vocabulary word appears, then normalise to length 1. A real model produces meaning-aware vectors, but the interface is the same: text in, vector out." },
-          { code: "store.push({ id, text, metadata, vector })", explanation: "What a vector database row holds: id, vector, original text and metadata - together." },
-          { code: "retrieve(question, k = 4, minScore = 0.15)", explanation: "Embed the question with the SAME function, score every chunk by dot product (= cosine, since normalised), drop weak matches, keep the top 4." },
+          { code: "fitVocab(...); embed(text)", explanation: "A toy embedding: count each vocabulary word, then normalise to length 1. A real model produces meaning-aware vectors, but the interface is the same: text in, vector out." },
+          { code: "store.push({ id, text, metadata, vector })", explanation: "What a vector database row holds, together: id, vector, original text and metadata." },
+          { code: "retrieve(question, k = 4, minScore = 0.15)", explanation: "Embed the question with the SAME function, score each chunk by dot product (= cosine, since normalised), drop weak matches, keep the top 4." },
           { code: "rerank(question, hits, keep = 2)", explanation: "A second, smarter pass over just the candidates (here a simple rule: 'how many/long' questions prefer chunks with numbers). Keeps the best 2 for the prompt." },
-          { code: "buildPrompt(question, hits)", explanation: "Numbered, tagged sources followed by the question - the grounded prompt." },
-          { code: "answer.match(/\\[(\\d+)\\]/g)", explanation: "Extract the [n] citations, check each one points to a source we actually sent, and map it to file and section for the user." },
+          { code: "buildPrompt(question, hits)", explanation: "Numbered, tagged sources followed by the question: the grounded prompt." },
+          { code: "answer.match(/\\[(\\d+)\\]/g)", explanation: "Extract the [n] citations, check each points to a source we actually sent, and map it to file and section for the user." },
         ],
       },
       {
@@ -1340,7 +1340,7 @@ mkdir -p docs                              # copy some PDFs / Markdown / text fi
 python ingest.py docs                      # build (or rebuild) the index
 python query.py "How many days of annual leave do employees get?"
 python query.py "What is the refund window?" --no-rerank`,
-        explanation: "The first run downloads the two small sentence-transformers models (embedding and reranker) and caches them locally; later runs work offline except for the Claude call. Pin exact package versions in requirements.txt once it works (pip freeze) so the project stays reproducible.",
+        explanation: "The first run downloads the two small sentence-transformers models (embedding and reranker) and caches them locally; later runs work offline except for the Claude call. Once it works, pin exact package versions in requirements.txt (pip freeze) so the project stays reproducible.",
       },
       {
         title: "common.py and ingest.py: load, clean, chunk with overlap, embed, store with metadata",
@@ -1444,7 +1444,7 @@ def main(folder: str) -> None:
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "docs")`,
-        explanation: "Ingestion is idempotent: running it twice gives the same result, because each file's old chunks are deleted (by the 'path' metadata) before its new chunks are added under deterministic ids. Every chunk stores its file and page, which is what makes page-level citations possible later. Embedding happens in batches, which is much faster than one chunk at a time.",
+        explanation: "Ingestion is idempotent: running it twice gives the same result, because each file's old chunks are deleted (by the 'path' metadata) before its new chunks are added under deterministic ids. Every chunk stores its file and page, which enables page-level citations later. Embedding runs in batches, much faster than one chunk at a time.",
       },
       {
         title: "query.py: retrieve, rerank, grounded prompt, Claude, answer with validated citations",
@@ -1527,15 +1527,17 @@ if __name__ == "__main__":
     if not words:
         sys.exit('Usage: python query.py "your question" [--no-rerank]')
     answer(" ".join(words), use_rerank="--no-rerank" not in sys.argv)`,
-        explanation: "This is the canonical query path. The system prompt sets the grounding rules; the user message carries numbered sources and the question; the code then validates every [n] against the sources actually sent and maps it to file and page. Printing usage and stop_reason helps you watch cost and spot truncated answers (stop_reason 'max_tokens'). In a long-running service you would load the CrossEncoder and create the client once at startup, not per question.",
+        explanation: "The canonical query path. The system prompt sets the grounding rules; the user message carries numbered sources and the question; the code validates every [n] against the sources actually sent and maps it to file and page. Printing usage and stop_reason helps you watch cost and spot truncated answers (stop_reason 'max_tokens'). In a long-running service, load the CrossEncoder and create the client once at startup, not per question.",
       },
     ],
     howItWorks: md(
-      "**Ingestion, step by step** (ingest.py): (1) discover supported files; (2) `load` yields each PDF page's text, or a whole text file as page 1; (3) `clean` fixes hyphenation and whitespace; (4) `chunk` cuts ~1,000-character windows, moving each cut back to the nearest paragraph, sentence or space, and starts the next chunk 200 characters earlier for overlap; (5) old chunks for the file are deleted by metadata, so re-running never duplicates; (6) chunks are embedded in batches with a normalised sentence-transformers model and added to Chroma with deterministic ids and `{source, path, page, chunk}` metadata.",
-      "**Querying, step by step** (query.py): (1) the question is embedded with the same model via `common.embed`; (2) Chroma returns the 20 nearest chunks with their text, metadata and distances; (3) the cross-encoder scores each (question, chunk) pair and the list is re-sorted; (4) the top 5 become numbered `<source>` blocks; (5) Claude receives the grounding rules as the system prompt and the sources + question as the user message; (6) the answer's `[n]` markers are parsed, validated and mapped back to file and page.",
-      "**Why the prompt is shaped like this.** Sources come *before* the question so the model reads the evidence with the question at the end, close to where it starts writing. XML-style tags make it unambiguous where each source starts and ends and give each a stable id to cite. The instruction to treat sources as data reduces the risk of a malicious document hijacking the model (see ai-security). An exact 'I don't know' sentence makes declines easy to detect in code and in evaluations.",
-      "**Where quality comes from, in order of typical impact:** extraction quality, chunking, retrieval recall (hybrid search, fetch_k), reranking precision, and finally the prompt. When an answer is wrong, debug in that order: print the retrieved chunks first - if the answer is not in them, no prompt will fix it.",
-      "**Cost and latency.** Ingestion cost is embedding time (local, free with sentence-transformers, but CPU-bound) and happens once per document version. Query cost is one embedding, one vector search (milliseconds), one rerank pass (tens to hundreds of ms on CPU), and one LLM call (usually the slowest and the only paid step). Sending 5 chunks of ~250 tokens keeps input small; streaming the answer improves perceived latency (see cost-and-latency).",
+      "**Ingestion, step by step** (ingest.py):",
+      "- Discover supported files.\n- `load` yields each PDF page's text, or a whole text file as page 1.\n- `clean` fixes hyphenation and whitespace.\n- `chunk` cuts ~1,000-character windows, moving each cut back to the nearest paragraph, sentence or space, and starts the next chunk 200 characters earlier for overlap.\n- Old chunks for the file are deleted by metadata, so re-running never duplicates.\n- Chunks are embedded in batches with a normalised sentence-transformers model and added to Chroma with deterministic ids and `{source, path, page, chunk}` metadata.",
+      "**Querying, step by step** (query.py):",
+      "- The question is embedded with the same model via `common.embed`.\n- Chroma returns the 20 nearest chunks with text, metadata and distances.\n- The cross-encoder scores each (question, chunk) pair and the list is re-sorted.\n- The top 5 become numbered `<source>` blocks.\n- Claude gets the grounding rules as the system prompt and the sources + question as the user message.\n- The answer's `[n]` markers are parsed, validated and mapped back to file and page.",
+      "**Why the prompt looks like this.** Sources come *before* the question, so the question sits at the end, close to where the model starts writing. XML-style tags mark clearly where each source starts and ends and give each a stable id to cite. Telling the model to treat sources as data reduces the risk of a malicious document hijacking it (see ai-security). An exact 'I don't know' sentence makes declines easy to detect in code and evaluations.",
+      "**Where quality comes from, by typical impact:** extraction quality, chunking, retrieval recall (hybrid search, fetch_k), reranking precision, and finally the prompt. When an answer is wrong, debug in that order. Print the retrieved chunks first: if the answer isn't in them, no prompt will fix it.",
+      "**Cost and latency.** Ingestion cost is embedding time (local and free with sentence-transformers, but CPU-bound), paid once per document version. Each query costs one embedding, one vector search (milliseconds), one rerank pass (tens to hundreds of ms on CPU), and one LLM call (usually the slowest and the only paid step). Sending 5 chunks of ~250 tokens keeps input small; streaming the answer improves perceived latency (see cost-and-latency).",
     ),
     diagram: `INGEST (offline, when docs change)
  docs/ --> load --> clean --> chunk --> embed --> Chroma
@@ -1550,13 +1552,13 @@ QUERY (every question)
               v                       <source id=1..5>
      validate [n] -> file, page       + question`,
     whyItExists: md(
-      "An LLM alone knows only its training data, cannot see your private documents, and cannot show where an answer came from. Fine-tuning does not reliably add facts and is costly to repeat whenever documents change. A RAG pipeline gives the model the relevant parts of your documents at question time, keeps knowledge up to date by re-indexing instead of retraining, and makes every answer checkable through citations.",
+      "An LLM alone knows only its training data, can't see your private documents, and can't show where an answer came from. Fine-tuning doesn't reliably add facts and is costly to repeat whenever documents change. A RAG pipeline gives the model the relevant parts of your documents at question time, stays current by re-indexing instead of retraining, and makes every answer checkable through citations.",
     ),
     whenToUse: md(
-      "Build this pipeline when users need answers from a body of documents that is too large to paste into every prompt, changes over time, or must be cited: internal handbooks and wikis, product documentation, support knowledge bases, contracts and policies, research papers. Use the offline JavaScript version to explain and test the logic; use the Python project as the starting point for a real service.",
+      "Build this when users need answers from documents that are too large to paste into every prompt, change over time, or must be cited: internal handbooks and wikis, product docs, support knowledge bases, contracts and policies, research papers. Use the offline JavaScript version to explain and test the logic, and the Python project as the start of a real service.",
     ),
     whenNotToUse: md(
-      "If all your content fits comfortably in the context window and rarely changes, put it in the prompt (with prompt caching) and skip retrieval. If the questions are about structured data (sales by region, order status), give the model a SQL or API tool instead of embedding tables. If the task needs reasoning across the entire corpus at once ('summarise every document'), top-k retrieval is the wrong shape; use map-reduce summarisation or an agent (see agentic-rag).",
+      "If all your content fits comfortably in the context window and rarely changes, put it in the prompt (with prompt caching) and skip retrieval. For questions about structured data (sales by region, order status), give the model a SQL or API tool instead of embedding tables. If the task needs reasoning across the whole corpus at once ('summarise every document'), top-k retrieval is the wrong shape; use map-reduce summarisation or an agent (see agentic-rag).",
     ),
     commonMistakes: [
       "Embedding queries and documents with different models or settings (for example normalised vs not) - keep the choice in one shared module.",
@@ -1596,16 +1598,16 @@ QUERY (every question)
     level: "intermediate",
     description: "Getting the model to answer only from retrieved context, say 'I don't know' when it should, cite its sources, and checking those citations in code.",
     explanation: md(
-      "Retrieval puts the right text in front of the model. **Grounded generation** is making sure the model actually *uses* that text - and only that text - to answer. An answer is **grounded** (or *faithful*) when every claim in it is supported by the provided sources. An answer that sounds right but includes facts not in the sources is **ungrounded**, even if those facts happen to be true; it means the model filled gaps from its training data or invented them (see hallucinations-and-limitations).",
-      "Grounding matters because the whole point of RAG is **trust**: users (and auditors) must be able to check where each statement came from. If the model mixes your up-to-date policy with its general knowledge about 'typical' policies, the answer can be confidently wrong in exactly the way RAG was supposed to prevent.",
+      "Retrieval puts the right text in front of the model. **Grounded generation** makes sure the model actually *uses* that text, and only that text, to answer. An answer is **grounded** (or *faithful*) when every claim is supported by the provided sources. An answer with facts not in the sources is **ungrounded**, even if those facts happen to be true: the model filled gaps from training data or invented them (see hallucinations-and-limitations).",
+      "Grounding matters because RAG is about **trust**: users (and auditors) must be able to check where each statement came from. If the model mixes your current policy with general knowledge about 'typical' policies, the answer can be confidently wrong in exactly the way RAG was meant to prevent.",
       "**The grounding toolkit:**",
-      "- **Clear instructions in the system prompt**: answer only from the sources; do not use outside knowledge; if the sources do not contain the answer, say so with an exact sentence; if sources conflict, say so and cite both.\n- **Well-delimited, numbered sources**: wrap each chunk in tags like `<source id=\"2\" file=\"handbook.pdf\" page=\"4\">...</source>` so the model can refer to them unambiguously, and put the question after the sources.\n- **A permitted way out**: models tend to answer *something* when asked a question. Explicitly allowing - and asking for - 'I don't know based on the provided documents' reduces made-up answers. Using an exact sentence lets code detect it.\n- **Citations**: require a marker such as `[2]` after every factual sentence. Citations make answers verifiable, and the requirement itself nudges the model to stay close to the sources.\n- **Quote first, then answer**: for high-stakes questions, ask the model to first extract the exact quotes that answer the question, then write the answer based only on those quotes. Quotes can be checked mechanically.\n- **Validation in code**: check that every cited number refers to a source that was actually sent, that quotes appear verbatim in their source, and flag sentences with no citation.",
-      "**Built-in citations.** The Claude API can also produce citations natively: pass each source as a `document` content block with `\"citations\": {\"enabled\": True}`, and the response's text blocks come back with a `citations` list pointing to the exact cited passage (`cited_text`) and which document it came from. This avoids parsing `[n]` markers and guarantees the cited text really exists in the document.",
-      "**'I don't know' has two layers.** The *retrieval layer* can decline before calling the model, when no chunk scores above a threshold. The *generation layer* declines when chunks were retrieved but none answers the question. You want both: the first saves cost, the second catches 'related but not answering' context. Track how often each happens - too many declines usually means a retrieval problem, too few may mean the model is guessing.",
+      "- **Clear system-prompt instructions**: answer only from the sources; no outside knowledge; if the sources lack the answer, say so with an exact sentence; if sources conflict, say so and cite both.\n- **Well-delimited, numbered sources**: wrap each chunk in tags like `<source id=\"2\" file=\"handbook.pdf\" page=\"4\">...</source>` so the model can refer to them unambiguously, and put the question after the sources.\n- **A permitted way out**: models tend to answer *something*. Explicitly allowing (and asking for) 'I don't know based on the provided documents' reduces made-up answers, and an exact sentence lets code detect it.\n- **Citations**: require a marker such as `[2]` after every factual sentence. Citations make answers verifiable, and the requirement nudges the model to stay close to the sources.\n- **Quote first, then answer**: for high-stakes questions, have the model first extract the exact quotes that answer the question, then answer only from those quotes. Quotes can be checked mechanically.\n- **Validation in code**: check that every cited number refers to a source actually sent and that quotes appear verbatim in their source, and flag sentences with no citation.",
+      "**Built-in citations.** The Claude API can produce citations natively. Pass each source as a `document` content block with `\"citations\": {\"enabled\": True}`, and the response's text blocks come back with a `citations` list pointing to the exact cited passage (`cited_text`) and its document. No `[n]` parsing, and the cited text is guaranteed to exist in the document.",
+      "**'I don't know' has two layers.** The *retrieval layer* declines before calling the model when no chunk scores above a threshold. The *generation layer* declines when chunks were retrieved but none answers the question. You want both: the first saves cost, the second catches 'related but not answering' context. Track how often each happens: too many declines usually means a retrieval problem; too few may mean the model is guessing.",
       "Grounding is never perfect. Treat citations as a strong signal, measure **faithfulness** on an evaluation set (see evaluating-rag), and design the UI so users can open the cited source.",
     ),
     analogy:
-      "Think of an open-book exam with a strict examiner. The student (the model) may only use the pages handed to them (the retrieved sources), must write the page number next to every statement (citations), and gets marks for writing 'not covered in the provided material' rather than guessing. The examiner (your validation code) checks that every page number exists and that quoted lines really appear on that page.",
+      "Think of an open-book exam with a strict examiner. The student (the model) may only use the pages handed out (the retrieved sources), must write the page number next to every statement (citations), and earns marks for 'not covered in the provided material' instead of guessing. The examiner (your validation code) checks that every page number exists and that quoted lines really appear on that page.",
     examples: [
       {
         title: "Validate an answer's citations: missing, invalid and unsupported claims",
@@ -1645,11 +1647,11 @@ for (const [name, answer] of Object.entries(answers)) {
   console.log("--- " + name + " ---");
   for (const line of checkAnswer(answer)) console.log("  " + line);
 }`,
-        explanation: "Cheap, deterministic checks catch a lot: sentences with no citation (the 'public holidays' claim came from the model's general knowledge, not the sources), citations to sources that do not exist ([3], attached to a claim that actually contradicts source 2), and - via the support score - claims whose words barely appear in the cited source. Production systems add an LLM-as-judge faithfulness check for meaning, not just words (see evaluating-rag).",
+        explanation: "Cheap, deterministic checks catch a lot: sentences with no citation (the 'public holidays' claim came from the model's general knowledge, not the sources), citations to sources that don't exist ([3], on a claim that actually contradicts source 2), and, via the support score, claims whose words barely appear in the cited source. Production systems add an LLM-as-judge faithfulness check for meaning, not just words (see evaluating-rag).",
         walkthrough: [
           { code: "answer.split(/(?<=[.!?])\\s+/)", explanation: "Split the answer into sentences; each factual sentence should carry its own citation." },
           { code: "sentence.match(/\\[(\\d+)\\]/g)", explanation: "Extract the [n] markers in this sentence." },
-          { code: "!sources.some((s) => s.id === id)", explanation: "A citation to a source number we never sent is invalid - the model made it up." },
+          { code: "!sources.some((s) => s.id === id)", explanation: "A citation to a source number we never sent is invalid: the model made it up." },
           { code: "support = ... / cw.length", explanation: "A rough lexical support score: how many of the claim's words appear in the cited text. Low support flags a claim for review." },
         ],
       },
@@ -1684,7 +1686,7 @@ for (const q of quotes) {
   console.log((verbatim ? "VERIFIED " : "NOT FOUND") + " [" + q.id + "] " + q.text);
 }
 console.log("Answer:", reply.match(/<answer>([\\s\\S]*)<\\/answer>/)[1]);`,
-        explanation: "Asking for exact quotes before the answer makes grounding checkable: quotes are verified with a plain substring search. Here the second 'quote' paraphrases the source and changes its meaning ('never' vs 'once the download has started'), and the check catches it. A real pipeline would retry, drop the claim, or show a warning.",
+        explanation: "Asking for exact quotes before the answer makes grounding checkable with a plain substring search. Here the second 'quote' paraphrases the source and changes its meaning ('never' vs 'once the download has started'), and the check catches it. A real pipeline would retry, drop the claim, or show a warning.",
       },
       {
         title: "Native citations with Claude's document blocks (Python)",
@@ -1722,7 +1724,7 @@ for block in resp.content:
         for cite in block.citations or []:
             print(f' [{cite.document_title}: "{cite.cited_text}"]', end="")
 print()`,
-        explanation: "Each text block in the response may carry a citations list; every citation names the document it came from (document_title, document_index) and includes cited_text, the exact passage from that document. Because the API extracts the cited text from your documents, you do not need to parse [n] markers or verify quotes yourself - you render the text and its citations, for example as footnotes.",
+        explanation: "Each text block in the response may carry a citations list. Every citation names its document (document_title, document_index) and includes cited_text, the exact passage from that document. Since the API extracts the cited text from your documents, you don't parse [n] markers or verify quotes yourself; just render the text and its citations, for example as footnotes.",
       },
       {
         title: "Structured grounded answers with quotes, validated in code (Python)",
@@ -1761,15 +1763,18 @@ def grounded_answer(question: str, sources: list[str]) -> GroundedAnswer:
 
 ans = grounded_answer("How many leave days do I get?", ["Employees receive 25 days of annual leave per year."])
 print(" ".join(f"{c.sentence} [{c.source_id}]" for c in ans.claims) if ans.answerable else "I don't know.")`,
-        explanation: "Structured output turns grounding into data you can check: an explicit answerable flag, and a quote plus source id for every sentence. The verification step is ordinary Python - a substring check - and unverifiable claims are removed before the user sees them.",
+        explanation: "Structured output turns grounding into data you can check: an explicit answerable flag, and a quote plus source id for every sentence. Verification is ordinary Python (a substring check), and unverifiable claims are removed before the user sees them.",
       },
     ],
     howItWorks: md(
-      "**Prompt anatomy for grounded RAG:** (1) system prompt with the role and rules (sources only, cite each claim, exact decline sentence, handle conflicts, treat sources as data); (2) user message containing the numbered, tagged sources first and the question last; (3) optionally, a required output format (quotes then answer, or a schema).",
-      "**Why it works.** LLMs follow explicit instructions well, and placing the evidence directly in the context makes the grounded continuation by far the most likely one. Citations add a self-consistency pressure: to cite [2] the model must 'look' at source 2. An explicit permission to decline removes the pressure to always produce an answer.",
-      "**Why it still fails sometimes.** The model may blend in training knowledge when sources are partial, cite the wrong number when sources are similar, over-generalise ('always' instead of 'usually'), or follow instructions hidden inside a retrieved document. Very long contexts with many sources make it harder for the model to find and use the right one, which is another reason to send fewer, better chunks.",
-      "**Verification layers, cheapest first:** citation markers present and in range; quotes verbatim in the source; lexical overlap between claim and cited text; an LLM judge asked 'is this sentence fully supported by this source?'; human review for high-stakes domains. Use the cheap checks on every request and the expensive ones on samples or flagged answers.",
-      "**Conflicting or outdated sources:** include dates and versions in the source tags (from metadata) and instruct the model to prefer the most recent official source and mention conflicts. Better still, fix it at the index: remove superseded documents (see rag-in-production).",
+      "**Prompt anatomy for grounded RAG:**",
+      "- System prompt with the role and rules: sources only, cite each claim, exact decline sentence, handle conflicts, treat sources as data.\n- User message with the numbered, tagged sources first and the question last.\n- Optionally, a required output format (quotes then answer, or a schema).",
+      "**Why it works.** LLMs follow explicit instructions well, and evidence placed directly in the context makes the grounded continuation by far the most likely. Citations add self-consistency pressure: to cite [2], the model must 'look' at source 2. Explicit permission to decline removes the pressure to always answer.",
+      "**Why it still fails sometimes.** The model may blend in training knowledge when sources are partial, cite the wrong number when sources are similar, over-generalise ('always' instead of 'usually'), or follow instructions hidden in a retrieved document. Long contexts with many sources make the right one harder to find and use, another reason to send fewer, better chunks.",
+      "**Verification layers, cheapest first:**",
+      "- Citation markers present and in range.\n- Quotes verbatim in the source.\n- Lexical overlap between claim and cited text.\n- An LLM judge asked 'is this sentence fully supported by this source?'.\n- Human review for high-stakes domains.",
+      "Run the cheap checks on every request and the expensive ones on samples or flagged answers.",
+      "**Conflicting or outdated sources:** include dates and versions in the source tags (from metadata) and tell the model to prefer the most recent official source and mention conflicts. Better still, fix it in the index: remove superseded documents (see rag-in-production).",
     ),
     diagram: `retrieved chunks
       |
@@ -1794,13 +1799,13 @@ print(" ".join(f"{c.sentence} [{c.source_id}]" for c in ans.claims) if ans.answe
       v
  answer + clickable sources`,
     whyItExists: md(
-      "Retrieval alone does not stop a model from improvising. Users and organisations need answers they can verify, especially for policies, legal, medical, financial and technical content. Grounding instructions, citations and validation turn RAG output from 'plausible text' into 'claims with evidence', and give you a measurable faithfulness signal.",
+      "Retrieval alone doesn't stop a model from improvising. Users and organisations need answers they can verify, especially for policy, legal, medical, financial and technical content. Grounding instructions, citations and validation turn RAG output from 'plausible text' into 'claims with evidence', and give you a measurable faithfulness signal.",
     ),
     whenToUse: md(
-      "In every RAG answer that a person might act on. Use [n] citations for simple pipelines, native document citations when you want exact cited passages without parsing, quote-first or structured claims for high-stakes domains, and always pair them with code-level validation and a decline path.",
+      "In every RAG answer someone might act on. Use [n] citations for simple pipelines, native document citations for exact cited passages without parsing, and quote-first or structured claims for high-stakes domains. Always pair them with code-level validation and a decline path.",
     ),
     whenNotToUse: md(
-      "Strict 'sources only' grounding is wrong for creative or general tasks where the model's own knowledge is the point (brainstorming, drafting, explaining a general concept); there, retrieval is optional context, not a constraint. Do not require citations for chit-chat turns like 'thanks!' - route those around the RAG path.",
+      "Strict 'sources only' grounding is wrong for creative or general tasks where the model's own knowledge is the point (brainstorming, drafting, explaining a general concept). There, retrieval is optional context, not a constraint. Don't require citations for chit-chat like 'thanks!'; route it around the RAG path.",
     ),
     commonMistakes: [
       "Telling the model to 'use the context' without forbidding outside knowledge or giving it a way to decline.",
@@ -1837,17 +1842,19 @@ print(" ".join(f"{c.sentence} [{c.source_id}]" for c in ans.claims) if ans.answe
     level: "intermediate",
     description: "Making RAG work in a chat: follow-up questions, rewriting them into standalone search queries, managing chat history, and deciding when to retrieve at all.",
     explanation: md(
-      "A single-question RAG pipeline breaks the moment users start chatting. Turn 1: 'How many days of annual leave do employees get?' - works. Turn 2: 'And what about contractors?' - the retriever embeds *'And what about contractors?'*, which says nothing about leave, and returns chunks about contractor invoicing. Turn 3: 'Can I carry it over?' - *it* refers to leave, two turns ago. Follow-up questions are full of **references to earlier turns** (pronouns like *it* and *that*, ellipsis like 'what about X?') that only make sense with the conversation history.",
+      "A single-question RAG pipeline breaks as soon as users start chatting.",
+      "- Turn 1: 'How many days of annual leave do employees get?' Works.\n- Turn 2: 'And what about contractors?' The retriever embeds *'And what about contractors?'*, which says nothing about leave, and returns chunks about contractor invoicing.\n- Turn 3: 'Can I carry it over?' *It* means leave, from two turns ago.",
+      "Follow-ups are full of **references to earlier turns** (pronouns like *it* and *that*, ellipsis like 'what about X?') that only make sense with the conversation history.",
       "**Conversational RAG** solves two separate problems:",
-      "- **Retrieving correctly for a follow-up.** The search query must be *standalone*: understandable without the chat. The standard technique is **query rewriting** (also called *query condensing* or *contextualisation*): before retrieving, ask an LLM to rewrite the latest message, given the recent history, into a self-contained question - 'How many days of annual leave do contractors get?'. You search with the rewritten question but still answer the user's actual message.\n- **Answering in context.** The LLM API is stateless (see calling-an-llm-api): you must send the conversation history on every turn so the model knows what 'it' and 'that' mean and can keep a consistent tone. The freshly retrieved sources go into the *current* turn.",
-      "**Why not just embed the whole conversation?** Concatenating all previous turns into the search query drags in old topics: after discussing leave and then switching to expenses, the query still 'smells' of leave. Embedding only the last message loses references. Rewriting gets the best of both - it pulls in exactly the context that the latest message depends on and nothing else. A cheap fallback is to embed the last user message plus the previous user message, but rewriting is more reliable.",
-      "**Managing history.** Every turn adds tokens, and every token is resent each turn, so cost and latency grow with conversation length, and eventually you hit the context window (see tokens-and-context-windows). Common strategies:",
-      "- **Do not keep old retrieved sources in history.** Store each past turn as just the user's question and the assistant's answer. Sources for the current question are retrieved fresh. This alone saves most of the tokens.\n- **Sliding window**: keep only the last N turns verbatim.\n- **Summary memory**: when history gets long, replace the oldest turns with an LLM-written summary ('The user is a contractor in Germany asking about leave and expenses').\n- **Keep the rewrite input small**: the rewriter usually needs only the last few turns.",
-      "**Deciding whether to retrieve.** Not every message needs a search: 'thanks!', 'make that shorter', or 'translate your answer into Spanish' should be answered from the conversation alone. A rewriting step can also output a flag such as `needs_retrieval`, so you skip the search for chit-chat and edits. This is a small step towards agentic RAG, where the model decides when and what to search (see agentic-rag).",
-      "**Citations across turns.** Source numbers restart every turn, because each turn has its own retrieved set. Store the citations with each answer in your application (not in the prompt) so the UI can still show sources for older messages.",
+      "- **Retrieving correctly for a follow-up.** The search query must be *standalone*: understandable without the chat. The standard technique is **query rewriting** (also *query condensing* or *contextualisation*): before retrieving, an LLM rewrites the latest message, given recent history, into a self-contained question, such as 'How many days of annual leave do contractors get?'. You search with the rewrite but still answer the user's actual message.\n- **Answering in context.** The LLM API is stateless (see calling-an-llm-api), so you send the conversation history every turn. The model then knows what 'it' and 'that' mean and keeps a consistent tone. Freshly retrieved sources go into the *current* turn.",
+      "**Why not embed the whole conversation?** Concatenating all turns into the search query drags in old topics: after switching from leave to expenses, the query still 'smells' of leave. Embedding only the last message loses references. Rewriting gets both right: it pulls in exactly the context the latest message depends on, and nothing else. A cheap fallback is to embed the last two user messages, but rewriting is more reliable.",
+      "**Managing history.** Every turn adds tokens, and all of them are resent each turn, so cost and latency grow with conversation length until you hit the context window (see tokens-and-context-windows). Common strategies:",
+      "- **Don't keep old retrieved sources in history.** Store each past turn as just the user's question and the assistant's answer; retrieve sources fresh for the current question. This alone saves most of the tokens.\n- **Sliding window**: keep only the last N turns verbatim.\n- **Summary memory**: when history gets long, replace the oldest turns with an LLM-written summary ('The user is a contractor in Germany asking about leave and expenses').\n- **Keep the rewrite input small**: the rewriter usually needs only the last few turns.",
+      "**Deciding whether to retrieve.** Not every message needs a search. 'thanks!', 'make that shorter', or 'translate your answer into Spanish' should be answered from the conversation alone. The rewriting step can also output a flag like `needs_retrieval`, so you skip search for chit-chat and edits. This is a small step towards agentic RAG, where the model decides when and what to search (see agentic-rag).",
+      "**Citations across turns.** Source numbers restart every turn, since each turn has its own retrieved set. Store citations with each answer in your app (not in the prompt) so the UI can still show sources for older messages.",
     ),
     analogy:
-      "Imagine a librarian with a colleague in the archive who has never heard your conversation. You tell the librarian 'and what about contractors?'. A bad librarian shouts exactly that down to the archive and gets random files about contractors. A good librarian translates it first: 'Find the annual leave policy for contractors', because they remember what you were talking about. Then they answer you in the flow of the conversation. Query rewriting is that translation step.",
+      "Picture a librarian with an archive colleague who never heard your conversation. You say 'and what about contractors?'. A bad librarian shouts exactly that down to the archive and gets random contractor files. A good librarian, remembering the topic, translates it first: 'Find the annual leave policy for contractors', then answers you in the flow of the conversation. Query rewriting is that translation step.",
     examples: [
       {
         title: "Why follow-ups break retrieval, and how rewriting fixes it",
@@ -1886,7 +1893,7 @@ for (const latest of ["And what about contractors?", "Can I carry it over?"]) {
   console.log("  rewritten query :  " + standalone);
   console.log("  rewritten search-> " + search(standalone));
 }`,
-        explanation: "Searching with the raw follow-up 'And what about contractors?' finds the invoicing chunk, because the only content word is 'contractors' and that chunk mentions it twice. The rewritten, standalone question finds the chunk that actually answers it. 'Can I carry it over?' is similar: 'it' carries no meaning for a retriever, so the raw search matches a chunk about unbilled hours carrying over. The fake rewriter uses rules only to stay offline; a real LLM handles arbitrary phrasing.",
+        explanation: "Searching with the raw follow-up 'And what about contractors?' finds the invoicing chunk, because 'contractors' is the only content word and that chunk mentions it twice. The rewritten, standalone question finds the chunk that actually answers. 'Can I carry it over?' is similar: 'it' means nothing to a retriever, so the raw search matches a chunk about unbilled hours carrying over. The fake rewriter uses rules only to stay offline; a real LLM handles any phrasing.",
         walkthrough: [
           { code: "search(latest)", explanation: "What a naive pipeline does: embed or match the user's latest message as-is." },
           { code: "rewrite(history, latest)", explanation: "Turns the follow-up into a standalone question using the conversation. In production this is a short LLM call." },
@@ -1928,7 +1935,7 @@ function chat(userMessage) {
  "Thanks! And how do I submit expenses?", "What is the deadline for that?"].forEach(chat);
 console.log("history kept verbatim:", history.length / 2, "turns");
 console.log("summary:", summary.trim());`,
-        explanation: "History holds only questions and answers, so each turn sends a bounded number of messages no matter how long the conversation runs; older turns survive as a summary in the system prompt. Sources are retrieved fresh for the current question and never accumulate. In a real app the summary is written by an LLM and messages strictly alternate user/assistant, starting with a user message.",
+        explanation: "History holds only questions and answers, so each turn sends a bounded number of messages however long the conversation runs; older turns survive as a summary in the system prompt. Sources are retrieved fresh for the current question and never pile up. In a real app, an LLM writes the summary, and messages strictly alternate user/assistant, starting with a user message.",
       },
       {
         title: "Conversational RAG with Claude: rewrite, decide, retrieve, answer (Python)",
@@ -1990,15 +1997,16 @@ chat = ChatSession()
 for q in ["How many days of annual leave do employees get?", "And contractors?", "Thanks, can you make that shorter?"]:
     print("User:", q)
     print("Assistant:", chat.ask(q), "\\n")`,
-        explanation: "Three ideas in one class: a cheap structured rewrite step that also decides whether retrieval is needed; retrieval with the standalone question; and an answer call that sends trimmed history plus the current message with fresh sources. History slices are taken in pairs (even numbers) so the messages still alternate user/assistant and start with a user turn. Old sources are never stored in history.",
+        explanation: "Three ideas in one class: a cheap structured rewrite step that also decides whether retrieval is needed; retrieval with the standalone question; and an answer call sending trimmed history plus the current message with fresh sources. History is sliced in pairs (even numbers) so messages still alternate user/assistant and start with a user turn. Old sources are never stored in history.",
       },
     ],
     howItWorks: md(
-      "**Per-turn flow:** (1) receive the user message; (2) if there is history, call the rewriter with the last few turns and the message to get a standalone question and a needs-retrieval flag; (3) if needed, retrieve (and rerank) with the standalone question; (4) build the messages list: trimmed history (questions and answers only) followed by the current user message containing the sources and the original message; (5) call the LLM; (6) store the plain question and answer, plus the citations in your app's database.",
-      "**Rewriter prompt essentials:** include only recent turns, tell it to resolve pronouns and references, keep the user's intent and constraints (names, dates, product versions), output only the rewritten question (structured output makes this robust), and return the message unchanged if it is already standalone. Use a low effort setting or a smaller model: it is a simple task that adds latency to every turn.",
+      "**Per-turn flow:**",
+      "- Receive the user message.\n- If there's history, call the rewriter with the last few turns and the message to get a standalone question and a needs-retrieval flag.\n- If needed, retrieve (and rerank) with the standalone question.\n- Build the messages list: trimmed history (questions and answers only), then the current user message with the sources and the original message.\n- Call the LLM.\n- Store the plain question and answer, plus the citations, in your app's database.",
+      "**Rewriter prompt essentials:** include only recent turns; tell it to resolve pronouns and references; keep the user's intent and constraints (names, dates, product versions); output only the rewritten question (structured output makes this robust); and return the message unchanged if it's already standalone. Use a low effort setting or a smaller model: it's a simple task that adds latency to every turn.",
       "**Why answer with the original message, not the rewrite?** The rewrite is for the retriever. The answering model has the full history and the user's exact words, including tone and requests like 'briefly' that a rewrite may drop.",
-      "**Token growth.** Without trimming, turn n resends all n-1 earlier turns, so total tokens across a conversation grow roughly quadratically. With a sliding window plus summary and no stored sources, each turn costs about the same. Prompt caching (see cost-and-latency) can further cut the cost of the repeated prefix: system prompt and early history.",
-      "**Multi-question messages.** 'What is the leave policy and how do I claim expenses?' needs two searches. A rewriter can return a list of standalone questions, retrieve for each and merge the results - the multi-query idea from advanced-rag-techniques.",
+      "**Token growth.** Without trimming, turn n resends all n-1 earlier turns, so total tokens over a conversation grow roughly quadratically. With a sliding window plus summary and no stored sources, each turn costs about the same. Prompt caching (see cost-and-latency) further cuts the cost of the repeated prefix: system prompt and early history.",
+      "**Multi-question messages.** 'What is the leave policy and how do I claim expenses?' needs two searches. A rewriter can return a list of standalone questions, retrieve for each, and merge the results: the multi-query idea from advanced-rag-techniques.",
     ),
     diagram: `history (Q/A only) + new message
               |
@@ -2020,13 +2028,13 @@ for q in ["How many days of annual leave do employees get?", "And contractors?",
               |
    store Q + A (+ citations in app DB)`,
     whyItExists: md(
-      "People do not talk in standalone search queries; they ask follow-ups, use pronouns and refine. A RAG system that only handles single, fully specified questions feels broken in a chat UI. Query rewriting and history management make retrieval robust to natural conversation while keeping cost bounded.",
+      "People don't talk in standalone search queries; they ask follow-ups, use pronouns and refine. A RAG system that only handles single, fully specified questions feels broken in a chat UI. Query rewriting and history management make retrieval robust to natural conversation while keeping cost bounded.",
     ),
     whenToUse: md(
-      "Any chat interface on top of RAG: support assistants, internal knowledge bots, documentation chat. Add query rewriting as soon as users can ask follow-ups, history trimming once conversations get long, and a needs-retrieval decision when many messages are chit-chat or edits of previous answers.",
+      "Any chat interface on top of RAG: support assistants, internal knowledge bots, documentation chat. Add query rewriting once users can ask follow-ups, history trimming once conversations get long, and a needs-retrieval decision when many messages are chit-chat or edits of earlier answers.",
     ),
     whenNotToUse: md(
-      "For single-shot search boxes or batch question answering there is no history to manage; skip the rewrite call and its latency. If almost every message is standalone (for example a search-like UI), measure whether rewriting actually improves retrieval before paying for it on every turn.",
+      "Single-shot search boxes and batch question answering have no history to manage; skip the rewrite call and its latency. If almost every message is standalone (for example a search-like UI), measure whether rewriting actually improves retrieval before paying for it every turn.",
     ),
     commonMistakes: [
       "Retrieving with the raw follow-up message, so 'what about contractors?' searches for nothing useful.",
@@ -2063,19 +2071,25 @@ for q in ["How many days of annual leave do employees get?", "And contractors?",
     level: "intermediate",
     description: "Keeping a RAG system correct, fresh, secure, fast and observable: incremental re-indexing, deletions, permissions, caching, latency budgets and monitoring.",
     explanation: md(
-      "A RAG demo answers questions about a folder you indexed once. A production RAG system serves many users, over documents that change every day, some of which most users must never see, under a latency budget, with someone on call when answers go wrong. The pipeline is the same; what changes is everything around it.",
-      "**1. Freshness and incremental re-indexing.** Documents are edited, added and deleted continuously. Re-embedding the entire corpus on every change is slow and expensive, so production systems index **incrementally**: detect what changed and only process that. The standard tool is a **content hash** (a fingerprint such as SHA-256 of the text) stored with each document or chunk. On each sync, compare hashes: new hash means new or changed content to (re-)embed, same hash means skip, and a document that no longer exists at the source means *delete its chunks*. Changes are detected by scheduled syncs (every few minutes or hours), by change events from the source system (webhooks, database change streams), or both. Track the time from 'document changed' to 'searchable' as a freshness metric.",
-      "**Deletions are a correctness and compliance issue.** If a policy is withdrawn but its chunks remain in the index, the assistant keeps confidently quoting it. If a user's data must be erased, it must be erased from the vector store too. Make sure every chunk can be traced to its source document (metadata) and deleted by it.",
-      "**2. Re-indexing everything safely.** Some changes require rebuilding the whole index: a new embedding model, a new chunking strategy. Do it **blue/green**: build a new collection or table alongside the live one, run your evaluation set against it, then switch traffic with a config change and keep the old one for rollback. Store the embedding model name and a pipeline version in metadata so you always know how a vector was made.",
+      "A RAG demo answers questions about a folder you indexed once. A production system serves many users over documents that change daily, some of which most users must never see, under a latency budget, with someone on call when answers go wrong. The pipeline is the same; everything around it changes.",
+      "**1. Freshness and incremental re-indexing.** Documents are edited, added and deleted all the time. Re-embedding the whole corpus on every change is slow and expensive, so production systems index **incrementally**: detect what changed and process only that.",
+      "The standard tool is a **content hash** (a fingerprint such as SHA-256 of the text) stored with each document or chunk. On each sync, compare hashes:",
+      "- New hash: new or changed content to (re-)embed.\n- Same hash: skip.\n- Document gone from the source: *delete its chunks*.",
+      "Detect changes with scheduled syncs (every few minutes or hours), change events from the source system (webhooks, database change streams), or both. Track the time from 'document changed' to 'searchable' as a freshness metric.",
+      "**Deletions are a correctness and compliance issue.** If a policy is withdrawn but its chunks stay in the index, the assistant keeps confidently quoting it. If a user's data must be erased, it must be erased from the vector store too. Make sure every chunk can be traced to its source document (metadata) and deleted by it.",
+      "**2. Re-indexing everything safely.** Some changes need a full rebuild: a new embedding model or chunking strategy. Do it **blue/green**: build a new collection or table alongside the live one, run your evaluation set against it, switch traffic with a config change, and keep the old one for rollback. Store the embedding model name and a pipeline version in metadata so you always know how a vector was made.",
       "**3. Access control (permissions).** RAG can leak information: if an intern's question retrieves a chunk from the salary spreadsheet, the model will happily summarise it. Rules:",
-      "- **Filter at retrieval time, in code**, using permission metadata copied from the source system (which groups or users may read each document). Never rely on the prompt ('do not reveal salaries') - prompts are not a security boundary.\n- **Keep permissions in sync** with the source: when someone loses access to a document, the index must reflect it quickly.\n- **Multi-tenant apps** (one system, many customers) should isolate tenants strictly: a mandatory tenant filter on every query, or a separate collection or database per tenant.\n- **Treat retrieved text as untrusted input**: documents can contain hidden instructions (indirect prompt injection), so give the model no more power than the user has (see ai-security).",
-      "**4. Caching.** Several layers can be cached: **embeddings** of chunks (keyed by content hash, so unchanged chunks are never re-embedded), **query embeddings** and **retrieval results** for repeated questions, whole **answers** for exact repeat questions (keyed by normalised question + user permissions + index version, and invalidated when the index changes), and **prompt caching** on the LLM side for the large stable prefix of every request such as the system prompt and instructions (see cost-and-latency). Never share cached answers between users with different permissions.",
-      "**5. Latency.** A typical request: query rewrite (LLM call, if conversational) -> embedding -> vector/hybrid search -> rerank -> answer generation. Set a budget per step and measure each. The answer generation usually dominates; **stream** it so users see text immediately. Load models and clients once at startup, run independent steps (vector and keyword search) in parallel, keep the number and size of chunks small, and use a lower effort setting or a smaller model for helper steps like rewriting.",
-      "**6. Monitoring and feedback.** For every request, log the question, rewritten query, retrieved chunk ids and scores, reranker scores, prompt version, model, token usage, latency per step, the answer, its citations, and the user's feedback (thumbs up/down). Watch aggregate signals: the 'I don't know' rate, the share of answers without valid citations, retrieval score distributions (dropping scores often means content gaps or a broken ingest), cost per request, and p95 latency. Turn real failures into new evaluation cases and run the evaluation suite whenever the prompt, model, chunking or index changes (see evaluating-rag and observability-and-debugging).",
-      "**7. Reliability.** LLM APIs and embedding services can be slow or rate-limited: use timeouts, retries with exponential backoff (the official SDKs retry some errors automatically), and graceful fallbacks ('search results without an AI summary'). Run ingestion as a background job with a queue so a huge upload does not block queries.",
+      "- **Filter at retrieval time, in code**, using permission metadata copied from the source system (which groups or users may read each document). Never rely on the prompt ('do not reveal salaries'); prompts are not a security boundary.\n- **Keep permissions in sync** with the source: when someone loses access to a document, the index must reflect it quickly.\n- **Multi-tenant apps** (one system, many customers) must isolate tenants strictly: a mandatory tenant filter on every query, or a separate collection or database per tenant.\n- **Treat retrieved text as untrusted input**: documents can hide instructions (indirect prompt injection), so give the model no more power than the user has (see ai-security).",
+      "**4. Caching.** Several layers can be cached:",
+      "- **Chunk embeddings**, keyed by content hash, so unchanged chunks are never re-embedded.\n- **Query embeddings** and **retrieval results** for repeated questions.\n- Whole **answers** for exact repeat questions, keyed by normalised question + user permissions + index version, and invalidated when the index changes.\n- **Prompt caching** on the LLM side for the large stable prefix of every request, such as the system prompt and instructions (see cost-and-latency).",
+      "Never share cached answers between users with different permissions.",
+      "**5. Latency.** A typical request: query rewrite (LLM call, if conversational) -> embedding -> vector/hybrid search -> rerank -> answer generation. Set a budget per step and measure each. Answer generation usually dominates, so **stream** it and users see text immediately. Load models and clients once at startup, run independent steps (vector and keyword search) in parallel, keep chunks few and small, and use a lower effort setting or smaller model for helper steps like rewriting.",
+      "**6. Monitoring and feedback.** For every request, log the question, rewritten query, retrieved chunk ids and scores, reranker scores, prompt version, model, token usage, latency per step, the answer, its citations, and user feedback (thumbs up/down).",
+      "Watch aggregate signals: the 'I don't know' rate, the share of answers without valid citations, retrieval score distributions (falling scores often mean content gaps or a broken ingest), cost per request, and p95 latency. Turn real failures into new evaluation cases, and run the evaluation suite whenever the prompt, model, chunking or index changes (see evaluating-rag and observability-and-debugging).",
+      "**7. Reliability.** LLM APIs and embedding services can be slow or rate-limited. Use timeouts, retries with exponential backoff (the official SDKs retry some errors automatically), and graceful fallbacks ('search results without an AI summary'). Run ingestion as a background job with a queue so a huge upload doesn't block queries.",
     ),
     analogy:
-      "A demo RAG is a home bookshelf. Production RAG is a public library: new books arrive daily and must be catalogued quickly (incremental indexing), recalled books must be pulled from the shelves (deletions), the rare-manuscripts room needs a key card checked at the door, not a polite sign (access control), popular questions get a ready-made answer sheet at the front desk (caching), and the head librarian tracks which questions went unanswered so the collection can improve (monitoring).",
+      "A demo RAG is a home bookshelf. Production RAG is a public library. New books arrive daily and must be catalogued quickly (incremental indexing). Recalled books must be pulled from the shelves (deletions). The rare-manuscripts room needs a key card checked at the door, not a polite sign (access control). Popular questions get a ready-made answer sheet at the front desk (caching). The head librarian tracks unanswered questions so the collection can improve (monitoring).",
     examples: [
       {
         title: "Incremental re-indexing with content hashes: only embed what changed",
@@ -2125,11 +2139,11 @@ console.log("after edits:      ", sync(files), "| chunks:", index.size);
 console.log("total embedding calls:", embedCalls, "(a full rebuild every time would have used",
   6 + 6 + 6, ")");
 console.log("old policy still searchable?", [...index.values()].some((c) => c.source === "old-policy.md"));`,
-        explanation: "The second sync does no work at all; the third embeds only the edited paragraph and the new file, and deletes the withdrawn policy so it can no longer be quoted. Note the limitation of position-based ids (path#index): inserting a paragraph near the top shifts every later id and re-embeds them; production systems often use ids derived from the content hash or from stable section ids.",
+        explanation: "The second sync does no work at all. The third embeds only the edited paragraph and the new file, and deletes the withdrawn policy so it can't be quoted. Note the limit of position-based ids (path#index): inserting a paragraph near the top shifts every later id and re-embeds them. Production systems often derive ids from the content hash or stable section ids.",
         walkthrough: [
           { code: "function hash(s)", explanation: "A fingerprint of the text: identical text always gives the same hash, almost any change gives a different one." },
           { code: "if (existing && existing.hash === h) { stats.skipped++; return; }", explanation: "The core of incremental indexing: unchanged chunks are never re-embedded." },
-          { code: "if (!seen.has(id)) { index.delete(id); ... }", explanation: "Chunks that no longer exist at the source are deleted - otherwise stale content keeps being retrieved." },
+          { code: "if (!seen.has(id)) { index.delete(id); ... }", explanation: "Chunks gone from the source are deleted; otherwise stale content keeps being retrieved." },
           { code: "embedCalls", explanation: "Counts the expensive operation, to compare against rebuilding everything on every sync." },
         ],
       },
@@ -2176,7 +2190,7 @@ chunks[1].text = "Salary bands for 2026: L1 42k-52k, L2 52k-68k.";
 indexVersion++;                                   // re-index bumps the version: old cache entries are ignored
 console.log("alice:", ask("What are the salary bands?", alice));
 console.log("LLM calls:", llmCalls);`,
-        explanation: "Permissions are enforced by filtering chunks before ranking, in code - Bob cannot retrieve the salary chunk however he phrases the question. The cache key includes the user's groups and the index version, so a cached HR answer is never served to Bob and an answer built from outdated content disappears as soon as the index changes.",
+        explanation: "Permissions are enforced in code by filtering chunks before ranking, so Bob can't retrieve the salary chunk however he phrases the question. The cache key includes the user's groups and the index version, so a cached HR answer is never served to Bob, and an answer built from outdated content disappears as soon as the index changes.",
       },
       {
         title: "Incremental ingest for the Chroma project: hashes, upserts and deletions (Python)",
@@ -2230,7 +2244,7 @@ def retrieve_for_user(question: str, user_groups: list[str], k: int = 20):
 
 if __name__ == "__main__":
     sync("docs")`,
-        explanation: "Run sync on a schedule (or on change events) instead of a full rebuild. Unchanged files cost one hash computation; changed files are re-chunked and re-embedded; files removed at the source lose their chunks. Every chunk records its access group, embedding model and pipeline version, so permission filtering, audits and blue/green rebuilds are possible. For large corpora, track known files and hashes in a small database table rather than reading all metadata from the vector store.",
+        explanation: "Run sync on a schedule (or on change events) instead of a full rebuild. Unchanged files cost one hash; changed files are re-chunked and re-embedded; files removed at the source lose their chunks. Every chunk records its access group, embedding model and pipeline version, enabling permission filtering, audits and blue/green rebuilds. For large corpora, track known files and hashes in a small database table instead of reading all metadata from the vector store.",
       },
       {
         title: "Production query path: prompt caching, streaming, timing and structured logs (Python)",
@@ -2281,15 +2295,16 @@ def answer(question: str, user_id: str, hits: list[dict]) -> str:
         "declined": "I don't know" in "".join(parts),
     }))
     return "".join(parts)`,
-        explanation: "Prompt caching works on prefixes: the stable system prompt comes first with cache_control, and the per-question sources come after it, so they do not invalidate the cache (very short prompts are below the minimum cacheable size and are not cached). Streaming gets the first words to the user quickly. One structured log line per request (chunk ids, prompt version, tokens, cache reads, stop reason, latency, decline flag) is the raw material for dashboards, alerts and debugging. Avoid logging sensitive document text or personal data unless your data policy allows it.",
+        explanation: "Prompt caching works on prefixes: the stable system prompt comes first with cache_control, and per-question sources come after it, so they don't invalidate the cache (very short prompts are below the minimum cacheable size and aren't cached). Streaming gets the first words to the user quickly. One structured log line per request (chunk ids, prompt version, tokens, cache reads, stop reason, latency, decline flag) feeds dashboards, alerts and debugging. Don't log sensitive document text or personal data unless your data policy allows it.",
       },
     ],
     howItWorks: md(
-      "**Ingestion service:** a scheduled job or event consumer lists changed documents from each source (file storage, wiki, ticketing system), fetches content and permissions, hashes it, and pushes changed documents onto a queue. Workers load, clean, chunk, embed (in batches, with retries) and upsert chunks with metadata including source id, hash, access groups, timestamps, embedding model and pipeline version; they delete chunks of removed documents. Metrics: documents processed, failures, freshness lag.",
-      "**Query service:** authenticate the user and resolve their groups; optionally rewrite the question; check the answer cache (key = index version + permissions + normalised question); run vector and keyword search in parallel with a mandatory permission (and tenant) filter; fuse and rerank; build the grounded prompt with a cached stable prefix; stream the answer; validate citations; log the trace; store feedback.",
-      "**Versioning:** treat the prompt, chunking settings, embedding model and LLM as versioned configuration. Every logged answer records the versions used, so a quality change can be traced to the change that caused it, and the evaluation suite runs before any version goes live.",
-      "**Capacity:** embedding during ingestion is batch work and can run on cheaper or slower hardware; query-time work is latency-sensitive. Vector indexes need memory proportional to vectors x dimensions (plus graph links for HNSW), which drives instance sizing; compression or smaller-dimension embeddings reduce it.",
-      "**Safety:** besides permission filtering, scan or sanitise ingested content where appropriate, mark retrieved text as data in the prompt, do not give the answering model tools that can act on behalf of the user unless needed, and keep personal data out of logs or redact it (see ai-security).",
+      "**Ingestion service:** a scheduled job or event consumer lists changed documents from each source (file storage, wiki, ticketing system), fetches content and permissions, hashes it, and queues changed documents. Workers load, clean, chunk, embed (in batches, with retries) and upsert chunks with metadata: source id, hash, access groups, timestamps, embedding model and pipeline version. They also delete chunks of removed documents. Metrics: documents processed, failures, freshness lag.",
+      "**Query service:**",
+      "- Authenticate the user and resolve their groups.\n- Optionally rewrite the question.\n- Check the answer cache (key = index version + permissions + normalised question).\n- Run vector and keyword search in parallel with a mandatory permission (and tenant) filter.\n- Fuse and rerank.\n- Build the grounded prompt with a cached stable prefix.\n- Stream the answer, validate citations, log the trace, and store feedback.",
+      "**Versioning:** treat the prompt, chunking settings, embedding model and LLM as versioned configuration. Every logged answer records the versions used, so a quality change can be traced to its cause, and the evaluation suite runs before any version goes live.",
+      "**Capacity:** ingestion embedding is batch work and can run on cheaper or slower hardware; query-time work is latency-sensitive. Vector indexes need memory proportional to vectors x dimensions (plus graph links for HNSW), which drives instance sizing; compression or smaller-dimension embeddings reduce it.",
+      "**Safety:** besides permission filtering, scan or sanitise ingested content where appropriate, mark retrieved text as data in the prompt, don't give the answering model tools that act for the user unless needed, and keep personal data out of logs or redact it (see ai-security).",
     ),
     diagram: `SOURCES (wiki, drive, tickets)
    | change events / scheduled sync
@@ -2310,13 +2325,13 @@ def answer(question: str, user_id: str, hits: list[dict]) -> str:
    logs/metrics <---- stream answer + citations
    feedback -> eval set -> regression tests`,
     whyItExists: md(
-      "The failure modes of RAG in production are rarely about the model: they are stale content, leaked documents, slow responses, runaway cost and silent quality regressions. Incremental indexing, permission filtering, caching, latency budgets and monitoring exist to turn a demo into a system people can rely on and engineers can operate.",
+      "Production RAG rarely fails because of the model. It fails through stale content, leaked documents, slow responses, runaway cost and silent quality regressions. Incremental indexing, permission filtering, caching, latency budgets and monitoring turn a demo into a system people can rely on and engineers can operate.",
     ),
     whenToUse: md(
-      "As soon as a RAG system has real users, changing documents or any confidential content. Prioritise in this order: permission filtering (security), deletions and freshness (correctness), logging and evaluation (you cannot improve what you cannot see), then caching and latency optimisation (cost and experience).",
+      "As soon as a RAG system has real users, changing documents or any confidential content. Prioritise in this order: permission filtering (security), deletions and freshness (correctness), logging and evaluation (you can't improve what you can't see), then caching and latency optimisation (cost and experience).",
     ),
     whenNotToUse: md(
-      "For a personal prototype over public, static documents, most of this is overkill: a one-off ingest script and a simple query function are enough. Do not build complex multi-layer caching before measuring that repeated questions are common, and do not add a separate queue and worker fleet if a nightly re-index of a small corpus takes a few minutes.",
+      "For a personal prototype over public, static documents, most of this is overkill; a one-off ingest script and a simple query function are enough. Don't build multi-layer caching before measuring that repeated questions are common, and don't add a queue and worker fleet if a nightly re-index of a small corpus takes a few minutes.",
     ),
     commonMistakes: [
       "Rebuilding the entire index on every change, making ingestion slow and expensive, or never re-indexing at all.",

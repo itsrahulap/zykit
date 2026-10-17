@@ -1061,31 +1061,27 @@ Pydantic layer add needless complexity.
     id: "authentication-and-passwords",
     title: "Authentication & Password Hashing",
     level: "intermediate",
-    description: "How a backend verifies who's making a request — never storing raw passwords, and remembering that someone is logged in across future requests.",
+    description: "How a backend verifies who's making a request, without storing raw passwords, and keeps recognizing a logged-in user on later requests.",
     explanation: `
-A backend regularly needs to know who's actually asking: "who is this
-request from, and are they allowed to do this?" That's
-**authentication** — proving identity, usually by checking a password at
-login.
+A backend often needs to know "who sent this request, and are they
+allowed to do this?" **Authentication** is proving identity, usually by
+checking a password at login.
 
-The single most important rule: **never store a user's actual
-password.** Instead, store a **hash** — the output of a one-way function
-(like bcrypt or argon2) that scrambles the password so it can't be
-reversed back into the original, even if the entire database leaks. At
-login, you hash the freshly submitted password the same way and compare
-the two *hashes* — the plaintext password itself is never stored or
-compared directly.
+The most important rule: **never store a user's actual password.**
+Store a **hash** instead: the output of a one-way function (like bcrypt
+or argon2) that scrambles the password so it can't be reversed, even if
+the whole database leaks. At login, you hash the submitted password the
+same way and compare the two *hashes*. The plaintext password is never
+stored or compared directly.
 
-HTTP itself doesn't remember anything between requests, so once someone
-logs in, the backend needs a way to keep recognizing them on later
-requests too — either a **session** (the server remembers who's logged
-in, and gives the browser a cookie holding just an id to look it up) or
-a **token** like a JWT (a small, signed packet of data the client holds
-and resends, which the server can verify without storing anything
-itself).
+HTTP doesn't remember anything between requests, so after login the
+backend needs a way to keep recognizing the user:
+
+- a **session**: the server remembers who's logged in and gives the browser a cookie holding just an id to look it up, or
+- a **token** like a JWT: a small, signed packet of data the client holds and resends, which the server can verify without storing anything.
     `.trim(),
     analogy:
-      "Hashing a password is like feeding it through a paper shredder: you get scrambled confetti out, and there's no way to feed the confetti back in and reconstruct the original page. To check a password later, you shred the newly typed one the same way and compare the confetti — you never keep the original page around to compare against directly.",
+      "Hashing a password is like a paper shredder: you get confetti out, and you can't feed it back in to rebuild the page. To check a password later, you shred the newly typed one the same way and compare the confetti. You never keep the original page.",
     examples: [
       {
         title: "Hashing on signup, comparing on login (bcrypt)",
@@ -1102,11 +1098,11 @@ await pool.query(
 const user = await findUserByEmail(email);
 const isValid = user && (await bcrypt.compare(submittedPassword, user.password_hash));
 if (!isValid) return res.status(401).json({ error: "invalid credentials" });`,
-        explanation: "The plaintext password only ever exists briefly in memory — the database stores password_hash, never the password itself, and login works by comparing hashes, not by 'unhashing' anything.",
+        explanation: "The plaintext password only exists briefly in memory. The database stores password_hash, never the password, and login compares hashes instead of 'unhashing' anything.",
         walkthrough: [
-          { code: "bcrypt.hash(plainPassword, 10)", explanation: "Produces an irreversible, automatically salted hash — the 10 controls how computationally expensive it is, deliberately slow to resist brute-force guessing." },
-          { code: "password_hash", explanation: "The only thing ever written to the database — even a full database leak doesn't hand over usable passwords." },
-          { code: "bcrypt.compare(submittedPassword, user.password_hash)", explanation: "Hashes the submitted password the same way internally and checks whether it matches — the original stored hash is never reversed." },
+          { code: "bcrypt.hash(plainPassword, 10)", explanation: "Produces an irreversible, automatically salted hash. The 10 sets how expensive it is: deliberately slow, to resist brute-force guessing." },
+          { code: "password_hash", explanation: "The only thing written to the database. Even a full database leak doesn't give away usable passwords." },
+          { code: "bcrypt.compare(submittedPassword, user.password_hash)", explanation: "Hashes the submitted password the same way and checks for a match. The stored hash is never reversed." },
         ],
       },
       {
@@ -1123,7 +1119,7 @@ if (!isValid) return res.status(401).json({ error: "invalid credentials" });`,
 app.get("/profile", requireAuth, (req, res) => {
   res.json(req.user);
 });`,
-        explanation: "This is the requireAuth middleware referenced back in the middleware topic — it runs before the route handler and only calls next() once it has confirmed who the caller actually is.",
+        explanation: "This is the requireAuth middleware from the middleware topic. It runs before the route handler and only calls next() once it has confirmed who the caller is.",
       },
       {
         title: "The same idea in FastAPI — a dependency instead of middleware",
@@ -1238,20 +1234,21 @@ authentication at all.
     level: "intermediate",
     description: "How a real FastAPI project is split into files, connects to a database with SQLAlchemy, and exposes full CRUD endpoints.",
     explanation: `
-A single \`main.py\` is fine for a two-route demo, but a real FastAPI
-project splits responsibilities across files, much like a layered
-Node.js app: \`database.py\` sets up the database connection,
-\`models.py\` defines the actual database tables as Python classes,
-\`schemas.py\` defines the Pydantic models describing what the API
-accepts and returns, and one or more router files group related
-endpoints, all wired together in \`main.py\`.
+One \`main.py\` is fine for a two-route demo. A real FastAPI project
+splits the work across files, much like a layered Node.js app:
 
-**SQLAlchemy** is Python's most common tool for talking to a relational
-database. Used here as an ORM, it maps each database row to a Python
-object — the same idea as Prisma or Sequelize in Node, just in Python.
+- \`database.py\` sets up the database connection.
+- \`models.py\` defines the database tables as Python classes.
+- \`schemas.py\` defines the Pydantic models for what the API accepts and returns.
+- Router files group related endpoints.
+- \`main.py\` wires it all together.
+
+**SQLAlchemy** is Python's most common tool for working with a
+relational database. Used as an ORM, it maps each row to a Python
+object, like Prisma or Sequelize in Node.
     `.trim(),
     analogy:
-      "It's the same layered kitchen from backend project structure, just relabeled for a Python kitchen: routers are the host seating guests, path functions are the server taking the order, and SQLAlchemy models are the pantry holding the actual ingredients.",
+      "It's the same layered kitchen from backend project structure, relabeled for Python: routers are the host seating guests, path functions are the server taking the order, and SQLAlchemy models are the pantry holding the ingredients.",
     examples: [
       {
         title: "Project layout and the database connection",
@@ -1276,11 +1273,11 @@ def get_db():
         yield db
     finally:
         db.close()`,
-        explanation: "get_db is a FastAPI dependency: because it uses yield, FastAPI runs everything before the yield, hands the route the session, then runs everything after the yield (closing it) once the request finishes — even if the route raised an error.",
+        explanation: "get_db is a FastAPI dependency. Because it uses yield, FastAPI runs the code before the yield, hands the session to the route, then runs the code after the yield (closing it) when the request finishes, even if the route raised an error.",
         walkthrough: [
-          { code: 'create_engine("postgresql://...")', explanation: "Opens the connection using a connection string — the exact same idea as pg.Pool in Node, just SQLAlchemy's version of it." },
-          { code: "SessionLocal = sessionmaker(bind=engine)", explanation: "A factory for creating a scoped 'unit of work' session, rather than sharing one connection across every unrelated request." },
-          { code: "def get_db(): ... yield db ... finally: db.close()", explanation: "Guarantees each request gets its own session and that it's always cleaned up afterward, success or failure." },
+          { code: 'create_engine("postgresql://...")', explanation: "Sets up the connection from a connection string. It's SQLAlchemy's version of pg.Pool in Node." },
+          { code: "SessionLocal = sessionmaker(bind=engine)", explanation: "A factory for scoped 'unit of work' sessions, instead of sharing one connection across unrelated requests." },
+          { code: "def get_db(): ... yield db ... finally: db.close()", explanation: "Each request gets its own session, and it's always cleaned up afterward, success or failure." },
         ],
       },
       {
@@ -1324,7 +1321,7 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"deleted": item_id}`,
         language: "python",
-        explanation: "The same four CRUD operations from SQL — Create, Read, Update, Delete — expressed through SQLAlchemy's query API instead of raw SQL text, each one wired to its own route.",
+        explanation: "The four CRUD operations (Create, Read, Update, Delete) written with SQLAlchemy's query API instead of raw SQL, each wired to its own route.",
       },
       {
         title: "Wrapping multiple changes in a transaction",
@@ -1341,72 +1338,74 @@ def transfer(from_id: int, to_id: int, amount: int, db: Session = Depends(get_db
         raise
     return {"status": "ok"}`,
         language: "python",
-        explanation: "Both balance changes need to succeed or fail together — nothing is actually written until db.commit() runs, and if anything raises before that, db.rollback() discards both pending changes so the accounts are never left half-updated.",
+        explanation: "Both balance changes must succeed or fail together. Nothing is written until db.commit() runs. If anything raises before that, db.rollback() discards both pending changes, so the accounts are never half-updated.",
         walkthrough: [
-          { code: "sender.balance -= amount", explanation: "SQLAlchemy tracks this change on the in-memory object, but it isn't written to the database yet — it stays pending until the session is committed." },
-          { code: "db.commit()", explanation: "The point where both changes actually become permanent, together, in one transaction." },
-          { code: "except Exception: db.rollback()", explanation: "If anything fails before commit — even the second query, after the first change was already staged — this discards every pending change in the session, exactly like a SQL ROLLBACK." },
+          { code: "sender.balance -= amount", explanation: "SQLAlchemy tracks this change on the in-memory object, but doesn't write it yet. It stays pending until the session is committed." },
+          { code: "db.commit()", explanation: "Where both changes become permanent, together, in one transaction." },
+          { code: "except Exception: db.rollback()", explanation: "If anything fails before commit (even the second query, after the first change was staged), this discards every pending change in the session, just like a SQL ROLLBACK." },
         ],
       },
     ],
     howItWorks: `
-\`db: Session = Depends(get_db)\` is FastAPI's dependency injection reusing
-\`get_db\` for every request — each request gets its own fresh session,
-used only for that request's queries, then closed. Calls like
-\`db.add\`, \`db.commit\`, \`db.query\`, and \`.delete()\` map to INSERT,
-UPDATE/COMMIT, SELECT, and DELETE statements that SQLAlchemy generates
-and sends over the underlying database connection, the same way the
-\`pg\` driver does in Node. To actually run the app, you start an ASGI
-server pointed at it: \`uvicorn main:app --reload\` — the Python
-equivalent of running \`node server.js\`, watching for changes with
-\`--reload\` during development.
+\`db: Session = Depends(get_db)\` uses FastAPI's dependency injection to
+call \`get_db\` for every request. Each request gets its own fresh
+session, used only for its queries, then closed.
+
+Calls like \`db.add\`, \`db.commit\`, \`db.query\`, and \`.delete()\` map to
+INSERT, UPDATE/COMMIT, SELECT, and DELETE statements. SQLAlchemy
+generates them and sends them over the database connection, just as the
+\`pg\` driver does in Node.
+
+To run the app, start an ASGI server pointed at it:
+\`uvicorn main:app --reload\`. It's the Python equivalent of
+\`node server.js\`, with \`--reload\` watching for changes during
+development.
     `.trim(),
     whyItExists: `
-Splitting a FastAPI project this way mirrors exactly why a Node backend
-gets split into routes/controllers/services/models: as endpoints and
-tables multiply, keeping the app's setup, data shape, and database logic
-each in one dedicated place keeps the project navigable, instead of
-tangled into a single growing file.
+It's the same reason a Node backend is split into
+routes/controllers/services/models. As endpoints and tables multiply,
+keeping setup, data shapes, and database logic each in one place keeps
+the project easy to navigate, instead of one tangled, growing file.
     `.trim(),
     whenToUse: `
-Reach for this structure once a FastAPI project has more than a couple
-of endpoints or more than one table — the same threshold as reaching
-for a layered structure in a Node project.
+Use this structure once a FastAPI project has more than a couple of
+endpoints or more than one table. It's the same point where you'd reach
+for a layered structure in Node.
     `.trim(),
     whenNotToUse: `
-For a two-endpoint script or a quick prototype, separate
+For a two-endpoint script or quick prototype, separate
 database.py/models.py/schemas.py/router files are more scaffolding than
-the project needs — one main.py is easier to follow at that size.
+you need. One main.py is easier to follow at that size.
     `.trim(),
     commonMistakes: [
-      "Forgetting db.commit() after db.add() or a mutation, leaving the change only staged in the session instead of actually written to the database.",
-      "Reusing one global session across every request instead of a fresh one per request via Depends(get_db), which can leak stale data or connections between unrelated requests.",
-      "Returning a raw SQLAlchemy model object instead of going through a Pydantic response_model, exposing internal fields (like a password hash) that were never meant to reach the client.",
+      "Forgetting db.commit() after db.add() or a change, so it stays staged in the session and never reaches the database.",
+      "Reusing one global session for every request instead of a fresh one per request via Depends(get_db). It can leak stale data or connections between unrelated requests.",
+      "Returning a raw SQLAlchemy model instead of going through a Pydantic response_model, which exposes internal fields (like a password hash) to the client.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Name which file — database.py, models.py, schemas.py, or a router — a new 'orders' table definition belongs in." },
+      { difficulty: "Easy", prompt: "Which file (database.py, models.py, schemas.py, or a router) should a new 'orders' table definition go in?" },
       { difficulty: "Medium", prompt: "Write a DELETE /items/{item_id} endpoint that returns a 404 if the item doesn't exist before deleting it." },
-      { difficulty: "Hard", prompt: "Explain what would go wrong if a single database session, created once at app startup, were reused across every incoming request instead of one session per request." },
+      { difficulty: "Hard", prompt: "Explain what would go wrong if one database session, created at app startup, were reused for every request instead of one session per request." },
     ],
     interviewQuestions: [
-      { question: "What does Depends(get_db) provide to a FastAPI route?", answer: "A fresh, request-scoped SQLAlchemy session that's automatically closed afterward — similar to Express middleware attaching something onto the request object." },
-      { question: "What command actually runs a FastAPI app?", answer: "uvicorn main:app --reload — an ASGI server pointed at the created FastAPI instance, with --reload restarting it on code changes during development." },
-      { question: "Why use a Pydantic response_model instead of returning the raw database object?", answer: "It controls exactly which fields are exposed to the client, preventing internal-only fields from leaking into the API response." },
-      { question: "Why is `get_db` written as a generator function using `yield` instead of just returning a session directly?", answer: "FastAPI recognizes a dependency using yield as needing cleanup — it runs everything before yield to produce the session, hands it to the route, and once the route finishes, successfully or by raising, resumes the generator to run the code after yield, guaranteeing `db.close()` always executes exactly once per request." },
-      { question: "What would happen if `db.close()` were forgotten inside get_db's finally block?", answer: "The session, and its underlying database connection, would never be released back to the pool for that request, and since get_db runs fresh per request, this leak would compound with every request — eventually exhausting the connection pool, the same way forgetting client.release() does in a raw Node driver." },
-      { question: "In the create_item example, why is `db.refresh(db_item)` called after `db.commit()`?", answer: "After committing, the in-memory db_item object may not reflect values the database itself generated or defaulted during the insert, like an auto-incrementing id; db.refresh() re-fetches the row from the database into that same object so the returned response actually includes those generated fields." },
-      { question: "What happens if `db.commit()` is never called after `db.add()` or after mutating an already-loaded object's attributes?", answer: "The change stays only staged in the SQLAlchemy session's in-memory state and is never actually written to the database — the request may appear to succeed since no error is raised, but the data silently isn't persisted, which can be a confusing bug to track down." },
-      { question: "Why does update_item use `setattr(item, key, value)` in a loop instead of just assigning `item = updated`?", answer: "item is a SQLAlchemy-tracked model instance already associated with a specific row in the session; replacing it entirely with updated, a plain Pydantic object, would lose that tracking and prevent SQLAlchemy from knowing what changed — updating attributes individually on the already-tracked object lets SQLAlchemy detect exactly which fields changed and generate the right UPDATE statement." },
-      { question: "What's the purpose of the response_model argument in a route decorator, like `@router.post(\"/items\", response_model=schemas.Item)`?", answer: "It tells FastAPI to validate and shape whatever the route function returns against that Pydantic model before sending the response, filtering out any field not declared on it — even if the route accidentally returns a raw SQLAlchemy object with extra internal fields, only the declared fields reach the client." },
-      { question: "Why does the example define separate schemas.Item and schemas.ItemCreate models, rather than one shared model for both input and output?", answer: "Input and output often legitimately need different shapes — creating an item might not require or allow a client-supplied id, while reading one back needs to include the database-generated id; separate schemas let each direction declare exactly the fields appropriate to it, rather than forcing one model to awkwardly cover both." },
-      { question: "What SQL statement does `db.query(models.Item).filter(models.Item.id == item_id).first()` correspond to?", answer: "Roughly SELECT * FROM items WHERE id = :item_id LIMIT 1 — SQLAlchemy's query API builds that SQL from the chained method calls, and .first() specifically limits the result to at most one row, returning None if nothing matches rather than raising." },
-      { question: "Why does read_item explicitly check `if not item: raise HTTPException(status_code=404, ...)` instead of just returning whatever .first() produced?", answer: ".first() returns None when no row matches rather than raising an error, so without the explicit check, a request for a nonexistent item would fall through and try to return None through the response_model, producing a confusing validation error instead of a clear, intentional 404." },
-      { question: "What's the SQLAlchemy equivalent of the raw-SQL transaction pattern of BEGIN, commit, and ROLLBACK shown for the money-transfer example?", answer: "Multiple changes made on tracked model objects within the same session, like both sender.balance and receiver.balance, stay pending until one db.commit() call writes them together; db.rollback() inside an except block discards every pending change in that session if anything fails first, mirroring BEGIN/COMMIT/ROLLBACK without writing that SQL directly." },
-      { question: "Why is a fresh Session created per request via Depends(get_db), rather than one shared session reused across the whole app's lifetime?", answer: "A shared, long-lived session accumulates every object it's ever loaded or changed in its identity map, can leak state between unrelated requests, and isn't safe to use concurrently from multiple requests at once — a fresh session per request keeps each request's unit of work isolated and safely scoped." },
-      { question: "What does `uvicorn main:app --reload` mean, piece by piece?", answer: "uvicorn is the ASGI server actually running the app; main:app tells it to import the app object from the main module; --reload makes it watch source files and automatically restart the server whenever code changes, meant only for development, not production." },
-      { question: "Why does splitting a FastAPI project into database.py, models.py, schemas.py, and router files mirror the layered structure of a typical Node backend?", answer: "Each file isolates one concern the same way a Node app's routes/controllers/services/models split does — database.py parallels a db config module, models.py parallels an ORM's model files, schemas.py plays a role similar to validation schemas, and routers parallel Express route files." },
-      { question: "What's the risk of returning a raw SQLAlchemy model instance directly from a route with no response_model declared at all?", answer: "FastAPI would try to serialize whatever attributes exist on that ORM object to JSON, potentially exposing every column, including ones never meant to reach a client, like a password_hash or internal audit fields, since there's no schema constraining which fields are allowed out." },
-      { question: "Why does the delete_item example return `{\"deleted\": item_id}` rather than a 204 No Content response?", answer: "Returning a JSON body confirming which id was deleted gives the caller explicit confirmation of what happened, which can be more convenient than a body-less 204; either is defensible — what matters is picking one convention for delete endpoints and using it consistently rather than mixing both arbitrarily." },
+      { question: "What does Depends(get_db) provide to a FastAPI route?", answer: "A fresh, request-scoped SQLAlchemy session that's closed automatically afterward. It's similar to Express middleware attaching something to the request object." },
+      { question: "What command actually runs a FastAPI app?", answer: "uvicorn main:app --reload. That's an ASGI server pointed at the FastAPI instance, with --reload restarting it on code changes during development." },
+      { question: "Why use a Pydantic response_model instead of returning the raw database object?", answer: "It controls exactly which fields reach the client, so internal-only fields don't leak into the response." },
+      { question: "Why is `get_db` written as a generator function using `yield` instead of just returning a session directly?", answer: "FastAPI treats a dependency that uses yield as needing cleanup. It runs the code before yield to create the session and hands it to the route. When the route finishes, whether it succeeds or raises, FastAPI resumes the generator to run the code after yield. So `db.close()` always runs exactly once per request." },
+      { question: "What would happen if `db.close()` were forgotten inside get_db's finally block?", answer: "The session and its database connection would never go back to the pool. Since get_db runs per request, the leak grows with every request until the pool is exhausted, just like forgetting client.release() with a raw Node driver." },
+      { question: "In the create_item example, why is `db.refresh(db_item)` called after `db.commit()`?", answer: "After commit, the in-memory db_item may not include values the database generated or defaulted during the insert, like an auto-incrementing id. db.refresh() reloads the row into the same object so the response includes them." },
+      { question: "What happens if `db.commit()` is never called after `db.add()` or after mutating an already-loaded object's attributes?", answer: "The change stays staged in the session's memory and is never written to the database. No error is raised, so the request seems to succeed while the data silently isn't saved. That's a confusing bug to track down." },
+      { question: "Why does update_item use `setattr(item, key, value)` in a loop instead of just assigning `item = updated`?", answer: "item is a model instance SQLAlchemy is tracking, tied to a specific row in the session. Replacing it with updated, a plain Pydantic object, loses that tracking, so SQLAlchemy can't tell what changed. Setting attributes on the tracked object lets SQLAlchemy detect which fields changed and generate the right UPDATE." },
+      { question: "What's the purpose of the response_model argument in a route decorator, like `@router.post(\"/items\", response_model=schemas.Item)`?", answer: "FastAPI validates and shapes whatever the route returns against that Pydantic model before responding, dropping any field not declared on it. Even if the route returns a raw SQLAlchemy object with extra internal fields, only the declared fields reach the client." },
+      { question: "Why does the example define separate schemas.Item and schemas.ItemCreate models, rather than one shared model for both input and output?", answer: "Input and output often need different shapes. Creating an item may not need or allow a client-supplied id, while reading one back should include the database-generated id. Separate schemas let each direction declare exactly the right fields." },
+      { question: "What SQL statement does `db.query(models.Item).filter(models.Item.id == item_id).first()` correspond to?", answer: "Roughly SELECT * FROM items WHERE id = :item_id LIMIT 1. SQLAlchemy builds that SQL from the chained calls. .first() returns at most one row, or None if nothing matches, instead of raising." },
+      { question: "Why does read_item explicitly check `if not item: raise HTTPException(status_code=404, ...)` instead of just returning whatever .first() produced?", answer: ".first() returns None when nothing matches instead of raising. Without the check, a request for a missing item would try to return None through the response_model and produce a confusing validation error instead of a clear 404." },
+      { question: "What's the SQLAlchemy equivalent of the raw-SQL transaction pattern of BEGIN, commit, and ROLLBACK shown for the money-transfer example?", answer: "Changes to tracked objects in the same session, like sender.balance and receiver.balance, stay pending until one db.commit() writes them together. db.rollback() in an except block discards every pending change if anything fails first. That mirrors BEGIN/COMMIT/ROLLBACK without writing the SQL." },
+      { question: "Why is a fresh Session created per request via Depends(get_db), rather than one shared session reused across the whole app's lifetime?", answer: "A long-lived shared session collects every object it has loaded or changed in its identity map, can leak state between unrelated requests, and isn't safe to use from several requests at once. A fresh session per request keeps each request's work isolated." },
+      { question: "What does `uvicorn main:app --reload` mean, piece by piece?", answer: "uvicorn is the ASGI server running the app. main:app tells it to import the app object from the main module. --reload watches source files and restarts the server on changes; it's for development only, not production." },
+      { question: "Why does splitting a FastAPI project into database.py, models.py, schemas.py, and router files mirror the layered structure of a typical Node backend?", answer: "Each file isolates one concern, like a Node app's routes/controllers/services/models split. database.py matches a db config module, models.py matches ORM model files, schemas.py plays the role of validation schemas, and routers match Express route files." },
+      { question: "What's the risk of returning a raw SQLAlchemy model instance directly from a route with no response_model declared at all?", answer: "FastAPI would try to serialize the ORM object's attributes to JSON, possibly exposing every column, including ones never meant for clients, like a password_hash or internal audit fields. No schema limits what goes out." },
+      { question: "Why does the delete_item example return `{\"deleted\": item_id}` rather than a 204 No Content response?", answer: "A JSON body confirming which id was deleted gives the caller explicit confirmation, which can be handier than a body-less 204. Either is fine. What matters is picking one convention for delete endpoints and sticking to it." },
     ],
     prerequisites: ["python-web-frameworks", "connecting-to-a-database"],
     relatedTopics: ["python-web-frameworks", "connecting-to-a-database", "project-structure"],

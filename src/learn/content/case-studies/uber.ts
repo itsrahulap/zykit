@@ -5,30 +5,31 @@ export const uberCaseStudy: CaseStudy = {
   title: "Uber",
   difficulty: "Hard",
   summary:
-    "Design a ride-hailing system: riders request a trip, nearby drivers get matched to them in real time, and both sides track the trip's location and price live.",
+    "Design ride-hailing: riders request a trip, get matched with a nearby driver in real time, and both track the trip's location and price live.",
   problemStatement: `
-A rider opens the app, taps a button, and within seconds should be matched
-with a nearby available driver who accepts the trip and starts heading
-their way. Both the rider and driver then watch the car's location update
-live on a map until the trip starts, and again until it ends, at which
-point a price is computed and charged. Framed this way it sounds like a
-straightforward matching problem, but it's really three hard, continuously
-running problems stacked on top of each other: figuring out who is "near"
-whom out of millions of moving points, keeping every one of those points'
-locations fresh in near-real-time, and deciding a fair price in a market
-where supply (drivers) and demand (riders) shift by the minute.
+A rider taps a button and, within seconds, is matched with a nearby
+available driver who accepts and heads their way. Both watch the car move
+live on a map until pickup, and again until drop-off, when a price is
+computed and charged.
 
-The core difficulty is that this isn't a lookup against mostly-static
-data — every driver's location is changing every few seconds, all the
-time, whether or not anyone is currently looking for a match near them.
-A design that works by scanning "all drivers" and computing distance to
-each one falls apart almost immediately at city scale; the system needs a
-way to answer "who is near this point" that stays fast as the number of
-drivers and their update frequency both grow. On top of that, matching
-isn't just "nearest driver" — it has to account for driver availability,
-trip direction, and fairness, and pricing has to respond to real supply and
-demand imbalances (a stadium letting out, bad weather) fast enough to
-actually rebalance the market, not just report on it after the fact.
+It sounds like simple matching, but it's three hard, always-running
+problems stacked together:
+
+- Finding who is "near" whom among millions of moving points.
+- Keeping all those locations fresh in near-real-time.
+- Setting a fair price when supply (drivers) and demand (riders) shift by
+  the minute.
+
+The data isn't static. Every driver's location changes every few seconds,
+whether or not anyone nearby wants a ride. Scanning "all drivers" and
+computing each distance falls apart at city scale. The system needs a
+"who is near this point" query that stays fast as drivers and update rates
+grow.
+
+Matching also isn't just "nearest driver." It must weigh availability,
+trip direction, and fairness. And pricing must react to real imbalances (a
+stadium letting out, bad weather) fast enough to rebalance the market, not
+just report on it afterwards.
   `.trim(),
   requirements: {
     functional: [
@@ -75,7 +76,7 @@ actually rebalance the market, not just report on it after the fact.
     },
   ],
   capacityNotes:
-    "The two numbers worth holding onto are the sustained ~250,000 location updates/second and the fact that this write load is continuous, not proportional to trip demand — it happens whether or not anyone is currently requesting a ride nearby. That decouples 'keeping the location index fresh' from 'matching a rider,' which is exactly why the design below splits location ingestion from the matching/pricing logic that reads from it, rather than recomputing driver positions from scratch on every match request.",
+    "Remember the sustained ~250,000 location updates/second, and that this load is continuous, not tied to trip demand. It happens whether or not anyone nearby wants a ride. So 'keeping the location index fresh' is separate from 'matching a rider,' and the design splits location ingestion from the matching/pricing logic that reads from it, instead of recomputing positions on every match.",
   apiDesign: [
     { method: "POST", path: "/api/v1/drivers/{driverId}/location", description: "Body: { lat, lng, heading, timestamp }. High-frequency location ping from the driver app." },
     { method: "POST", path: "/api/v1/trips/request", description: "Body: { pickupLocation, destination }. Initiates matching; returns a trip request id." },
@@ -119,33 +120,30 @@ durably-persisted column the way \`fare\` or \`rider_id\` are — it changes
 too fast and matters too briefly for that to be the right tool.
   `.trim(),
   highLevelDesign: `
-Two independent, always-running pipelines exist side by side. The first is
-**location ingestion**: every online driver's app pushes a location ping
-every few seconds; these pings flow through a load-balanced ingestion tier
-into a geospatial index (built on geohashing or a quadtree, kept largely
-in memory for speed) that is continuously updated and answers one question
-extremely fast: "which drivers are near point P right now?" This pipeline
-runs constantly, independent of whether any rider is currently requesting
-a match nearby.
+Three pipelines run side by side.
 
-The second is **matching**: when a rider requests a trip, the matching
-service queries the geospatial index for nearby *available* drivers,
-ranks candidates by a combination of distance, ETA, and driver
-availability, and offers the trip to the best candidate first — falling
-through to the next-best if they decline or time out. Once accepted, the
-trip transitions into an active state where both apps subscribe to live
-location and status updates (via WebSockets or push notifications) for the
-driver until pickup, and then for the trip itself until completion.
+**Location ingestion.** Every online driver's app sends a location ping
+every few seconds. Pings flow through a load-balanced ingestion tier into a
+geospatial index (geohash or quadtree, mostly in memory). The index answers
+one question very fast: "which drivers are near point P right now?" This
+runs constantly, whether or not any rider nearby wants a match.
 
-Pricing runs as a third, semi-independent process: a background job
-continuously estimates the supply/demand ratio per geographic zone
-(recent ride requests vs. currently available nearby drivers) and
-maintains a surge multiplier per zone, which the fare-estimation and
-final-billing steps read at request time and at trip-completion time
-respectively. All three pipelines sit behind the same load balancer/app
-server tier but scale independently — location ingestion is bound by
-sustained write throughput, matching by per-request compute, and pricing
-by periodic batch computation over zone-level aggregates.
+**Matching.** When a rider requests a trip, the matching service queries
+the index for nearby *available* drivers. It ranks them by distance, ETA,
+and availability, and offers the trip to the best one first, falling
+through to the next if they decline or time out. Once accepted, both apps
+subscribe to live location and status updates (via WebSockets or push
+notifications) until pickup, then until the trip ends.
+
+**Pricing.** A background job keeps estimating the supply/demand ratio per
+zone (recent ride requests vs. available nearby drivers) and keeps a surge
+multiplier per zone. Fare estimates read it at request time; final billing
+reads it at trip completion.
+
+All three share the load balancer/app server tier but scale
+independently. Ingestion is bound by sustained write throughput, matching
+by per-request compute, and pricing by periodic batch work over zone
+aggregates.
   `.trim(),
   highLevelDiagram: `
   Driver App                                        Rider App
@@ -179,166 +177,138 @@ by periodic batch computation over zone-level aggregates.
     {
       title: "Geospatial indexing: quadtrees and geohashing",
       explanation: `
-"Find drivers near point P" is the query the entire matching system
-depends on, and a plain database table with lat/lng columns cannot answer
-it efficiently — a normal B-tree index on latitude or longitude alone
-doesn't help find points that are near each other in *two* dimensions at
-once. Two structures solve this in practice:
+All matching depends on "find drivers near point P." A plain table with
+lat/lng columns can't answer it efficiently. A B-tree index on latitude or
+longitude alone doesn't find points near each other in *two* dimensions.
+Two structures solve this:
 
 - **Geohashing**: encode (lat, lng) into a short string where nearby
-  points tend to share a prefix (e.g. two points a few hundred meters
-  apart often share the first 6-7 characters of their geohash). Finding
-  "nearby" drivers becomes a prefix match/range query, which ordinary
-  indexes (including many key-value stores) handle well, and the
-  precision is tunable simply by using more or fewer characters of the
-  hash.
-- **Quadtrees**: recursively divide the map into four quadrants, and
-  divide again wherever driver density is high, so that dense areas
-  (city centers) get finer-grained cells and sparse areas (rural roads)
-  get coarse ones automatically. A nearby-driver query walks down the tree
-  to the relevant cell(s) rather than scanning the whole space.
+  points tend to share a prefix (two points a few hundred meters apart
+  often share the first 6-7 characters). Finding nearby drivers becomes a
+  prefix or range query, which ordinary indexes (including many key-value
+  stores) handle well. Use more or fewer characters to tune precision.
+- **Quadtrees**: recursively split the map into four quadrants, and split
+  again where driver density is high. Dense areas (city centers) get fine
+  cells and sparse areas (rural roads) get coarse ones automatically. A
+  query walks down the tree to the relevant cell(s) instead of scanning
+  everything.
 
-Both approaches turn a 2D "nearest neighbor" problem into something closer
-to a fast key lookup or small range scan, and both are commonly kept
-substantially in memory, since driver positions change every few seconds
-and re-deriving the index from a cold on-disk structure on every update
-would be far too slow. The practical choice between them is less about
-correctness (both work) and more about implementation/operational
-maturity and how naturally each handles wildly uneven density between a
-downtown core and a rural highway.
+Both turn a 2D nearest-neighbor problem into something like a key lookup or
+small range scan. Both are usually kept mostly in memory, since positions
+change every few seconds and rebuilding from disk on each update would be
+far too slow. Both work; the choice is about implementation maturity and
+how each handles very uneven density, from a downtown core to a rural
+highway.
       `.trim(),
     },
     {
       title: "Real-time location updates without overwhelming the system",
       explanation: `
-A quarter-million location updates per second, sustained, is a workload
-that has to be treated as a stream, not as a series of independent
-database writes:
+A sustained quarter-million updates per second must be handled as a
+stream, not as separate database writes:
 
-- Updates flow through a message queue / streaming layer before landing
-  in the geospatial index, so a momentary spike (a big event ending, mass
-  reconnection after an outage) is absorbed by the queue rather than
-  directly overloading the index itself.
-- The index only ever needs to reflect *current* position — there is no
-  product need to durably retain every historical ping forever in the
-  hot path. Old positions are overwritten in place (or expired via TTL),
-  keeping the index's size bounded by driver count rather than growing
-  unboundedly with time.
-- Updates are batched and applied to the index on a short interval (e.g.
-  every 1-4 seconds) rather than synchronously on every single ping,
-  trading a small amount of positional staleness for dramatically less
-  write amplification against the index — riders and drivers cannot
-  perceive a few seconds of positional lag on a live map anyway.
-- Drivers who go offline or lose connectivity need their entries expired
-  out of the index (via a heartbeat/TTL mechanism) so stale, no-longer-
-  available drivers don't get offered trips they can no longer take.
+- Updates go through a message queue / streaming layer before the index.
+  A spike (a big event ending, mass reconnection after an outage) is
+  absorbed by the queue instead of overloading the index.
+- The index only needs *current* positions. There's no need to keep every
+  old ping in the hot path. Old positions are overwritten (or expire via
+  TTL), so the index size stays bounded by driver count.
+- Updates are batched and applied on a short interval (e.g. every 1-4
+  seconds), not on every ping. A little staleness buys much less write
+  amplification, and nobody notices a few seconds of lag on a live map.
+- Drivers who go offline or lose connection must expire from the index
+  (via heartbeat/TTL), so they aren't offered trips they can't take.
       `.trim(),
     },
     {
       title: "Matching: more than just nearest driver",
       explanation: `
-Naively matching a rider to the single closest driver by straight-line
-distance produces bad outcomes in practice, so the matching service
-weighs several factors together:
+Matching to the closest driver by straight-line distance works badly in
+practice, so the matching service weighs several factors:
 
-- **ETA, not raw distance** — a driver 500 meters away on the wrong side
-  of a highway may have a longer real pickup time than one 1.2 km away
-  with a direct route; ranking uses estimated travel time, not geometric
-  distance.
-- **Driver availability and direction** — a driver already en route to
-  drop off another passenger heading roughly the requested direction may
-  be a better match than an idle driver farther away, since it improves
-  overall fleet utilization rather than just optimizing one match in
-  isolation.
-- **Sequential offer with fallback** — the system typically offers a trip
-  to its best candidate first (with a short accept/decline timeout)
-  rather than broadcasting to many drivers at once, to avoid the wasted
-  work and confusion of multiple drivers converging on one pickup; on a
-  decline or timeout, the offer cascades to the next-ranked candidate.
-- **Fairness/anti-starvation** — a purely greedy "closest wins every time"
-  policy can leave some drivers idle indefinitely while others get every
-  ride; production systems bias the ranking to avoid this, trading a
-  small amount of per-trip optimality for a healthier, more evenly
-  utilized driver pool over time.
+- **ETA, not raw distance.** A driver 500 meters away on the wrong side of
+  a highway may take longer than one 1.2 km away with a direct route.
+  Ranking uses estimated travel time.
+- **Availability and direction.** A driver finishing a drop-off and
+  heading roughly the right way may beat an idle driver farther away. This
+  improves fleet utilization, not just one match.
+- **Sequential offer with fallback.** The trip goes to the best candidate
+  first, with a short accept/decline timeout, instead of being broadcast.
+  This avoids several drivers converging on one pickup. On decline or
+  timeout, it moves to the next candidate.
+- **Fairness/anti-starvation.** "Closest always wins" can leave some
+  drivers idle while others get every ride. Production systems bias the
+  ranking against this, giving up a little per-trip optimality for a
+  healthier, more evenly used driver pool.
       `.trim(),
     },
     {
       title: "Surge pricing as a real-time supply/demand signal",
       explanation: `
-Surge pricing exists to do two things at once: allocate a temporarily
-scarce resource (available nearby drivers) toward whoever values a ride
-most urgently right now, and — just as importantly — pull more drivers
-into a high-demand area by making it more profitable to be there.
+Surge pricing does two things. It allocates scarce nearby drivers to
+whoever needs a ride most urgently right now. Just as important, it pulls
+more drivers into a busy area by making it more profitable.
 
-- The city is partitioned into zones (geohash cells or a similar grid),
-  and for each zone the pricing engine continuously tracks a ratio of
-  current ride requests to currently available nearby drivers.
-- When that ratio crosses a threshold, a price multiplier is applied to
-  fare estimates and final billing for trips starting in that zone, and
-  the multiplier relaxes back down as either demand falls or more drivers
-  arrive (drawn in by the higher price, or from the ingestion pipeline
-  simply reporting more idle drivers nearby).
-- This has to be recomputed frequently (on the order of every minute or
-  faster) and cheaply, since it's a background aggregate over zone-level
-  data, not something computed per-request from scratch — the fare
-  estimate and final billing steps just read the current multiplier for
-  the relevant zone rather than recomputing supply/demand themselves.
-- The trade this raises constantly in interviews: surge pricing genuinely
-  improves availability during scarcity (more drivers get incentivized
-  to be online exactly when they're needed most) at the real cost of
-  rider-facing price volatility and the perception of unfairness during
-  emergencies — most real systems add caps or overrides for exactly that
-  reason.
+- The city is split into zones (geohash cells or a similar grid). For each
+  zone, the pricing engine tracks the ratio of current ride requests to
+  available nearby drivers.
+- When the ratio crosses a threshold, a multiplier applies to fare
+  estimates and final billing for trips starting there. It relaxes as
+  demand falls or more drivers arrive (drawn by the price, or simply
+  reported idle nearby by the ingestion pipeline).
+- It's recomputed often (about every minute or faster) and cheaply, as a
+  background aggregate over zone data, not per request. Fare estimates and
+  billing just read the zone's current multiplier.
+- The trade-off interviewers raise: surge improves availability during
+  scarcity (drivers come online when most needed), but riders face price
+  swings and it can look unfair in emergencies. Most real systems add caps
+  or overrides for that reason.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-The first thing to strain under load isn't the trips database — it's the
-geospatial index, because it has to absorb a continuous, non-bursty stream
-of hundreds of thousands of updates per second while simultaneously
-serving low-latency nearby-driver queries for every match attempt. The
-design defends this specifically by keeping the index in memory, batching
-writes into it, and treating it as recoverable/rebuildable state rather
-than a durable system of record — none of which would be appropriate for
-data that actually needed strong durability guarantees.
+The geospatial index strains first, not the trips database. It absorbs a
+continuous stream of hundreds of thousands of updates per second while
+serving fast nearby-driver queries for every match. The design protects it
+by keeping it in memory, batching writes, and treating it as rebuildable
+state, not a durable system of record. None of that would suit data that
+needs strong durability.
 
-Beyond that, the natural scaling axis is geography: the geospatial index,
-matching service, and surge-pricing engine can all be partitioned by
-region/city, since a driver in one city is never a candidate match for a
-rider in another — this keeps each partition's data size and query load
-bounded regardless of how many total cities the platform serves, and lets
-a demand spike in one city (a major event ending) be absorbed without
-affecting matching performance anywhere else.
+Beyond that, scale by geography. The geospatial index, matching service,
+and surge engine can all be partitioned by region/city, since a driver in
+one city never matches a rider in another. Each partition's size and load
+stay bounded however many cities there are, and a spike in one city (a
+major event ending) doesn't affect matching anywhere else.
   `.trim(),
   tradeOffs: [
     {
       decision: "In-memory, eventually-consistent location index vs. a durable, strongly consistent one",
       explanation:
-        "Driver location is treated as fast-moving, recoverable state — held in memory, updated in batches, and allowed to be a few seconds stale — rather than written through a strongly consistent durable store on every ping. This trades perfect real-time accuracy (never needed here, since a live map is already an approximation to the human eye) for the write throughput needed to sustain hundreds of thousands of updates per second.",
+        "Treat driver location as fast-moving, recoverable state: in memory, updated in batches, and allowed to be a few seconds stale, instead of a strongly consistent durable write on every ping. Perfect real-time accuracy isn't needed (a live map is already an approximation), and this gives the throughput for hundreds of thousands of updates per second.",
     },
     {
       decision: "Sequential offer-with-fallback vs. broadcasting a trip request to many nearby drivers",
       explanation:
-        "Offering to one best-ranked driver at a time, with a short timeout before cascading to the next, was chosen to avoid multiple drivers converging on the same pickup and the wasted driver time/confusion that causes. The cost is slightly higher matching latency in the case of a decline, versus a broadcast approach that resolves faster on average but wastes more total driver attention.",
+        "Offer to the best-ranked driver first, with a short timeout before moving to the next. This stops several drivers converging on one pickup and wasting time. The cost is slightly slower matching after a decline. Broadcasting resolves faster on average but wastes more driver attention.",
     },
     {
       decision: "ETA/utilization-aware matching vs. pure nearest-distance matching",
       explanation:
-        "Ranking candidates by estimated pickup time and fleet-utilization factors (not just straight-line distance) produces better real-world outcomes and healthier long-run driver utilization, at the cost of a meaningfully more complex ranking function that has to be computed per match rather than a simple sorted-by-distance query.",
+        "Rank by estimated pickup time and fleet utilization, not just straight-line distance. It gives better real-world results and healthier long-run utilization, at the cost of a much more complex ranking computed per match instead of a simple sort by distance.",
     },
     {
       decision: "Dynamic surge pricing vs. fixed pricing with a driver incentive program",
       explanation:
-        "Real-time surge pricing was chosen because it responds to supply/demand imbalances within minutes and directly pulls drivers toward the areas that need them most. The cost, which most real systems mitigate with caps, is rider-facing price volatility and a fairness/PR problem during emergencies or disasters — a fixed-price model avoids that but responds to genuine scarcity far more slowly, if at all.",
+        "Use real-time surge pricing. It reacts to supply/demand imbalances within minutes and pulls drivers to where they're needed. The cost, which most systems soften with caps, is price volatility for riders and a fairness/PR problem in emergencies. Fixed pricing avoids that but reacts to real scarcity far more slowly, if at all.",
     },
   ],
   interviewTips: [
-    "Open by naming the geospatial query problem explicitly — 'find nearby drivers' is the one query a plain relational index cannot answer well, and naming that early signals real system design instinct.",
-    "Compare geohashing and quadtrees explicitly, even briefly — interviewers commonly probe this deep dive specifically.",
-    "Point out that location ingestion runs continuously and independently of matching demand — treating them as one pipeline is a common shallow-answer mistake.",
-    "Bring up ETA-aware and utilization-aware matching, not just nearest-distance — it shows you're thinking about the marketplace, not just a spatial query.",
-    "If surge pricing comes up, discuss both sides of the trade-off (market efficiency vs. rider fairness/PR risk) rather than presenting it as a purely technical feature.",
-    "Don't skip the fact that location data can tolerate staleness/inconsistency while trip/billing records cannot — naming which parts of the system need which consistency guarantee is exactly the kind of judgment call interviewers are listening for.",
+    "Name the geospatial query problem early. 'Find nearby drivers' is the one query a plain relational index can't answer well.",
+    "Compare geohashing and quadtrees, even briefly. Interviewers often probe this.",
+    "Point out that location ingestion runs continuously, independent of matching demand. Treating them as one pipeline is a common shallow answer.",
+    "Raise ETA-aware and utilization-aware matching, not just nearest distance. It shows you think about the marketplace, not just a spatial query.",
+    "If surge pricing comes up, discuss both sides (market efficiency vs. rider fairness/PR risk), not just the technical feature.",
+    "Say that location data can tolerate staleness while trip/billing records cannot. Naming which parts need which consistency is the judgment interviewers listen for.",
   ],
   relatedTopics: [
     "consistent-hashing",

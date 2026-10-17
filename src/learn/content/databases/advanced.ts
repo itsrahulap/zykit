@@ -5,25 +5,21 @@ export const databasesAdvancedTopics: Topic[] = [
     id: "database-migrations",
     title: "Database Migrations",
     level: "advanced",
-    description: "Small, versioned scripts that change a database's schema over time, so every environment ends up with the same structure in the same order.",
+    description: "Small, versioned scripts that change a schema over time, so every environment gets the same structure in the same order.",
     explanation: `
-Once an application is live, its schema rarely stays frozen — you'll add
-a column, create a new table, rename something. Doing that by hand
-(logging into production and typing \`ALTER TABLE\` yourself) is risky:
-it's easy to forget a step, apply changes in the wrong order, or have
-your development database drift out of sync with what's actually running
-in production.
+A live app's schema keeps changing: new columns, new tables, renames.
+Doing this by hand (logging into production and typing \`ALTER TABLE\`) is
+risky. It's easy to forget a step, apply changes in the wrong order, or
+let your development database drift from production.
 
-A **migration** is a small script that describes one specific schema
-change — "add a \`phone_number\` column to \`users\`" — saved as a file,
-checked into version control alongside your application code, and
-numbered or timestamped so migrations always run in a known, repeatable
-order. A migration tool keeps track of which migrations have already
-been applied to a given database, so running it again only applies the
-new ones.
+A **migration** is a small script describing one schema change, like "add
+a \`phone_number\` column to \`users\`." It's saved as a file, checked into
+version control with your code, and numbered or timestamped so migrations
+always run in a known order. A migration tool tracks which migrations a
+database has already applied, so it only runs the new ones.
     `.trim(),
     analogy:
-      "Manually editing a live schema is like renovating a house without ever writing down what you changed — nobody else can reliably reproduce it. Migrations are like a numbered set of renovation blueprints: blueprint 1 adds the garage, blueprint 2 adds a window, and any house (any environment — your laptop, staging, production) built by following the blueprints in order ends up identical.",
+      "Editing a live schema by hand is like renovating a house without writing down what you changed; nobody can reproduce it. Migrations are numbered blueprints: 1 adds the garage, 2 adds a window. Any house (your laptop, staging, production) built from them in order ends up identical.",
     examples: [
       {
         title: "A migration file adding a column",
@@ -32,11 +28,11 @@ new ones.
 ALTER TABLE users
 ADD COLUMN phone_number TEXT;`,
         language: "sql",
-        explanation: "This one file describes exactly one schema change. Its filename encodes an order (0007), so a migration tool knows it should run after migration 0006 and before 0008.",
+        explanation: "One file, one schema change. The filename encodes the order (0007), so the tool runs it after 0006 and before 0008.",
         walkthrough: [
-          { code: "-- migrations/0007_add_phone_number_to_users.sql", explanation: "The filename itself records the migration's order and intent — this is migration number 7." },
-          { code: "ALTER TABLE users", explanation: "Targets the existing users table rather than creating a new one." },
-          { code: "ADD COLUMN phone_number TEXT;", explanation: "The single schema change this migration makes — adding one new column." },
+          { code: "-- migrations/0007_add_phone_number_to_users.sql", explanation: "The filename records the order and intent: migration number 7." },
+          { code: "ALTER TABLE users", explanation: "Changes the existing users table." },
+          { code: "ADD COLUMN phone_number TEXT;", explanation: "The one change this migration makes: a new column." },
         ],
       },
       {
@@ -53,7 +49,7 @@ exports.up = function (schema) {
 exports.down = function (schema) {
   schema.dropTable("reviews");
 };`,
-        explanation: "Many migration tools pair each change (up) with its exact opposite (down), so a migration can be undone cleanly if it needs to be rolled back.",
+        explanation: "Many migration tools pair each change (up) with its exact opposite (down), so a migration can be cleanly rolled back.",
       },
       {
         title: "The same idea with Alembic (SQLAlchemy's migration tool)",
@@ -65,85 +61,80 @@ def upgrade():
 def downgrade():
     op.drop_column("users", "phone_number")`,
         language: "python",
-        explanation: "Alembic is the migration tool most commonly paired with SQLAlchemy/FastAPI — upgrade() and downgrade() are exactly the up/down pair from the JavaScript example, just Python syntax; running `alembic upgrade head` applies every migration not yet recorded, in order.",
+        explanation: "Alembic is the migration tool most often paired with SQLAlchemy/FastAPI. upgrade() and downgrade() are the same up/down pair as the JavaScript example, in Python. Running `alembic upgrade head` applies every migration not yet recorded, in order.",
       },
     ],
     howItWorks: `
-A migration tool keeps a small table inside the database itself (often
-literally called \`schema_migrations\`) recording which migration files
-have already been run. When you run the tool, it compares that record
-against the migration files that exist, and applies only the ones not
-yet marked as applied — in order.
+A migration tool keeps a small table in the database (often called
+\`schema_migrations\`) listing which migration files have run. Each time
+you run the tool, it compares that list with the files that exist and
+applies only the missing ones, in order.
 
-Because migrations are just files, they travel with your codebase
-through version control: every developer, and every environment
-(development, staging, production), can run the exact same sequence of
-migrations and end up with an identical schema, instead of drifting
-apart from manual changes.
+Because migrations are files in version control, every developer and
+every environment (development, staging, production) runs the same
+sequence and gets an identical schema, instead of drifting apart through
+manual changes.
     `.trim(),
     whyItExists: `
-Manual schema changes don't scale past a single person working on a
-single database. The moment there's more than one developer, more than
-one environment, or a need to deploy schema changes alongside code
-changes in a repeatable way, you need changes to be recorded, ordered,
-and re-runnable — which is exactly what migrations provide.
+Manual schema changes only work for one person on one database. Once
+there are several developers, several environments, or schema changes
+that must ship with code, changes need to be recorded, ordered, and
+re-runnable. That's what migrations provide.
     `.trim(),
     whenToUse: `
-Use migrations for essentially every schema change on any application
-with more than one environment or more than one contributor — adding
-columns, creating tables, changing constraints, backfilling data as part
-of a schema change.
+Use migrations for nearly every schema change in any app with more than
+one environment or contributor: adding columns, creating tables, changing
+constraints, backfilling data as part of a schema change.
     `.trim(),
     whenNotToUse: `
-For a true one-off, throwaway local prototype with a single developer
-and no shared environments, the overhead of formal migration files may
-not be worth it yet — though it's worth adopting them as soon as the
-project is shared with anyone else or deployed anywhere.
+For a throwaway local prototype with one developer and no shared
+environments, formal migration files may not be worth it yet. Adopt them
+as soon as the project is shared or deployed anywhere.
     `.trim(),
     commonMistakes: [
-      "Editing a migration file after it's already been applied elsewhere, instead of writing a new migration — this leaves environments that already ran the old version out of sync.",
-      "Making a schema change directly against production to 'fix it quickly,' bypassing migrations entirely and causing drift from what the migration history says the schema should be.",
-      "Writing a migration that changes both schema and large amounts of data in one long-running step, risking locking the table for a long time in production.",
+      "Editing a migration that's already been applied elsewhere instead of writing a new one. Environments that ran the old version fall out of sync.",
+      "Changing the production schema directly to 'fix it quickly,' bypassing migrations and drifting from what the migration history says.",
+      "Changing both schema and large amounts of data in one long-running migration, which can lock the table for a long time in production.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a migration that adds a boolean is_active column, defaulting to true, to a users table." },
-      { difficulty: "Medium", prompt: "Write a migration that creates a new tags table and a join table linking tags to posts (a many-to-many relationship)." },
-      { difficulty: "Hard", prompt: "Explain why editing an already-applied migration file, instead of writing a new one, can cause a team's databases to drift out of sync with each other." },
+      { difficulty: "Medium", prompt: "Write a migration that creates a tags table and a join table linking tags to posts (many-to-many)." },
+      { difficulty: "Hard", prompt: "Explain why editing an already-applied migration, instead of writing a new one, can make a team's databases drift out of sync." },
     ],
     interviewQuestions: [
-      { question: "What is a database migration?", answer: "A versioned script describing one specific schema change, saved as a file and tracked in a known order, so it can be applied consistently and repeatably across every environment." },
-      { question: "What do the `up` (or `upgrade`) and `down` (or `downgrade`) parts of a migration represent?", answer: "`up`/`upgrade` applies the change going forward; `down`/`downgrade` is meant to be its exact opposite, so the same migration file can both apply the change and cleanly undo it later." },
-      { question: "How does a migration tool decide which migrations still need to run, and in what order?", answer: "It keeps a table inside the database (often literally `schema_migrations`) recording which migration files have already been applied, compares that against the files that exist, and runs only the unapplied ones in filename order." },
-      { question: "Why shouldn't you edit an already-applied migration file instead of writing a new one?", answer: "Environments that already ran the original version won't see the edit, so their schema silently drifts out of sync with any environment that runs the edited file fresh." },
-      { question: "Concretely, what breaks when a team edits an applied migration instead of adding a new one?", answer: "A developer whose database already recorded that migration as applied keeps the old schema forever, while anyone running migrations from scratch gets the edited version — and the migration tracking table can't detect this, since it only records *that* a migration ran, not *what* it currently contains." },
-      { question: "Why is a down migration risky specifically when the up migration dropped a column or table?", answer: "The down migration can recreate the empty structure, but it can't recover the data that existed in it — running down after an up that dropped something looks like a clean rollback while the data itself is already permanently gone." },
-      { question: "What does 'zero-downtime migration' mean, and why can an ordinary schema change threaten uptime?", answer: "It means never having a moment where the running application code and the current schema are incompatible with each other; a change like renaming or dropping a column the live code still reads can break every request the instant it runs." },
-      { question: "Describe the 'expand-contract' pattern for renaming a column without downtime.", answer: "*Expand*: add the new column (nullable) and have the app write to both old and new columns, then backfill existing rows into the new one; once every app instance is confirmed reading the new column, *contract*: drop the old column in a later, separate migration." },
-      { question: "Why can adding a `NOT NULL` column with no default be riskier than adding a nullable one?", answer: "The database needs a value for every existing row the instant the constraint takes effect; with no default supplied there's nothing to put there, so the statement is rejected outright (or, where the engine must backfill every row to satisfy it, can hold a long lock rewriting the whole table), while a nullable column simply stores `NULL` for existing rows untouched." },
-      { question: "Why does a plain `CREATE INDEX` risk blocking writes on a large production table, and what's Postgres's alternative?", answer: "Building the index normally takes a lock that blocks writes to the table for the whole build; `CREATE INDEX CONCURRENTLY` builds it without that exclusive lock, at the cost of taking longer and needing two passes over the table." },
-      { question: "Why can't `CREATE INDEX CONCURRENTLY` run inside the same transaction as other migration statements?", answer: "Postgres requires it to run outside a transaction block, since it internally uses multiple transactions to build the index safely — a migration tool has to run it as its own separate, non-transactional step." },
-      { question: "What's the danger of renaming a column in one atomic migration during a rolling deploy?", answer: "While old and new application instances run side by side during the rollout, the old instances still expect the original column name — the instant the rename runs, every one of them starts failing." },
-      { question: "What is a 'backward-compatible' migration, and why does it matter for rolling deploys?", answer: "One that leaves the schema working for both the code currently running and the code about to be deployed at the same time, so neither the outgoing nor incoming instances break during the window both are live." },
-      { question: "Why do migration tools enforce a strict run order instead of letting migrations run in any order?", answer: "Later migrations routinely assume earlier ones already ran — a migration adding a foreign key assumes the referenced table already exists — so applying them out of order can fail or corrupt the schema." },
-      { question: "What happens when two developers on separate branches each create a migration numbered `0012`?", answer: "A naming collision that makes it ambiguous which one should run first once the branches merge — teams either resolve it manually at merge/review time or avoid it by using timestamp-based filenames instead of small sequential integers." },
-      { question: "Why do many teams prefer timestamp-based migration filenames over small sequential integers?", answer: "Two developers working in parallel are very unlikely to create a migration in the same millisecond, while two people independently picking the next small integer (e.g. both choosing `0012`) collide easily." },
-      { question: "What's the difference between a schema migration and a data migration, and why is mixing them risky?", answer: "A schema migration changes structure (tables/columns); a data migration changes or backfills the actual row values. Mixing both in one migration — e.g. adding a column, then updating millions of rows in the same step — risks one long-running statement holding a lock for its entire duration, instead of a fast schema change followed by a batched backfill off the critical path." },
-      { question: "Why batch a large backfill into many small updates instead of one large `UPDATE`?", answer: "A single huge update can hold locks and generate a large amount of transaction log in one go and, if interrupted partway, has to restart from scratch; batching keeps each transaction small, releases locks between batches, and preserves progress if it's interrupted." },
-      { question: "What does it mean for a migration to run inside a transaction, and why doesn't every database support that fully for schema changes?", answer: "Wrapping a migration's statements in a transaction means a failure partway rolls back the whole thing cleanly instead of leaving the schema half-changed; Postgres supports this for most DDL, but some databases (e.g. MySQL) implicitly commit DDL statements as they run, so a mid-migration failure there can leave the schema partially applied." },
-      { question: "If a migration fails partway through on a database without transactional DDL, what state is left, and what has to happen next?", answer: "Some statements before the failure point are already committed while the rest never ran, leaving a schema that matches neither the old nor the new version — it has to be diagnosed and fixed manually (often with a corrective migration), since simply re-running the same file may error again on the part that already succeeded." },
-      { question: "Why do teams sometimes 'squash' old migrations into one baseline file, and what's lost by doing so?", answer: "A long migration history becomes slow to replay from scratch (e.g. building a fresh test database) and cluttered; squashing consolidates it into one current-schema file, at the cost of destroying the fine-grained history of exactly how the schema evolved, one change at a time." },
-      { question: "What's the risk of applying an autogenerated migration without reviewing it first?", answer: "Autogeneration diffs the ORM's model definitions against the database and infers the change, but it can miss what it can't detect or generate something unsafe for production scale — reviewing the actual generated SQL before running it is essential." },
-      { question: "Why might autogeneration turn a column rename into 'drop old column, add new column' instead of an actual rename?", answer: "It typically diffs the old and new schema by name and has no way to know a dropped field and an added field were meant to be the same column rather than two unrelated changes — generating the drop+add it can detect would delete that column's existing data if applied as-is." },
-      { question: "Why run migrations as part of CI/CD instead of manually per environment?", answer: "It guarantees every environment — a fresh CI database, staging, production — applies migrations consistently in the same automated step as the code deploy, instead of depending on someone remembering to run them by hand, which is exactly the drift migrations exist to prevent." },
-      { question: "Should a migration that adds a column run before or after deploying code that reads it? What about one dropping a column old code still reads?", answer: "Adding a column a new code version needs should run *before* that code deploys, so the column already exists; dropping a column old code still reads should run only *after* every instance is confirmed to be on code that no longer needs it — reversing either order is what breaks a rolling deploy." },
-      { question: "What's a seed/fixture script, and why is it usually kept separate from schema migrations?", answer: "It inserts default or sample data (an initial admin user, reference lookup rows); it's kept separate because it's about populating data for a particular environment, not describing a structural change every environment must apply identically." },
-      { question: "Why is it good practice for a migration to be safe to re-run, even though the tool already tracks what's applied?", answer: "It guards against edge cases like the tracking table getting out of sync or a migration being manually re-attempted, so a retry doesn't error out or corrupt the schema — e.g. guarding a table creation with `CREATE TABLE IF NOT EXISTS`." },
-      { question: "What does `alembic upgrade head` actually do?", answer: "It applies every migration not yet recorded as run, in order, up through the most recent one ('head') in the migration chain." },
-      { question: "How does Alembic typically chain migrations together, and how does that differ from relying on a filename's number?", answer: "Each migration records the revision id of the one before it, forming a linked chain, rather than depending purely on a filename's sequential number — so ordering stays correct even when migrations are merged from different branches out of numeric sequence." },
-      { question: "Why does `op.drop_column` in a downgrade function lose data, and when is that an acceptable tradeoff?", answer: "Dropping the column deletes every value stored in it for every row; that's acceptable when a rollback happens shortly after a failed deploy, before the column has been meaningfully populated — not once it's been in real use." },
-      { question: "What's the difference between rolling back a migration and writing a new migration that reverses an earlier one?", answer: "Rolling back runs the recorded down script for that specific migration and un-marks it as applied; writing a new forward migration instead applies a brand-new step and keeps the history moving in one direction — many teams prefer the latter once a migration has already reached production, since it avoids requiring every environment to support running rollbacks." },
-      { question: "How would you change a large, actively-written-to table's column type without significant downtime?", answer: "Use the expand-contract approach: add a new column of the target type, dual-write to both, backfill existing rows in batches, switch reads over to the new column, then drop the old column in a later migration — instead of a single blocking type-conversion statement that rewrites the whole table at once." },
-      { question: "Why test a migration's down/rollback path, not just its up path?", answer: "An untested down migration might not actually restore the previous schema, or might error outright — a problem that only becomes visible during a real rollback under pressure, exactly when you can least afford it to fail." },
+      { question: "What is a database migration?", answer: "A versioned script describing one schema change, saved as a file and run in a known order, so it applies the same way in every environment." },
+      { question: "What do the `up` (or `upgrade`) and `down` (or `downgrade`) parts of a migration represent?", answer: "`up`/`upgrade` applies the change. `down`/`downgrade` should be its exact opposite, so the same file can apply the change and cleanly undo it." },
+      { question: "How does a migration tool decide which migrations still need to run, and in what order?", answer: "It keeps a table in the database (often `schema_migrations`) listing applied migrations, compares it with the files that exist, and runs only the unapplied ones in filename order." },
+      { question: "Why shouldn't you edit an already-applied migration file instead of writing a new one?", answer: "Environments that already ran the original never see the edit, so their schema silently drifts from any environment that runs the edited file fresh." },
+      { question: "Concretely, what breaks when a team edits an applied migration instead of adding a new one?", answer: "A developer whose database already applied it keeps the old schema forever, while anyone migrating from scratch gets the edited version. The tracking table can't notice, because it records *that* a migration ran, not *what* it contains." },
+      { question: "Why is a down migration risky specifically when the up migration dropped a column or table?", answer: "Down can recreate the empty structure but can't bring back its data. It looks like a clean rollback, but the data is already gone for good." },
+      { question: "What does 'zero-downtime migration' mean, and why can an ordinary schema change threaten uptime?", answer: "It means the running code and the schema are never incompatible, even for a moment. Renaming or dropping a column the live code still reads can break every request the instant it runs." },
+      { question: "Describe the 'expand-contract' pattern for renaming a column without downtime.", answer: "*Expand*: add the new column (nullable), have the app write to both old and new columns, and backfill existing rows. Once every app instance reads the new column, *contract*: drop the old column in a later, separate migration." },
+      { question: "Why can adding a `NOT NULL` column with no default be riskier than adding a nullable one?", answer: "Every existing row needs a value the instant the constraint applies. With no default there's nothing to put there, so the statement is rejected (or, where the engine must backfill every row, it can hold a long lock while rewriting the table). A nullable column just stores `NULL` for existing rows." },
+      { question: "Why does a plain `CREATE INDEX` risk blocking writes on a large production table, and what's Postgres's alternative?", answer: "A normal index build takes a lock that blocks writes for the whole build. `CREATE INDEX CONCURRENTLY` avoids that exclusive lock, but takes longer and needs two passes over the table." },
+      { question: "Why can't `CREATE INDEX CONCURRENTLY` run inside the same transaction as other migration statements?", answer: "Postgres requires it to run outside a transaction block, because it uses several transactions internally to build the index safely. The migration tool must run it as a separate, non-transactional step." },
+      { question: "What's the danger of renaming a column in one atomic migration during a rolling deploy?", answer: "During the rollout, old and new app instances run side by side. The old ones still expect the original name, so they all start failing the instant the rename runs." },
+      { question: "What is a 'backward-compatible' migration, and why does it matter for rolling deploys?", answer: "One that keeps the schema working for both the code running now and the code being deployed, so neither breaks while both are live." },
+      { question: "Why do migration tools enforce a strict run order instead of letting migrations run in any order?", answer: "Later migrations assume earlier ones ran; adding a foreign key assumes the referenced table exists. Running them out of order can fail or corrupt the schema." },
+      { question: "What happens when two developers on separate branches each create a migration numbered `0012`?", answer: "A naming collision: after merging, it's unclear which runs first. Teams fix it by hand during merge/review, or avoid it with timestamp-based filenames instead of small sequential numbers." },
+      { question: "Why do many teams prefer timestamp-based migration filenames over small sequential integers?", answer: "Two developers are very unlikely to create migrations in the same millisecond, but both picking the next small number (say `0012`) happens easily." },
+      { question: "What's the difference between a schema migration and a data migration, and why is mixing them risky?", answer: "A schema migration changes structure (tables/columns); a data migration changes or backfills row values. Doing both in one step (add a column, then update millions of rows) risks one long statement holding a lock the whole time. Better: a fast schema change, then a batched backfill off the critical path." },
+      { question: "Why batch a large backfill into many small updates instead of one large `UPDATE`?", answer: "One huge update can hold locks and write lots of transaction log at once, and must restart from scratch if interrupted. Batches keep transactions small, release locks in between, and keep progress if interrupted." },
+      { question: "What does it mean for a migration to run inside a transaction, and why doesn't every database support that fully for schema changes?", answer: "In a transaction, a failure partway rolls everything back instead of leaving the schema half-changed. Postgres supports this for most DDL, but some databases (e.g. MySQL) commit DDL statements as they run, so a mid-migration failure can leave the schema partly applied." },
+      { question: "If a migration fails partway through on a database without transactional DDL, what state is left, and what has to happen next?", answer: "Statements before the failure are committed and the rest never ran, so the schema matches neither the old nor the new version. Someone must diagnose and fix it by hand (often with a corrective migration), since re-running the file may fail again on the part that already succeeded." },
+      { question: "Why do teams sometimes 'squash' old migrations into one baseline file, and what's lost by doing so?", answer: "A long history is slow to replay from scratch (e.g. for a fresh test database) and cluttered. Squashing merges it into one current-schema file, but loses the step-by-step record of how the schema evolved." },
+      { question: "What's the risk of applying an autogenerated migration without reviewing it first?", answer: "Autogeneration diffs the ORM's models against the database and guesses the change. It can miss things it can't detect or generate something unsafe at production scale. Always review the generated SQL before running it." },
+      { question: "Why might autogeneration turn a column rename into 'drop old column, add new column' instead of an actual rename?", answer: "It usually compares schemas by name and can't tell that a removed field and an added field are the same column. The drop+add it generates would delete that column's data if applied as-is." },
+      { question: "Why run migrations as part of CI/CD instead of manually per environment?", answer: "Every environment (a fresh CI database, staging, production) then applies migrations the same way, in the same automated step as the deploy. Relying on someone to remember causes exactly the drift migrations exist to prevent." },
+      { question: "Should a migration that adds a column run before or after deploying code that reads it? What about one dropping a column old code still reads?", answer: "Add a column *before* deploying the code that needs it, so it already exists. Drop a column only *after* every instance runs code that no longer reads it. Reversing either order breaks a rolling deploy." },
+      { question: "What's a seed/fixture script, and why is it usually kept separate from schema migrations?", answer: "It inserts default or sample data (an initial admin user, reference lookup rows). It's kept separate because it fills data for a particular environment, rather than describing a structural change every environment must apply." },
+      { question: "Why is it good practice for a migration to be safe to re-run, even though the tool already tracks what's applied?", answer: "It protects against edge cases like the tracking table getting out of sync or a manual retry, so re-running doesn't error or corrupt the schema. For example, guard table creation with `CREATE TABLE IF NOT EXISTS`." },
+      { question: "What does `alembic upgrade head` actually do?", answer: "It applies every migration not yet recorded as run, in order, up to the latest one ('head') in the chain." },
+      { question: "How does Alembic typically chain migrations together, and how does that differ from relying on a filename's number?", answer: "Each migration records the revision id of the one before it, forming a linked chain. Order doesn't depend on filename numbers, so it stays correct even when branches merge migrations out of numeric sequence." },
+      { question: "Why does `op.drop_column` in a downgrade function lose data, and when is that an acceptable tradeoff?", answer: "Dropping a column deletes every value in it. That's fine for a rollback right after a failed deploy, before the column holds meaningful data, but not once it's in real use." },
+      { question: "What's the difference between rolling back a migration and writing a new migration that reverses an earlier one?", answer: "Rolling back runs that migration's down script and un-marks it as applied. A new forward migration adds a new step and keeps history moving one way. Many teams prefer the latter once a migration has reached production, since no environment then needs to support rollbacks." },
+      { question: "How would you change a large, actively-written-to table's column type without significant downtime?", answer: "Expand-contract: add a new column of the target type, write to both, backfill existing rows in batches, switch reads to the new column, then drop the old one in a later migration. Avoid a single blocking conversion that rewrites the whole table." },
+      { question: "Why test a migration's down/rollback path, not just its up path?", answer: "An untested down migration may not restore the old schema, or may just error. You'd only find out during a real rollback under pressure, when you can least afford it." },
     ],
     prerequisites: ["orms"],
     relatedTopics: ["orms", "normalization"],
@@ -153,23 +144,21 @@ project is shared with anyone else or deployed anywhere.
     id: "query-optimization",
     title: "Query Optimization",
     level: "advanced",
-    description: "Reading what a database actually plans to do to execute a query, and using that to figure out why it's slow and how to speed it up.",
+    description: "Read the database's plan for a query to find out why it's slow and how to speed it up.",
     explanation: `
-When a query is slow, guessing why rarely works well — you need to see
-what the database is actually doing. Every database has a way to ask it
-to explain its plan before (or while) running a query, usually via an
-\`EXPLAIN\` command. This shows you things like whether it's scanning
-every row in a table, whether it's using an index, and roughly how much
-work each step is estimated to cost.
+Guessing why a query is slow rarely works. You need to see what the
+database is doing. Most databases explain their plan before (or while)
+running a query, usually with an \`EXPLAIN\` command. It shows whether
+they scan every row, whether they use an index, and the estimated cost of
+each step.
 
-**Query optimization** is the practice of reading that plan, spotting
-the expensive parts (often a full table scan where an index lookup
-would help, or a poorly ordered join), and fixing them — usually by
-adding an index, rewriting the query, or occasionally restructuring the
-schema.
+**Query optimization** means reading that plan, spotting the expensive
+parts (often a full table scan where an index would help, or a badly
+ordered join), and fixing them. Usually that's adding an index, rewriting
+the query, or sometimes restructuring the schema.
     `.trim(),
     analogy:
-      "Running EXPLAIN on a slow query is like asking a delivery driver to describe their planned route before they leave. If they say 'I'll drive past every house in the city checking addresses one by one,' you immediately know why the delivery is slow, and you can fix it — hand them a map (an index) instead.",
+      "EXPLAIN is like asking a delivery driver for their route before they leave. If they say 'I'll drive past every house in the city checking addresses,' you know why it's slow, and you can hand them a map (an index).",
     examples: [
       {
         title: "Reading a query plan",
@@ -179,11 +168,11 @@ schema.
 -- Seq Scan on orders  (cost=0.00..18334.00 rows=1 width=72)
 --   Filter: (customer_email = 'amara@example.com'::text)`,
         language: "sql",
-        explanation: "'Seq Scan' means a sequential (full table) scan — the database is checking every row. On a large table, that's the expensive part to fix.",
+        explanation: "'Seq Scan' means a sequential (full table) scan: the database checks every row. On a large table, that's the part to fix.",
         walkthrough: [
-          { code: "EXPLAIN SELECT * FROM orders WHERE customer_email = 'amara@example.com';", explanation: "Asks the database to describe how it would execute this query, without necessarily running it." },
-          { code: "Seq Scan on orders  (cost=0.00..18334.00 rows=1 width=72)", explanation: "Says the database plans to sequentially scan the whole orders table — the estimated cost (18334) is high for finding just one row." },
-          { code: "Filter: (customer_email = 'amara@example.com'::text)", explanation: "Confirms it's checking this condition against every row it scans, one at a time." },
+          { code: "EXPLAIN SELECT * FROM orders WHERE customer_email = 'amara@example.com';", explanation: "Asks the database how it would run this query, without necessarily running it." },
+          { code: "Seq Scan on orders  (cost=0.00..18334.00 rows=1 width=72)", explanation: "The plan is to scan the whole orders table. The estimated cost (18334) is high for finding one row." },
+          { code: "Filter: (customer_email = 'amara@example.com'::text)", explanation: "It checks this condition against every row it scans." },
         ],
       },
       {
@@ -196,85 +185,82 @@ EXPLAIN SELECT * FROM orders WHERE customer_email = 'amara@example.com';
 -- Index Scan using idx_orders_customer_email on orders
 --   (cost=0.42..8.44 rows=1 width=72)`,
         language: "sql",
-        explanation: "After the index exists, the plan switches to an 'Index Scan' with a dramatically lower estimated cost — the database jumps to matching rows instead of checking every one.",
+        explanation: "With the index, the plan switches to an 'Index Scan' at a far lower estimated cost. The database jumps to matching rows instead of checking every one.",
       },
     ],
     howItWorks: `
-Before running a query, the database's query planner considers multiple
-possible ways to execute it (scan the whole table, use this index, use
-that index, join in this order versus that order), estimates the cost of
-each, and picks the plan it believes will be cheapest, based on
-statistics it keeps about the data (like how many rows a table has, or
-how many distinct values a column contains).
+Before running a query, the **query planner** considers several ways to
+run it (scan the whole table, use this or that index, join in one order or
+another). It estimates each one's cost and picks the cheapest, using
+statistics it keeps about the data (like row counts, or how many distinct
+values a column has).
 
-\`EXPLAIN\` reveals that chosen plan (and often, with a variant like
-\`EXPLAIN ANALYZE\`, the plan's actual measured cost after really running
-it). Common fixes once you spot a problem: add a missing index, rewrite
-a query to avoid an operation that blocks index use (like wrapping an
-indexed column in a function), or restructure an inefficient join.
+\`EXPLAIN\` shows the chosen plan. \`EXPLAIN ANALYZE\` also runs the query and
+shows the real measured cost. Common fixes:
+
+- add a missing index
+- rewrite the query to avoid something that blocks index use (like
+wrapping an indexed column in a function)
+- restructure an inefficient join
     `.trim(),
     whyItExists: `
-Query optimization exists because a database's planner, while
-sophisticated, works from statistics and heuristics — it can make a
-poor choice, or a query can be written in a way that prevents it from
-using an index it otherwise could. Being able to see and reason about
-the actual execution plan is what turns "this query is slow" from a
-guessing game into a solvable, evidence-based problem.
+The planner is sophisticated but works from statistics and heuristics. It
+can choose badly, or a query can be written so it can't use an index it
+otherwise would. Seeing the actual plan turns "this query is slow" from
+guesswork into an evidence-based problem you can solve.
     `.trim(),
     whenToUse: `
-Reach for query optimization whenever a specific query is measurably
-slow, or before shipping a new query against a table you expect to grow
-large — checking the plan early can catch a missing index before it
-becomes a production problem.
+Optimize when a query is measurably slow, or before shipping a new query
+against a table you expect to grow. Checking the plan early can catch a
+missing index before it hits production.
     `.trim(),
     whenNotToUse: `
-Don't spend time optimizing a query that already runs fast and only
-touches a small amount of data — premature optimization adds complexity
-for no real benefit. Focus effort on queries that are actually measured
-to be slow or that run extremely often.
+Don't optimize a query that's already fast and touches little data;
+premature optimization adds complexity for nothing. Focus on queries
+measured to be slow or that run very often.
     `.trim(),
     commonMistakes: [
-      "Adding an index without checking whether the query planner actually uses it — sometimes the fix requires rewriting the query, not just adding an index.",
-      "Optimizing based on a guess instead of actually reading the EXPLAIN output, and fixing the wrong thing.",
-      "Testing query performance only on a small local database, where a full table scan is fast enough to hide a problem that will appear at production scale.",
+      "Adding an index without checking that the planner uses it. Sometimes the fix is rewriting the query, not adding an index.",
+      "Optimizing on a guess instead of reading the EXPLAIN output, and fixing the wrong thing.",
+      "Testing only on a small local database, where a full table scan is fast enough to hide a problem that appears at production scale.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain what a 'Seq Scan' in a query plan tells you about how the database is executing that query." },
-      { difficulty: "Medium", prompt: "Given a slow query filtering on an unindexed column, describe the steps you'd take to diagnose and fix it." },
-      { difficulty: "Hard", prompt: "Explain why wrapping an indexed column in a function inside a WHERE clause (e.g. LOWER(email) = ...) can prevent the database from using that column's index." },
+      { difficulty: "Easy", prompt: "Explain what a 'Seq Scan' in a query plan tells you about how the database runs that query." },
+      { difficulty: "Medium", prompt: "A slow query filters on an unindexed column. Describe the steps you'd take to diagnose and fix it." },
+      { difficulty: "Hard", prompt: "Explain why wrapping an indexed column in a function in a WHERE clause (e.g. LOWER(email) = ...) can stop the database using that column's index." },
     ],
     interviewQuestions: [
-      { question: "What does the `EXPLAIN` command show you?", answer: "The execution plan the database intends to use for a query — whether it scans the whole table or uses an index, in what order it joins tables, and the estimated cost of each step." },
-      { question: "What's the difference between `EXPLAIN` and `EXPLAIN ANALYZE`?", answer: "`EXPLAIN` shows the planned strategy and estimated costs without running the query; `EXPLAIN ANALYZE` actually executes it and reports the real, measured row counts and timings alongside the plan." },
-      { question: "Name one common fix for a slow query doing a full table scan.", answer: "Adding an index on the column used in the `WHERE` clause or join condition, so the database can look up matching rows directly instead of checking every row." },
-      { question: "What's the difference between a `Seq Scan` and an `Index Scan` in a query plan?", answer: "A `Seq Scan` reads every row in the table in order and checks each against the filter; an `Index Scan` uses an index to jump straight to the rows that match, without touching the rest." },
-      { question: "Why might the planner choose a `Seq Scan` even when an index exists on the filtered column?", answer: "If the table is small, or the filter matches a large fraction of its rows, scanning it directly can be estimated as cheaper than the overhead of random-access index lookups — an index only pays off when it narrows the result down a lot." },
-      { question: "What do the two numbers in a cost estimate like `cost=0.42..8.44` mean?", answer: "The first is the estimated *startup cost* — the work needed before the first row can be returned — and the second is the estimated *total cost* to return every row of that step." },
-      { question: "What does the `rows=` estimate in an EXPLAIN plan represent, and where does it come from?", answer: "The planner's guess at how many rows that step will return, derived from statistics it keeps about the table — like how many rows it has and how many distinct values a column contains — not an actual count." },
-      { question: "Why can EXPLAIN ANALYZE show a very different 'actual rows' than the plan's estimated 'rows', and why does that matter?", answer: "It means the planner's statistics are stale or the data's distribution is unusual, so its cost estimates (and therefore its choice of plan) may be based on a badly wrong guess — a large gap between estimated and actual rows is a strong signal to re-run `ANALYZE` on the table." },
-      { question: "What is an `Index Only Scan`, and how does it differ from a regular `Index Scan`?", answer: "A regular index scan finds matching entries in the index, then still has to fetch the actual row from the table (the 'heap') for any column not stored in the index; an index-only scan can answer the query using just the index's own data, skipping that extra fetch." },
-      { question: "What's a 'covering index', and why does it enable an index-only scan?", answer: "An index that includes every column the query needs, not just the one it filters on — because nothing outside the index has to be read, the database can skip visiting the table's actual rows entirely." },
-      { question: "Why does an index scan in Postgres often still need to fetch the row from the table, whereas MySQL's InnoDB frequently doesn't for primary-key lookups?", answer: "Postgres stores table data as an unordered heap with indexes pointing into it, so most index scans require a separate fetch from the heap; InnoDB physically clusters row data around the primary key, so a primary-key index lookup already has the row data attached." },
-      { question: "What is a `Bitmap Heap Scan`/`Bitmap Index Scan` pair, and when does the planner use it instead of a plain index scan?", answer: "The bitmap index scan builds an in-memory map of which pages contain matching rows, then the bitmap heap scan visits just those pages in physical order; the planner favors this when a query matches enough rows that jumping around row-by-row via a plain index scan would mean too much random I/O." },
-      { question: "Why does wrapping an indexed column in a function (e.g. `LOWER(email) = ...`) typically prevent the planner from using an index on that column?", answer: "A standard index stores the column's raw values, not the result of applying a function to them, so the planner can't match `LOWER(email)` against an index built on plain `email` — it has to fall back to checking every row." },
-      { question: "Instead of wrapping the column in `LOWER()`, how would you index a case-insensitive lookup so the planner can still use it?", answer: "Create a functional/expression index on the exact expression used in the query, e.g. `CREATE INDEX ON users (LOWER(email))`, so the index stores the lowercased values the query is actually filtering on." },
-      { question: "Why does a leading wildcard in `LIKE '%something'` prevent a standard B-tree index from helping?", answer: "A B-tree index is ordered by the column's value from the start, so it can quickly jump to entries matching a known prefix; a pattern that can match anywhere in the string gives it no fixed starting point to jump to, so it still has to check every entry." },
-      { question: "In a composite index on `(a, b)`, why can a query filtering only on `b` fail to use that index efficiently?", answer: "A composite index is ordered first by `a` and only by `b` within each value of `a`, so without a condition on `a` there's no way to narrow down where matching `b` values live — the database would have to scan the whole index anyway." },
-      { question: "Why does column order matter when creating a composite index meant to speed up a query filtering on multiple columns?", answer: "The index can only be searched efficiently starting from its leading column(s); putting the most selective, most-often-filtered condition first lets the database narrow the search fastest, while the wrong order can leave the index barely more useful than a full scan." },
-      { question: "What role does the `ANALYZE` command play in query planning (as distinct from `EXPLAIN ANALYZE`)?", answer: "`ANALYZE` recomputes and stores the table statistics — row counts, distinct value estimates, data distribution — that the planner relies on to estimate costs; without it, those statistics grow stale and the planner's choices get worse." },
-      { question: "What happens to query plans if a table's statistics are stale, for example right after a large bulk load, and how do you fix it?", answer: "The planner keeps costing plans based on the old row counts and distributions, which can lead it to a plan that's wrong for the table's new size or shape — running `ANALYZE` (many databases also do this automatically on a schedule) refreshes the statistics so it can plan accurately again." },
-      { question: "At a high level, what's the difference between a nested loop join, a hash join, and a merge join?", answer: "A nested loop join scans one input and, for each row, looks up matches in the other (cheap when one side is small or well-indexed); a hash join builds an in-memory hash table from one side and probes it with the other (good for larger unsorted inputs); a merge join walks both inputs in sorted order together (good when both are already sorted on the join key)." },
-      { question: "Why does join order matter for a multi-table query, and who decides it?", answer: "Joining tables in a different order can hugely change how many intermediate rows have to be produced and processed along the way; the query planner decides the order itself based on estimated costs, unless the number of tables is large enough that it falls back to heuristics instead of exhaustively costing every ordering." },
-      { question: "Given a tiny 4-row `orders` table with no `WHERE` clause at all, what would `EXPLAIN SELECT * FROM orders;` show, even with an index on `id`?", answer: "A `Seq Scan on orders` — with no filter, every row must be returned anyway, so scanning the table directly is at least as cheap as consulting an index, and avoids the overhead of doing so; the existence of an index doesn't change this." },
-      { question: "Debugging: a query has run fine in production for months and suddenly gets slow, with no change to the query text or schema. What's the first thing to check?", answer: "Whether the table's size or data distribution has changed enough that the previous plan (e.g. index scan) is no longer the cheapest one, or its statistics have gone stale — re-run `EXPLAIN ANALYZE` to see whether the plan itself has changed, and check when statistics were last updated." },
-      { question: "Debugging: EXPLAIN shows the query is already using an index, but it's still slow. What's a likely reason?", answer: "The index scan is still matching a large number of rows (low selectivity), so it's not actually narrowing the work much, or the query needs columns outside the index and is paying for a heap fetch on every matched row." },
-      { question: "Why might adding an index make a table's writes slower, and how is that a tradeoff against faster reads?", answer: "Every insert, update, or delete has to keep each index on the table in sync as well as the table itself, so more indexes mean more work per write — indexes trade some write throughput for faster reads on the columns they cover." },
-      { question: "What's the practical effect of having too many indexes on a heavily written-to table?", answer: "Write throughput degrades because every write has to update every one of those indexes, and many of them may barely be used by actual queries — a table's index set generally needs periodic review against what's really being queried." },
-      { question: "What's the difference between the 'cost' units shown by EXPLAIN and actual wall-clock time?", answer: "Cost is an abstract, internal unit the planner uses to compare plans against each other (roughly calibrated to disk-page fetches and per-row processing), not a prediction of milliseconds — only `EXPLAIN ANALYZE`'s actual timings tell you real elapsed time." },
-      { question: "What is a correlated subquery, and why can it be much slower than an equivalent join?", answer: "A subquery that references a column from the outer query, so it has to be re-evaluated once per outer row; a join, by contrast, lets the planner process the two tables together in a single pass instead of repeating a lookup for every row." },
-      { question: "What does `EXPLAIN (ANALYZE, BUFFERS)` add over plain `EXPLAIN ANALYZE`, and why is that useful?", answer: "It reports how many data pages were read from cache versus read from disk for each step, which helps distinguish a step that's slow because of genuine disk I/O from one that's slow for some other reason entirely." },
-      { question: "Why can two queries that return the same result set produce different EXPLAIN plans and different performance?", answer: "The planner works from the query's structure, not its intent — a rewritten version (a join instead of a subquery, a different clause order, an added redundant condition) can open up or shut off plan choices the original phrasing didn't, even though the final rows returned are identical." },
-      { question: "Why can a query that performs well in local testing turn out to be slow in production despite identical query text?", answer: "A small local dataset can make a full table scan fast enough to hide a missing index entirely, and the planner may even choose different plans at different table sizes — a plan that's fine for thousands of rows can be the wrong one at millions." },
+      { question: "What does the `EXPLAIN` command show you?", answer: "The plan the database will use for a query: whether it scans the whole table or uses an index, the order it joins tables, and the estimated cost of each step." },
+      { question: "What's the difference between `EXPLAIN` and `EXPLAIN ANALYZE`?", answer: "`EXPLAIN` shows the plan and estimated costs without running the query. `EXPLAIN ANALYZE` runs it and adds the real row counts and timings." },
+      { question: "Name one common fix for a slow query doing a full table scan.", answer: "Add an index on the column used in the `WHERE` clause or join condition, so the database can look up matching rows directly." },
+      { question: "What's the difference between a `Seq Scan` and an `Index Scan` in a query plan?", answer: "A `Seq Scan` reads every row in order and checks each one. An `Index Scan` uses an index to jump straight to matching rows and skips the rest." },
+      { question: "Why might the planner choose a `Seq Scan` even when an index exists on the filtered column?", answer: "If the table is small, or the filter matches a large share of rows, scanning directly can be cheaper than many random-access index lookups. An index only pays off when it narrows the result a lot." },
+      { question: "What do the two numbers in a cost estimate like `cost=0.42..8.44` mean?", answer: "The first is the estimated *startup cost* (work before the first row can be returned). The second is the estimated *total cost* to return every row of that step." },
+      { question: "What does the `rows=` estimate in an EXPLAIN plan represent, and where does it come from?", answer: "The planner's guess at how many rows the step returns, based on table statistics like row count and distinct values per column. It isn't an actual count." },
+      { question: "Why can EXPLAIN ANALYZE show a very different 'actual rows' than the plan's estimated 'rows', and why does that matter?", answer: "The statistics are stale or the data is unusually distributed, so the cost estimates (and the chosen plan) may rest on a badly wrong guess. A big gap is a strong signal to re-run `ANALYZE` on the table." },
+      { question: "What is an `Index Only Scan`, and how does it differ from a regular `Index Scan`?", answer: "A regular index scan finds entries in the index, then fetches the row from the table (the 'heap') for any column not in the index. An index-only scan answers from the index alone and skips that fetch." },
+      { question: "What's a 'covering index', and why does it enable an index-only scan?", answer: "An index containing every column the query needs, not just the filtered one. Since nothing outside the index must be read, the database can skip the table's rows entirely." },
+      { question: "Why does an index scan in Postgres often still need to fetch the row from the table, whereas MySQL's InnoDB frequently doesn't for primary-key lookups?", answer: "Postgres stores table data as an unordered heap with indexes pointing into it, so most index scans need a separate heap fetch. InnoDB clusters row data around the primary key, so a primary-key lookup already has the row." },
+      { question: "What is a `Bitmap Heap Scan`/`Bitmap Index Scan` pair, and when does the planner use it instead of a plain index scan?", answer: "The bitmap index scan builds an in-memory map of which pages hold matching rows; the bitmap heap scan then visits just those pages in physical order. The planner prefers it when enough rows match that a plain index scan would cause too much random I/O." },
+      { question: "Why does wrapping an indexed column in a function (e.g. `LOWER(email) = ...`) typically prevent the planner from using an index on that column?", answer: "A standard index stores raw column values, not function results. The planner can't match `LOWER(email)` against an index on plain `email`, so it checks every row." },
+      { question: "Instead of wrapping the column in `LOWER()`, how would you index a case-insensitive lookup so the planner can still use it?", answer: "Create an expression (functional) index on the exact expression the query uses, e.g. `CREATE INDEX ON users (LOWER(email))`, so the index stores the lowercased values being filtered." },
+      { question: "Why does a leading wildcard in `LIKE '%something'` prevent a standard B-tree index from helping?", answer: "A B-tree is ordered from the start of the value, so it can jump to a known prefix. A pattern that can match anywhere gives it no starting point, so every entry must be checked." },
+      { question: "In a composite index on `(a, b)`, why can a query filtering only on `b` fail to use that index efficiently?", answer: "The index is ordered by `a` first, and by `b` only within each `a`. Without a condition on `a`, there's no way to find where matching `b` values are, so the whole index must be scanned." },
+      { question: "Why does column order matter when creating a composite index meant to speed up a query filtering on multiple columns?", answer: "An index can only be searched efficiently from its leading column(s). Putting the most selective, most-filtered column first narrows the search fastest; the wrong order can make the index little better than a full scan." },
+      { question: "What role does the `ANALYZE` command play in query planning (as distinct from `EXPLAIN ANALYZE`)?", answer: "`ANALYZE` recomputes the table statistics (row counts, distinct-value estimates, data distribution) the planner uses to estimate costs. Without it, statistics go stale and plans get worse." },
+      { question: "What happens to query plans if a table's statistics are stale, for example right after a large bulk load, and how do you fix it?", answer: "The planner keeps costing plans from old row counts and distributions, and may pick a plan wrong for the table's new size or shape. Run `ANALYZE` (many databases also do this automatically on a schedule) to refresh the statistics." },
+      { question: "At a high level, what's the difference between a nested loop join, a hash join, and a merge join?", answer: "Nested loop: for each row of one input, look up matches in the other (cheap when one side is small or well-indexed). Hash join: build an in-memory hash table from one side and probe it with the other (good for larger unsorted inputs). Merge join: walk both inputs together in sorted order (good when both are already sorted on the join key)." },
+      { question: "Why does join order matter for a multi-table query, and who decides it?", answer: "Different orders can hugely change how many intermediate rows are produced. The planner picks the order from estimated costs, unless there are so many tables that it falls back to heuristics instead of costing every ordering." },
+      { question: "Given a tiny 4-row `orders` table with no `WHERE` clause at all, what would `EXPLAIN SELECT * FROM orders;` show, even with an index on `id`?", answer: "A `Seq Scan on orders`. With no filter, every row is returned anyway, so reading the table directly is at least as cheap as using an index, without the overhead. The index doesn't change that." },
+      { question: "Debugging: a query has run fine in production for months and suddenly gets slow, with no change to the query text or schema. What's the first thing to check?", answer: "Whether the table's size or data distribution changed enough that the old plan (e.g. an index scan) is no longer cheapest, or the statistics went stale. Re-run `EXPLAIN ANALYZE` to see if the plan changed, and check when statistics were last updated." },
+      { question: "Debugging: EXPLAIN shows the query is already using an index, but it's still slow. What's a likely reason?", answer: "The index matches many rows (low selectivity), so it barely narrows the work. Or the query needs columns outside the index and pays for a heap fetch on every matched row." },
+      { question: "Why might adding an index make a table's writes slower, and how is that a tradeoff against faster reads?", answer: "Every insert, update, or delete must also update each index, so more indexes mean more work per write. Indexes trade some write throughput for faster reads on the columns they cover." },
+      { question: "What's the practical effect of having too many indexes on a heavily written-to table?", answer: "Writes slow down because each one updates every index, and many of those indexes may barely be used. Review a table's indexes periodically against the real queries." },
+      { question: "What's the difference between the 'cost' units shown by EXPLAIN and actual wall-clock time?", answer: "Cost is an abstract unit for comparing plans (roughly based on disk-page fetches and per-row work), not milliseconds. Only `EXPLAIN ANALYZE`'s actual timings show real elapsed time." },
+      { question: "What is a correlated subquery, and why can it be much slower than an equivalent join?", answer: "A subquery that uses a column from the outer query, so it reruns once per outer row. A join lets the planner process both tables together in one pass instead." },
+      { question: "What does `EXPLAIN (ANALYZE, BUFFERS)` add over plain `EXPLAIN ANALYZE`, and why is that useful?", answer: "It shows how many data pages each step read from cache versus disk. That helps tell a step slowed by real disk I/O from one slow for another reason." },
+      { question: "Why can two queries that return the same result set produce different EXPLAIN plans and different performance?", answer: "The planner works from the query's structure, not its intent. A rewrite (a join instead of a subquery, a different clause order, an extra redundant condition) can open up or rule out plan choices, even with identical results." },
+      { question: "Why can a query that performs well in local testing turn out to be slow in production despite identical query text?", answer: "A small local dataset makes a full table scan fast enough to hide a missing index. The planner may also pick different plans at different sizes; a plan fine for thousands of rows can be wrong for millions." },
     ],
     prerequisites: ["indexes", "joins"],
     relatedTopics: ["indexes", "joins", "connection-pooling"],

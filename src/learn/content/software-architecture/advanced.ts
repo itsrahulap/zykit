@@ -369,39 +369,34 @@ important ones and makes the practice feel like bureaucracy.
     title: "Technical Debt",
     level: "advanced",
     description:
-      "The tradeoff between shipping a faster, less-ideal solution now and the ongoing cost of maintaining or fixing it later — much like financial debt.",
+      "The tradeoff between shipping a faster, less-ideal solution now and the ongoing cost of living with or fixing it later, much like financial debt.",
     explanation: `
-Sometimes a team deliberately ships the quick, hacky version of a
-feature to hit a deadline, fully intending to come back and do it
-properly later. Sometimes a team doesn't even realize the shortcut is a
-shortcut until much later, when a "simple" change turns out to be
-surprisingly hard because of decisions made months ago. Both situations
-are examples of the same underlying idea, borrowed directly from
-finance: **technical debt**.
+Sometimes a team ships a quick, hacky version to hit a deadline,
+planning to do it properly later. Sometimes nobody realizes a shortcut
+was a shortcut until a "simple" change turns out hard months later.
+Both are **technical debt**, an idea borrowed from finance.
 
-Just like financial debt, taking on technical debt isn't inherently
-bad — borrowing money to seize a real opportunity can be the right call.
-The shortcut that ships a feature two weeks earlier than the "proper"
-version might win you a customer, validate an idea, or hit a deadline
-that genuinely matters. The debt itself is often a reasonable trade.
+Like financial debt, it isn't bad in itself. Borrowing to seize a real
+opportunity can be the right call. Shipping two weeks early might win a
+customer, validate an idea, or hit a deadline that truly matters.
 
-The part that has to be taken seriously is the **interest**: the
-ongoing extra cost that accrues for as long as the debt is unpaid. A
-messy, hastily-built module doesn't just cost what it cost to build —
-every future change that touches it takes longer, every bug in it is
-harder to track down, and every new engineer takes longer to understand
-it. Left alone indefinitely, that interest compounds: the mess makes
-the next shortcut more tempting (because doing it properly next to
-existing mess feels pointless), which makes the codebase harder to work
-in, which makes rushed shortcuts more likely — a debt spiral.
+What you must take seriously is the **interest**: the extra cost you
+keep paying while the debt is unpaid. A rushed module makes every later
+change slower, every bug harder to find, and every new engineer slower
+to understand it.
 
-The discipline isn't "never take on technical debt." It's *knowing you
-took it on*, being deliberate about it, and having a real plan — and
-ideally a written record, like an ADR — for paying it down before the
-interest outweighs whatever the shortcut bought you.
+Left alone, the interest compounds. The mess makes the next shortcut
+more tempting (doing it properly next to a mess feels pointless), which
+makes the codebase harder to work in, which makes more rushed shortcuts
+likely: a debt spiral.
+
+The discipline isn't "never take on debt". It's *knowing you took it
+on*, doing it on purpose, and having a real plan (ideally written down,
+like an ADR) to pay it down before the interest outweighs what the
+shortcut bought.
   `.trim(),
     analogy:
-      "Financial debt: borrowing money to open a store sooner (a reasonable trade) still means paying interest every month until it's paid off. Ignore the debt for years and the interest payments alone can exceed what you originally borrowed — the same dynamic hits a codebase's 'quick and hacky' shortcuts left unaddressed.",
+      "Borrowing money to open a store sooner can be a reasonable trade, but you pay interest every month until it's repaid. Ignore it for years and the interest alone can exceed what you borrowed. Unaddressed 'quick and hacky' shortcuts in a codebase work the same way.",
     examples: [
       {
         title: "Taking on technical debt deliberately, and marking it",
@@ -412,7 +407,7 @@ function calculateTotal(items) {
   return items.reduce((sum, item) => sum + item.priceInCents, 0);
 }`,
         explanation:
-          "The shortcut is real (no multi-currency support), but it's explicit, explained, and linked to a tracked follow-up — the team knows exactly what was borrowed and has a plan to pay it back.",
+          "The shortcut is real (no multi-currency support), but it's explicit, explained, and linked to a tracked follow-up. The team knows what was borrowed and how it will be paid back.",
       },
       {
         title: "The same shortcut, left as invisible debt",
@@ -424,85 +419,89 @@ function calculateTotal(items) {
 // bigger project than expected, because nobody remembered — or ever
 // knew — that currency was hard-coded everywhere this function is used.`,
         explanation:
-          "Identical code, but with no acknowledgment that a shortcut was taken. The 'interest' here isn't just the cost of the eventual fix — it's the extra cost of first rediscovering that debt exists at all.",
+          "Identical code, but nobody admits a shortcut was taken. The 'interest' now includes not just the eventual fix but first rediscovering that the debt exists.",
       },
     ],
     howItWorks: `
-Technical debt accrues "interest" in very concrete ways: slower feature
-development in and around the affected code, a higher bug rate because
-the shortcut didn't account for edge cases properly, and a steeper
-learning curve for anyone new touching that part of the system. Paying
-down the debt (refactoring, rewriting, adding the missing tests) is the
-"principal payment" — it costs real time up front but removes the
-ongoing interest. Deciding *when* to pay it down is a genuine
-engineering-management tradeoff: pay too early and you might rework
-something that ends up not mattering; pay too late and the interest
-may have already outweighed the benefit the shortcut bought.
+Technical debt charges "interest" in concrete ways:
+
+- Slower feature work in and around the affected code.
+- More bugs, because the shortcut skipped edge cases.
+- A steeper learning curve for anyone new to that code.
+
+Paying down the debt (refactoring, rewriting, adding missing tests) is
+the "principal payment". It costs real time up front but stops the
+interest.
+
+*When* to pay is a real engineering-management tradeoff. Too early, and
+you may rework something that never mattered. Too late, and the
+interest may already outweigh what the shortcut bought.
   `.trim(),
     whyItExists: `
-The term exists because "just write it properly the first time, always"
-is not a realistic option in a world with real deadlines, uncertain
-requirements, and limited time — sometimes a fast, imperfect solution is
-legitimately the right call. Naming the tradeoff as "debt" gives teams a
-shared, honest vocabulary for discussing shortcuts without either
-pretending they don't exist or treating every shortcut as an
-unforgivable mistake — it reframes the conversation as a financial
-tradeoff to be managed, not a moral failing to be denied.
+"Always write it properly the first time" isn't realistic with real
+deadlines, uncertain requirements, and limited time. Sometimes a fast,
+imperfect solution is the right call.
+
+Calling it "debt" gives teams an honest, shared way to discuss
+shortcuts, without pretending they don't exist or treating each one as
+an unforgivable mistake. It's a financial tradeoff to manage, not a
+moral failing to deny.
   `.trim(),
     whenToUse: `
-Taking on technical debt deliberately makes sense when the short-term
-gain (hitting a real deadline, validating an uncertain idea before
-investing further, unblocking a critical launch) clearly outweighs the
-interest you'll pay until it's addressed — and especially when you have
-a genuine, realistic plan to pay it down. It's also reasonable to accept
-some debt permanently on code that's genuinely low-stakes or likely to
-be thrown away soon anyway.
+Take on debt deliberately when the short-term gain (hitting a real
+deadline, validating an uncertain idea before investing more,
+unblocking a critical launch) clearly outweighs the interest, and
+especially when you have a realistic plan to pay it down.
+
+It's also fine to keep some debt permanently in low-stakes code or code
+likely to be thrown away soon.
   `.trim(),
     whenNotToUse: `
-Avoid taking on debt silently, without acknowledging it, tracking it, or
-telling anyone — that turns manageable debt into an invisible trap for
-whoever encounters it next. Also avoid taking on new debt in an area
-that's already deep in unaddressed debt with high interest — that's the
-point where a deliberate repayment effort, not another shortcut, is what's
-actually needed.
+Don't take on debt silently, without acknowledging, tracking, or
+telling anyone. That turns manageable debt into a hidden trap for
+whoever finds it next.
+
+Also avoid new debt in an area already deep in high-interest debt. At
+that point you need a deliberate repayment effort, not another
+shortcut.
   `.trim(),
     commonMistakes: [
-      "Treating all technical debt as universally bad, and refusing any shortcut even when the situation genuinely calls for shipping something imperfect quickly.",
-      "Taking on debt without recording it anywhere (a comment, a ticket, an ADR), so it becomes invisible and gets rediscovered the hard way later.",
-      "Letting debt accumulate indefinitely with no repayment plan, until the 'interest' — slower development, more bugs — becomes the team's biggest ongoing cost.",
+      "Treating all technical debt as bad and refusing any shortcut, even when shipping something imperfect quickly is the right call.",
+      "Taking on debt without recording it anywhere (a comment, a ticket, an ADR), so it turns invisible and gets rediscovered the hard way.",
+      "Letting debt pile up with no repayment plan until the 'interest' (slower development, more bugs) is the team's biggest ongoing cost.",
     ],
     exercises: [
       {
         difficulty: "Easy",
         prompt:
-          "Describe a shortcut you've taken (or seen taken) in real code, and identify what the ongoing 'interest' on that shortcut has been.",
+          "Describe a shortcut you've taken (or seen) in real code, and what its ongoing 'interest' has been.",
       },
       {
         difficulty: "Medium",
         prompt:
-          "Write a short technical-debt tracking note (like the comment example above) for a hypothetical shortcut: a search feature that only does exact string matching instead of fuzzy search, taken to hit a launch date.",
+          "Write a short tech-debt tracking note (like the comment example above) for this shortcut: a search feature that only does exact string matching instead of fuzzy search, to hit a launch date.",
       },
       {
         difficulty: "Hard",
         prompt:
-          "Propose a lightweight process a small team could adopt to make sure technical debt is recorded and periodically revisited, rather than silently accumulating. Consider how it would connect to sprint planning or code review.",
+          "Propose a lightweight process for a small team to record technical debt and revisit it regularly, instead of letting it pile up silently. Consider how it connects to sprint planning or code review.",
       },
     ],
     interviewQuestions: [
       {
         question: "What is technical debt, in your own words?",
         answer:
-          "The ongoing extra cost incurred by choosing a faster, less-ideal solution now instead of the more thorough one — similar to financial debt, where the shortcut is the 'principal' and the extra cost of working around or fixing it later is the 'interest'.",
+          "The ongoing extra cost of choosing a faster, less-ideal solution now instead of a more thorough one. Like financial debt, the shortcut is the 'principal' and the extra cost of working around or fixing it later is the 'interest'.",
       },
       {
         question: "Is taking on technical debt always a bad decision?",
         answer:
-          "No — it can be a reasonable tradeoff, such as shipping a simpler solution to hit a real deadline or validate an idea, as long as the debt is acknowledged, tracked, and there's a realistic plan to address it before its ongoing cost outweighs the benefit it bought.",
+          "No. It can be a reasonable tradeoff, like shipping a simpler solution to hit a real deadline or validate an idea, as long as the debt is acknowledged, tracked, and has a realistic plan to address it before its cost outweighs the benefit.",
       },
       {
         question: "What's the danger of undocumented technical debt specifically?",
         answer:
-          "It becomes invisible — future engineers don't know a shortcut was taken at all, so they can't factor it into their plans, and it tends to be rediscovered only when it causes an unexpectedly difficult bug or feature.",
+          "It's invisible. Future engineers don't know a shortcut was taken, so they can't plan for it, and it's usually rediscovered only when it causes an unexpectedly hard bug or feature.",
       },
     ],
     relatedTopics: ["architectural-decision-records"],
@@ -514,35 +513,34 @@ actually needed.
     title: "Anti-Corruption Layer",
     level: "advanced",
     description:
-      "A translation layer that protects your system's clean internal model from a messy or incompatible external system, so its quirks don't leak inward.",
+      "A translation layer that keeps a messy or incompatible external system's quirks out of your clean internal model.",
     explanation: `
-Suppose your system needs to integrate with an old, external partner
-API that represents money as raw floating-point numbers, uses cryptic
-three-letter status codes like \`"PND"\` and \`"CMP"\`, and occasionally
-returns a customer's name in an inconsistent format. It would be fast
-to just use that data structure directly throughout your own codebase —
-but doing so means every part of your system that touches customer or
-payment data now has to understand the partner API's quirks, and if you
-ever integrate a second partner (or that partner changes their API),
-the mess spreads even further.
+Say you integrate with an old partner API that stores money as raw
+floating-point numbers, uses cryptic status codes like \`"PND"\` and
+\`"CMP"\`, and returns customer names in inconsistent formats.
 
-An **anti-corruption layer** is a deliberate boundary — a small set of
-translation code — placed exactly at the seam where your system meets
-that external one. Its only job is to convert the external system's
-messy, foreign model into your own clean, well-defined internal model
-(using proper \`Money\` value objects, a clear \`PaymentStatus\` enum, a
-normalized customer name) — and to convert your outgoing data back into
-whatever shape the external system expects. Nothing outside that
-boundary ever sees the partner API's raw shapes at all.
+Using that data shape directly everywhere is fast. But then every part
+of your system that touches customer or payment data must understand
+the partner's quirks. Add a second partner, or let this one change its
+API, and the mess spreads further.
 
-The name is deliberately vivid: without this layer, the external
-system's design decisions — its bad naming, its inconsistent shapes, its
-legacy quirks — literally "corrupt" your own model by leaking into it.
-The anti-corruption layer is the thing standing in the way of that
-corruption spreading inward.
+An **anti-corruption layer** is a small set of translation code at the
+exact seam where your system meets the external one. Its only job:
+
+- Convert the external system's messy model into your clean internal
+  model (proper \`Money\` value objects, a clear \`PaymentStatus\` enum,
+  a normalized customer name).
+- Convert your outgoing data back into the shape the external system
+  expects.
+
+Nothing outside that boundary ever sees the partner's raw shapes.
+
+The name is vivid on purpose. Without this layer, the external system's
+bad naming, inconsistent shapes, and legacy quirks leak into and
+"corrupt" your own model. The layer stops that spreading inward.
   `.trim(),
     analogy:
-      "A country's customs and immigration checkpoint doesn't let foreign currency, foreign paperwork formats, or foreign legal standards flow straight into the domestic system untranslated — everything gets converted (currency exchanged, forms translated, standards checked) right at the border, so the mess of every different country doesn't leak into everyday domestic life.",
+      "A border checkpoint doesn't let foreign currency, paperwork formats, or legal standards flow straight into the country. Everything is converted at the border (currency exchanged, forms translated, standards checked), so each country's differences don't leak into everyday life.",
     examples: [
       {
         title: "Without an anti-corruption layer: the external shape leaks everywhere",
@@ -555,7 +553,7 @@ async function displayOrderStatus(orderId) {
   return { isPending, dollars, name };
 }`,
         explanation:
-          "Every function that needs order status, amount, or customer name has to independently know the partner's cryptic codes and inconsistent formats — and duplicate the parsing logic to deal with them.",
+          "Every function that needs order status, amount, or customer name must know the partner's cryptic codes and formats, and duplicate the parsing logic.",
       },
       {
         title: "With an anti-corruption layer: one place absorbs the mess",
@@ -575,98 +573,95 @@ async function displayOrderStatus(orderId) {
   return order.status === "pending";
 }`,
         explanation:
-          "Only translatePartnerOrder knows the partner's raw field names and quirky codes. Every other part of the app works with a clean, self-consistent internal model (Money, a readable status string, a normalized name) regardless of how messy the source was.",
+          "Only translatePartnerOrder knows the partner's raw field names and codes. The rest of the app works with a clean, consistent internal model (Money, a readable status, a normalized name), however messy the source.",
         walkthrough: [
           {
             code: "function translatePartnerOrder(raw) { ... }",
-            explanation: "The anti-corruption layer: the single, isolated place responsible for understanding the external system's quirks.",
+            explanation: "The anti-corruption layer: the one isolated place that understands the external system's quirks.",
           },
           {
             code: 'status: raw.stat === "PND" ? "pending" : ...',
-            explanation: "Cryptic external codes are translated into a clear internal vocabulary right at the boundary, never leaking further in.",
+            explanation: "Cryptic external codes become clear internal terms right at the boundary and never leak further in.",
           },
           {
             code: "const order = translatePartnerOrder(raw);",
-            explanation: "Application code downstream only ever touches the clean internal model — it's fully insulated from the partner API's shape.",
+            explanation: "Downstream code only touches the clean internal model, fully insulated from the partner API's shape.",
           },
         ],
       },
     ],
     howItWorks: `
-An anti-corruption layer sits at the exact boundary between your system
-and the external one, exposing an interface shaped entirely around your
-internal model. Internally, it does whatever translation is required —
-renaming fields, converting units, mapping status codes, reformatting
-data, even reconciling structural differences (e.g., the external
-system splits into two calls what your model treats as one concept). If
-the external system changes its API, or you swap in a second, different
-external partner, only this translation layer needs to change — the
-rest of your codebase, which only ever spoke your internal model,
-doesn't need to know anything happened.
+The layer sits at the boundary with the external system and exposes an
+interface shaped entirely around your internal model. Inside, it does
+whatever translation is needed: renaming fields, converting units,
+mapping status codes, reformatting data, even reconciling structure
+(e.g., the external system splits into two calls what your model treats
+as one concept).
+
+If the external API changes, or you add a second partner, only this
+layer changes. The rest of your codebase only ever spoke your internal
+model, so it doesn't need to know.
   `.trim(),
     whyItExists: `
-It exists because integrating with external systems — especially legacy
-ones, third-party vendors, or systems you don't control — inevitably
-means dealing with modeling decisions you'd never choose yourself.
-Without a deliberate boundary, those decisions creep into your own
-domain model piece by piece, until your "clean" internal model is
-quietly shaped by someone else's legacy constraints, and every future
-integration or vendor change becomes a wide, unpredictable blast radius
-instead of a contained one.
+Integrating with external systems (legacy ones, third-party vendors,
+systems you don't control) means dealing with modeling decisions you'd
+never choose.
+
+Without a deliberate boundary, those decisions creep into your domain
+model piece by piece. Your "clean" model ends up shaped by someone
+else's legacy constraints, and every new integration or vendor change
+has a wide, unpredictable blast radius instead of a contained one.
   `.trim(),
     whenToUse: `
-Use one wherever your system integrates with an external API, legacy
-system, or another team's service whose model doesn't match — or you
-don't want to be permanently bound to — your own domain model.
-It's especially valuable when you might switch or add vendors later, or
-when the external system is known to be inconsistent, poorly designed,
-or likely to change.
+Use one wherever you integrate with an external API, legacy system, or
+another team's service whose model doesn't match your domain model, or
+that you don't want to be bound to forever. It's especially valuable
+if you may switch or add vendors, or the external system is
+inconsistent, poorly designed, or likely to change.
   `.trim(),
     whenNotToUse: `
-If the external system's model is already clean, stable, and a
-reasonably good match for your own needs, adding a full translation
-layer is unnecessary indirection. It's also overkill for a quick
-prototype or a one-off integration you know won't be maintained or
-extended — the insulation an anti-corruption layer buys isn't worth
-much if there's nothing to protect long-term.
+If the external model is already clean, stable, and a good match for
+your needs, a full translation layer is needless indirection. It's also
+overkill for a quick prototype or a one-off integration that won't be
+maintained or extended, since there's nothing to protect long-term.
   `.trim(),
     commonMistakes: [
-      "Letting the external system's raw response objects leak past the translation layer 'just this once,' which reintroduces the exact coupling the layer exists to prevent.",
-      "Building the translation layer but shaping your internal model to closely mirror the external one anyway, gaining little real insulation.",
-      "Skipping the anti-corruption layer for a 'temporary' integration that ends up living in production for years, by which point removing the coupling is far more expensive.",
+      "Letting raw external response objects leak past the layer 'just this once', which brings back the exact coupling it exists to prevent.",
+      "Building the layer but shaping your internal model to mirror the external one anyway, gaining little real insulation.",
+      "Skipping the layer for a 'temporary' integration that then lives in production for years, when removing the coupling is far more expensive.",
     ],
     exercises: [
       {
         difficulty: "Easy",
         prompt:
-          "Given a legacy API that returns dates as US-formatted strings ('MM/DD/YYYY'), write a small translation function that converts them into your internal model's Date objects.",
+          "A legacy API returns dates as US-format strings ('MM/DD/YYYY'). Write a small translation function that converts them into your internal model's Date objects.",
       },
       {
         difficulty: "Medium",
         prompt:
-          "Design an anti-corruption layer for integrating with a third-party shipping API that uses different status codes and a different address format than your internal Order and Address models. List the fields you'd translate.",
+          "Design an anti-corruption layer for a third-party shipping API whose status codes and address format differ from your internal Order and Address models. List the fields you'd translate.",
       },
       {
         difficulty: "Hard",
         prompt:
-          "Your company is switching from one payment processor to another, each with a completely different API shape. Explain how having an anti-corruption layer in place for the first processor changes the amount of work required to add the second one.",
+          "Your company is switching between two payment processors with completely different API shapes. Explain how an existing anti-corruption layer for the first processor changes the work needed to add the second.",
       },
     ],
     interviewQuestions: [
       {
         question: "What is an anti-corruption layer?",
         answer:
-          "A translation boundary placed between your system and an external system, converting the external system's model into your own clean internal model (and vice versa), so the external system's quirks and inconsistencies never leak into your core code.",
+          "A translation boundary between your system and an external one. It converts the external model into your clean internal model (and back), so the external system's quirks and inconsistencies never leak into your core code.",
       },
       {
         question: "Why not just use the external API's data shapes directly throughout your codebase to save time?",
         answer:
-          "Because then every part of your codebase that touches that data has to understand the external system's quirks, and any change to the external API or a switch to a different provider forces changes throughout the entire codebase instead of in one isolated place.",
+          "Then every part of your codebase that touches that data must understand the external quirks, and any API change or switch of provider forces changes across the whole codebase instead of in one isolated place.",
       },
       {
         question: "How does an anti-corruption layer relate to dependency inversion?",
         answer:
-          "Both isolate your core logic from a volatile external detail by placing a boundary between them; an anti-corruption layer is essentially dependency inversion and translation applied specifically at the seam with an external or legacy system whose model you don't control.",
+          "Both put a boundary between core logic and a volatile external detail. An anti-corruption layer is essentially dependency inversion plus translation, applied at the seam with an external or legacy system whose model you don't control.",
       },
     ],
     prerequisites: ["clean-architecture", "domain-driven-design-basics"],

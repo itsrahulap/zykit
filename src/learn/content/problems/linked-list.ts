@@ -915,10 +915,9 @@ and without changing the array.
       {
         approach: "Brute Force — Track Seen Values",
         explanation: `
-Scan the array once, remembering every value already seen in a set. The
-first value that turns up a second time is the duplicate. Simple and
-fast, but it uses memory proportional to the array's size, which the
-strict version of this problem doesn't allow.
+Scan the array, storing each value in a set. The first value seen twice
+is the duplicate. Simple and fast, but it uses memory proportional to the
+array's size, which the strict version doesn't allow.
         `.trim(),
         code: `function findDuplicate(nums) {
   const seen = new Set();
@@ -936,12 +935,10 @@ strict version of this problem doesn't allow.
       {
         approach: "Binary Search on the Value Range",
         explanation: `
-Search over candidate values from 1 to n rather than over array
-positions. For a midpoint value m, count how many numbers in the whole
-array are <= m. If more than m numbers satisfy that, the duplicate has
-to be one of the values from 1 to m (there are "too many" small
-values for that to be a coincidence); otherwise it's above m. Narrowing
-this range in half repeatedly homes in on the exact duplicate.
+Search the values 1 to n instead of array positions. For a midpoint m,
+count the numbers <= m. If there are more than m, there are "too many"
+small values, so the duplicate is between 1 and m; otherwise it's above m.
+Halving the range repeatedly finds the duplicate.
         `.trim(),
         code: `function findDuplicate(nums) {
   let low = 1;
@@ -970,19 +967,15 @@ this range in half repeatedly homes in on the exact duplicate.
       {
         approach: "Optimal — Cycle Detection (Floyd's Tortoise and Hare)",
         explanation: `
-Treat the array as a linked list where the "next" node after position i
-is position nums[i]. Because there are n + 1 positions but only n
-possible values to point at, at least two positions must point at the
-same value — which means this implicit list always loops back on
-itself, forming a cycle, and the value where the cycle begins is
-exactly the duplicated number.
+Treat the array as a linked list where the node after position i is
+position nums[i]. There are n + 1 positions but only n values, so at
+least two positions point at the same value. That makes the list loop
+back on itself, and the value where the cycle starts is the duplicate.
 
-First, run slow/fast pointers (slow moves one step, fast moves two)
-starting from index 0 until they meet somewhere inside the cycle. Then
-reset one pointer back to the start while leaving the other where it
-met, and advance both one step at a time — the node where they meet
-this second time is the entry point of the cycle, which is the
-duplicate value.
+First, run slow/fast pointers (one step and two steps) from index 0 until
+they meet inside the cycle. Then reset one pointer to the start and move
+both one step at a time. Where they meet again is the cycle's entry
+point — the duplicate.
         `.trim(),
         code: `function findDuplicate(nums) {
   // Phase 1: find a meeting point inside the cycle.
@@ -1006,10 +999,10 @@ duplicate value.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "slow = nums[slow]; fast = nums[nums[fast]];", explanation: "Treats each array value as a pointer to the next position, so slow takes one hop and fast takes two, exactly like cycle detection in a real linked list." },
-          { code: "} while (slow !== fast);", explanation: "Because a duplicate value forces two positions to point the same way, this implicit list is guaranteed to loop, so the two pointers must eventually meet." },
-          { code: "slow = nums[0];", explanation: "Resets one pointer to the start while keeping the other at the meeting point — a property of cycle detection guarantees they'll now meet again exactly at the cycle's entrance." },
-          { code: "while (slow !== fast) { slow = nums[slow]; fast = nums[fast]; }", explanation: "Advancing both one step at a time from here, the meeting point is the duplicated value." },
+          { code: "slow = nums[slow]; fast = nums[nums[fast]];", explanation: "Each value is a pointer to the next position: slow takes one hop, fast takes two, as in a real linked list." },
+          { code: "} while (slow !== fast);", explanation: "The duplicate makes two positions point the same way, so the list must loop and the pointers must meet." },
+          { code: "slow = nums[0];", explanation: "Resets one pointer to the start, leaving the other at the meeting point. Cycle detection guarantees they next meet at the cycle's entrance." },
+          { code: "while (slow !== fast) { slow = nums[slow]; fast = nums[fast]; }", explanation: "Moving both one step at a time, they meet at the duplicate." },
         ],
       },
     ],
@@ -1022,19 +1015,17 @@ duplicate value.
     difficulty: "Medium",
     category: "linked-list",
     description: `
-Design a small cache that holds a fixed number of key-value pairs. It
-needs two operations:
+Design a cache that holds a fixed number of key-value pairs, with two
+operations:
 
-- `.trim() + "`get(key)`" + `: return the value stored for that key, or -1 if
-the key isn't in the cache. This should also mark the key as
-"recently used."
-- `.trim() + "`put(key, value)`" + `: insert or update the value for that key,
-also marking it as "recently used." If adding a new key would push
-the cache past its capacity, first evict whichever key was used
-*least* recently.
+- `.trim() + "`get(key)`" + `: return the key's value, or -1 if it isn't
+cached. This marks the key as "recently used."
+- `.trim() + "`put(key, value)`" + `: insert or update the key's value and
+mark it as "recently used." If a new key would exceed the capacity,
+first evict the *least* recently used key.
 
-Both operations need to run in constant time on average, no matter how
-many items the cache is holding.
+Both operations must run in constant average time, however many items
+are cached.
     `.trim(),
     examples: [
       {
@@ -1050,36 +1041,34 @@ many items the cache is holding.
     ],
     constraints: ["1 <= capacity <= 3000", "0 <= key, value <= 10^4", "At most 2 * 10^5 total calls to get and put."],
     hints: [
-      "A plain array or object gets you correctness immediately, but finding 'the least recently used key' or reordering entries in one tends to cost time proportional to how many entries are stored.",
-      "A hash map alone gives you fast lookups by key, but it doesn't naturally track *usage order* — you need a second structure just for that ordering.",
-      "A doubly linked list lets you remove any node and reinsert it at one end in O(1) time (as long as you already have a direct reference to that node) — pair that with a hash map from key to that exact node reference.",
+      "A plain array or object works, but finding the least recently used key or reordering entries costs time proportional to the number of entries.",
+      "A hash map gives fast lookups by key but doesn't track *usage order* — you need a second structure for that.",
+      "A doubly linked list can remove any node and reinsert it at one end in O(1), if you already hold a reference to it. Pair it with a hash map from key to node.",
     ],
     approachOverview: `
-A simple first attempt: keep the cache as a plain list of key-value
-pairs. On get, scan the list for the key (moving it to the "most
-recent" end if found); on put, scan the list similarly, and if the
-cache is full, drop the entry at the "least recent" end. This is
-correct, but scanning and reordering the list costs time proportional
-to how many entries are currently cached.
+A simple first attempt keeps a plain list of key-value pairs. On get,
+scan for the key and move it to the "most recent" end. On put, scan the
+same way, and if the cache is full, drop the entry at the "least recent"
+end. It's correct, but scanning and reordering costs time proportional to
+the number of cached entries.
 
-The constant-time version pairs two structures: a hash map from key to
-a node, and a doubly linked list threading all the nodes together in
-usage order (most recently used at one end, least recently used at the
-other). The hash map gives instant access to any node by key; the
-doubly linked list lets you unlink that exact node and reinsert it at
-the "most recent" end in O(1), since removing or inserting next to a
-node you already hold a reference to never requires scanning anything.
-Eviction is then just "remove whatever sits at the least-recent end."
+The constant-time version pairs two structures:
+
+- A hash map from key to node, for instant lookup.
+- A doubly linked list of the nodes in usage order (most recent at one end, least recent at the other).
+
+With a direct node reference, you can unlink it and reinsert it at the
+"most recent" end in O(1), with no scanning. Eviction just removes the
+node at the least-recent end.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Array of Pairs",
         explanation: `
-Keep the cache as an array of {key, value} pairs, ordered from least
-recently used (front) to most recently used (back). Both get and put
-search the array for the key linearly; a hit is spliced out and pushed
-onto the back to mark it as freshly used. When capacity is exceeded,
-the pair at the front (the least recently used one) is dropped.
+Keep an array of {key, value} pairs, ordered from least recently used
+(front) to most recently used (back). get and put search the array
+linearly; a hit is moved to the back. When capacity is exceeded, the
+front pair (least recently used) is dropped.
         `.trim(),
         code: `class LRUCache {
   constructor(capacity) {
@@ -1112,25 +1101,20 @@ the pair at the front (the least recently used one) is dropped.
       {
         approach: "Optimal — Doubly Linked List + Hash Map",
         explanation: `
-Maintain a doubly linked list of nodes ordered by recency, with a
-permanent dummy head (the most-recently-used side) and a permanent
-dummy tail (the least-recently-used side), plus a hash map from key to
-its node in that list.
+Keep a doubly linked list ordered by recency, with a dummy head (most
+recently used side) and a dummy tail (least recently used side), plus a
+hash map from key to node.
 
-get: look the node up directly in the map. If found, unlink it from
-wherever it currently sits and reinsert it right after the dummy head
-(marking it freshly used), then return its value.
+get: look the node up in the map. If found, move it right after the dummy
+head and return its value.
 
-put: if the key already has a node, update its value and move it to
-the front the same way. Otherwise, if the cache is full, remove the
-node right before the dummy tail (the true least-recently-used entry)
-and delete it from the map; then create a new node for the key and
-insert it at the front.
+put: if the key exists, update its value and move it to the front.
+Otherwise, if the cache is full, remove the node before the dummy tail
+(the least recently used) and delete it from the map. Then add a new node
+at the front.
 
-Every step here — lookup, unlink, and insert-at-front — takes constant
-time, because the map gives a direct node reference and the doubly
-linked list never needs to scan to remove or insert next to a node it
-already holds.
+Lookup, unlink and insert-at-front are all constant time: the map gives a
+direct node reference, and the list never needs to scan.
         `.trim(),
         code: `class Node {
   constructor(key, value) {
@@ -1197,10 +1181,10 @@ class LRUCache {
         timeComplexity: "O(1) for both get and put",
         spaceComplexity: "O(capacity)",
         walkthrough: [
-          { code: "this.head.next = this.tail; this.tail.prev = this.head;", explanation: "Two permanent sentinel nodes remove every edge case around inserting into or removing from an empty list." },
-          { code: "const node = this.map.get(key);", explanation: "The hash map turns 'find this key' from a scan into a single direct lookup." },
-          { code: "this._remove(node); this._insertAtFront(node);", explanation: "Unlinking and reinserting a node you already hold a reference to costs a fixed handful of pointer updates, never a scan." },
-          { code: "const leastRecentlyUsed = this.tail.prev;", explanation: "The node just before the tail sentinel is, by construction, always the least recently used entry — no searching required." },
+          { code: "this.head.next = this.tail; this.tail.prev = this.head;", explanation: "Two permanent sentinel nodes remove the edge cases of an empty list." },
+          { code: "const node = this.map.get(key);", explanation: "The hash map finds the key in one lookup instead of a scan." },
+          { code: "this._remove(node); this._insertAtFront(node);", explanation: "Moving a node you already hold takes a few pointer updates, never a scan." },
+          { code: "const leastRecentlyUsed = this.tail.prev;", explanation: "The node before the tail sentinel is always the least recently used — no searching." },
         ],
       },
     ],
@@ -1213,9 +1197,8 @@ class LRUCache {
     difficulty: "Hard",
     category: "linked-list",
     description: `
-You're given an array containing the heads of k linked lists, and each
-one of those lists is already sorted in increasing order. Merge all of
-them into a single sorted linked list and return its head.
+Given an array of k linked list heads, each list sorted in increasing
+order, merge them into one sorted list and return its head.
     `.trim(),
     examples: [
       { input: "lists = [[1, 4, 5], [1, 3, 4], [2, 6]]", output: "[1, 1, 2, 3, 4, 4, 5, 6]" },
@@ -1224,39 +1207,31 @@ them into a single sorted linked list and return its head.
     ],
     constraints: ["0 <= k <= 10^4", "0 <= length of each list <= 500", "The total number of nodes across all lists is at most 10^4.", "Each individual list is sorted in non-decreasing order."],
     hints: [
-      "You already know how to merge two sorted lists in one pass — the question is how to extend that to k lists without redoing too much work.",
-      "Merging the lists one at a time into a running result works, but each merge has to re-scan an ever-growing result list, so the total work adds up faster than you'd like.",
-      "Instead of merging sequentially, merge lists in pairs: combine list 1 with list 2, list 3 with list 4, and so on, then repeat that pairing process on the (half as many) results. This finishes in far fewer rounds.",
+      "You can merge two sorted lists in one pass — how do you extend that to k lists without redoing work?",
+      "Merging lists one at a time into a running result works, but each merge re-scans a growing result, so the work adds up.",
+      "Merge in pairs instead: list 1 with list 2, list 3 with list 4, and so on, then repeat on the half as many results. This takes far fewer rounds.",
     ],
     approachOverview: `
-The most direct approach ignores that the lists are already sorted:
-dump every value from every list into one array, sort that array, then
-rebuild a single list from it.
+The most direct approach ignores that the lists are sorted: put every
+value in one array, sort it, and rebuild a list.
 
-A better approach reuses the two-list merge you'd use for merging just
-two sorted lists: merge the first list with the second, merge that
-result with the third, then with the fourth, and so on. This is simple
-and avoids a full sort, but the growing "result so far" list gets
-re-scanned by every subsequent merge, so the total work scales with
-both the number of lists and the total number of nodes.
+A better approach reuses the two-list merge: merge the first list with
+the second, then that result with the third, and so on. It avoids a full
+sort, but every merge re-scans the growing result, so the work scales
+with both the number of lists and the total number of nodes.
 
-The efficient approach merges the lists in pairs instead of one at a
-time: round 1 merges list 1 with list 2, list 3 with list 4, and so on,
-roughly halving the number of lists. Repeating this pairwise merging
-process on the results, round after round, brings the number of lists
-down to one in only about log2(k) rounds, and every node is only ever
-part of a two-list merge at each round, rather than being re-scanned by
-every single merge along the way.
+The efficient approach merges in pairs: round 1 merges list 1 with list
+2, list 3 with list 4, and so on, roughly halving the number of lists.
+Repeating this takes only about log2(k) rounds, and each node is part of
+one two-list merge per round instead of being re-scanned by every merge.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Collect All Values, Sort, Rebuild",
         explanation: `
-Walk every list, pushing every value into one flat array. Sort that
-array, then build a brand-new list from the sorted values. This works
-regardless of how the input lists were ordered, but it pays for a full
-sort even though most of the ordering information was already there
-for free.
+Push every value from every list into one array, sort it, and build a new
+list. This works for any input order, but pays for a full sort even
+though the lists were already sorted.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -1293,10 +1268,8 @@ function mergeKLists(lists) {
       {
         approach: "Sequential Merge — Fold Lists One at a Time",
         explanation: `
-Reuse a standard two-list merge as a building block. Start with an
-empty running result, then merge in each list one after another: merge
-the result with list 1, then merge that with list 2, then with list 3,
-and so on until every list has been folded in.
+Use the two-list merge as a building block. Start with an empty result
+and merge in each list one after another until all are folded in.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -1337,15 +1310,12 @@ function mergeKLists(lists) {
       {
         approach: "Optimal — Pairwise (Divide and Conquer) Merge",
         explanation: `
-Reuse the same two-list merge, but instead of folding lists in one at a
-time, merge them in pairs each round: list 1 with list 2, list 3 with
-list 4, and so on, producing roughly half as many lists as before.
-Repeat this pairing process on the new, smaller collection of lists,
-again and again, until only one list remains.
+Use the same two-list merge, but merge in pairs each round: list 1 with
+list 2, list 3 with list 4, and so on, leaving about half as many lists.
+Repeat until one list remains.
 
-Because the number of lists roughly halves every round, it only takes
-about log2(k) rounds to finish, and each round does a total of O(N)
-work across all its merges (every node is touched exactly once per
+The number of lists halves each round, so it takes about log2(k) rounds.
+Each round does O(N) work in total (every node is touched once per
 round), giving O(N log k) overall instead of O(N * k).
         `.trim(),
         code: `class ListNode {
@@ -1395,10 +1365,10 @@ function mergeKLists(lists) {
         timeComplexity: "O(N log k), where N is the total number of nodes and k is the number of lists",
         spaceComplexity: "O(k) for the array of intermediate list heads (O(1) beyond that, reusing existing nodes)",
         walkthrough: [
-          { code: "while (remaining.length > 1)", explanation: "Keeps pairing off lists, round after round, until only a single merged list is left." },
-          { code: "for (let i = 0; i < remaining.length; i += 2)", explanation: "Walks the current round's lists two at a time, so every list is paired with its neighbor." },
-          { code: "merged.push(mergeTwoLists(first, second));", explanation: "Merges each pair using the familiar two-list merge, roughly halving the number of lists still left to combine." },
-          { code: "remaining = merged;", explanation: "The smaller collection of merged lists becomes the input to the next round, until just one list remains." },
+          { code: "while (remaining.length > 1)", explanation: "Keeps pairing lists, round after round, until one list is left." },
+          { code: "for (let i = 0; i < remaining.length; i += 2)", explanation: "Walks this round's lists two at a time, pairing each with its neighbor." },
+          { code: "merged.push(mergeTwoLists(first, second));", explanation: "Merges each pair with the two-list merge, roughly halving the number of lists." },
+          { code: "remaining = merged;", explanation: "The merged lists become the next round's input." },
         ],
       },
     ],

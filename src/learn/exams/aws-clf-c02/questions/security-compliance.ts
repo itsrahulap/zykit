@@ -14,7 +14,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'With EC2 (infrastructure as a service), the customer manages the **guest operating system**, including updates and security patches. Physical hosts, data center facilities and hardware replacement are all part of the infrastructure that AWS secures ("security **of** the cloud").',
+      'With EC2 (infrastructure as a service), you manage the **guest operating system**, including updates and security patches. Physical hosts, data center facilities, and hardware replacement are all infrastructure AWS secures ("security **of** the cloud").',
   },
   {
     id: 'sec-002',
@@ -29,7 +29,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'Amazon RDS is a managed service, so AWS handles the **underlying operating system and database software patching** (applied during a maintenance window the customer can choose). The customer still manages database users, security group rules, and the choice to enable encryption.',
+      'Amazon RDS is managed, so AWS handles **patching the underlying operating system and database software** (in a maintenance window you can choose). You still manage database users, security group rules, and whether to enable encryption.',
   },
   {
     id: 'sec-003',
@@ -44,7 +44,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'With Lambda, the customer is responsible for **their function code, the data it handles, and the IAM permissions** (such as the execution role). AWS manages the operating system, the underlying server fleet and its scaling, and the virtualization layer.',
+      'With Lambda, you’re responsible for **your function code, the data it handles, and its IAM permissions** (such as the execution role). AWS manages the operating system, the server fleet and its scaling, and the virtualization layer.',
   },
   {
     id: 'sec-004',
@@ -54,7 +54,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Audit Manager', 'AWS Config', 'AWS Security Hub', 'AWS Artifact'],
     answer: [3],
     explanation:
-      "**AWS Artifact** is the self-service portal for on-demand access to AWS's own compliance reports (such as SOC and ISO reports) and agreements. Audit Manager collects evidence about the customer's own resources, AWS Config tracks resource configurations, and Security Hub aggregates security findings.",
+      '**AWS Artifact** is the self-service portal for AWS’s own compliance reports (such as SOC and ISO) and agreements. Audit Manager collects evidence about your own resources, AWS Config tracks resource configurations, and Security Hub aggregates security findings.',
   },
   {
     id: 'sec-005',
@@ -80,7 +80,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS CloudTrail', 'Amazon CloudWatch', 'AWS Config', 'Amazon Inspector'],
     answer: [0],
     explanation:
-      '**AWS CloudTrail** records API calls made in an account, including who made the call, when, and from where, so it answers "who did what". CloudWatch collects metrics and logs for monitoring, AWS Config records resource configuration state, and Inspector scans for software vulnerabilities.',
+      '**AWS CloudTrail** records API calls in an account, including who made each call, when, and from where, so it answers "who did what". CloudWatch collects metrics and logs for monitoring, AWS Config records resource configuration state, and Inspector scans for software vulnerabilities.',
   },
   {
     id: 'sec-007',
@@ -90,7 +90,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS CloudTrail', 'AWS Config', 'Amazon CloudWatch', 'AWS Trusted Advisor'],
     answer: [1],
     explanation:
-      '**AWS Config** records resource configuration history and evaluates resources against **Config rules** for compliance. CloudTrail records the API calls that made changes but does not evaluate compliance, CloudWatch is for metrics, logs and alarms, and Trusted Advisor gives general best-practice recommendations.',
+      '**AWS Config** records resource configuration history and checks resources against **Config rules** for compliance. CloudTrail records the API calls that made changes but doesn’t check compliance, CloudWatch is for metrics, logs, and alarms, and Trusted Advisor gives general best-practice recommendations.',
   },
   {
     id: 'sec-008',
@@ -100,7 +100,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Config', 'AWS CloudTrail', 'Amazon CloudWatch', 'Amazon Detective'],
     answer: [2],
     explanation:
-      '**Amazon CloudWatch** can collect application logs in CloudWatch Logs, turn log patterns into metrics with metric filters, and trigger **alarms** on thresholds. AWS Config tracks resource configurations, CloudTrail records AWS API calls rather than application logs, and Detective is used to investigate security findings.',
+      '**Amazon CloudWatch** collects application logs in CloudWatch Logs, turns log patterns into metrics with metric filters, and triggers **alarms** on thresholds. AWS Config tracks resource configurations, CloudTrail records AWS API calls rather than application logs, and Detective investigates security findings.',
   },
   {
     id: 'sec-009',
@@ -110,7 +110,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['Amazon Inspector', 'Amazon Macie', 'Amazon Detective', 'Amazon GuardDuty'],
     answer: [3],
     explanation:
-      '**Amazon GuardDuty** is a threat detection service that analyzes CloudTrail, VPC Flow Logs and DNS logs (plus other optional sources) to find malicious or unauthorized activity. Inspector scans for software vulnerabilities, Macie discovers sensitive data in S3, and Detective helps investigate the root cause of findings.',
+      '**Amazon GuardDuty** detects threats by analyzing CloudTrail, VPC Flow Logs, and DNS logs (plus optional sources) for malicious or unauthorized activity. Inspector scans for software vulnerabilities, Macie finds sensitive data in S3, and Detective helps investigate the root cause of findings.',
   },
   {
     id: 'sec-010',
@@ -125,7 +125,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'Security groups are **stateful** and act as a **virtual firewall for instances** (attached to network interfaces). They support **allow rules only**, and all rules are evaluated together; numbered rule order and subnet-level association are characteristics of network ACLs.',
+      'Security groups are **stateful** and act as a **virtual firewall for instances** (attached to network interfaces). They support **allow rules only**, and all rules are evaluated together. Numbered rule order and subnet-level association belong to network ACLs.',
   },
   {
     id: 'sec-011',
@@ -135,7 +135,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['Amazon Inspector', 'Amazon GuardDuty', 'AWS Shield', 'Amazon Macie'],
     answer: [0],
     explanation:
-      '**Amazon Inspector** is an automated vulnerability management service that scans EC2 instances, ECR container images and Lambda functions for software vulnerabilities (CVEs) and unintended network exposure. GuardDuty detects threats from activity, Shield protects against DDoS, and Macie finds sensitive data in S3.',
+      '**Amazon Inspector** automatically scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities (CVEs) and unintended network exposure. GuardDuty detects threats from activity, Shield protects against DDoS, and Macie finds sensitive data in S3.',
   },
   {
     id: 'sec-012',
@@ -155,7 +155,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['Amazon Inspector', 'AWS Security Hub', 'Amazon Detective', 'Amazon Macie'],
     answer: [2],
     explanation:
-      '**Amazon Detective** automatically builds a behavior graph from log data so analysts can **investigate** findings and identify their root cause. Inspector finds vulnerabilities, Security Hub aggregates findings and runs best-practice checks but is not an investigation tool, and Macie discovers sensitive data.',
+      '**Amazon Detective** builds a behavior graph from log data so analysts can **investigate** findings and find their root cause. Inspector finds vulnerabilities, Security Hub aggregates findings and runs best-practice checks but isn’t an investigation tool, and Macie finds sensitive data.',
   },
   {
     id: 'sec-014',
@@ -165,7 +165,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['Amazon Detective', 'AWS Trusted Advisor', 'AWS Config', 'AWS Security Hub'],
     answer: [3],
     explanation:
-      '**AWS Security Hub** aggregates and prioritizes findings from AWS security services and partner tools and runs automated checks against security standards. Detective is for investigating findings, Trusted Advisor gives general recommendations, and AWS Config evaluates resource configurations but is not a findings aggregator.',
+      '**AWS Security Hub** aggregates and prioritizes findings from AWS security services and partner tools, and runs automated checks against security standards. Detective investigates findings, Trusted Advisor gives general recommendations, and AWS Config evaluates resource configurations but doesn’t aggregate findings.',
   },
   {
     id: 'sec-015',
@@ -180,7 +180,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2, 4],
     explanation:
-      'Network ACLs operate at the **subnet** level, are **stateless** (inbound and outbound traffic are evaluated separately), and support **both allow and deny** rules. Being stateful, attaching to instances, and supporting allow rules only are characteristics of security groups.',
+      'Network ACLs work at the **subnet** level, are **stateless** (inbound and outbound traffic are evaluated separately), and support **both allow and deny** rules. Being stateful, attaching to instances, and allow-only rules describe security groups.',
   },
   {
     id: 'sec-016',
@@ -190,7 +190,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Shield Standard', 'AWS Shield Advanced', 'AWS WAF', 'Amazon GuardDuty'],
     answer: [0],
     explanation:
-      '**AWS Shield Standard** is automatically enabled for all AWS customers at no additional charge and protects against common layer 3 and layer 4 DDoS attacks. Shield Advanced is a paid subscription, AWS WAF filters web requests and is billed separately, and GuardDuty is a threat detection service.',
+      '**AWS Shield Standard** is on automatically for every AWS customer at no extra charge and protects against common layer 3 and layer 4 DDoS attacks. Shield Advanced is a paid subscription, AWS WAF filters web requests and is billed separately, and GuardDuty detects threats.',
   },
   {
     id: 'sec-017',
@@ -200,7 +200,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Shield Standard', 'AWS WAF', 'Network ACLs', 'Amazon Inspector'],
     answer: [1],
     explanation:
-      '**AWS WAF** is a web application firewall that inspects HTTP(S) requests at layer 7 and can block common exploits such as **SQL injection and XSS**. Shield Standard protects against network-layer DDoS, network ACLs filter by IP, protocol and port only, and Inspector finds vulnerabilities but does not block traffic.',
+      '**AWS WAF** is a web application firewall that inspects HTTP(S) requests at layer 7 and can block exploits such as **SQL injection and XSS**. Shield Standard protects against network-layer DDoS, network ACLs filter only by IP, protocol, and port, and Inspector finds vulnerabilities but doesn’t block traffic.',
   },
   {
     id: 'sec-018',
@@ -210,7 +210,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Shield Standard', 'AWS WAF', 'AWS Shield Advanced', 'AWS Firewall Manager'],
     answer: [2],
     explanation:
-      '**AWS Shield Advanced** is a paid service that adds enhanced DDoS detection, access to the **Shield Response Team (SRT)**, and **DDoS cost protection**. Shield Standard has no SRT access or cost protection, WAF filters web requests, and Firewall Manager centrally manages firewall policies.',
+      '**AWS Shield Advanced** is a paid service that adds enhanced DDoS detection, access to the **Shield Response Team (SRT)**, and **DDoS cost protection**. Shield Standard has neither SRT access nor cost protection, WAF filters web requests, and Firewall Manager centrally manages firewall policies.',
   },
   {
     id: 'sec-019',
@@ -220,7 +220,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Security Hub', 'AWS Config', 'AWS Shield Standard', 'AWS Firewall Manager'],
     answer: [3],
     explanation:
-      '**AWS Firewall Manager** centrally configures and manages firewall rules (AWS WAF, Shield Advanced protections, security groups, AWS Network Firewall and more) across accounts in an organization, and applies them to new accounts and resources automatically. Security Hub aggregates findings, AWS Config evaluates configurations, and Shield Standard is basic DDoS protection.',
+      '**AWS Firewall Manager** centrally manages firewall rules (AWS WAF, Shield Advanced protections, security groups, AWS Network Firewall, and more) across an organization’s accounts, and applies them to new accounts and resources automatically. Security Hub aggregates findings, AWS Config evaluates configurations, and Shield Standard is basic DDoS protection.',
   },
   {
     id: 'sec-020',
@@ -236,7 +236,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0, 3],
     explanation:
-      'AWS documents a short list of tasks that require root user credentials, including **closing the account** and **restoring IAM user permissions** when the only administrator has locked themselves out. Creating IAM groups, launching instances and creating billing alarms can all be done by IAM identities with the right permissions.',
+      'AWS documents a short list of tasks that need root user credentials, including **closing the account** and **restoring IAM user permissions** when the only administrator is locked out. Creating IAM groups, launching instances, and creating billing alarms can all be done by IAM identities with the right permissions.',
   },
   {
     id: 'sec-021',
@@ -265,7 +265,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'An **IAM role attached to the instance** (through an instance profile) provides **temporary credentials** that are rotated automatically, so no long-term keys are stored on the server. Storing access keys in files or AMIs risks leaking long-term credentials, and making the bucket public exposes the data to everyone.',
+      'An **IAM role attached to the instance** (through an instance profile) provides **temporary credentials** that rotate automatically, so no long-term keys sit on the server. Keys in files or AMIs can leak, and a public bucket exposes the data to everyone.',
   },
   {
     id: 'sec-023',
@@ -279,7 +279,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Least privilege** means granting identities **only the permissions they need** to do their job, and nothing more. Using groups and rotating passwords are separate best practices, and giving everyone administrator access is the opposite of least privilege.',
+      '**Least privilege** means granting **only the permissions needed** for the job, nothing more. Using groups and rotating passwords are separate best practices, and giving everyone administrator access is the opposite.',
   },
   {
     id: 'sec-024',
@@ -294,7 +294,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS IAM Identity Center** (successor to AWS Single Sign-On) provides workforce single sign-on to multiple AWS accounts and applications and can connect to an external identity provider. Cognito is for customer identities in web and mobile apps, separate IAM users per account do not scale and are not single sign-on, and Secrets Manager stores secrets.',
+      '**AWS IAM Identity Center** (successor to AWS Single Sign-On) gives your workforce single sign-on to multiple AWS accounts and applications, and can connect to an external identity provider. Cognito is for customer identities in web and mobile apps, IAM users in every account don’t scale and aren’t single sign-on, and Secrets Manager stores secrets.',
   },
   {
     id: 'sec-025',
@@ -324,7 +324,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**SCPs** set the maximum available permissions for accounts in an OU, so a deny in an SCP applies even to administrators in member accounts. A password policy only controls password rules, security groups filter network traffic, and AWS Config rules detect noncompliance but do not prevent actions.',
+      '**SCPs** set the maximum permissions for accounts in an OU, so an SCP deny applies even to administrators in member accounts. A password policy only sets password rules, security groups filter network traffic, and AWS Config rules detect noncompliance but don’t prevent actions.',
   },
   {
     id: 'sec-027',
@@ -353,7 +353,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**AWS KMS** is a managed service for creating and controlling encryption keys; it integrates with most AWS services such as S3 and EBS, uses key policies, and logs key usage to CloudTrail. CloudHSM provides dedicated HSMs that the customer manages, ACM manages TLS certificates, and Secrets Manager stores secrets such as passwords.',
+      '**AWS KMS** is a managed service for creating and controlling encryption keys. It integrates with most AWS services such as S3 and EBS, uses key policies, and logs key usage to CloudTrail. CloudHSM provides dedicated HSMs you manage, ACM manages TLS certificates, and Secrets Manager stores secrets such as passwords.',
   },
   {
     id: 'sec-029',
@@ -368,7 +368,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS CloudHSM** provides **dedicated, single-tenant HSMs** in the customer VPC, and the customer manages the keys and users. AWS managed keys in KMS are created and managed by AWS for the customer, Secrets Manager stores secrets, and ACM manages TLS certificates.',
+      '**AWS CloudHSM** provides **dedicated, single-tenant HSMs** in your VPC, and you manage the keys and users. AWS managed keys in KMS are created and managed by AWS for you, Secrets Manager stores secrets, and ACM manages TLS certificates.',
   },
   {
     id: 'sec-030',
@@ -398,7 +398,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**AWS Certificate Manager** provisions, manages and deploys SSL/TLS certificates for integrated services such as Elastic Load Balancing, CloudFront and API Gateway, and **renews ACM-issued certificates automatically**. KMS and CloudHSM manage encryption keys, and Secrets Manager stores and rotates secrets.',
+      '**AWS Certificate Manager** provisions and deploys SSL/TLS certificates for services such as Elastic Load Balancing, CloudFront, and API Gateway, and **renews ACM-issued certificates automatically**. KMS and CloudHSM manage encryption keys, and Secrets Manager stores and rotates secrets.',
   },
   {
     id: 'sec-032',
@@ -423,7 +423,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Artifact', 'AWS Config', 'AWS Audit Manager', 'AWS CloudTrail'],
     answer: [2],
     explanation:
-      "**AWS Audit Manager** continuously collects evidence from the customer's AWS usage and organizes it against prebuilt and custom **frameworks** to simplify audit preparation. Artifact provides AWS's own compliance reports, while AWS Config and CloudTrail are data sources that Audit Manager can draw on but they do not build audit-ready assessments.",
+      '**AWS Audit Manager** continuously collects evidence from your AWS usage and maps it to prebuilt and custom **frameworks** to simplify audit prep. Artifact provides AWS’s own compliance reports. AWS Config and CloudTrail are data sources Audit Manager can use, but they don’t build audit-ready assessments.',
   },
   {
     id: 'sec-034',
@@ -433,7 +433,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['Amazon Inspector', 'AWS Config', 'Amazon GuardDuty', 'AWS Trusted Advisor'],
     answer: [3],
     explanation:
-      '**AWS Trusted Advisor** gives best-practice recommendations in several categories, and its **security checks** include items such as root user MFA and S3 bucket permissions. Inspector scans workloads for vulnerabilities, AWS Config evaluates resources against rules you define, and GuardDuty detects threats.',
+      '**AWS Trusted Advisor** gives best-practice recommendations in several categories, and its **security checks** include root user MFA and S3 bucket permissions. Inspector scans for vulnerabilities, AWS Config checks resources against rules you define, and GuardDuty detects threats.',
   },
   {
     id: 'sec-035',
@@ -449,7 +449,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      'Customers are responsible for **who can access their data** (bucket policies, IAM, Block Public Access) and **how it is protected** (encryption choices and key access). AWS maintains the hardware, the redundancy that delivers S3 durability, and the service software.',
+      'You’re responsible for **who can access your data** (bucket policies, IAM, Block Public Access) and **how it’s protected** (encryption choices and key access). AWS maintains the hardware, the redundancy behind S3 durability, and the service software.',
   },
   {
     id: 'sec-036',
@@ -477,7 +477,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'AWS lists **patch management**, configuration management, and awareness and training as **shared controls**: AWS patches its infrastructure and customers patch their own guest OS and applications. Physical, environmental and data center access controls are inherited from AWS, and zone security of customer data is customer-specific.',
+      'AWS lists **patch management**, configuration management, and awareness and training as **shared controls**: AWS patches its infrastructure and you patch your own guest OS and applications. Physical, environmental, and data center access controls are inherited from AWS, and zone security of customer data is customer-specific.',
   },
   {
     id: 'sec-038',
@@ -506,7 +506,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'The more managed the service, the **more operational security AWS takes on** (for example, OS and platform patching). The customer always remains responsible for **its data, access management and configuration**, and never becomes responsible for physical security.',
+      'The more managed the service, the **more operational security AWS takes on** (for example, OS and platform patching). You always remain responsible for **your data, access management, and configuration**, and never for physical security.',
   },
   {
     id: 'sec-040',
@@ -521,7 +521,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3, 4],
     explanation:
-      'For Lambda, AWS manages the **operating system and runtime environment patching** and the **underlying infrastructure and its scaling**. The customer is responsible for function code, IAM permissions such as the execution role, and the data the function handles.',
+      'For Lambda, AWS manages **patching the operating system and runtime environment** and the **underlying infrastructure and its scaling**. You’re responsible for function code, IAM permissions such as the execution role, and the data the function handles.',
   },
   {
     id: 'sec-041',
@@ -565,7 +565,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'An **IAM group** lets you attach a policy once and manage permissions for all its members in one place. Attaching policies one by one is error-prone, sharing a user removes accountability, and one role per developer adds unnecessary management.',
+      'An **IAM group** lets you attach a policy once and manage permissions for all members in one place. Attaching policies one by one is error-prone, sharing a user removes accountability, and a role per developer adds needless management.',
   },
   {
     id: 'sec-044',
@@ -580,7 +580,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'Programmatic access through the CLI, SDKs or API uses an **access key ID and secret access key** (or temporary credentials). Console passwords are for the AWS Management Console, EC2 key pairs are for SSH into instances, and an MFA serial number is not a credential by itself.',
+      'Programmatic access (CLI, SDKs, or API) uses an **access key ID and secret access key** (or temporary credentials). Console passwords are for the AWS Management Console, EC2 key pairs are for SSH into instances, and an MFA serial number isn’t a credential on its own.',
   },
   {
     id: 'sec-045',
@@ -610,7 +610,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'An **IAM password policy** sets requirements for IAM user passwords such as minimum length, required character types, expiration and reuse prevention. SCPs limit permissions, AWS Config rules evaluate resource configurations, and Secrets Manager stores secrets.',
+      'An **IAM password policy** sets rules for IAM user passwords, such as minimum length, required character types, expiration, and reuse prevention. SCPs limit permissions, AWS Config rules evaluate resource configurations, and Secrets Manager stores secrets.',
   },
   {
     id: 'sec-047',
@@ -640,7 +640,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'A **cross-account IAM role** in account B with a trust policy for account A lets users get **temporary credentials** for account B without long-term credentials there. Sharing root credentials or emailing access keys is insecure, and security groups control network traffic, not API access.',
+      'A **cross-account IAM role** in account B, with a trust policy for account A, lets users get **temporary credentials** for account B without long-term credentials there. Sharing root credentials or emailing access keys is insecure, and security groups control network traffic, not API access.',
   },
   {
     id: 'sec-049',
@@ -655,7 +655,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Identity federation** (for example SAML 2.0 through IAM Identity Center or IAM) lets users from an external identity provider access AWS with **temporary credentials** and no IAM users. Duplicating or sharing IAM users is harder to manage and less secure, and storing directory passwords in Secrets Manager does not provide sign-in.',
+      '**Identity federation** (for example SAML 2.0 through IAM Identity Center or IAM) lets users from an external identity provider access AWS with **temporary credentials** and no IAM users. Duplicated or shared IAM users are harder to manage and less secure, and storing directory passwords in Secrets Manager doesn’t provide sign-in.',
   },
   {
     id: 'sec-050',
@@ -670,7 +670,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2, 3],
     explanation:
-      'IAM roles have no long-term credentials; assuming a role returns **temporary credentials**, and roles can be assumed by **AWS services**, users, federated identities and other accounts. Roles cannot be added to IAM groups (groups contain only users).',
+      'IAM roles have no long-term credentials. Assuming a role returns **temporary credentials**, and roles can be assumed by **AWS services**, users, federated identities, and other accounts. Roles can’t be added to IAM groups (groups contain only users).',
   },
   {
     id: 'sec-051',
@@ -685,7 +685,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'Suspected misuse of AWS resources, such as spam, port scanning or DDoS traffic coming from AWS, should be reported to the **AWS Abuse team** (AWS Trust & Safety). Professional Services, the Partner Network and Marketplace sellers do not handle abuse reports.',
+      'Report suspected misuse of AWS resources, such as spam, port scanning, or DDoS traffic from AWS, to the **AWS Abuse team** (AWS Trust & Safety). Professional Services, the Partner Network, and Marketplace sellers don’t handle abuse reports.',
   },
   {
     id: 'sec-052',
@@ -695,7 +695,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Artifact', 'AWS Knowledge Center', 'AWS Marketplace', 'AWS Trusted Advisor'],
     answer: [1],
     explanation:
-      'The **AWS Knowledge Center** contains articles that answer the most frequent questions and requests that AWS receives from customers. Artifact provides compliance reports, Marketplace sells software, and Trusted Advisor gives recommendations for your own account.',
+      'The **AWS Knowledge Center** has articles answering the most frequent questions and requests AWS gets from customers. Artifact provides compliance reports, Marketplace sells software, and Trusted Advisor gives recommendations for your own account.',
   },
   {
     id: 'sec-053',
@@ -705,7 +705,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Artifact', 'AWS Partner Network (APN)', 'AWS Marketplace', 'AWS Knowledge Center'],
     answer: [2],
     explanation:
-      '**AWS Marketplace** is a digital catalog where customers find, buy and deploy third-party software, including security products, with charges on the AWS bill. Artifact provides compliance documents, the APN is for finding partner firms, and the Knowledge Center contains support articles.',
+      '**AWS Marketplace** is a digital catalog where you find, buy, and deploy third-party software, including security products, billed on your AWS bill. Artifact provides compliance documents, the APN is for finding partner firms, and the Knowledge Center has support articles.',
   },
   {
     id: 'sec-054',
@@ -736,7 +736,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      '**AWS Artifact** provides AWS compliance reports and agreements, and the **AWS Compliance website** lists compliance programs and the services in scope for each. Inspector, Macie and Shield are security services for your own workloads and do not publish AWS compliance information.',
+      '**AWS Artifact** provides AWS compliance reports and agreements, and the **AWS Compliance website** lists compliance programs and the services in scope for each. Inspector, Macie, and Shield are security services for your own workloads and don’t publish AWS compliance information.',
   },
   {
     id: 'sec-056',
@@ -751,7 +751,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      "Compliance is **shared**: AWS's certification covers the infrastructure, but the customer must make **its own workloads** compliant and undergo its own assessment. Running on AWS does not make an application compliant automatically, AWS does not perform customer assessments, and cardholder data can be stored on in-scope services.",
+      'Compliance is **shared**: AWS’s certification covers the infrastructure, but you must make **your own workloads** compliant and go through your own assessment. Running on AWS doesn’t make an app compliant automatically, AWS doesn’t perform customer assessments, and cardholder data can be stored on in-scope services.',
   },
   {
     id: 'sec-057',
@@ -790,7 +790,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      "Customers **choose the Region** where their content is stored, and AWS does not move it outside that Region unless the customer does so, which supports **data residency** requirements. AWS does not replicate data to all Regions, edge locations are for caching and content delivery, and Shield is DDoS protection.",
+      'You **choose the Region** where your content is stored, and AWS doesn’t move it out of that Region unless you do, which supports **data residency**. AWS doesn’t replicate data to every Region, edge locations are for caching and content delivery, and Shield is DDoS protection.',
   },
   {
     id: 'sec-060',
@@ -815,7 +815,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['VPC Flow Logs', 'AWS CloudTrail', 'AWS Config', 'AWS WAF logging'],
     answer: [0],
     explanation:
-      '**VPC Flow Logs** capture information about IP traffic to and from network interfaces in a VPC, such as source, destination, port and whether the traffic was accepted. CloudTrail logs API calls, AWS Config records resource configurations, and WAF logs only cover web requests that WAF inspects.',
+      '**VPC Flow Logs** capture IP traffic to and from network interfaces in a VPC, such as source, destination, port, and whether it was accepted. CloudTrail logs API calls, AWS Config records resource configurations, and WAF logs cover only web requests WAF inspects.',
   },
   {
     id: 'sec-062',
@@ -840,7 +840,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS Config', 'AWS Security Hub', 'AWS Control Tower', 'AWS Trusted Advisor'],
     answer: [2],
     explanation:
-      '**AWS Control Tower** automates the setup of a multi-account **landing zone** based on best practices and applies preventive and detective **controls**. AWS Config evaluates configurations, Security Hub aggregates findings, and Trusted Advisor gives recommendations, but none of them build a governed multi-account environment.',
+      '**AWS Control Tower** automates setting up a best-practice multi-account **landing zone** and applies preventive and detective **controls**. AWS Config evaluates configurations, Security Hub aggregates findings, and Trusted Advisor gives recommendations, but none of them build a governed multi-account environment.',
   },
   {
     id: 'sec-064',
@@ -865,7 +865,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2, 4],
     explanation:
-      'Security groups have **allow rules only**, while network ACLs have **allow and deny rules** that are **evaluated in number order**. Security groups are stateful at the instance level and network ACLs are stateless at the subnet level, and because security groups cannot deny, they cannot explicitly block one IP address.',
+      'Security groups have **allow rules only**, while network ACLs have **allow and deny rules**, **evaluated in number order**. Security groups are stateful at the instance level, network ACLs are stateless at the subnet level, and because security groups can’t deny, they can’t block a single IP address.',
   },
   {
     id: 'sec-066',
@@ -880,7 +880,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'A **network ACL** applies to the whole subnet and supports **deny rules**, so it can block a specific IP address. Security groups do not support deny rules, IAM policies control API access rather than network traffic to instances, and AWS Config rules only evaluate configurations.',
+      'A **network ACL** applies to the whole subnet and supports **deny rules**, so it can block one IP address. Security groups don’t support deny rules, IAM policies control API access rather than network traffic, and AWS Config rules only evaluate configurations.',
   },
   {
     id: 'sec-067',
@@ -922,7 +922,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      "GuardDuty's foundational detection works from **CloudTrail management events, VPC Flow Logs and DNS logs** that it reads independently, so no agents or workload changes are needed (agents are used only for optional runtime monitoring). Classifying PII is Macie, and GuardDuty detects threats but does not block traffic itself.",
+      'GuardDuty’s foundational detection reads **CloudTrail management events, VPC Flow Logs, and DNS logs** independently, so no agents or workload changes are needed (agents are only for optional runtime monitoring). Classifying PII is Macie, and GuardDuty detects threats but doesn’t block traffic itself.',
   },
   {
     id: 'sec-070',
@@ -947,7 +947,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**CloudTrail log file integrity validation** uses digest files with hashing and digital signatures to show whether log files were changed or deleted after delivery. Metric filters turn logs into metrics, conformance packs group Config rules, and Macie finds sensitive data.',
+      '**CloudTrail log file integrity validation** uses digest files with hashing and digital signatures to show whether log files changed or were deleted after delivery. Metric filters turn logs into metrics, conformance packs group Config rules, and Macie finds sensitive data.',
   },
   {
     id: 'sec-072',
@@ -967,7 +967,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS CloudTrail', 'Amazon Inspector', 'AWS Config', 'AWS Shield'],
     answer: [2],
     explanation:
-      '**AWS Config** rules continuously evaluate resources, such as checking whether EBS volumes are encrypted, and report **noncompliant** resources, which can trigger notifications. CloudTrail records API calls, Inspector scans for software vulnerabilities, and Shield protects against DDoS.',
+      '**AWS Config** rules continuously evaluate resources, such as whether EBS volumes are encrypted, and report **noncompliant** ones, which can trigger notifications. CloudTrail records API calls, Inspector scans for software vulnerabilities, and Shield protects against DDoS.',
   },
   {
     id: 'sec-074',
@@ -982,7 +982,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Customer managed keys** are created, owned and managed by the customer, who controls key policies, enabling and disabling, and rotation. AWS managed keys are created and managed by AWS for a service in your account, AWS owned keys are not visible in your account, and Secrets Manager is not a key management service.',
+      '**Customer managed keys** are created, owned, and managed by you: you control key policies, enabling and disabling, and rotation. AWS managed keys are created and managed by AWS for a service in your account, AWS owned keys aren’t visible in your account, and Secrets Manager isn’t a key management service.',
   },
   {
     id: 'sec-075',
@@ -1011,7 +1011,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'AWS WAF protects web endpoints such as **Amazon CloudFront**, Application Load Balancers and Amazon API Gateway. It cannot be attached directly to an EC2 instance, EBS volume or Glacier vault; to protect an instance you put it behind a supported resource such as an ALB.',
+      'AWS WAF protects web endpoints such as **Amazon CloudFront**, Application Load Balancers, and Amazon API Gateway. It can’t attach directly to an EC2 instance, EBS volume, or Glacier vault; to protect an instance, put it behind a supported resource such as an ALB.',
   },
   {
     id: 'sec-077',
@@ -1041,7 +1041,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'Protecting data, including **choosing encryption at rest** and the KMS key to use, is a **customer** responsibility, even on a managed service like RDS. AWS provides the encryption feature, but it does not decide for the customer, and engine vendors are not involved.',
+      'Protecting data, including **choosing encryption at rest** and which KMS key to use, is the **customer’s** job, even on a managed service like RDS. AWS provides the feature but doesn’t decide for you, and engine vendors aren’t involved.',
   },
   {
     id: 'sec-079',
@@ -1051,7 +1051,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS WAF', 'AWS Shield Standard', 'Security groups', 'AWS Network Firewall'],
     answer: [3],
     explanation:
-      '**AWS Network Firewall** is a managed firewall for VPCs with stateful inspection, intrusion prevention and domain filtering. AWS WAF filters HTTP(S) requests to web applications, Shield protects against DDoS, and security groups are instance-level allow lists without intrusion prevention.',
+      '**AWS Network Firewall** is a managed VPC firewall with stateful inspection, intrusion prevention, and domain filtering. AWS WAF filters HTTP(S) requests to web apps, Shield protects against DDoS, and security groups are instance-level allow lists without intrusion prevention.',
   },
   {
     id: 'sec-080',
@@ -1095,7 +1095,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**Amazon Cognito** provides sign-up, sign-in and access control for **customers** of web and mobile apps at scale. IAM users are for people and workloads that manage your AWS account, IAM Identity Center is for workforce access, and Organizations manages accounts.',
+      '**Amazon Cognito** provides sign-up, sign-in, and access control for **customers** of web and mobile apps at scale. IAM users are for people and workloads that manage your AWS account, IAM Identity Center is for workforce access, and Organizations manages accounts.',
   },
   {
     id: 'sec-083',
@@ -1134,7 +1134,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      '**IAM Access Analyzer** can generate a policy from actual activity in CloudTrail, and **last accessed information** shows unused permissions that can be removed. Granting AdministratorAccess or using the root user is the opposite of least privilege, and Shield Advanced is DDoS protection.',
+      '**IAM Access Analyzer** can generate a policy from real CloudTrail activity, and **last accessed information** shows unused permissions you can remove. AdministratorAccess for everyone or using the root user is the opposite of least privilege, and Shield Advanced is DDoS protection.',
   },
   {
     id: 'sec-086',
@@ -1178,7 +1178,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      "AWS's penetration testing policy lets customers test a list of **permitted services, including Amazon EC2, without prior approval**, as long as they avoid prohibited activities such as DoS attacks. Testing is allowed and can be done by the customer or anyone it hires.",
+      'AWS’s penetration testing policy lets you test a list of **permitted services, including Amazon EC2, without prior approval**, as long as you avoid prohibited activities such as DoS attacks. You can run the tests yourself or hire anyone to do them.',
   },
   {
     id: 'sec-089',
@@ -1203,7 +1203,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3, 4],
     explanation:
-      '**AWS Config** records **resource configuration history**, and **CloudWatch** collects **metrics and logs and triggers alarms**. Recording who made API calls is CloudTrail, AWS Config evaluates and reports compliance rather than blocking API calls, and CloudTrail does not measure instance memory.',
+      '**AWS Config** records **resource configuration history**, and **CloudWatch** collects **metrics and logs and triggers alarms**. Recording who made API calls is CloudTrail, AWS Config reports compliance rather than blocking API calls, and CloudTrail doesn’t measure instance memory.',
   },
   {
     id: 'sec-091',
@@ -1236,7 +1236,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**CloudHSM** gives you **dedicated HSMs** in your VPC, and you manage the keys and HSM users, while **KMS** is a **fully managed** key service where AWS operates the underlying HSMs. AWS maintains the hardware for both, and public certificates are issued by ACM.',
+      '**CloudHSM** gives you **dedicated HSMs** in your VPC, and you manage the keys and HSM users. **KMS** is a **fully managed** key service where AWS operates the HSMs. AWS maintains the hardware for both, and public certificates come from ACM.',
   },
   {
     id: 'sec-094',
@@ -1251,7 +1251,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'Exposed credentials must be **deactivated (and then deleted) immediately** and replaced, because copies may already exist even if the repository is deleted. AWS Marketplace does not handle credential leaks, and Shield Advanced protects against DDoS, not stolen keys.',
+      '**Deactivate (then delete) exposed keys immediately** and replace them, because copies may already exist even if the repository is deleted. AWS Marketplace doesn’t handle credential leaks, and Shield Advanced protects against DDoS, not stolen keys.',
   },
   {
     id: 'sec-095',
@@ -1294,7 +1294,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'DynamoDB is fully managed, so the customer mainly handles **access control (IAM)**, data and configuration such as encryption settings. AWS patches the software, maintains the servers, and automatically replicates data across multiple Availability Zones in a Region.',
+      'DynamoDB is fully managed, so you mainly handle **access control (IAM)**, your data, and configuration such as encryption settings. AWS patches the software, maintains the servers, and automatically replicates data across multiple Availability Zones in a Region.',
   },
   {
     id: 'sec-098',
@@ -1345,7 +1345,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     options: ['AWS WAF rate-based rules', 'Security groups', 'Network ACLs', 'Amazon Inspector'],
     answer: [0],
     explanation:
-      '**AWS WAF rate-based rules** track requests per IP address and block or limit addresses that exceed a threshold, which helps with layer 7 floods. Security groups and network ACLs cannot be applied to CloudFront and do not count requests, and Inspector scans for vulnerabilities.',
+      '**AWS WAF rate-based rules** count requests per IP address and block or limit addresses over a threshold, which helps against layer 7 floods. Security groups and network ACLs can’t be applied to CloudFront and don’t count requests, and Inspector scans for vulnerabilities.',
   },
   {
     id: 'sec-102',
@@ -1369,7 +1369,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**AWS Secrets Manager** stores the secret encrypted, controls access with IAM, and lets the application **retrieve it at runtime** (and rotate it). A plain text file or user data still exposes the password, and ACM certificates cannot hold passwords.',
+      '**AWS Secrets Manager** stores the secret encrypted, controls access with IAM, and lets the app **retrieve it at runtime** (and rotate it). A plain text file or user data still exposes the password, and ACM certificates can’t hold passwords.',
   },
   {
     id: 'sec-104',
@@ -1409,7 +1409,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Session Manager** provides shell access through the Systems Manager agent, controlled by IAM and logged, with **no inbound ports or SSH keys** required. Opening port 22 to everyone increases exposure, and IAM Access Analyzer analyzes access policies rather than providing shell access.',
+      '**Session Manager** gives shell access through the Systems Manager agent, controlled by IAM and logged, with **no inbound ports or SSH keys**. Opening port 22 to everyone increases exposure, and IAM Access Analyzer analyzes access policies rather than giving shell access.',
   },
   {
     id: 'sec-107',
@@ -1424,7 +1424,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'With **client-side encryption**, data is encrypted by the customer before it is sent, so AWS receives only ciphertext. Server-side encryption happens after AWS receives the data, TLS protects data only in transit and AWS decrypts it on arrival, and versioning is not encryption.',
+      'With **client-side encryption**, you encrypt data before sending it, so AWS only ever receives ciphertext. Server-side encryption happens after AWS receives the data, TLS protects data only in transit (AWS decrypts it on arrival), and versioning isn’t encryption.',
   },
   {
     id: 'sec-108',
@@ -1439,7 +1439,7 @@ export const securityComplianceQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'An **organization trail** in CloudTrail logs events for **all accounts** in an AWS Organizations organization to a central S3 bucket. GuardDuty detects threats, AWS Config rules evaluate configurations, and Macie finds sensitive data; none of these collect all API activity.',
+      'A CloudTrail **organization trail** logs events for **all accounts** in an AWS Organizations organization to a central S3 bucket. GuardDuty detects threats, AWS Config rules evaluate configurations, and Macie finds sensitive data; none of them collect all API activity.',
   },
   {
     id: 'sec-109',

@@ -781,22 +781,22 @@ well-behaved ones can adapt.
     id: "microservices-vs-monolith",
     title: "Microservices vs Monolith",
     level: "intermediate",
-    description: "Two different ways to structure an application's codebase and deployment — as one unit, or as many independent pieces.",
+    description: "Two ways to structure and deploy an app: as one unit, or as many independent pieces.",
     explanation: `
-Early in a project, it's simplest to build everything — the user system,
-the payments, the notifications — as one single application, deployed
-and scaled as a single unit. This is a **monolith**. As a system and its
-team grow, some organizations split that single application into many
-smaller, independently deployable services, each responsible for one
-part of the system, communicating over the network — this is a
-**microservices** architecture.
+Early on, it's simplest to build everything (users, payments,
+notifications) as one application, deployed and scaled as one unit. This is
+a **monolith**.
 
-Neither is universally correct: a monolith is simpler to build, test,
-and deploy; microservices offer independent scaling and deployment, at
-the cost of real operational complexity.
+As the system and team grow, some organizations split it into many smaller
+services that are deployed independently, each owning one part of the
+system and talking over the network. This is **microservices**.
+
+Neither is always right. A monolith is simpler to build, test and deploy.
+Microservices allow independent scaling and deployment, at the cost of real
+operational complexity.
     `.trim(),
     analogy:
-      "A monolith is like one large, all-purpose kitchen where every dish is prepared by the same staff in the same space. Microservices are like a food court, where each stall specializes in one thing and operates independently — more flexible and easier to scale one popular stall without touching the others, but now you need to coordinate delivery and communication between many separate operations instead of one.",
+      "A monolith is like one big kitchen where the same staff make every dish in the same space. Microservices are like a food court where each stall specializes and runs on its own. You can scale one popular stall without touching the others, but now you have to coordinate many separate operations instead of one.",
     examples: [
       {
         title: "The same feature, two different structures",
@@ -814,86 +814,84 @@ async function handleOrderMicroservices(order) {
   await notificationService.notify(order);  // yet another
 }`,
         walkthrough: [
-          { code: "chargePayment(order); (monolith)", explanation: "A regular function call within the same running process — fast, but tightly coupled." },
-          { code: "await paymentService.charge(order); (microservices)", explanation: "A network call to a completely separate, independently deployed service." },
+          { code: "chargePayment(order); (monolith)", explanation: "A normal function call in the same process: fast, but tightly coupled." },
+          { code: "await paymentService.charge(order); (microservices)", explanation: "A network call to a separate, independently deployed service." },
         ],
       },
     ],
     howItWorks: `
-In a monolith, every part of the application runs as one process,
-sharing memory and typically one database, so calling between parts is
-just a regular function call. In microservices, each service is its own
-separate process (often with its own database), communicating with
-other services over the network — usually via HTTP APIs or message
-queues — which introduces network latency, partial failure (one service
-can be down while others work), and the need for careful API contracts
-between services.
+In a monolith, the whole app runs as one process, sharing memory and
+usually one database, so calling another part is just a function call.
+
+In microservices, each service is its own process (often with its own
+database) and talks to others over the network, usually via HTTP APIs or
+message queues. That brings network latency, partial failure (one service
+down while others work) and the need for careful API contracts.
     `.trim(),
     whyItExists: `
-As a codebase and a team both grow large, a monolith can become hard to
-work on — every change risks affecting unrelated parts, and the whole
-thing must be deployed together. Microservices let different teams own,
-deploy, and scale their own piece of the system independently, at the
-cost of significant added operational complexity.
+As a codebase and team grow, a monolith gets hard to work on: every change
+risks breaking unrelated parts, and everything must be deployed together.
+Microservices let teams own, deploy and scale their own piece
+independently, at the cost of much more operational complexity.
     `.trim(),
     whenToUse: `
-Start with a monolith for most new projects — it's simpler to build,
-easier to reason about, and faster to change early on. Consider
-splitting into microservices once a team has genuinely grown large
-enough that independent teams need to deploy independently, or specific
-parts of the system have wildly different scaling needs.
+Start most new projects as a monolith. It's simpler, easier to reason about
+and faster to change early on.
+
+Consider microservices once the team is big enough that separate teams need
+to deploy independently, or parts of the system have very different scaling
+needs.
     `.trim(),
     whenNotToUse: `
-Don't reach for microservices just because large companies use them —
-for a small team or an early-stage product, the operational overhead
-(network calls, service discovery, distributed debugging) usually costs
-far more than it's worth. Many successful products run as a monolith for
-years.
+Don't choose microservices just because big companies use them. For a small
+team or early product, the overhead (network calls, service discovery,
+distributed debugging) usually costs far more than it's worth. Many
+successful products run as a monolith for years.
     `.trim(),
     commonMistakes: [
-      "Adopting microservices prematurely, taking on distributed-systems complexity before the team or product actually needs it.",
-      "Splitting services along lines that don't match how the team is organized, so every feature still requires coordinating across many services anyway.",
-      "Forgetting that a network call between microservices can fail in ways a normal function call never could, and not handling those failures.",
+      "Adopting microservices too early, taking on distributed-systems complexity before the team or product needs it.",
+      "Splitting services along lines that don't match how teams are organized, so every feature still needs changes across many services.",
+      "Forgetting that a network call between services can fail in ways a function call never could, and not handling those failures.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, the main tradeoff between a monolith and microservices." },
-      { difficulty: "Medium", prompt: "Describe a warning sign that a monolith might be becoming difficult for a growing team to work in." },
-      { difficulty: "Hard", prompt: "Explain why a single feature (like placing an order) becomes harder to reason about when it's split across three separate microservices instead of one monolith." },
+      { difficulty: "Easy", prompt: "Explain the main tradeoff between a monolith and microservices." },
+      { difficulty: "Medium", prompt: "Describe a warning sign that a monolith is becoming hard for a growing team to work in." },
+      { difficulty: "Hard", prompt: "Explain why one feature (like placing an order) is harder to reason about when split across three microservices instead of one monolith." },
     ],
     interviewQuestions: [
-      { question: "What is the main difference between a monolith and microservices?", answer: "A monolith is one deployable application containing all functionality; microservices split functionality into many independently deployable services that communicate over the network." },
-      { question: "What's a real cost of microservices that a monolith doesn't have?", answer: "Network calls between services can fail independently, add latency, and require careful handling of partial failures — problems a single in-process monolith never encounters." },
-      { question: "Why might a company choose microservices despite the added complexity?", answer: "To let independent teams deploy and scale their own services without coordinating with every other team, and to scale only the specific parts of the system that need it." },
-      { question: "What is a \"distributed monolith,\" and how does a team end up with one despite having \"microservices\"?", answer: "It's a system split into separate deployable services that still can't actually be deployed or changed independently — because they share a database, call each other synchronously in tightly-coupled chains, or share versioned libraries that force them to be updated in lockstep. It happens when a team splits the code without splitting the actual coupling, ending up with all of microservices' operational cost and none of its independence benefit." },
-      { question: "What are some warning signs that you actually have a distributed monolith rather than true microservices?", answer: "You can't deploy one service without also deploying several others; a single feature routinely requires coordinated changes across many services at once; services share a database or shared mutable state; and a failure or slowdown in one service reliably cascades into failures in several others rather than degrading gracefully." },
-      { question: "What does \"each microservice owns its own data\" mean, and why is a shared database across microservices considered an anti-pattern?", answer: "It means each service is the only one allowed to directly read or write its own underlying storage — other services must go through its API, never its database. A shared database re-couples services at the data layer even if their code is separate: one service's schema change can silently break another, and it becomes impossible to reason about which service is actually responsible for a given piece of data's integrity." },
-      { question: "Scenario: an orders service and an inventory service share the same underlying database. What problems does this cause?", answer: "Either service can change the shared schema in a way that breaks the other without either team necessarily realizing it, neither can be deployed or scaled independently since both depend on one shared database's availability and schema version, and it becomes unclear whose responsibility it is to maintain data integrity — defeating a core reason to split them into separate services in the first place." },
-      { question: "What is Conway's Law, and how does it argue for aligning service boundaries with team boundaries?", answer: "Conway's Law observes that a system's architecture tends to mirror the communication structure of the organization that built it. It argues you should draw service boundaries around how your teams are actually organized (so a service can be owned and changed by one team without needing constant cross-team coordination), rather than drawing boundaries first and hoping teams naturally reorganize around them." },
-      { question: "What is a \"bounded context\" (from domain-driven design), and why is it a common way to decide where to draw a microservice boundary?", answer: "A bounded context is a boundary within which a specific business concept (like \"order\" or \"inventory\") has one consistent, well-defined meaning and model — outside that boundary, the same word might mean something subtly different to a different part of the business. It's a natural fit for service boundaries because each bounded context tends to have its own data, its own rules, and can reasonably be owned by one team." },
-      { question: "What is the \"monolith-first\" approach, and why do many experienced teams recommend it even when they expect to eventually need microservices?", answer: "It means deliberately starting a new system as a single, well-structured monolith, and only splitting out services once real usage has revealed where the actual boundaries and scaling needs are. It's recommended because the right service boundaries are hard to guess correctly upfront, and a monolith is far cheaper to restructure internally than a set of prematurely-drawn microservice boundaries are to undo." },
-      { question: "What is the strangler fig pattern, and how does it let you migrate a monolith to microservices incrementally?", answer: "New functionality (or a piece of existing functionality) is built as a new service that gradually intercepts and takes over a specific responsibility, while the monolith keeps running and handling everything not yet migrated — until, piece by piece, the monolith's remaining responsibilities shrink and it can eventually be retired. It avoids the risk of a single big-bang rewrite by migrating one bounded piece at a time, each independently verifiable." },
-      { question: "What is the saga pattern, and what problem does it solve for a \"transaction\" that spans multiple microservices?", answer: "A saga breaks a multi-step business operation that spans several services into a sequence of local transactions, each with a corresponding compensating action that can undo it if a later step fails — since there's no single shared database to wrap the whole thing in one ACID transaction, a saga achieves an equivalent all-or-nothing outcome through explicit forward and backward steps instead." },
-      { question: "Scenario: placing an order charges payment, reserves inventory, then schedules shipping, across three services with no shared database. Payment succeeds but inventory reservation fails — walk through how a saga handles this.", answer: "The saga recognizes the failure at the inventory step and triggers the compensating action for every step that already succeeded — in this case, refunding the payment that was already charged — rather than leaving the customer charged for an order that can never actually be fulfilled. The shipping step is simply never reached." },
-      { question: "What's the difference between choreography-based and orchestration-based sagas?", answer: "In choreography, each service reacts to events from the others and decides its own next action independently, with no central coordinator — more decoupled, but harder to see the overall flow in one place. In orchestration, a central coordinator explicitly tells each service what to do and in what order, and handles triggering compensations — easier to reason about and observe, but that coordinator becomes a piece of shared logic every service in the saga depends on." },
-      { question: "Why does distributed tracing become necessary in microservices in a way it isn't for a monolith?", answer: "In a monolith, a slow or failing request can be diagnosed with a single stack trace or profiler within one process. In microservices, a single user request can fan out across many independent services, each with its own logs, and there's no single process to inspect — distributed tracing stitches together the full cross-service path of one request (with per-hop timing) into one coherent view that would otherwise require manually correlating scattered logs from many different systems." },
-      { question: "Scenario: a single user-facing request touches 6 services and is slow. Without distributed tracing, why is this hard to debug?", answer: "Each service only has visibility into its own portion of the work — none of them individually knows how long the other 5 took, or which one was actually the bottleneck. Without a shared trace id linking all 6 services' logs for that one request together, engineers are left manually cross-referencing timestamps across six separate logging systems to even figure out where the time went." },
-      { question: "What is a circuit breaker, and why does calling another microservice over the network need one when calling a function within a monolith doesn't?", answer: "A circuit breaker detects that calls to a downstream service are consistently failing or timing out, and starts failing fast (without even attempting the call) for a cooldown period, rather than letting every caller keep waiting on a service that's already struggling. An in-process function call in a monolith either succeeds, throws, or the whole process crashes together — there's no independent \"the other side is down but I'm still up\" state a circuit breaker needs to protect against, because there's no network between them." },
-      { question: "Why is versioning API contracts between microservices a much bigger deal than versioning function signatures within a monolith?", answer: "Within a monolith, changing a function's signature and updating every caller happens together, in the same deploy, checked by the same compiler/type system. Across microservices, the caller and the service can be deployed independently and at different times, so a breaking API change can be live in production being called by callers still expecting the old shape — contracts need explicit versioning and backward compatibility, since you can't guarantee every caller upgrades in lockstep." },
-      { question: "What is contract testing, and what problem does it solve between independently-deployed services?", answer: "Contract testing verifies that a service's actual API matches what its consumers expect, without needing to spin up every real consumer and provider together to test it. It catches a breaking change to a service's contract before it's deployed, without requiring a full, slow, flaky end-to-end test across every dependent service just to know whether an integration still works." },
-      { question: "Why is testing generally harder in a microservices architecture than in a monolith?", answer: "A monolith's tests can exercise a whole business flow in-process, fast and deterministically. In microservices, the same flow spans multiple independently-deployed services communicating over the network, so a true end-to-end test requires standing up several real (or realistically faked) services together, and network-related flakiness and version-mismatch bugs become possible in a way an in-process call never has to account for." },
-      { question: "What does \"independent deployability\" actually buy a team, concretely — and what does it cost operationally?", answer: "It lets one team ship a change to their service without waiting for, or coordinating a simultaneous release with, every other team — faster, lower-risk releases scoped to just their own code. It costs real operational overhead: each service needs its own deployment pipeline, monitoring, and on-call ownership, and the team must design every API change to stay compatible with whatever version of every consumer happens to still be running." },
-      { question: "Scenario: the payments team wants to deploy a breaking API change. What does true independent deployability require of how they roll this out?", answer: "They can't simply break the old contract in place — they need to either support both the old and new API shape simultaneously for a transition period (versioning), or coordinate the rollout with every known consumer to migrate first, precisely because other services may still be running against the old contract and deploy on their own separate schedule." },
-      { question: "What is the \"premature decomposition\" trap, and why does it commonly happen to teams inspired by big tech blog posts?", answer: "It's adopting microservices because a well-known, much larger company uses them successfully, without having that company's actual scale, team size, or specific bottlenecks that justified the decision for them. The blog post shows the payoff, not the years of pain and the specific organizational scale that made the tradeoff worth it for that company at that size." },
-      { question: "What's a realistic signal that a monolith has actually grown to the point microservices would help, rather than just \"it feels big\"?", answer: "Independent teams are genuinely blocked from deploying their own changes without coordinating releases with unrelated teams, or specific parts of the system have such different scaling/reliability needs that scaling the whole monolith to satisfy one part wastes significant resources on the rest — a felt sense of size or code sprawl alone isn't the same signal, and can often be fixed by better internal modularity instead." },
-      { question: "Why can splitting a monolith along the wrong boundaries make things worse rather than better?", answer: "If a boundary is drawn through the middle of what's actually one cohesive piece of business logic, most real features end up needing coordinated changes across the resulting services anyway — so you now pay for network calls, versioning, and distributed debugging, without actually gaining the independent-deployment benefit the split was supposed to provide." },
-      { question: "What operational capabilities does a team typically need in place before microservices become net-positive, that a monolith doesn't require?", answer: "Centralized logging and distributed tracing, service discovery, automated per-service deployment pipelines, monitoring/alerting per service, and generally some form of container orchestration — without this tooling in place, teams end up manually reproducing what a monolith gets essentially for free, one struggling service at a time." },
-      { question: "Why does network partial failure require different error-handling thinking than a monolith's function calls?", answer: "A monolith's function calls either complete or the whole process crashes together — there's no state where one part of your own process is unreachable while the rest keeps running. Across a network, one dependency can be slow, timing out, or fully down while everything else stays healthy, so microservices code has to explicitly handle timeouts, retries, and partial degradation as ordinary, expected conditions rather than rare edge cases." },
-      { question: "What is a service mesh, and what problems does it solve that would otherwise be re-implemented independently in every microservice?", answer: "A service mesh is an infrastructure layer (typically sidecar proxies alongside each service) that handles cross-cutting network concerns — retries, timeouts, circuit breaking, mutual TLS, load balancing, and observability — centrally and consistently, rather than every individual service reimplementing its own version of this logic in whatever language or framework it happens to use." },
-      { question: "Scenario: after splitting into microservices, feature development actually slowed down because most features still touch three or four services at once. What does this suggest about how the boundaries were drawn?", answer: "It suggests the services were split along lines that don't match how the business logic actually varies — the boundaries likely followed a technical layering (e.g. one service per database table) rather than a cohesive business capability, so a single feature's logic ends up spread across several services that all still need to change together, paying microservices' coordination cost with none of its independence benefit." },
-      { question: "Why is \"our team is small\" often a stronger argument against microservices than any specific technical concern?", answer: "Microservices' main benefit is letting multiple independent teams work and deploy without stepping on each other — a benefit that doesn't exist if there's really only one team, since that team still has to coordinate across every service they own regardless of how the code is split, while paying the full network, deployment, and observability overhead of the split anyway." },
-      { question: "What's the relationship between eventual consistency and microservices — why do cross-service reads often end up eventually consistent even if each service's own database is strongly consistent?", answer: "Each service can be perfectly strongly consistent within its own database, but keeping one service's view of another service's data up to date (e.g. via events or async replication) happens over the network, on its own schedule — so from the perspective of a consumer relying on another service's data, there's inherently a window where that copy can be behind, just as with database replication, but now at the level of whole services instead of database replicas." },
-      { question: "Common misconception: \"microservices make a system more reliable.\" Why is this not automatically true?", answer: "Splitting a monolith into many services multiplies the number of independent things that can fail (each service, each network hop between them) — without deliberate resilience patterns (circuit breakers, retries with backoff, graceful degradation), a microservices system can actually be less reliable than a monolith, since a failure in any one of many dependencies can cascade. It becomes more reliable only when the added failure surface is actively engineered around, not as an automatic side effect of the split." },
-      { question: "What's a realistic warning sign in a monolith that one specific piece (not the whole system) is a good first candidate to extract into its own service?", answer: "A piece of functionality with genuinely different scaling needs than the rest of the system (e.g. a heavy image-processing job dragging down an otherwise fast API), or one with a clearly separable, stable API boundary and its own data that a specific team could own end-to-end — a good extraction candidate is narrow and well-isolated, not \"let's split everything at once.\"" },
+      { question: "What is the main difference between a monolith and microservices?", answer: "A monolith is one deployable app containing everything. Microservices split it into many independently deployable services that talk over the network." },
+      { question: "What's a real cost of microservices that a monolith doesn't have?", answer: "Network calls between services can fail independently, add latency, and need careful handling of partial failures. A single in-process monolith never faces these." },
+      { question: "Why might a company choose microservices despite the added complexity?", answer: "So independent teams can deploy and scale their own services without coordinating with every other team, and so only the parts that need it get scaled." },
+      { question: "What is a \"distributed monolith,\" and how does a team end up with one despite having \"microservices\"?", answer: "Separate deployable services that still can't be deployed or changed independently, because they share a database, call each other in tightly coupled synchronous chains, or share versioned libraries that force lockstep updates. It happens when a team splits the code without splitting the coupling: all of microservices' cost, none of the independence." },
+      { question: "What are some warning signs that you actually have a distributed monolith rather than true microservices?", answer: "You can't deploy one service without deploying others. Features routinely need coordinated changes across many services. Services share a database or mutable state. A failure or slowdown in one service reliably cascades into others instead of degrading gracefully." },
+      { question: "What does \"each microservice owns its own data\" mean, and why is a shared database across microservices considered an anti-pattern?", answer: "Only the owning service reads or writes its storage directly; others go through its API, never its database. A shared database re-couples services at the data layer: one service's schema change can silently break another, and nobody can tell which service is responsible for the data's integrity." },
+      { question: "Scenario: an orders service and an inventory service share the same underlying database. What problems does this cause?", answer: "Either can change the shared schema and break the other without anyone noticing. Neither can be deployed or scaled independently, since both depend on one database's availability and schema version. And it's unclear who maintains data integrity, which defeats a core reason for splitting them." },
+      { question: "What is Conway's Law, and how does it argue for aligning service boundaries with team boundaries?", answer: "Conway's Law says a system's architecture tends to mirror the communication structure of the organization that built it. So draw service boundaries around how teams are actually organized, letting one team own and change a service without constant cross-team coordination, rather than drawing boundaries first and hoping teams reorganize around them." },
+      { question: "What is a \"bounded context\" (from domain-driven design), and why is it a common way to decide where to draw a microservice boundary?", answer: "A boundary within which a business concept (like \"order\" or \"inventory\") has one consistent meaning and model; outside it, the same word may mean something slightly different. It fits service boundaries well because each bounded context tends to have its own data and rules and can be owned by one team." },
+      { question: "What is the \"monolith-first\" approach, and why do many experienced teams recommend it even when they expect to eventually need microservices?", answer: "Start as a single, well-structured monolith and split out services only once real usage shows where the boundaries and scaling needs are. The right boundaries are hard to guess upfront, and restructuring a monolith internally is far cheaper than undoing badly drawn service boundaries." },
+      { question: "What is the strangler fig pattern, and how does it let you migrate a monolith to microservices incrementally?", answer: "A new service gradually takes over one responsibility while the monolith keeps handling everything not yet moved. Piece by piece the monolith shrinks until it can be retired. It avoids a risky big-bang rewrite by migrating one bounded piece at a time, each verifiable on its own." },
+      { question: "What is the saga pattern, and what problem does it solve for a \"transaction\" that spans multiple microservices?", answer: "A saga splits a multi-service business operation into a sequence of local transactions, each with a compensating action that undoes it if a later step fails. With no shared database to wrap everything in one ACID transaction, it gets an equivalent all-or-nothing result through explicit forward and backward steps." },
+      { question: "Scenario: placing an order charges payment, reserves inventory, then schedules shipping, across three services with no shared database. Payment succeeds but inventory reservation fails — walk through how a saga handles this.", answer: "The saga sees the failure at the inventory step and runs the compensating action for every step that already succeeded: here, refunding the payment. The customer isn't left charged for an order that can't be fulfilled, and the shipping step is never reached." },
+      { question: "What's the difference between choreography-based and orchestration-based sagas?", answer: "In choreography, each service reacts to the others' events and decides its next step itself, with no central coordinator: more decoupled, but the overall flow is hard to see in one place. In orchestration, a central coordinator tells each service what to do and in what order, and triggers compensations: easier to reason about and observe, but every service in the saga depends on that coordinator." },
+      { question: "Why does distributed tracing become necessary in microservices in a way it isn't for a monolith?", answer: "In a monolith, one stack trace or profiler within one process can diagnose a slow request. In microservices, one request can fan out across many services, each with its own logs, and there's no single process to inspect. Distributed tracing stitches the request's full path (with per-hop timing) into one view instead of manually correlating scattered logs." },
+      { question: "Scenario: a single user-facing request touches 6 services and is slow. Without distributed tracing, why is this hard to debug?", answer: "Each service only sees its own part; none knows how long the other 5 took or which was the bottleneck. Without a shared trace id linking all 6 services' logs for that request, engineers must cross-reference timestamps across six logging systems just to find where the time went." },
+      { question: "What is a circuit breaker, and why does calling another microservice over the network need one when calling a function within a monolith doesn't?", answer: "A circuit breaker notices calls to a downstream service keep failing or timing out and fails fast (without trying the call) for a cooldown period, instead of letting callers keep waiting on a struggling service. In a monolith, a function call succeeds, throws, or the whole process crashes together. There's no \"the other side is down but I'm up\" state to protect against, because there's no network in between." },
+      { question: "Why is versioning API contracts between microservices a much bigger deal than versioning function signatures within a monolith?", answer: "In a monolith, changing a function's signature and updating every caller happen in one deploy, checked by the same compiler or type system. Across services, caller and service deploy independently, so a breaking change can be live while callers still expect the old shape. Contracts need explicit versioning and backward compatibility, since callers won't all upgrade in lockstep." },
+      { question: "What is contract testing, and what problem does it solve between independently-deployed services?", answer: "It checks that a service's actual API matches what its consumers expect, without running every real consumer and provider together. It catches a breaking contract change before deploy, without a slow, flaky end-to-end test across every dependent service." },
+      { question: "Why is testing generally harder in a microservices architecture than in a monolith?", answer: "A monolith's tests can run a whole business flow in-process, fast and deterministically. In microservices the same flow crosses several services over the network, so a true end-to-end test needs several real (or realistic fake) services running together, and network flakiness and version-mismatch bugs become possible." },
+      { question: "What does \"independent deployability\" actually buy a team, concretely — and what does it cost operationally?", answer: "One team can ship a change to its service without waiting for or coordinating a release with every other team: faster, lower-risk releases scoped to its own code. The cost: each service needs its own deployment pipeline, monitoring and on-call ownership, and every API change must stay compatible with whatever consumer versions are still running." },
+      { question: "Scenario: the payments team wants to deploy a breaking API change. What does true independent deployability require of how they roll this out?", answer: "They can't just break the old contract. They must support both old and new API shapes for a transition period (versioning), or coordinate with every known consumer to migrate first, because other services may still use the old contract and deploy on their own schedules." },
+      { question: "What is the \"premature decomposition\" trap, and why does it commonly happen to teams inspired by big tech blog posts?", answer: "Adopting microservices because a much larger company uses them well, without that company's scale, team size or bottlenecks that justified it. The blog post shows the payoff, not the years of pain or the organizational scale that made the tradeoff worth it for them." },
+      { question: "What's a realistic signal that a monolith has actually grown to the point microservices would help, rather than just \"it feels big\"?", answer: "Independent teams are blocked from deploying without coordinating releases with unrelated teams, or parts of the system have such different scaling or reliability needs that scaling the whole monolith for one part wastes a lot on the rest. A feeling of size or code sprawl isn't the same signal, and better internal modularity often fixes it." },
+      { question: "Why can splitting a monolith along the wrong boundaries make things worse rather than better?", answer: "If a boundary cuts through one cohesive piece of business logic, most features still need coordinated changes across the resulting services. You pay for network calls, versioning and distributed debugging without gaining independent deployment." },
+      { question: "What operational capabilities does a team typically need in place before microservices become net-positive, that a monolith doesn't require?", answer: "Centralized logging and distributed tracing, service discovery, automated per-service deployment pipelines, per-service monitoring and alerting, and usually some container orchestration. Without them, teams end up rebuilding by hand what a monolith gets almost for free, one struggling service at a time." },
+      { question: "Why does network partial failure require different error-handling thinking than a monolith's function calls?", answer: "A monolith's calls either complete or the whole process crashes together; part of your own process can't be unreachable while the rest runs. Over a network, one dependency can be slow, timing out or down while everything else is fine, so microservices code must treat timeouts, retries and partial degradation as normal conditions, not rare edge cases." },
+      { question: "What is a service mesh, and what problems does it solve that would otherwise be re-implemented independently in every microservice?", answer: "An infrastructure layer (usually sidecar proxies next to each service) that handles cross-cutting network concerns centrally and consistently: retries, timeouts, circuit breaking, mutual TLS, load balancing and observability. Otherwise each service would reimplement this in its own language or framework." },
+      { question: "Scenario: after splitting into microservices, feature development actually slowed down because most features still touch three or four services at once. What does this suggest about how the boundaries were drawn?", answer: "The split doesn't match how the business logic varies. The boundaries probably followed technical layers (e.g. one service per database table) instead of cohesive business capabilities, so each feature's logic is spread across services that must change together. You pay the coordination cost with none of the independence." },
+      { question: "Why is \"our team is small\" often a stronger argument against microservices than any specific technical concern?", answer: "Microservices' main benefit is letting several independent teams work and deploy without stepping on each other. With one team, that benefit doesn't exist: the team still coordinates across every service it owns, while paying the full network, deployment and observability overhead." },
+      { question: "What's the relationship between eventual consistency and microservices — why do cross-service reads often end up eventually consistent even if each service's own database is strongly consistent?", answer: "Each service can be strongly consistent in its own database, but keeping its copy of another service's data up to date (via events or async replication) happens over the network on its own schedule. So a consumer relying on another service's data always has a window where its copy may be behind, like database replication but between whole services." },
+      { question: "Common misconception: \"microservices make a system more reliable.\" Why is this not automatically true?", answer: "Splitting into many services multiplies what can fail (each service, each network hop). Without deliberate resilience patterns (circuit breakers, retries with backoff, graceful degradation), a microservices system can be less reliable than a monolith, since a failure in any one dependency can cascade. It's more reliable only when that added failure surface is actively engineered for." },
+      { question: "What's a realistic warning sign in a monolith that one specific piece (not the whole system) is a good first candidate to extract into its own service?", answer: "A piece with very different scaling needs from the rest (e.g. heavy image processing dragging down an otherwise fast API), or one with a clear, stable API boundary and its own data that one team could own end to end. A good first candidate is narrow and well isolated, not \"split everything at once\"." },
     ],
     prerequisites: ["scalability"],
     relatedTopics: ["api-gateway", "circuit-breaker", "scalability"],
@@ -903,18 +901,17 @@ years.
     id: "pub-sub",
     title: "Publish/Subscribe (Pub/Sub)",
     level: "intermediate",
-    description: "Letting one event be broadcast to many interested listeners, without the sender needing to know who they are.",
+    description: "Broadcast one event to many listeners, without the sender knowing who they are.",
     explanation: `
-A queue is great when exactly one worker should handle each piece of
-work. But sometimes an event needs to be delivered to every interested
-party, not just one — a new order might need to trigger an email, an
-inventory update, and an analytics event, all at once.
-**Publish/Subscribe** (pub/sub) solves this: a publisher sends a message
-to a named **topic**, and every subscriber currently listening to that
-topic receives its own copy.
+A queue works when exactly one worker should handle each piece of work. But
+sometimes every interested party needs the event: a new order might trigger
+an email, an inventory update and an analytics event at once.
+
+With **publish/subscribe** (pub/sub), a publisher sends a message to a named
+**topic**, and every subscriber listening to that topic gets its own copy.
     `.trim(),
     analogy:
-      "It's like a radio broadcast. The radio station (publisher) doesn't know or care who's listening — it just broadcasts on its frequency (the topic). Anyone with a radio tuned to that frequency (a subscriber) hears the exact same broadcast, independently of everyone else.",
+      "It's like a radio broadcast. The station (publisher) doesn't know who's listening; it just broadcasts on its frequency (the topic). Anyone tuned in (a subscriber) hears the same broadcast, independently of everyone else.",
     examples: [
       {
         title: "One event, multiple independent subscribers",
@@ -932,51 +929,49 @@ eventBus.subscribe("order.created", (event) => {
 });`,
         walkthrough: [
           { code: 'eventBus.publish("order.created", ...)', explanation: "Announces an event on a named topic, with no idea who (if anyone) is listening." },
-          { code: 'eventBus.subscribe("order.created", ...) (first)', explanation: "Registers interest in that topic; runs independently whenever it fires." },
-          { code: 'eventBus.subscribe("order.created", ...) (second)', explanation: "A completely separate subscriber, also notified of the exact same event, with no coordination with the first." },
+          { code: 'eventBus.subscribe("order.created", ...) (first)', explanation: "Subscribes to that topic; runs on its own whenever the event fires." },
+          { code: 'eventBus.subscribe("order.created", ...) (second)', explanation: "A separate subscriber that gets the same event, with no coordination with the first." },
         ],
       },
     ],
     howItWorks: `
-A pub/sub system maintains a set of topics, each with zero or more
-subscribers. When a publisher sends a message to a topic, the system
-delivers a copy of that message to every current subscriber of that
-topic, independently — publishers and subscribers never talk to each
-other directly, and neither needs to know the other exists.
+A pub/sub system keeps a set of topics, each with zero or more subscribers.
+When a publisher sends a message to a topic, every current subscriber gets
+its own copy.
+
+Publishers and subscribers never talk directly, and neither needs to know
+the other exists.
     `.trim(),
     whyItExists: `
-Pub/sub lets you add a brand-new reaction to an existing event (like a
-new notification type, or a new analytics hook) without touching the
-code that publishes the event at all — the publisher and every
-subscriber can be developed, deployed, and scaled completely
-independently of each other.
+Pub/sub lets you add a new reaction to an existing event (a new notification
+type, a new analytics hook) without touching the publishing code. The
+publisher and each subscriber can be built, deployed and scaled
+independently.
     `.trim(),
     whenToUse: `
-Reach for pub/sub whenever one event genuinely needs to trigger multiple
-independent reactions, especially across different services or teams,
-and especially when new subscribers might be added later without
-changing the publisher.
+Use pub/sub when one event needs to trigger several independent reactions,
+especially across services or teams, and when new subscribers may be added
+later without changing the publisher.
     `.trim(),
     whenNotToUse: `
-If exactly one worker should handle each message (like processing a
-payment exactly once), a queue is the right tool, not pub/sub, which is
-designed for broadcasting to many listeners rather than distributing
-work to exactly one.
+If exactly one worker should handle each message (like processing a payment
+exactly once), use a queue. Pub/sub is for broadcasting to many listeners,
+not handing work to exactly one.
     `.trim(),
     commonMistakes: [
-      "Confusing pub/sub (every subscriber gets every message) with a queue (exactly one worker gets each message) — they solve different problems.",
-      "Assuming a subscriber that's offline when a message is published will still receive it later — depending on the system, that message may simply be missed unless durability/replay is explicitly configured.",
-      "Publishing overly specific, tightly-coupled event data that assumes exactly which subscribers exist, defeating the purpose of the publisher not needing to know who's listening.",
+      "Confusing pub/sub (every subscriber gets every message) with a queue (exactly one worker gets each message). They solve different problems.",
+      "Assuming a subscriber that's offline when a message is published will get it later. Depending on the system, it may simply be missed unless durability/replay is configured.",
+      "Publishing event data that assumes exactly which subscribers exist, which defeats the point of the publisher not needing to know who's listening.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, the difference between a queue and pub/sub." },
-      { difficulty: "Medium", prompt: "Describe a real feature (e.g. a new order) and list three independent subscribers that might react to it via pub/sub." },
-      { difficulty: "Hard", prompt: "Explain what could go wrong if a subscriber is temporarily down when an important event is published, and how a system might guard against losing that event." },
+      { difficulty: "Easy", prompt: "Explain the difference between a queue and pub/sub." },
+      { difficulty: "Medium", prompt: "Pick a real feature (e.g. a new order) and list three independent subscribers that might react to it via pub/sub." },
+      { difficulty: "Hard", prompt: "Explain what could go wrong if a subscriber is down when an important event is published, and how a system might avoid losing that event." },
     ],
     interviewQuestions: [
-      { question: "What is publish/subscribe (pub/sub)?", answer: "A messaging pattern where a publisher sends messages to a named topic, and every current subscriber of that topic receives an independent copy, without publisher and subscriber knowing about each other." },
-      { question: "What's the key difference between pub/sub and a message queue?", answer: "A queue delivers each message to exactly one consumer; pub/sub delivers each message to every subscriber of that topic." },
-      { question: "Why is pub/sub useful for adding new features?", answer: "A new subscriber can be added to react to an existing event without any change to the code that publishes it." },
+      { question: "What is publish/subscribe (pub/sub)?", answer: "A messaging pattern where a publisher sends messages to a named topic and every current subscriber gets its own copy, without publisher and subscriber knowing about each other." },
+      { question: "What's the key difference between pub/sub and a message queue?", answer: "A queue delivers each message to exactly one consumer. Pub/sub delivers each message to every subscriber of the topic." },
+      { question: "Why is pub/sub useful for adding new features?", answer: "You can add a new subscriber to react to an existing event without changing the code that publishes it." },
     ],
     prerequisites: ["queues"],
     relatedTopics: ["queues", "microservices-vs-monolith"],

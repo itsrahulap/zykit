@@ -1089,21 +1089,18 @@ long-lived caches or closures.
     level: "advanced",
     description: "Safely reading deeply nested properties, and providing defaults, without a pile of manual checks.",
     explanation: `
-Reading a property that's nested a few levels deep — \`user.address.city\`
-— crashes the whole program if \`user\` or \`address\` happens to be
-missing. Before modern JavaScript, safely handling that meant a chain of
-manual checks: \`if (user && user.address && user.address.city)\`.
-**Optional chaining** (\`?.\`) does this automatically: it stops and
-returns \`undefined\` the moment it hits something missing, instead of
-throwing an error.
+Reading a nested property like \`user.address.city\` throws an error if
+\`user\` or \`address\` is missing. The old fix was a chain of checks:
+\`if (user && user.address && user.address.city)\`. **Optional chaining**
+(\`?.\`) does this for you: it stops and returns \`undefined\` as soon as it
+hits something missing, instead of throwing.
 
-Its common partner, **nullish coalescing** (\`??\`), lets you supply a
-default value specifically for when something is \`null\` or \`undefined\` —
-without accidentally overriding valid values like \`0\` or \`""\` the way
-\`||\` would.
+Its partner, **nullish coalescing** (\`??\`), gives a default only when a
+value is \`null\` or \`undefined\`. Unlike \`||\`, it won't replace valid values
+like \`0\` or \`""\`.
     `.trim(),
     analogy:
-      "Optional chaining is like carefully checking each door is unlocked before walking through it, instead of just barreling into a locked door and getting hurt. Nullish coalescing is a backup plan — 'if there's truly nothing here, use this instead' — that's careful not to override an answer you deliberately gave, like zero.",
+      "Optional chaining is like checking each door is unlocked before walking through, instead of crashing into a locked one. Nullish coalescing is a backup plan, 'if there's truly nothing here, use this', that won't override an answer you gave on purpose, like zero.",
     examples: [
       {
         title: "Optional chaining and nullish coalescing together",
@@ -1119,10 +1116,10 @@ const count = 0;
 console.log(count || 10); // 10 — wrong! 0 is falsy, so || replaces it
 console.log(count ?? 10); // 0 — right! ?? only replaces null/undefined`,
         walkthrough: [
-          { code: "user.address?.city", explanation: "Checks if user.address exists before trying to read .city; since it's null, the expression short-circuits to undefined." },
+          { code: "user.address?.city", explanation: "Checks user.address before reading .city. It's null, so the expression short-circuits to undefined." },
           { code: 'user.address?.city ?? "Unknown city";', explanation: "If the left side is null or undefined, falls back to the right side." },
-          { code: "count || 10", explanation: "Replaces count with 10 because 0 is falsy — often not what you want." },
-          { code: "count ?? 10", explanation: "Keeps 0, because ?? only falls back on null or undefined, not on every falsy value." },
+          { code: "count || 10", explanation: "Replaces count with 10 because 0 is falsy. Often not what you want." },
+          { code: "count ?? 10", explanation: "Keeps 0, because ?? only falls back on null or undefined, not every falsy value." },
         ],
       },
       {
@@ -1136,40 +1133,37 @@ api.getUser?.(1);      // undefined — skipped, doesn't throw
 const users = null;
 console.log(users?.[0]); // undefined — safe even though users isn't an object at all`,
         explanation:
-          "`?.()` guards a function call that might not exist, and `?.[...]` guards array/bracket access the same way `?.` guards a plain property.",
+          "`?.()` guards a function call that might not exist, and `?.[...]` guards bracket access, just as `?.` guards a plain property.",
       },
     ],
     howItWorks: `
-\`?.\` checks whether the value immediately to its left is \`null\` or
-\`undefined\` before continuing; if so, the entire chain short-circuits and
-evaluates to \`undefined\` without attempting the rest. \`??\` checks only
-its left-hand side: if it's \`null\` or \`undefined\`, it evaluates to the
-right-hand side; otherwise, it keeps the left-hand value — even if that
-value is \`0\`, \`""\`, or \`false\`.
+\`?.\` checks whether the value just to its left is \`null\` or \`undefined\`.
+If so, the whole chain short-circuits to \`undefined\` without running the
+rest.
+
+\`??\` checks only its left side. If it's \`null\` or \`undefined\`, you get
+the right side. Otherwise you keep the left value, even if it's \`0\`, \`""\`
+or \`false\`.
     `.trim(),
     whyItExists: `
-Deeply nested, possibly-missing data (like optional fields from an API)
-used to require long chains of manual \`&&\` checks just to avoid
-crashing. These two operators cover that extremely common need directly,
-making the code both safer and shorter.
+Nested data that might be missing (like optional API fields) used to need
+long chains of \`&&\` checks to avoid crashing. These two operators handle
+that common need directly, so code is safer and shorter.
     `.trim(),
     whenToUse: `
-Use \`?.\` whenever you're reading a property that might not exist at some
-level — optional API fields, optional configuration, DOM elements that
-might not be present. Use \`??\` whenever you want a default specifically
-for missing values, and your valid values might include falsy-but-real
-ones like \`0\` or \`""\`.
+Use \`?.\` when reading a property that might be missing at some level:
+optional API fields, optional config, DOM elements that may not exist. Use
+\`??\` for a default for missing values when valid values can be falsy, like
+\`0\` or \`""\`.
     `.trim(),
     whenNotToUse: `
-Don't sprinkle \`?.\` everywhere defensively on data you actually know is
-always present — it can silently hide a bug that should have thrown an
-error and alerted you to a real problem. And use \`||\` instead of \`??\`
-when you genuinely want to replace any falsy value, not just
-null/undefined.
+Don't add \`?.\` everywhere on data you know is always there. It can hide a
+bug that should have thrown and warned you. Use \`||\` instead of \`??\` when
+you really want to replace any falsy value, not just null/undefined.
     `.trim(),
     commonMistakes: [
-      "Using `?.` so liberally that a genuinely broken/missing value is silently swallowed as `undefined` instead of surfacing a helpful error.",
-      "Using `||` for defaults when `0`, `\"\"`, or `false` are valid values you don't want replaced — `??` is usually the safer choice.",
+      "Using `?.` so freely that a truly broken or missing value is silently turned into `undefined` instead of raising a helpful error.",
+      "Using `||` for defaults when `0`, `\"\"`, or `false` are valid values you want to keep. `??` is usually safer.",
       "Forgetting that `?.` only guards against `null`/`undefined`, not against other unexpected types.",
     ],
     exercises: [
@@ -1192,15 +1186,14 @@ null/undefined.
     level: "advanced",
     description: "A simple, text-based format for representing data, used constantly to send information between programs.",
     explanation: `
-When two different programs need to share data — a browser and a
-server, for example — they need a shared, text-based way to represent
-it, since raw JavaScript objects only exist inside a running JavaScript
-program. **JSON** (JavaScript Object Notation) is that shared format:
-plain text that looks a lot like a JavaScript object or array, that
-virtually every programming language knows how to read and write.
+When two programs share data (say, a browser and a server), they need a
+common text format, because JavaScript objects only exist inside a running
+JavaScript program. **JSON** (JavaScript Object Notation) is that format:
+plain text that looks like a JavaScript object or array, and that almost
+every language can read and write.
     `.trim(),
     analogy:
-      "JSON is like a universally understood recipe card format. Any chef (any programming language) can read a recipe written in that standard format, even if their own kitchen (their own language) is completely different from the one that wrote it.",
+      "JSON is like a standard recipe card format. Any chef (any language) can read a card in that format, even if their kitchen is completely different from the one that wrote it.",
     examples: [
       {
         title: "Converting between objects and JSON text",
@@ -1228,40 +1221,37 @@ localStorage.setItem("settings", JSON.stringify(settings));
 const saved = JSON.parse(localStorage.getItem("settings"));
 console.log(saved.theme); // "dark"`,
         explanation:
-          "`localStorage` can only store strings, so JSON is the standard way to save a structured object into it and read a real object back out later.",
+          "`localStorage` only stores strings, so JSON is the standard way to save an object there and get a real object back later.",
       },
     ],
     howItWorks: `
-\`JSON.stringify\` walks through an object or array and produces a text
-representation following JSON's strict rules (double-quoted keys, no
-functions, no \`undefined\`). \`JSON.parse\` does the reverse: it reads that
-text and reconstructs the equivalent JavaScript value. Both are pure
-text transformations — nothing about JSON itself is JavaScript-specific,
-even though its syntax was inspired by JavaScript object literals.
+\`JSON.stringify\` walks an object or array and produces text that follows
+JSON's strict rules (double-quoted keys, no functions, no \`undefined\`).
+\`JSON.parse\` does the reverse and rebuilds the JavaScript value from the
+text. Both are pure text transformations. JSON's syntax was inspired by
+JavaScript object literals, but the format itself isn't tied to JavaScript.
     `.trim(),
     whyItExists: `
-Before JSON became standard, exchanging structured data between
-different systems (especially over the web) often meant using more
-verbose formats like XML, or inventing custom ones. JSON's simplicity
-and close resemblance to JavaScript objects made it the dominant format
-for APIs and configuration.
+Before JSON, systems exchanging structured data (especially over the web)
+often used wordier formats like XML, or made up their own. JSON's simplicity
+and likeness to JavaScript objects made it the main format for APIs and
+configuration.
     `.trim(),
     whenToUse: `
-Use JSON whenever you need to send structured data between a client and
-a server (most API responses are JSON), save structured data to a file
-or localStorage, or pass data between programs written in different
-languages.
+Use JSON to send structured data between client and server (most API
+responses are JSON), to save structured data to a file or localStorage, or
+to pass data between programs in different languages.
     `.trim(),
     whenNotToUse: `
-JSON can't represent everything a JavaScript value can — functions,
-\`undefined\`, and circular references are all silently dropped or cause
-an error. For data that needs those things, or that's extremely large
-and performance-sensitive, other formats or approaches might fit better.
+JSON can't represent every JavaScript value. Functions and \`undefined\` are
+silently dropped, and circular references cause an error. For data that
+needs those, or that's very large and performance-sensitive, another format
+may fit better.
     `.trim(),
     commonMistakes: [
       "Trying to `JSON.stringify` an object containing functions or `undefined` values and being surprised they're silently dropped.",
-      "Forgetting that `JSON.parse` throws an error on invalid JSON text, and not wrapping it in a try/catch when the input isn't guaranteed to be valid.",
-      "Assuming JSON supports comments or trailing commas — it doesn't; it's stricter than a plain JavaScript object literal.",
+      "Forgetting that `JSON.parse` throws on invalid JSON, and not wrapping it in try/catch when the input might be invalid.",
+      "Assuming JSON allows comments or trailing commas. It doesn't; it's stricter than a JavaScript object literal.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Convert a small object to a JSON string with `JSON.stringify`, then back with `JSON.parse`, and confirm the values match." },
@@ -1270,7 +1260,7 @@ and performance-sensitive, other formats or approaches might fit better.
     ],
     interviewQuestions: [
       { question: "What does `JSON.stringify` do?", answer: "Converts a JavaScript value into a JSON-formatted text string." },
-      { question: "What happens to functions and `undefined` values when you stringify an object containing them?", answer: "They're omitted entirely from the resulting JSON string — JSON has no way to represent them." },
+      { question: "What happens to functions and `undefined` values when you stringify an object containing them?", answer: "They're left out of the JSON string entirely. JSON has no way to represent them." },
       { question: "Why is JSON so commonly used for APIs?", answer: "It's simple, lightweight, human-readable, and supported natively or via libraries in virtually every programming language." },
     ],
     prerequisites: ["objects", "arrays"],
@@ -1283,14 +1273,14 @@ and performance-sensitive, other formats or approaches might fit better.
     level: "advanced",
     description: "Two built-in collections — Map for key-value pairs, Set for unique values — that improve on what plain objects and arrays can do.",
     explanation: `
-You've already used plain objects as key-value stores, and arrays as
-ordered lists. **Map** and **Set** are more specialized built-in
-collections that fix a few rough edges: a \`Map\` lets you use any value
-(not just strings) as a key and keeps track of its own size; a \`Set\`
-stores a collection of values with no duplicates allowed, automatically.
+You've used plain objects as key-value stores and arrays as ordered lists.
+**Map** and **Set** are built-in collections that fix some rough edges:
+
+- A \`Map\` accepts any value (not just strings) as a key and tracks its own size.
+- A \`Set\` holds values with duplicates removed automatically.
     `.trim(),
     analogy:
-      "A Map is like a proper dictionary with tabs for any kind of entry — not just word-shaped ones. A Set is like a guest list where the bouncer automatically refuses to add the same name twice, no matter how many times you try.",
+      "A Map is like a proper dictionary with tabs for any kind of entry, not just words. A Set is like a guest list where the bouncer refuses to add the same name twice, however often you try.",
     examples: [
       {
         title: "Map and Set basics",
@@ -1306,10 +1296,10 @@ console.log(uniqueNumbers.size);   // 3
 console.log(uniqueNumbers.has(2)); // true`,
         walkthrough: [
           { code: "const scores = new Map();", explanation: "Creates an empty Map." },
-          { code: 'scores.set("amara", 90);', explanation: "Stores a key-value pair; unlike an object, the key could be any type, not just a string." },
+          { code: 'scores.set("amara", 90);', explanation: "Stores a key-value pair. Unlike an object, the key can be any type, not just a string." },
           { code: 'scores.get("amara");', explanation: "Reads back the value for that key." },
-          { code: "scores.size", explanation: "A real property that always reflects the current number of entries." },
-          { code: "new Set([1, 2, 2, 3, 3, 3]);", explanation: "Automatically drops duplicate values, keeping each unique value only once." },
+          { code: "scores.size", explanation: "A real property that always gives the current number of entries." },
+          { code: "new Set([1, 2, 2, 3, 3, 3]);", explanation: "Drops duplicates, keeping each value once." },
         ],
       },
       {
@@ -1319,40 +1309,36 @@ console.log(uniqueNumbers.has(2)); // true`,
 const unique = [...new Set(numbers)];
 console.log(unique); // [1, 2, 3, 4]`,
         explanation:
-          "Spreading a Set back into an array is a common one-line pattern for deduplicating an array while preserving the first occurrence of each value.",
+          "Spreading a Set back into an array is a common one-liner to remove duplicates while keeping the first occurrence of each value.",
       },
     ],
     howItWorks: `
-A \`Map\` stores entries in insertion order and, internally, uses the same
-kind of fast key-based lookup a hash table does — but without a plain
-object's quirks (string-coerced keys, inherited properties getting in
-the way). A \`Set\` is really just a \`Map\` that only cares about the
-keys — adding a value that's already present is simply a no-op.
+A \`Map\` keeps entries in insertion order and uses fast key-based lookup,
+like a hash table, without a plain object's quirks (keys turned into
+strings, inherited properties getting in the way). A \`Set\` is essentially a
+\`Map\` that only cares about keys: adding a value that's already there does
+nothing.
     `.trim(),
     whyItExists: `
-Plain objects were never really designed to be general-purpose maps —
-keys are always converted to strings, there's no built-in size, and
-inherited properties can sneak in unexpectedly. Map and Set exist
-specifically to be clean, purpose-built collections without that
-historical baggage.
+Plain objects weren't designed as general-purpose maps: keys are always
+converted to strings, there's no built-in size, and inherited properties can
+sneak in. Map and Set are purpose-built collections without that baggage.
     `.trim(),
     whenToUse: `
-Reach for a \`Map\` when your keys aren't simple strings, when you need a
-reliable \`.size\`, or when insertion order matters and must be preserved.
-Reach for a \`Set\` whenever you need a collection of values with
-automatic deduplication — removing duplicates from an array, or tracking
-a group of unique items.
+Use a \`Map\` when keys aren't simple strings, when you need a reliable
+\`.size\`, or when insertion order must be kept. Use a \`Set\` when you need
+unique values: removing duplicates from an array, or tracking a group of
+unique items.
     `.trim(),
     whenNotToUse: `
-For a simple, small collection of string keys — especially one that's
-going to be serialized with \`JSON.stringify\` (which doesn't support
-Map/Set directly) — a plain object or array is often simpler and more
-familiar.
+For a small collection of string keys, especially one you'll serialize with
+\`JSON.stringify\` (which doesn't support Map/Set directly), a plain object
+or array is often simpler.
     `.trim(),
     commonMistakes: [
       "Trying to `JSON.stringify` a Map or Set directly and being surprised it doesn't serialize the way a plain object or array does.",
       "Using `.length` on a Map or Set instead of the correct property, `.size`.",
-      "Forgetting that Set only removes duplicate values — it doesn't otherwise change the order or type of the data.",
+      "Forgetting that a Set only removes duplicates. It doesn't otherwise change the order or type of the data.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Use a `Set` to remove duplicate values from an array of numbers." },
@@ -1361,8 +1347,8 @@ familiar.
     ],
     interviewQuestions: [
       { question: "What's the main advantage of Map over a plain object for key-value storage?", answer: "Map allows any value as a key (not just strings), maintains a reliable `.size`, and doesn't risk inherited properties interfering with lookups." },
-      { question: "How does Set handle duplicate values?", answer: "It silently ignores an attempt to add a value that's already present — a Set can only ever contain unique values." },
-      { question: "Can you iterate over a Map in insertion order?", answer: "Yes — Maps (and Sets) always iterate in the order entries were inserted." },
+      { question: "How does Set handle duplicate values?", answer: "Adding a value that's already there is silently ignored. A Set only ever holds unique values." },
+      { question: "Can you iterate over a Map in insertion order?", answer: "Yes. Maps (and Sets) always iterate in the order entries were inserted." },
     ],
     prerequisites: ["objects"],
     relatedTopics: ["objects", "arrays"],

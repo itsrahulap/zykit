@@ -461,29 +461,28 @@ messages. Put that logic in app-level validation.
     id: "transactions-and-acid",
     title: "Transactions & ACID",
     level: "intermediate",
-    description: "Grouping several database operations into one all-or-nothing unit, so a failure partway through never leaves data half-changed.",
+    description: "Group several operations into one all-or-nothing unit, so a failure never leaves data half-changed.",
     explanation: `
-Imagine transferring money between two bank accounts: subtract $100 from
-Account A, then add $100 to Account B. Those are two separate
-operations. If the database crashes, or the connection drops, right
-after the subtraction but before the addition, Account A just lost $100
-that vanished into nowhere.
+A money transfer is two operations: subtract $100 from Account A, then add
+$100 to Account B. If the database crashes or the connection drops between
+them, $100 just vanishes.
 
-A **transaction** groups multiple operations into a single all-or-nothing
-unit: either every operation in it succeeds and is saved permanently, or
-if anything fails partway through, everything in the transaction is
-rolled back as if none of it had ever happened. There's no in-between,
-half-applied state.
+A **transaction** groups operations into one all-or-nothing unit. Either
+every operation succeeds and is saved, or if anything fails, everything is
+rolled back as if it never happened. There's no half-applied state.
 
-The guarantees transactions provide are usually summarized by the
-acronym **ACID**: **Atomicity** (all-or-nothing), **Consistency** (the
-data always ends up following the rules you've defined, like foreign
-keys), **Isolation** (transactions running at the same time don't see
-each other's half-finished work), and **Durability** (once a transaction
-is confirmed, it survives even a crash right afterward).
+Transaction guarantees are summed up as **ACID**:
+
+- **Atomicity**: all or nothing.
+- **Consistency**: data always follows the rules you've defined, like
+foreign keys.
+- **Isolation**: transactions running at the same time don't see each
+other's half-finished work.
+- **Durability**: once confirmed, a transaction survives even a crash
+right afterward.
     `.trim(),
     analogy:
-      "A transaction is like sealing several steps of a task inside an envelope: either the whole envelope gets delivered exactly as sealed, or it never gets sent at all. Nobody ever receives half an envelope.",
+      "A transaction is like sealing several steps in one envelope: either the whole envelope is delivered as sealed, or it's never sent. Nobody gets half an envelope.",
     examples: [
       {
         title: "A money transfer as a transaction",
@@ -494,12 +493,12 @@ UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 
 COMMIT;`,
         language: "sql",
-        explanation: "Both updates are wrapped between BEGIN and COMMIT. If anything fails after the first UPDATE but before COMMIT, the database can roll the whole thing back, and Account 1's balance is restored as if the transfer never started.",
+        explanation: "Both updates sit between BEGIN and COMMIT. If anything fails before COMMIT, the database rolls it all back and Account 1's balance is restored.",
         walkthrough: [
-          { code: "BEGIN;", explanation: "Starts a new transaction — nothing inside it is made permanent yet." },
-          { code: "UPDATE accounts SET balance = balance - 100 WHERE id = 1;", explanation: "Subtracts from the first account. Still not permanent — only visible within this transaction so far." },
+          { code: "BEGIN;", explanation: "Starts a transaction. Nothing inside is permanent yet." },
+          { code: "UPDATE accounts SET balance = balance - 100 WHERE id = 1;", explanation: "Subtracts from the first account. Not permanent yet; only visible inside this transaction." },
           { code: "UPDATE accounts SET balance = balance + 100 WHERE id = 2;", explanation: "Adds to the second account." },
-          { code: "COMMIT;", explanation: "Confirms both changes together, permanently. If this line is never reached, neither change is kept." },
+          { code: "COMMIT;", explanation: "Makes both changes permanent together. If this line is never reached, neither change is kept." },
         ],
       },
       {
@@ -510,56 +509,51 @@ UPDATE inventory SET quantity = quantity - 1 WHERE product_id = 42;
 -- Suppose application code checks the new quantity and finds it went negative:
 ROLLBACK;`,
         language: "sql",
-        explanation: "ROLLBACK explicitly undoes every change made since BEGIN, as if the transaction never happened — useful when application logic detects a problem partway through.",
+        explanation: "ROLLBACK undoes every change since BEGIN, as if the transaction never happened. Useful when app logic spots a problem partway through.",
       },
     ],
     howItWorks: `
-When a transaction begins, the database tracks every change made within
-it but doesn't make those changes visible or permanent to anyone else
-yet. \`COMMIT\` tells the database to make all of those changes permanent
-at once. \`ROLLBACK\` tells it to discard all of them, restoring the data
-to how it was before \`BEGIN\`.
+Inside a transaction, the database tracks every change but doesn't make it
+visible or permanent to anyone else yet. \`COMMIT\` makes all the changes
+permanent at once. \`ROLLBACK\` discards them all, restoring the data to how
+it was before \`BEGIN\`.
 
-To achieve isolation, the database controls how much (and when) one
-transaction's in-progress changes are visible to other transactions
-running at the same time, so two transfers happening simultaneously
-don't corrupt each other's math.
+For isolation, the database controls how much (and when) one
+transaction's in-progress changes are visible to others running at the
+same time, so two simultaneous transfers don't corrupt each other's math.
     `.trim(),
     whyItExists: `
-Real-world operations are frequently made of multiple steps that only
-make sense together. Without transactions, a crash, a network drop, or
-a bug partway through a multi-step operation could leave the database in
-a state that no correct sequence of operations would ever produce —
-money debited but never credited, an order marked paid with no payment
-recorded. Transactions exist to make "partly done" impossible.
+Many real operations are several steps that only make sense together.
+Without transactions, a crash, network drop, or bug partway through could
+leave data in a state no correct sequence would produce: money debited but
+never credited, or an order marked paid with no payment recorded.
+Transactions make "partly done" impossible.
     `.trim(),
     whenToUse: `
-Wrap operations in a transaction whenever multiple statements need to
-succeed or fail together to keep the data correct — financial transfers,
-placing an order that also decrements inventory, creating a user account
-alongside its related settings row.
+Use a transaction whenever several statements must succeed or fail
+together to keep data correct: money transfers, placing an order that also
+reduces inventory, creating a user account along with its settings row.
     `.trim(),
     whenNotToUse: `
-A single, standalone statement doesn't need an explicit transaction —
-most databases already treat one statement as its own transaction by
-default. Also avoid holding a transaction open for a long time (e.g.
-across a slow external API call), since it can block other transactions
-from proceeding.
+A single statement doesn't need an explicit transaction; most databases
+already treat each statement as its own transaction. Also avoid keeping a
+transaction open for long (e.g. across a slow external API call), since it
+can block other transactions.
     `.trim(),
     commonMistakes: [
-      "Forgetting to COMMIT, leaving changes uncommitted and eventually rolled back or lost.",
-      "Doing slow, unrelated work (like calling an external API) inside an open transaction, which can block other operations waiting on the same rows.",
-      "Assuming a crash mid-transaction leaves partial changes in place — properly used transactions guarantee it does not.",
+      "Forgetting to COMMIT, so the changes are eventually rolled back or lost.",
+      "Doing slow, unrelated work (like calling an external API) inside an open transaction, blocking other operations waiting on the same rows.",
+      "Assuming a crash mid-transaction leaves partial changes. Properly used transactions guarantee it doesn't.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, what would go wrong with a money transfer if it were not wrapped in a transaction and the app crashed halfway through." },
-      { difficulty: "Medium", prompt: "Write a transaction that inserts a new order row and decrements a product's stock quantity, so both happen together or not at all." },
-      { difficulty: "Hard", prompt: "Explain each of the four ACID properties in your own words, using the money transfer example to illustrate each one." },
+      { difficulty: "Easy", prompt: "In your own words, explain what would go wrong with a money transfer that isn't in a transaction if the app crashed halfway." },
+      { difficulty: "Medium", prompt: "Write a transaction that inserts an order row and reduces a product's stock quantity, so both happen or neither does." },
+      { difficulty: "Hard", prompt: "Explain each of the four ACID properties in your own words, using the money transfer example for each." },
     ],
     interviewQuestions: [
-      { question: "What does a database transaction guarantee?", answer: "That a group of operations either all succeed and become permanent, or if any part fails, none of them take effect — there's no partially applied state." },
-      { question: "What does the 'A' in ACID stand for, and what does it mean?", answer: "Atomicity — all operations in a transaction are treated as a single indivisible unit; either all of them apply or none do." },
-      { question: "What is the difference between COMMIT and ROLLBACK?", answer: "COMMIT makes every change in the current transaction permanent; ROLLBACK discards every change made since the transaction began, as if it never happened." },
+      { question: "What does a database transaction guarantee?", answer: "A group of operations either all succeed and become permanent, or, if any part fails, none take effect. There's no partly applied state." },
+      { question: "What does the 'A' in ACID stand for, and what does it mean?", answer: "Atomicity: the transaction's operations form one indivisible unit. Either all apply or none do." },
+      { question: "What is the difference between COMMIT and ROLLBACK?", answer: "COMMIT makes every change in the transaction permanent. ROLLBACK discards every change since the transaction began, as if it never happened." },
     ],
     prerequisites: ["basic-sql-queries"],
     relatedTopics: ["basic-sql-queries", "connection-pooling"],
@@ -569,23 +563,20 @@ from proceeding.
     id: "orms",
     title: "ORMs",
     level: "intermediate",
-    description: "A library that lets application code work with database rows as regular objects, generating SQL behind the scenes instead of you writing it by hand.",
+    description: "A library that lets your code work with database rows as objects and writes the SQL for you.",
     explanation: `
-Writing raw SQL strings inside application code works, but it can get
-repetitive and error-prone — building queries by concatenating strings,
-manually mapping columns back into your programming language's objects,
-and re-typing similar SELECT/INSERT/UPDATE patterns over and over.
+Raw SQL strings in app code work, but they get repetitive and error-prone:
+building queries by joining strings, mapping columns back into objects by
+hand, and retyping the same SELECT/INSERT/UPDATE patterns.
 
-An **ORM** (Object-Relational Mapper) is a library that bridges that
-gap. It lets you work with rows as regular objects in your programming
-language — creating a \`User\` object, setting its properties, calling
-\`.save()\` — and it translates those actions into the actual SQL
-statements behind the scenes. You describe *what* you want in the
-language you're already writing in, and the ORM generates the *how* in
+An **ORM** (Object-Relational Mapper) bridges that gap. You work with rows
+as regular objects in your language (create a \`User\`, set its properties,
+call \`.save()\`), and the ORM turns those actions into SQL. You say *what*
+you want in the language you already use; the ORM generates the *how* in
 SQL.
     `.trim(),
     analogy:
-      "An ORM is like a translator at a business meeting between two people who speak different languages. You speak your own language (your application code) and the translator (the ORM) converts your requests into the other language (SQL) that the database actually understands, then translates the reply back.",
+      "An ORM is like a translator at a meeting. You speak your language (app code), the translator (the ORM) turns your requests into the language the database understands (SQL), then translates the reply back.",
     examples: [
       {
         title: "Raw SQL vs. an ORM (JavaScript, using a Prisma-style ORM)",
@@ -600,11 +591,11 @@ const user = result.rows[0];
 const user = await prisma.user.findUnique({
   where: { id: userId },
 });`,
-        explanation: "Both approaches fetch the same row, but the ORM version reads like ordinary application code and returns a ready-to-use object, with the SQL generated automatically underneath.",
+        explanation: "Both fetch the same row. The ORM version reads like normal app code and returns a ready-to-use object, with the SQL generated for you.",
         walkthrough: [
-          { code: 'const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);', explanation: "Sends a raw SQL string to the database, manually passing userId as a parameter." },
-          { code: "const user = result.rows[0];", explanation: "Manually pulls the first matching row out of the raw result." },
-          { code: "const user = await prisma.user.findUnique({ where: { id: userId } });", explanation: "The ORM builds the equivalent SQL query itself and returns the row already shaped as a plain object." },
+          { code: 'const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);', explanation: "Sends a raw SQL string, passing userId as a parameter." },
+          { code: "const user = result.rows[0];", explanation: "Pulls the first row out of the raw result by hand." },
+          { code: "const user = await prisma.user.findUnique({ where: { id: userId } });", explanation: "The ORM builds the same SQL and returns the row as a plain object." },
         ],
       },
       {
@@ -617,56 +608,51 @@ await prisma.user.update({
   where: { id: user.id },
   data: { email: "amara@newmail.com" },
 });`,
-        explanation: "Equivalent to an INSERT followed by an UPDATE statement, but expressed as method calls on objects rather than hand-written SQL strings.",
+        explanation: "The same as an INSERT then an UPDATE, written as method calls instead of SQL strings.",
       },
     ],
     howItWorks: `
-An ORM keeps a mapping between your programming language's classes or
-object shapes and the database's tables and columns. When you call a
-method like \`.create()\` or \`.findUnique()\`, the ORM builds the
-corresponding SQL statement, sends it to the database, and converts the
-raw rows that come back into objects matching your application's data
-shapes.
+An ORM maps your language's classes or object shapes to the database's
+tables and columns. When you call a method like \`.create()\` or
+\`.findUnique()\`, it builds the SQL, sends it, and turns the returned rows
+into objects shaped like your app's data.
 
-Most ORMs also handle a related concern called migrations (versioned
-scripts that change the schema over time), connection management, and
-often let you "drop down" to raw SQL for the rare query that's awkward
-to express through the ORM's own API.
+Most ORMs also handle migrations (versioned scripts that change the
+schema over time) and connection management. Many let you "drop down" to
+raw SQL for the rare query that's awkward in the ORM's API.
     `.trim(),
     whyItExists: `
-Hand-writing SQL for every operation in a large application means a lot
-of repetitive string-building, manual type conversion, and a bigger
-surface for mistakes (like accidentally leaving a query open to SQL
-injection). ORMs exist to remove that repetition, let you stay in one
-programming language most of the time, and provide safer defaults (like
-automatically parameterizing values) out of the box.
+Hand-writing SQL for every operation in a large app means lots of
+repetitive string-building, manual type conversion, and more room for
+mistakes (like leaving a query open to SQL injection). ORMs remove the
+repetition, keep you in one language most of the time, and give safer
+defaults (like automatically parameterizing values).
     `.trim(),
     whenToUse: `
-ORMs are a good fit for the majority of everyday application code —
-straightforward CRUD operations, standard relationships, typical
-filtering — where the productivity and safety benefits outweigh the
-abstraction cost.
+ORMs fit most everyday app code: simple CRUD, standard relationships,
+typical filtering. There, the productivity and safety gains outweigh the
+cost of the abstraction.
     `.trim(),
     whenNotToUse: `
-For complex, performance-critical queries — heavy aggregations, deeply
-nested joins, database-specific features — an ORM's generated SQL can be
-inefficient or awkward to express, and writing raw SQL directly (which
-most ORMs still allow as an escape hatch) is often clearer and faster.
+For complex, performance-critical queries (heavy aggregations, deeply
+nested joins, database-specific features), ORM-generated SQL can be slow
+or awkward. Raw SQL, which most ORMs allow as an escape hatch, is often
+clearer and faster.
     `.trim(),
     commonMistakes: [
-      "Assuming an ORM automatically produces efficient SQL — it can generate slow queries (like fetching related rows one at a time in a loop) just as easily as hand-written code can.",
-      "Never learning the underlying SQL, which makes debugging a slow or wrong query much harder when the ORM is the only thing understood.",
-      "Fighting the ORM to force an awkward query through it, instead of just dropping down to raw SQL for that one case.",
+      "Assuming an ORM writes efficient SQL. It can generate slow queries (like fetching related rows one at a time in a loop) as easily as hand-written code.",
+      "Never learning the underlying SQL, which makes slow or wrong queries much harder to debug.",
+      "Fighting the ORM to force an awkward query through it instead of using raw SQL for that one case.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, what an ORM does between your application code and the database." },
+      { difficulty: "Easy", prompt: "In your own words, explain what an ORM does between your app code and the database." },
       { difficulty: "Medium", prompt: "Write the raw SQL equivalent of an ORM call that finds all orders where total_cents is greater than 1000." },
-      { difficulty: "Hard", prompt: "Describe a scenario where writing raw SQL directly would be a better choice than using an ORM's query builder." },
+      { difficulty: "Hard", prompt: "Describe a scenario where raw SQL is a better choice than an ORM's query builder." },
     ],
     interviewQuestions: [
-      { question: "What is an ORM?", answer: "A library that lets you work with database rows as objects in your programming language, translating those object operations into SQL behind the scenes." },
-      { question: "What's a downside of relying entirely on an ORM?", answer: "It can generate inefficient SQL for complex queries, and developers who never learn the underlying SQL can struggle to debug or optimize slow queries." },
-      { question: "Do ORMs prevent you from writing raw SQL when needed?", answer: "No — most ORMs provide an escape hatch to run raw SQL directly for cases their query API doesn't handle well." },
+      { question: "What is an ORM?", answer: "A library that lets you work with database rows as objects in your language, turning those object operations into SQL." },
+      { question: "What's a downside of relying entirely on an ORM?", answer: "It can generate inefficient SQL for complex queries, and developers who never learn SQL struggle to debug or tune slow queries." },
+      { question: "Do ORMs prevent you from writing raw SQL when needed?", answer: "No. Most ORMs have an escape hatch for running raw SQL when their query API doesn't fit." },
     ],
     prerequisites: ["basic-sql-queries"],
     relatedTopics: ["basic-sql-queries", "database-migrations", "connection-pooling"],
@@ -676,19 +662,20 @@ most ORMs still allow as an escape hatch) is often clearer and faster.
     id: "postgresql-deep-dive",
     title: "PostgreSQL in Depth",
     level: "intermediate",
-    description: "The PostgreSQL-specific features beyond standard SQL — richer data types, auto-incrementing ids, and the psql command-line client.",
+    description: "PostgreSQL features beyond standard SQL: richer data types, auto-incrementing ids, and the psql client.",
     explanation: `
-Everything covered so far — SELECT, JOIN, WHERE — is standard SQL that
-works, with minor syntax differences, across most relational databases.
-**PostgreSQL** (often just "Postgres") is one of the most widely used
-databases, and it adds its own extensions on top of that standard
-worth knowing specifically: richer column types like **JSONB**
-(structured, queryable JSON stored in an efficient binary form) and
-arrays, auto-incrementing id columns, and \`psql\`, its interactive
-command-line client for talking to a database directly.
+SELECT, JOIN, and WHERE are standard SQL that works, with minor syntax
+differences, across most relational databases. **PostgreSQL** ("Postgres")
+is one of the most widely used databases, and it adds its own extensions:
+
+- richer column types like **JSONB** (structured, queryable JSON stored in
+an efficient binary form) and arrays
+- auto-incrementing id columns
+- \`psql\`, an interactive command-line client for talking to a database
+directly
     `.trim(),
     analogy:
-      "Standard SQL is like standard English, understood everywhere. Postgres-specific features are a rich regional vocabulary — genuinely more expressive if you're speaking with someone who knows it, but meaningless if you switch to a database that only speaks the standard dialect.",
+      "Standard SQL is like standard English, understood everywhere. Postgres features are a rich regional vocabulary: more expressive with someone who knows it, meaningless to a database that only speaks the standard dialect.",
     examples: [
       {
         title: "Postgres-specific column types",
@@ -700,11 +687,11 @@ command-line client for talking to a database directly.
   created_at TIMESTAMPTZ DEFAULT now()
 );`,
         language: "sql",
-        explanation: "SERIAL sets up an auto-incrementing integer id, TEXT[] stores a list of strings directly in one column, JSONB holds a flexible structured document, and TIMESTAMPTZ is a timezone-aware timestamp that defaults to the current time.",
+        explanation: "SERIAL gives an auto-incrementing integer id, TEXT[] stores a list of strings in one column, JSONB holds a flexible structured document, and TIMESTAMPTZ is a timezone-aware timestamp defaulting to now.",
         walkthrough: [
-          { code: "id SERIAL PRIMARY KEY", explanation: "Postgres creates a hidden sequence behind the scenes and uses it to auto-generate the next integer id for every new row." },
-          { code: "tags TEXT[]", explanation: "An array column — no separate 'tags' table needed for a simple list of strings attached to each row." },
-          { code: "metadata JSONB", explanation: "Stores arbitrary structured data (not a fixed set of columns), parsed into an efficient binary form that can still be indexed and queried." },
+          { code: "id SERIAL PRIMARY KEY", explanation: "Postgres creates a hidden sequence that generates the next integer id for each new row." },
+          { code: "tags TEXT[]", explanation: "An array column, so a simple list of strings needs no separate 'tags' table." },
+          { code: "metadata JSONB", explanation: "Stores arbitrary structured data (not fixed columns) in an efficient binary form that can still be indexed and queried." },
         ],
       },
       {
@@ -713,53 +700,51 @@ command-line client for talking to a database directly.
 FROM products
 WHERE metadata->>'in_stock' = 'true';`,
         language: "sql",
-        explanation: "-> extracts a nested value as JSON, while ->> extracts it as plain text — here ->> is used because the color is being compared and displayed as ordinary text, not nested JSON.",
+        explanation: "-> extracts a nested value as JSON; ->> extracts it as plain text. ->> is used here because the color is compared and shown as ordinary text.",
       },
     ],
     howItWorks: `
-\`JSONB\` isn't stored as the raw text you typed — Postgres parses it
-into a decomposed binary format up front, which is what lets it support
-indexing (a GIN index can index the keys/values inside a JSONB column)
-and fast operators like \`->\` and \`->>\`, at the cost of a small
-overhead when the value is first written. The \`psql\` client connects
-directly to a database (\`psql -h host -U user -d dbname\`) and gives you
-commands like \`\\dt\` to list tables or \`\\d products\` to inspect a
-table's columns — useful for quickly inspecting data or debugging
-without writing a script.
+\`JSONB\` isn't stored as the text you typed. Postgres parses it into a
+decomposed binary format up front. That enables indexing (a GIN index can
+index the keys/values inside a JSONB column) and fast operators like \`->\`
+and \`->>\`, at the cost of a little overhead on write.
+
+The \`psql\` client connects straight to a database
+(\`psql -h host -U user -d dbname\`). Commands like \`\\dt\` list tables and
+\`\\d products\` shows a table's columns, handy for inspecting data or
+debugging without writing a script.
     `.trim(),
     whyItExists: `
-Real projects often need a mix of strict, well-known relational data
-(like a user's id and email) alongside genuinely flexible or
-per-row-variable data (like a product's optional custom attributes).
-JSONB lets Postgres handle both in one database, instead of needing a
-separate document database purely for the flexible parts.
+Projects often mix strict relational data (a user's id and email) with
+flexible, per-row data (a product's optional custom attributes). JSONB lets
+Postgres handle both, so you don't need a separate document database just
+for the flexible parts.
     `.trim(),
     whenToUse: `
-Use JSONB for a handful of genuinely flexible or sparse fields — custom
-attributes, a webhook payload, per-user settings. Use psql for quickly
-inspecting data, running ad-hoc queries, or debugging directly against
-a database during development.
+Use JSONB for a few truly flexible or sparse fields: custom attributes, a
+webhook payload, per-user settings. Use psql to inspect data, run ad-hoc
+queries, or debug against a database during development.
     `.trim(),
     whenNotToUse: `
-Don't store your whole schema as JSONB just because it's flexible — you
-give up the enforcement, clarity, and full indexing support of proper
-columns and foreign keys. If a field has a known, stable shape and you
-regularly query or join on it, model it as a real column instead.
+Don't store your whole schema as JSONB just because it's flexible. You
+lose the enforcement, clarity, and full indexing support of real columns
+and foreign keys. If a field has a known, stable shape and you query or
+join on it often, make it a real column.
     `.trim(),
     commonMistakes: [
-      "Using -> (which returns JSON) when a plain text value was expected from ->> , leading to confusing type-mismatch errors in comparisons.",
-      "Reaching for a JSONB column to avoid designing a proper related table, out of laziness rather than genuine flexibility needs.",
-      "Assuming SERIAL ids are gapless — deleted rows leave permanent gaps, since the underlying sequence never goes backward.",
+      "Using -> (which returns JSON) when you wanted plain text from ->>, causing confusing type-mismatch errors in comparisons.",
+      "Using a JSONB column to avoid designing a proper related table, out of laziness rather than real need for flexibility.",
+      "Assuming SERIAL ids have no gaps. Deleted rows leave permanent gaps, since the sequence never goes backward.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a CREATE TABLE statement for an 'events' table with a SERIAL id and a JSONB 'payload' column." },
-      { difficulty: "Medium", prompt: "Write a query that selects rows from a JSONB 'settings' column where a nested key 'theme' equals 'dark'." },
-      { difficulty: "Hard", prompt: "Describe a scenario where you'd choose a JSONB column over creating a proper related table, and one where you'd choose the related table instead." },
+      { difficulty: "Easy", prompt: "Write a CREATE TABLE for an 'events' table with a SERIAL id and a JSONB 'payload' column." },
+      { difficulty: "Medium", prompt: "Write a query selecting rows whose JSONB 'settings' column has a nested key 'theme' equal to 'dark'." },
+      { difficulty: "Hard", prompt: "Describe one case where you'd choose a JSONB column over a proper related table, and one where you'd choose the related table." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between JSON and JSONB in PostgreSQL?", answer: "JSON is stored as the exact text you inserted; JSONB is parsed into a decomposed binary form, which is slightly slower to write but supports indexing and faster queries." },
-      { question: "What does a SERIAL column do?", answer: "It creates an auto-incrementing integer column backed by a hidden sequence that generates each new row's id." },
-      { question: "When would you reach for a JSONB column instead of normalizing into another table?", answer: "When the data's shape is genuinely variable or sparse per row and isn't something you heavily query or join on — otherwise a proper related table is usually the better fit." },
+      { question: "What's the difference between JSON and JSONB in PostgreSQL?", answer: "JSON is stored as the exact text you inserted. JSONB is parsed into a decomposed binary form: slightly slower to write, but it supports indexing and faster queries." },
+      { question: "What does a SERIAL column do?", answer: "It creates an auto-incrementing integer column, backed by a hidden sequence that generates each new row's id." },
+      { question: "When would you reach for a JSONB column instead of normalizing into another table?", answer: "When the data's shape really varies or is sparse per row, and you don't query or join on it much. Otherwise a related table usually fits better." },
     ],
     prerequisites: ["basic-sql-queries", "tables-rows-columns"],
     relatedTopics: ["basic-sql-queries", "indexes", "normalization"],
@@ -769,20 +754,20 @@ regularly query or join on it, model it as a real column instead.
     id: "subqueries-and-ctes",
     title: "Subqueries & CTEs",
     level: "intermediate",
-    description: "Nesting one query inside another, or naming a step with WITH, to break a complex question into smaller, readable pieces.",
+    description: "Nest one query in another, or name a step with WITH, to split a complex question into readable pieces.",
     explanation: `
-Some questions can't be answered with one flat query. "Find users who
-have placed more than 3 orders" needs an intermediate step: first figure
-out which user ids have more than 3 orders, then look up those users.
+Some questions need more than one flat query. "Find users with more than
+3 orders" needs a middle step: find the user ids with more than 3 orders,
+then look up those users.
 
-A **subquery** is a query nested inside another one, usable in a
-\`WHERE\`, \`FROM\`, or \`SELECT\` clause. A **CTE** (Common Table
-Expression), written with \`WITH\`, does something similar but gives that
-intermediate step a name you can reference afterward like a temporary
-table — often making a multi-step query much easier to read.
+- A **subquery** is a query nested inside another, in a \`WHERE\`, \`FROM\`,
+or \`SELECT\` clause.
+- A **CTE** (Common Table Expression), written with \`WITH\`, does the same
+but names the middle step so you can use it like a temporary table. This
+often makes multi-step queries much easier to read.
     `.trim(),
     analogy:
-      "Writing a subquery is like doing scratch work on the side of the page before answering the real question. A CTE is doing that same scratch work but labeling it clearly — 'Step 1: frequent buyers' — so anyone reading it later (including future you) doesn't have to mentally unpack a nested block to see what it's for.",
+      "A subquery is scratch work in the margin before answering the real question. A CTE is the same scratch work with a clear label ('Step 1: frequent buyers'), so later readers, including future you, don't have to unpick a nested block.",
     examples: [
       {
         title: "A subquery in WHERE",
@@ -793,10 +778,10 @@ WHERE id IN (
   HAVING COUNT(*) > 3
 );`,
         language: "sql",
-        explanation: "The inner query first finds every user_id with more than 3 orders; the outer query then finds the actual users matching those ids.",
+        explanation: "The inner query finds every user_id with more than 3 orders. The outer query then finds the users with those ids.",
         walkthrough: [
-          { code: "SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 3", explanation: "Runs first (conceptually) and produces a list of user ids meeting the condition." },
-          { code: "WHERE id IN (...)", explanation: "The outer query filters users down to only those whose id appears in that inner list." },
+          { code: "SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 3", explanation: "Runs first (conceptually) and returns the user ids that meet the condition." },
+          { code: "WHERE id IN (...)", explanation: "The outer query keeps only users whose id is in that list." },
         ],
       },
       {
@@ -810,52 +795,49 @@ SELECT users.name
 FROM users
 JOIN frequent_buyers ON frequent_buyers.user_id = users.id;`,
         language: "sql",
-        explanation: "The WITH clause names the intermediate result frequent_buyers, and the rest of the query can join against it just like a real table — arguably easier to follow than a nested subquery once there's more than one step.",
+        explanation: "WITH names the middle result frequent_buyers, and the rest of the query joins against it like a real table. Often easier to follow than a nested subquery once there's more than one step.",
       },
     ],
     howItWorks: `
-Conceptually, the database evaluates the inner subquery (or each CTE)
-first, producing an intermediate result set, and then runs the outer
-query against that result. Postgres treats a CTE largely as a named,
-temporary result you can select from or join against; for genuinely
-hierarchical data (like a tree of comment replies), it also supports
-\`WITH RECURSIVE\`, which repeats a query against its own previous
-results until nothing new is found.
+Conceptually, the database runs the inner subquery (or each CTE) first to
+get a middle result, then runs the outer query against it.
+
+Postgres treats a CTE mostly as a named, temporary result you can select
+from or join. For hierarchical data (like a tree of comment replies), it
+also supports \`WITH RECURSIVE\`, which repeats a query against its own
+previous results until nothing new is found.
     `.trim(),
     whyItExists: `
-Real questions — "customers who bought X but never Y," "the best-selling
-product in each category" — often can't be expressed as a single flat
-SELECT. Subqueries and CTEs exist to let you build up an answer in
-stages within one query, without needing separate round trips to the
-database or manually managed temporary tables.
+Many real questions ("customers who bought X but never Y," "the
+best-selling product in each category") can't be one flat SELECT.
+Subqueries and CTEs let you build the answer in stages inside one query,
+without extra round trips or hand-managed temporary tables.
     `.trim(),
     whenToUse: `
-Reach for a CTE when a query has multiple logical steps and naming each
-one makes the whole thing easier to read. Reach for an inline subquery
-for a small, self-contained filtering condition that doesn't need its
-own name.
+Use a CTE when a query has several logical steps and naming them makes it
+easier to read. Use an inline subquery for a small, self-contained filter
+that doesn't need a name.
     `.trim(),
     whenNotToUse: `
-If a plain JOIN or a simple aggregation already answers the question
-directly, wrapping it in a subquery or CTE just adds indirection.
-Deeply nested subqueries, several levels deep, also tend to become hard
-to read and to optimize — that's usually a sign to pull one level out
-into a named CTE, or reconsider the query's shape entirely.
+If a plain JOIN or simple aggregation already answers the question, a
+subquery or CTE just adds indirection. Subqueries nested several levels
+deep get hard to read and optimize; pull a level out into a named CTE or
+rethink the query.
     `.trim(),
     commonMistakes: [
-      "Writing a correlated subquery (one that references a column from the outer query) that effectively reruns once per outer row, becoming very slow on large tables.",
-      "Assuming a CTE is always computed once and cached — that behavior can differ across databases and versions, so it isn't guaranteed to be a free optimization.",
-      "Nesting several layers of subqueries instead of naming intermediate steps with CTEs, making the query difficult for anyone else (or future you) to follow.",
+      "Writing a correlated subquery (one that uses a column from the outer query) that effectively reruns once per outer row, which is very slow on large tables.",
+      "Assuming a CTE is always computed once and cached. This differs across databases and versions, so it isn't a guaranteed free optimization.",
+      "Nesting several layers of subqueries instead of naming steps with CTEs, making the query hard for others (or future you) to follow.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Rewrite a subquery used with = into an equivalent using IN, for finding orders placed by a specific customer looked up by email." },
-      { difficulty: "Medium", prompt: "Write a CTE that computes the average order total, then a query that selects all orders above that average." },
-      { difficulty: "Hard", prompt: "Explain the difference between a correlated and a non-correlated subquery, with a concrete example of each and why the correlated one is typically slower." },
+      { difficulty: "Easy", prompt: "Rewrite a subquery that uses = into one that uses IN, to find orders placed by a customer looked up by email." },
+      { difficulty: "Medium", prompt: "Write a CTE that computes the average order total, then select all orders above that average." },
+      { difficulty: "Hard", prompt: "Explain the difference between a correlated and a non-correlated subquery, with an example of each, and why the correlated one is usually slower." },
     ],
     interviewQuestions: [
-      { question: "What is a CTE and why use one instead of a plain subquery?", answer: "A WITH clause that names an intermediate query result — mainly used to make a multi-step query more readable by labeling each stage instead of nesting subqueries." },
-      { question: "What is a correlated subquery?", answer: "A subquery that references a column from its outer query, meaning it conceptually needs to be re-evaluated once per row of the outer query." },
-      { question: "Can a single query define more than one CTE?", answer: "Yes — multiple CTEs can be chained in one WITH clause, comma-separated, and later ones can reference earlier ones." },
+      { question: "What is a CTE and why use one instead of a plain subquery?", answer: "A WITH clause that names a middle query result. It mainly makes multi-step queries easier to read by labeling each stage instead of nesting subqueries." },
+      { question: "What is a correlated subquery?", answer: "A subquery that uses a column from its outer query, so it conceptually reruns once per outer row." },
+      { question: "Can a single query define more than one CTE?", answer: "Yes. List several CTEs in one WITH clause, separated by commas; later ones can reference earlier ones." },
     ],
     prerequisites: ["joins", "aggregation"],
     relatedTopics: ["joins", "aggregation", "basic-sql-queries"],
@@ -865,24 +847,21 @@ into a named CTE, or reconsider the query's shape entirely.
     id: "pagination",
     title: "Pagination",
     level: "intermediate",
-    description: "Returning a large result set in smaller pages instead of all at once, using LIMIT/OFFSET or a keyset approach.",
+    description: "Return a large result in smaller pages, using LIMIT/OFFSET or keyset pagination.",
     explanation: `
-An endpoint like \`GET /products\` might match thousands of rows —
-sending every one of them back in a single response wastes bandwidth,
-memory, and rendering time on both ends, for data almost nobody actually
-scrolls down to see. **Pagination** splits a large result into smaller
-pages, returning one chunk at a time along with a way to fetch the next.
+An endpoint like \`GET /products\` might match thousands of rows. Sending
+them all at once wastes bandwidth, memory, and rendering time on data
+almost nobody scrolls to. **Pagination** returns one smaller page at a
+time, plus a way to fetch the next.
 
-The simplest approach is \`LIMIT\`/\`OFFSET\`: skip a number of rows, then
-take the next batch. It's easy to reason about ("give me page 3, 20 per
-page"), but gets slower the deeper you page, since the database still
-has to walk past every skipped row. **Keyset pagination** ("give me
-everything after id 340") avoids that by filtering directly on a
-column's value instead of counting through rows, so it stays fast no
-matter how far into the results you go.
+- \`LIMIT\`/\`OFFSET\` skips some rows and takes the next batch. It's easy to
+reason about ("page 3, 20 per page") but slows down the deeper you go,
+because the database still walks past every skipped row.
+- **Keyset pagination** ("everything after id 340") filters on a column's
+value instead of counting rows, so it stays fast at any depth.
     `.trim(),
     analogy:
-      "OFFSET/LIMIT pagination is like flipping through a phone book from page 1 every single time someone asks for page 50 — you still have to count past pages 1 through 49 first. Keyset pagination is like bookmarking exactly where you left off, so the next request opens straight to that spot.",
+      "OFFSET/LIMIT is like opening a phone book at page 1 every time someone asks for page 50: you still count past pages 1 to 49. Keyset pagination is a bookmark, so the next request opens straight to where you left off.",
     examples: [
       {
         title: "OFFSET/LIMIT pagination",
@@ -891,11 +870,11 @@ SELECT * FROM products
 ORDER BY id
 LIMIT 20 OFFSET 40;`,
         language: "sql",
-        explanation: "Skips the first 40 rows (pages 1 and 2), then returns the next 20 — page 3.",
+        explanation: "Skips the first 40 rows (pages 1 and 2), then returns the next 20: page 3.",
         walkthrough: [
-          { code: "ORDER BY id", explanation: "Gives every page a stable, repeatable order — pagination without one can show duplicate or missing rows if the underlying order isn't guaranteed between requests." },
-          { code: "LIMIT 20", explanation: "Caps how many rows this particular page returns." },
-          { code: "OFFSET 40", explanation: "Skips the rows that belong to earlier pages before starting to collect this page's rows." },
+          { code: "ORDER BY id", explanation: "Gives pages a stable order. Without it, pages can show duplicate or missing rows, since order isn't guaranteed between requests." },
+          { code: "LIMIT 20", explanation: "Caps how many rows this page returns." },
+          { code: "OFFSET 40", explanation: "Skips the rows on earlier pages." },
         ],
       },
       {
@@ -905,51 +884,46 @@ WHERE id > 340
 ORDER BY id
 LIMIT 20;`,
         language: "sql",
-        explanation: "Instead of counting past rows with OFFSET, this jumps directly to rows after the last id seen on the previous page (340) — with an index on id, the database can find that starting point instantly, regardless of how deep into the results you are.",
+        explanation: "Instead of counting past rows with OFFSET, this jumps to rows after the last id on the previous page (340). With an index on id, the database finds that point instantly, however deep you are.",
       },
     ],
     howItWorks: `
-With \`OFFSET\`/\`LIMIT\`, the database still has to generate (or at least
-count through) every row up to the offset before it can return the
-requested slice, even though most of those rows are immediately
-discarded — the deeper the page, the more wasted work. Keyset
-pagination instead uses a \`WHERE\` condition on an indexed, ordered
-column (like \`id\` or \`created_at\`) to jump straight to the right
-starting point, so requesting "page 5,000" costs about the same as
-requesting page 1.
+With \`OFFSET\`/\`LIMIT\`, the database still generates (or at least counts
+through) every row up to the offset, then throws most of them away. The
+deeper the page, the more wasted work.
+
+Keyset pagination uses a \`WHERE\` condition on an indexed, ordered column
+(like \`id\` or \`created_at\`) to jump straight to the starting point. Page
+5,000 costs about the same as page 1.
     `.trim(),
     whyItExists: `
-Pagination exists so that list endpoints and UIs don't have to load,
-transmit, and render every row that matches a query at once — most of a
-large result set is never actually looked at by the user, so returning
-all of it upfront wastes work at every layer, from the database to the
-network to the browser.
+Most of a large result is never looked at. Pagination saves list endpoints
+and UIs from loading, sending, and rendering every matching row at once,
+which wastes work in the database, the network, and the browser.
     `.trim(),
     whenToUse: `
-Use OFFSET/LIMIT for small-to-moderate result sets, or when users need
-to jump directly to an arbitrary page number. Use keyset pagination for
-large, fast-growing tables, infinite-scroll feeds, or any API where
-performance at deep pages actually matters.
+Use OFFSET/LIMIT for small to moderate results, or when users need to jump
+to any page number. Use keyset pagination for large, fast-growing tables,
+infinite-scroll feeds, or any API where deep-page speed matters.
     `.trim(),
     whenNotToUse: `
-For result sets small enough to return comfortably in one response (a
-settings list, a handful of categories), pagination adds complexity for
-no real benefit — just return everything.
+If the result easily fits in one response (a settings list, a few
+categories), skip pagination and return everything.
     `.trim(),
     commonMistakes: [
-      "Paginating without an ORDER BY, letting rows shift between pages — a row appearing twice, or never at all — if the underlying data changes between requests.",
-      "Using large OFFSET values on a constantly growing table and expecting consistent performance, when OFFSET's cost grows with how deep the page is.",
-      "Building keyset pagination on a column that isn't unique or isn't indexed, which can be just as slow as OFFSET, or skip/duplicate rows when values tie.",
+      "Paginating without ORDER BY, so rows shift between pages (appearing twice or never) when data changes between requests.",
+      "Using large OFFSETs on a growing table and expecting steady speed. OFFSET's cost grows with page depth.",
+      "Using keyset pagination on a column that isn't unique or indexed. It can be as slow as OFFSET, or skip/duplicate rows when values tie.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write an OFFSET/LIMIT query for page 2 of a products table, 10 rows per page." },
-      { difficulty: "Medium", prompt: "Convert that same query into keyset pagination, given the last product id seen on page 1." },
-      { difficulty: "Hard", prompt: "Explain why OFFSET 100000 LIMIT 20 is slow on a large table, and why an equivalent keyset query for that same depth isn't." },
+      { difficulty: "Medium", prompt: "Convert that query to keyset pagination, given the last product id on page 1." },
+      { difficulty: "Hard", prompt: "Explain why OFFSET 100000 LIMIT 20 is slow on a large table, and why a keyset query at the same depth isn't." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between OFFSET/LIMIT and keyset pagination?", answer: "OFFSET/LIMIT skips a count of rows before returning a page, getting slower the deeper you page; keyset pagination filters directly on an indexed column's value, staying fast regardless of depth." },
-      { question: "Why does pagination need a stable ORDER BY?", answer: "Without one, the database doesn't guarantee row order between requests, so pages can end up showing duplicate or missing rows if the data or query plan shifts between calls." },
-      { question: "Why is deep OFFSET pagination slow on large tables?", answer: "The database still has to walk through (or count) all the skipped rows before it can return the requested slice, even though none of those skipped rows are actually returned." },
+      { question: "What's the difference between OFFSET/LIMIT and keyset pagination?", answer: "OFFSET/LIMIT skips a number of rows before returning a page, so it slows down at deeper pages. Keyset pagination filters on an indexed column's value and stays fast at any depth." },
+      { question: "Why does pagination need a stable ORDER BY?", answer: "Without it, row order isn't guaranteed between requests, so pages can show duplicate or missing rows if the data or query plan changes." },
+      { question: "Why is deep OFFSET pagination slow on large tables?", answer: "The database still walks through (or counts) every skipped row before returning the page, even though none of them are returned." },
     ],
     prerequisites: ["filtering-and-sorting", "indexes"],
     relatedTopics: ["filtering-and-sorting", "indexes", "query-optimization"],

@@ -248,31 +248,26 @@ browser.
     title: "Browser Storage",
     level: "intermediate",
     description:
-      "Different ways a website can save small pieces of data directly in the user's browser, so it's still there the next time they visit.",
+      "Ways a website can save small pieces of data in your browser so they're still there next visit.",
     explanation: `
-Normally, everything a page knows about disappears the moment you
-close the tab or navigate away — variables in JavaScript, form input
-that hasn't been submitted, anything held only in memory. Sometimes a
-site needs to remember something *across* visits or page loads: that
-you're logged in, that you prefer dark mode, that you had three items
-in a cart.
+Normally, everything a page holds in memory (JavaScript variables,
+unsubmitted form input) disappears when you close the tab or navigate
+away. Sometimes a site needs to remember things *across* visits: that
+you're logged in, that you prefer dark mode, that you had three items in
+a cart.
 
-Browsers give websites a few different tools for this, and picking
-between them comes down to how long the data should last and who needs
-to see it. **Cookies** are small pieces of data that get automatically
-sent along with every request to a server, which makes them the classic
-way a server keeps track of a logged-in session. **localStorage** saves
-data only in the browser, with no automatic connection to the server,
-and it sticks around indefinitely until something explicitly clears it.
-**sessionStorage** works just like localStorage, but it's wiped out as
-soon as that specific browser tab is closed.
+Browsers offer a few tools for this. The choice depends on how long the
+data should last and who needs to see it:
 
-None of these are a full database — they're all meant for relatively
-small amounts of data, stored on the one device and browser someone
-happens to be using.
+- **Cookies** are sent automatically with every request to the server. That makes them the classic way to track a logged-in session.
+- **localStorage** keeps data only in the browser, never sent to the server automatically. It lasts until something clears it.
+- **sessionStorage** works like localStorage but is wiped when that tab is closed.
+
+None of these is a full database. They're for small amounts of data,
+stored on one device and browser.
   `.trim(),
     analogy:
-      "A cookie is like a stamped hand at a venue — you show it every time you walk up to a counter (the server) so they recognize you. localStorage is like a locker you keep at home that stays packed until you empty it yourself. sessionStorage is like a locker at the venue itself — once you leave for the night, it's cleared out.",
+      "A cookie is like a stamped hand at a venue: you show it at every counter (the server) so they recognize you. localStorage is a locker at home that stays packed until you empty it. sessionStorage is a locker at the venue, cleared out when you leave for the night.",
     examples: [
       {
         title: "localStorage vs. sessionStorage",
@@ -285,86 +280,81 @@ sessionStorage.setItem("draftText", "Hello, world");
 // Reading values back later
 const theme = localStorage.getItem("theme");`,
         explanation:
-          "Both use the same simple key-value API, but localStorage data survives closing the browser entirely, while sessionStorage data disappears once that tab is closed.",
+          "Both use the same key-value API. localStorage data survives closing the browser; sessionStorage data disappears when the tab closes.",
         walkthrough: [
-          { code: 'localStorage.setItem("theme", "dark");', explanation: "Saves a value under the key 'theme'. This will still be there tomorrow, even after the browser restarts." },
-          { code: 'sessionStorage.setItem("draftText", "Hello, world");', explanation: "Saves a value scoped to this one tab's current session. Closing this tab erases it." },
-          { code: 'localStorage.getItem("theme")', explanation: "Reads a previously stored value back out, returning null if that key was never set." },
+          { code: 'localStorage.setItem("theme", "dark");', explanation: "Saves a value under the key 'theme'. It's still there tomorrow, even after a browser restart." },
+          { code: 'sessionStorage.setItem("draftText", "Hello, world");', explanation: "Saves a value for this tab's session only. Closing the tab erases it." },
+          { code: 'localStorage.getItem("theme")', explanation: "Reads a stored value back, or returns null if the key was never set." },
         ],
       },
       {
         title: "A basic cookie",
         code: `document.cookie = "sessionId=abc123; max-age=3600";`,
         explanation:
-          "Unlike localStorage or sessionStorage, this cookie is automatically attached to every future request this browser makes to the same site, which is what lets a server recognize a returning user without any extra JavaScript on the server's end.",
+          "Unlike localStorage or sessionStorage, this cookie is attached automatically to every later request this browser makes to the same site. That's how a server recognizes a returning user without any extra code.",
       },
     ],
     howItWorks: `
-Cookies are stored by the browser and automatically included in the
-headers of every request sent to the domain that set them, which is
-exactly what lets a server recognize the same visitor across multiple
-requests. localStorage and sessionStorage, by contrast, are pure
-browser-side storage — nothing about them is sent to a server
-automatically; JavaScript has to explicitly read them and send their
-contents if a server needs to know about them. All three are scoped per
-origin, meaning one website generally can't read another website's
-stored data.
+The browser stores cookies and adds them to the headers of every request
+to the domain that set them. That's how a server recognizes the same
+visitor across requests.
+
+localStorage and sessionStorage stay in the browser. Nothing is sent to a
+server automatically; JavaScript has to read and send the data if the
+server needs it.
+
+All three are scoped per origin, so one website generally can't read
+another's stored data.
   `.trim(),
     whyItExists: `
-These tools exist because different problems need different lifetimes
-and different visibility. A login session needs the server to
-recognize you on every request, which is exactly what cookies were
-built for. A saved preference or draft only needs to live in the
-browser and doesn't need to burden every single network request with
-extra data, which is what localStorage and sessionStorage are for
-instead.
+Different problems need different lifetimes and visibility. A login
+session needs the server to recognize you on every request, which is what
+cookies were built for. A saved preference or draft only needs to live in
+the browser, without adding data to every network request; that's what
+localStorage and sessionStorage are for.
   `.trim(),
     whenToUse: `
-Use cookies when the server itself needs to know the stored value on
-every request, like an authentication session. Use localStorage for
-settings or data that should persist across visits but only matter to
-the browser, like a saved theme preference. Use sessionStorage for
-short-lived, per-tab data that shouldn't outlive the current visit,
-like an in-progress multi-step form.
+- Cookies: the server needs the value on every request, like an authentication session.
+- localStorage: data that should last across visits but only matters to the browser, like a saved theme.
+- sessionStorage: short-lived, per-tab data that shouldn't outlive the visit, like a multi-step form in progress.
   `.trim(),
     whenNotToUse: `
-None of these are appropriate for large amounts of data or anything
-sensitive that truly needs strong protection — they're all readable
-from the browser's storage/dev tools by anyone with access to that
-device. For sensitive data or data that must be reliably shared across
-devices, that belongs on the server, in an actual database.
+None of these suit large amounts of data or anything sensitive that needs
+strong protection. Anyone with access to the device can read them in the
+browser's dev tools. Sensitive data, or data that must be shared reliably
+across devices, belongs on the server in a real database.
   `.trim(),
     commonMistakes: [
-      "Storing sensitive information like passwords directly in localStorage, where it's easily readable by anyone with device or script access.",
-      "Expecting sessionStorage data to persist after closing the tab, when it's specifically designed not to.",
-      "Overloading cookies with large amounts of data, which slows down every single request since cookies are sent with each one automatically.",
+      "Storing sensitive data like passwords in localStorage, where anyone with device or script access can read it.",
+      "Expecting sessionStorage data to survive closing the tab, when it's designed not to.",
+      "Putting lots of data in cookies, which slows down every request since cookies are sent with each one.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Use localStorage to save a user's chosen theme, and load it back when the page reopens." },
-      { difficulty: "Medium", prompt: "Build a simple multi-step form that saves progress in sessionStorage, and confirm the progress disappears after closing the tab." },
-      { difficulty: "Hard", prompt: "Explain, with a concrete scenario, why an authentication session is typically implemented using cookies rather than localStorage." },
+      { difficulty: "Medium", prompt: "Build a simple multi-step form that saves progress in sessionStorage. Confirm the progress disappears after closing the tab." },
+      { difficulty: "Hard", prompt: "Using a concrete scenario, explain why authentication sessions usually use cookies rather than localStorage." },
     ],
     interviewQuestions: [
-      { question: "What's the key difference between cookies and localStorage?", answer: "Cookies are automatically sent with every request to the server that set them, making them suited for server-side session tracking. localStorage stays entirely in the browser and is never sent automatically." },
-      { question: "What's the difference between localStorage and sessionStorage?", answer: "They share the same API, but localStorage persists indefinitely until explicitly cleared, while sessionStorage is cleared automatically once its specific tab is closed." },
-      { question: "Why shouldn't sensitive data be stored in localStorage?", answer: "localStorage is plain, unencrypted browser storage readable by any script running on that page or anyone with access to the browser's dev tools, so it offers no real protection for sensitive values." },
-      { question: "What are the typical size limits for localStorage/sessionStorage versus a single cookie?", answer: "localStorage and sessionStorage typically allow around 5-10MB per origin (varies by browser), while a single cookie is limited to roughly 4KB, and browsers also cap the total number of cookies allowed per domain." },
-      { question: "Is the localStorage/sessionStorage API synchronous or asynchronous, and why does that matter?", answer: "It's synchronous — every read and write blocks the calling JavaScript thread until it completes. For small amounts of data this is unnoticeable, but storing or retrieving large values can briefly block the main thread and make the page feel unresponsive, which is one reason it's meant for small data only." },
-      { question: "When would you reach for IndexedDB instead of localStorage?", answer: "When you need to store significantly more data, structured/queryable data (not just string key-value pairs), or want asynchronous access that doesn't block the main thread — IndexedDB supports indexes, transactions, and much larger storage quotas, at the cost of a considerably more complex API." },
-      { question: "If a site is open in two different browser tabs, do they share the same localStorage data? What about sessionStorage?", answer: "localStorage is shared across every tab and window for the same origin — a write in one tab is immediately visible to the others. sessionStorage is scoped to that one specific tab/window, so each tab has its own independent sessionStorage even for the same site." },
-      { question: "Does duplicating an existing browser tab preserve its sessionStorage, and does opening a fresh tab to the same URL do the same?", answer: "Duplicating a tab actually copies its sessionStorage into the new tab, since browsers treat it as continuing the same browsing context. Opening a brand-new tab and navigating to the same URL does not — that tab starts with empty sessionStorage, since it's a new top-level browsing context." },
-      { question: "If a user clears their browser's cookies, does that also clear localStorage?", answer: "Not necessarily — cookies and localStorage are separate storage mechanisms, and a browser's 'clear cookies' option may or may not also clear other site data depending on the exact setting chosen ('cookies only' versus 'all site data'), so code shouldn't assume clearing one implies the other was cleared too." },
-      { question: "What does the `HttpOnly` flag on a cookie do, and why does it matter for security?", answer: "It prevents the cookie from being read or written via `document.cookie` in JavaScript — only the browser's HTTP layer can access it. This blocks a common XSS attack path where injected script tries to steal a session cookie, since the malicious script simply can't see it." },
-      { question: "What do the `Secure` and `SameSite` cookie attributes protect against?", answer: "Secure ensures the cookie is only ever sent over HTTPS connections, protecting it from being exposed on an unencrypted network. SameSite restricts whether the cookie is sent along with cross-site requests, which helps mitigate CSRF attacks that rely on a browser automatically attaching cookies to requests triggered from another site." },
-      { question: "Why is an auth token often stored in a cookie rather than localStorage, from a security standpoint?", answer: "A cookie can be marked HttpOnly, making it invisible to JavaScript and therefore immune to being stolen via an XSS attack that injects malicious script. Anything in localStorage is always readable by any script running on the page, so an XSS vulnerability anywhere on the site can exfiltrate a token stored there directly." },
-      { question: "What does 'same-origin' mean in the context of storage scoping?", answer: "Two URLs are same-origin only if their protocol, host, and port all match exactly. Storage (cookies have slightly different, host-based rules, but localStorage/sessionStorage strictly) is scoped per origin, so a script on one origin generally cannot read another origin's stored data." },
-      { question: "How can one open tab find out that another tab just changed a value in localStorage?", answer: "By listening for the `storage` event on `window` — the browser fires it in every *other* same-origin tab/window when localStorage changes, passing along the key, old value, and new value." },
-      { question: "Why doesn't the `storage` event fire in the same tab that made the change?", answer: "It's designed specifically to let other browsing contexts react to a change they didn't make themselves — the tab that performed the write already knows the new value directly, so firing the event there too would be redundant; the spec only dispatches it to other tabs/windows sharing that storage." },
-      { question: "What does `localStorage.getItem(\"missingKey\")` return if that key was never set?", answer: "It returns `null`, not `undefined` — so checking for a missing key should compare against null (or use a falsy check), not assume JavaScript's usual undefined for absent properties." },
-      { question: "Why can localStorage only store strings, and how do you work around that to store objects?", answer: "The Web Storage API's get/setItem methods only accept and return strings by design. To store structured data, you serialize it with `JSON.stringify()` before saving and parse it back with `JSON.parse()` after reading, converting to/from a string representation each time." },
-      { question: "What happens if you try to write more data than localStorage's quota allows?", answer: "The browser throws a `QuotaExceededError` (or similar DOMException) from `setItem`, rather than silently failing or truncating the data — so code writing potentially large values should wrap the call in a try/catch to handle that case gracefully." },
-      { question: "What do a cookie's `path` and `domain` attributes control?", answer: "`path` restricts the cookie to being sent only for requests whose URL path starts with that value (e.g. limiting it to `/admin`). `domain` controls which hosts the cookie is sent to — set broadly enough, it can be shared across subdomains of the same site rather than being scoped to just the exact host that set it." },
-      { question: "Why might a 'remember me' login feature use a long-lived cookie rather than a long-lived value in localStorage?", answer: "The server needs to recognize the returning user automatically on the very first request of a new visit, before any of the page's JavaScript has even run — a cookie is attached to that initial request by the browser itself, while localStorage is only accessible after the page's script executes and would require an extra round-trip to inform the server." },
+      { question: "What's the key difference between cookies and localStorage?", answer: "Cookies are sent automatically with every request to the server that set them, which suits server-side session tracking. localStorage stays in the browser and is never sent automatically." },
+      { question: "What's the difference between localStorage and sessionStorage?", answer: "Same API. localStorage lasts until explicitly cleared; sessionStorage is cleared when its tab closes." },
+      { question: "Why shouldn't sensitive data be stored in localStorage?", answer: "It's plain, unencrypted storage that any script on the page, or anyone with the browser's dev tools, can read. It gives no real protection." },
+      { question: "What are the typical size limits for localStorage/sessionStorage versus a single cookie?", answer: "localStorage and sessionStorage usually allow about 5-10MB per origin (it varies by browser). A single cookie is limited to about 4KB, and browsers also cap the number of cookies per domain." },
+      { question: "Is the localStorage/sessionStorage API synchronous or asynchronous, and why does that matter?", answer: "Synchronous: every read and write blocks the JavaScript thread until it finishes. With small data you won't notice, but large values can briefly block the main thread and make the page feel unresponsive. That's one reason it's meant for small data." },
+      { question: "When would you reach for IndexedDB instead of localStorage?", answer: "When you need much more data, structured or queryable data (not just string key-value pairs), or async access that doesn't block the main thread. IndexedDB has indexes, transactions, and much larger quotas, but a far more complex API." },
+      { question: "If a site is open in two different browser tabs, do they share the same localStorage data? What about sessionStorage?", answer: "localStorage is shared by every tab and window of the same origin; a write in one is visible in the others right away. sessionStorage belongs to one tab/window, so each tab has its own, even for the same site." },
+      { question: "Does duplicating an existing browser tab preserve its sessionStorage, and does opening a fresh tab to the same URL do the same?", answer: "Duplicating a tab copies its sessionStorage, because browsers treat it as continuing the same browsing context. A new tab opened to the same URL starts empty, since it's a new top-level browsing context." },
+      { question: "If a user clears their browser's cookies, does that also clear localStorage?", answer: "Not necessarily. They're separate mechanisms, and whether 'clear cookies' also clears other site data depends on the setting chosen ('cookies only' versus 'all site data'). Don't assume clearing one cleared the other." },
+      { question: "What does the `HttpOnly` flag on a cookie do, and why does it matter for security?", answer: "It stops JavaScript from reading or writing the cookie via `document.cookie`; only the browser's HTTP layer can use it. That blocks a common XSS attack where injected script tries to steal a session cookie, because the script can't see it." },
+      { question: "What do the `Secure` and `SameSite` cookie attributes protect against?", answer: "Secure sends the cookie only over HTTPS, so it isn't exposed on unencrypted networks. SameSite limits whether the cookie is sent with cross-site requests, which helps block CSRF attacks that rely on the browser attaching cookies to requests from another site." },
+      { question: "Why is an auth token often stored in a cookie rather than localStorage, from a security standpoint?", answer: "A cookie can be HttpOnly, so JavaScript can't see it and an XSS attack can't steal it. Anything in localStorage is readable by any script on the page, so one XSS hole anywhere on the site can leak the token." },
+      { question: "What does 'same-origin' mean in the context of storage scoping?", answer: "Two URLs are same-origin only if protocol, host, and port all match. localStorage/sessionStorage are strictly scoped per origin (cookies use slightly different, host-based rules), so a script on one origin generally can't read another origin's data." },
+      { question: "How can one open tab find out that another tab just changed a value in localStorage?", answer: "Listen for the `storage` event on `window`. The browser fires it in every *other* same-origin tab or window when localStorage changes, with the key, old value, and new value." },
+      { question: "Why doesn't the `storage` event fire in the same tab that made the change?", answer: "It exists so other browsing contexts can react to changes they didn't make. The tab that wrote the value already knows it, so the spec only sends the event to other tabs and windows sharing that storage." },
+      { question: "What does `localStorage.getItem(\"missingKey\")` return if that key was never set?", answer: "`null`, not `undefined`. Check for null (or use a falsy check) rather than undefined." },
+      { question: "Why can localStorage only store strings, and how do you work around that to store objects?", answer: "The Web Storage API's get/setItem only take and return strings, by design. For structured data, `JSON.stringify()` before saving and `JSON.parse()` after reading." },
+      { question: "What happens if you try to write more data than localStorage's quota allows?", answer: "`setItem` throws a `QuotaExceededError` (or similar DOMException) instead of silently failing or truncating. Wrap writes of possibly large values in try/catch." },
+      { question: "What do a cookie's `path` and `domain` attributes control?", answer: "`path` limits the cookie to requests whose URL path starts with that value (e.g. `/admin`). `domain` controls which hosts get the cookie; set broadly, it can be shared across subdomains instead of only the exact host that set it." },
+      { question: "Why might a 'remember me' login feature use a long-lived cookie rather than a long-lived value in localStorage?", answer: "The server must recognize the user on the very first request of a new visit, before any page JavaScript runs. The browser attaches a cookie to that first request by itself. localStorage is only readable after the page's script runs, which would need an extra round trip to tell the server." },
     ],
     relatedTopics: ["web-security-basics"],
     keywords: ["cookies", "localstorage", "sessionstorage", "browser storage", "web storage"],
@@ -374,33 +364,30 @@ devices, that belongs on the server, in an actual database.
     title: "Web Accessibility (a11y)",
     level: "intermediate",
     description:
-      "Designing and building a site so people using assistive technology, like screen readers or keyboard-only navigation, can actually use it.",
+      "Build sites that people using assistive technology, like screen readers or keyboard-only navigation, can use.",
     explanation: `
-Not everyone browses the web the same way. Some people can't see a
-screen at all and rely on software that reads the page aloud. Some
-people can't use a mouse and navigate entirely with a keyboard. Some
-people have low vision and need large, high-contrast text. A site that
-only works if you can see a screen clearly and click precisely with a
-mouse simply doesn't work for a meaningful number of people.
+People browse in different ways. Some can't see a screen and use software
+that reads the page aloud. Some can't use a mouse and navigate only with
+a keyboard. Some have low vision and need large, high-contrast text. A
+site that needs clear sight and precise mouse clicks fails a lot of
+people.
 
-**Accessibility**, often abbreviated **a11y** (the 11 stands for the
-number of letters skipped between the "a" and the "y"), is the practice
-of building sites that work for people using assistive technology, not
-just a typical mouse-and-monitor setup. This isn't a separate feature
-bolted on afterward — it's mostly about doing the basics correctly: using
-real, semantic HTML elements instead of generic ones styled to look the
-part, giving every image a meaningful text description (**alt text**)
-for people who can't see it, and making sure every interactive element
-can be reached and operated using only a keyboard.
+**Accessibility**, often written **a11y** (11 letters between the "a" and
+the "y"), means building sites that work with assistive technology, not
+just a mouse and monitor. It isn't a feature bolted on later. Mostly it's
+doing the basics right:
 
-A big piece of this is **focus management** — making sure that as a
-keyboard user tabs through a page, the currently focused element is
-clearly visible, follows a sensible order, and that opening things like
-a modal dialog moves focus into it (and traps it there) so a keyboard
-user isn't left tabbing through content hidden behind it.
+- use real, semantic HTML elements instead of generic ones styled to look the part
+- give every image a meaningful text description (**alt text**)
+- make every interactive element reachable and usable with only a keyboard
+
+A big part is **focus management**. As a keyboard user tabs through a
+page, the focused element should be clearly visible and move in a
+sensible order. Opening a modal dialog should move focus into it and trap
+it there, so the user isn't tabbing through content hidden behind it.
   `.trim(),
     analogy:
-      "It's like designing a building with ramps and clear signage alongside stairs — most people might not notice they're there, but for someone using a wheelchair or who can't read small print, they're the difference between being able to get in the door at all.",
+      "It's like adding ramps and clear signs next to the stairs. Most people barely notice them, but for someone in a wheelchair or who can't read small print, they decide whether they can get in the door at all.",
     examples: [
       {
         title: "Meaningful alt text",
@@ -410,10 +397,10 @@ user isn't left tabbing through content hidden behind it.
 <!-- Good: describes the actual content -->
 <img src="chart.png" alt="Bar chart showing sales rising 20% from January to March">`,
         explanation:
-          "A screen reader announces the alt text in place of the image. 'image' tells a blind user nothing useful, while a real description lets them understand what the chart actually shows.",
+          "A screen reader reads the alt text in place of the image. 'image' tells a blind user nothing; a real description tells them what the chart shows.",
         walkthrough: [
-          { code: 'alt="image"', explanation: "Technically present, but conveys no actual information — a screen reader user learns nothing about the chart's content." },
-          { code: 'alt="Bar chart showing sales rising 20%..."', explanation: "Describes what the image actually communicates, giving a non-visual user equivalent information to a sighted user glancing at the chart." },
+          { code: 'alt="image"', explanation: "Present, but says nothing. A screen reader user learns nothing about the chart." },
+          { code: 'alt="Bar chart showing sales rising 20%..."', explanation: "Describes what the image communicates, so a non-visual user gets the same information as someone glancing at the chart." },
         ],
       },
       {
@@ -424,72 +411,67 @@ user isn't left tabbing through content hidden behind it.
 <!-- Reachable by keyboard, announced correctly by screen readers -->
 <button onclick="submitForm()">Submit</button>`,
         explanation:
-          "A div with a click handler is invisible to keyboard navigation and screen readers by default — it's just a generic block of text as far as assistive technology is concerned. A real button element is automatically focusable, triggerable with the keyboard, and announced as a button.",
+          "To keyboard navigation and screen readers, a div with a click handler is just generic text. A real button is focusable, works with the keyboard, and is announced as a button, all by default.",
       },
     ],
     howItWorks: `
-Assistive technology, like a screen reader, doesn't see rendered pixels
-— it reads the underlying HTML structure (often via the DOM) and uses
-each element's role, name, and state to describe the page out loud or
-via braille output. Semantic elements come with these roles already
-built in (a button announces itself as "button" and responds to
-keyboard activation automatically); generic elements styled to merely
-look like a button carry none of that information unless it's added
-back manually.
+A screen reader doesn't see pixels. It reads the HTML structure (often
+through the DOM) and uses each element's role, name, and state to
+describe the page aloud or in braille.
+
+Semantic elements have these roles built in: a button announces itself
+as "button" and responds to the keyboard automatically. A generic element
+styled to look like a button has none of that unless you add it back by
+hand.
   `.trim(),
     whyItExists: `
-Accessibility work exists because the web is meant to be usable by
-everyone, not only people who can see a screen clearly and operate a
-mouse precisely. Beyond that, in many places it's also a legal
-requirement for certain kinds of sites. Practically, accessible
-practices — clear structure, sufficient contrast, keyboard support —
-also tend to make a site better for everyone, not just people using
-assistive technology.
+The web is meant for everyone, not only people who see a screen clearly
+and use a mouse precisely. In many places it's also a legal requirement
+for certain kinds of sites. And accessible practices (clear structure,
+enough contrast, keyboard support) make a site better for everyone.
   `.trim(),
     whenToUse: `
-Accessibility considerations belong in every project from the start,
-not bolted on at the end — using semantic HTML, writing real alt text,
-and testing keyboard navigation cost very little when done as you
-build, and cost far more to retrofit later.
+Build accessibility into every project from the start. Semantic HTML,
+real alt text, and keyboard testing cost little as you build and far more
+to retrofit later.
   `.trim(),
     whenNotToUse: `
-There's essentially no valid case for skipping accessibility on a
-public-facing site. The only reasonable trade-off is depth: a small
-personal project might not warrant a full accessibility audit, but even
-then, the basics (semantic tags, alt text, keyboard support) cost
-little and help everyone.
+There's basically no valid reason to skip accessibility on a public site.
+The only trade-off is depth: a small personal project may not need a full
+audit, but the basics (semantic tags, alt text, keyboard support) still
+cost little and help everyone.
   `.trim(),
     commonMistakes: [
-      "Using generic elements styled to look interactive instead of real buttons or links, breaking keyboard and screen-reader support.",
-      "Writing unhelpful alt text like 'image' or 'photo1.jpg' instead of describing what the image actually conveys.",
-      "Trapping keyboard focus nowhere (or everywhere) — forgetting to move focus into a newly opened dialog, or forgetting to let focus escape it when it closes.",
+      "Styling generic elements to look interactive instead of using real buttons or links, which breaks keyboard and screen-reader support.",
+      "Writing unhelpful alt text like 'image' or 'photo1.jpg' instead of describing what the image conveys.",
+      "Getting focus wrong in dialogs: not moving focus into a newly opened dialog, or not letting it out when the dialog closes.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Add meaningful alt text to three images on a sample page, describing what each one actually conveys." },
-      { difficulty: "Medium", prompt: "Take a page and try navigating it using only the Tab and Enter keys. Note every interactive element you couldn't reach or activate." },
-      { difficulty: "Hard", prompt: "Rebuild a custom dropdown menu made of styled divs using proper semantic elements and keyboard support, and verify it works with Tab, Enter, and Escape." },
+      { difficulty: "Easy", prompt: "Add meaningful alt text to three images on a sample page, describing what each one conveys." },
+      { difficulty: "Medium", prompt: "Navigate a page using only the Tab and Enter keys. Note every interactive element you couldn't reach or activate." },
+      { difficulty: "Hard", prompt: "Rebuild a custom dropdown made of styled divs with proper semantic elements and keyboard support. Check that it works with Tab, Enter, and Escape." },
     ],
     interviewQuestions: [
-      { question: "What does web accessibility mean?", answer: "Designing and building sites so people using assistive technology, such as screen readers or keyboard-only navigation, can perceive, understand, and use them." },
-      { question: "Why does alt text matter, and what makes it good?", answer: "It's what a screen reader announces in place of an image, so it matters because it's often the only way a non-sighted user learns what the image conveys. Good alt text describes the actual content or purpose of the image rather than being generic or missing." },
-      { question: "Why is using a real <button> element better than a styled <div> for something clickable?", answer: "A real button is automatically focusable, keyboard-activatable, and announced correctly by screen readers, while a div carries none of that behavior unless it's manually reimplemented." },
-      { question: "What does ARIA stand for, and what's the 'first rule of ARIA'?", answer: "ARIA stands for Accessible Rich Internet Applications — a set of HTML attributes that describe roles, states, and properties to assistive technology. The first rule of ARIA is: if a native HTML element or attribute already provides the semantics and behavior you need, use that instead of recreating it with ARIA on a generic element, since native elements come with correct behavior built in and ARIA alone only adds semantics, not behavior." },
-      { question: "What's the difference between `aria-label` and `aria-labelledby`?", answer: "aria-label provides an accessible name directly as a string value on the attribute itself. aria-labelledby instead points to the id of another element already on the page, and its text content is used as the accessible name — useful when the label text is already visible elsewhere and shouldn't be duplicated." },
-      { question: "What does `aria-hidden=\"true\"` do, and what's a common mistake with it?", answer: "It removes an element (and its descendants) from the accessibility tree, so screen readers skip over it entirely as if it didn't exist. A common mistake is applying it to an element that's still visually visible and focusable — a screen reader user's focus can land on a control that's been hidden from being announced, which is confusing and effectively broken." },
-      { question: "What is a 'landmark region', and why does it matter for accessibility?", answer: "It's a semantic sectioning element like `<nav>`, `<main>`, `<header>`, or `<aside>` (or an equivalent ARIA landmark role) that marks a major region of the page. Screen reader users commonly navigate by jumping directly between landmarks instead of reading the whole page top to bottom, so their presence lets a user quickly get to the content they actually want." },
-      { question: "What's the difference between `tabindex=\"0\"`, `tabindex=\"-1\"`, and a positive `tabindex` value?", answer: "tabindex=\"0\" inserts the element into the natural tab order at the point matching the DOM. tabindex=\"-1\" makes it programmatically focusable (via JavaScript, e.g. after opening a dialog) but skips it in normal Tab-key navigation. A positive value forces it earlier in tab order than 0, which is generally discouraged since it creates a custom order that's easy to get out of sync with the visual layout and hard to maintain." },
-      { question: "A custom dropdown is built from a `<div>` with `tabindex=\"0\"` but no keyboard event handlers. What happens when a keyboard user tabs to it and presses Enter?", answer: "Nothing — tabindex=\"0\" only makes the element reachable by Tab, it doesn't make it *activatable*. A native `<button>` responds to Enter/Space automatically, but a plain div requires JavaScript to explicitly listen for those key presses and trigger the equivalent action; without that, the div is a dead end for keyboard users." },
-      { question: "Why is focus trapping necessary in a modal dialog?", answer: "Without it, Tab can move focus out of the visible dialog and onto content underneath it that's supposed to be inaccessible while the modal is open — a keyboard user ends up tabbing through hidden page content they can't see, with no clear way back into the dialog. Trapping keeps Tab cycling only among the dialog's own focusable elements until it's closed." },
-      { question: "What contrast ratio does WCAG's AA level require for normal text versus large text?", answer: "At least 4.5:1 for normal-sized text, and a lower 3:1 for large text (roughly 18pt/24px regular weight or 14pt/18.66px bold and larger), since larger text is inherently easier to distinguish from its background even at lower contrast." },
-      { question: "Why might you use a 'visually-hidden' CSS technique instead of `display: none` for some content?", answer: "display: none (and visibility: hidden) removes content from the accessibility tree as well as visually, so a screen reader skips it too. A visually-hidden class (clipping the element to a 1px box, off-screen, without display:none) keeps it available to assistive technology while hiding it from sighted users — used for things like skip links or extra context meant only for screen readers." },
-      { question: "What is a 'skip link', and what problem does it solve?", answer: "It's a link, usually the first focusable element on the page, that jumps straight to the main content, bypassing repeated navigation menus. Without it, a keyboard or screen reader user has to tab through the same nav links on every single page before reaching the actual content." },
-      { question: "Why is removing the default focus outline with `outline: none` a common accessibility trap?", answer: "The focus outline is how a keyboard user sees which element is currently active. Removing it without providing any visible replacement style (like a custom box-shadow or border on :focus-visible) leaves keyboard users with no way to tell where they are on the page, even though the interaction still technically works." },
-      { question: "What does a `<label>` element's `for` attribute do, and why does it matter beyond just sighted mouse users?", answer: "It associates the label with a specific form control by id, which does two things: clicking anywhere on the label text also focuses/activates the input (a bigger, easier click target for anyone with limited motor precision), and a screen reader announces the label text together with the input when it receives focus, rather than announcing an unlabeled field." },
-      { question: "What does the `role` attribute do when you're stuck using a non-semantic element for some custom widget?", answer: "It tells assistive technology what kind of control the element represents (e.g. role=\"button\", role=\"tablist\"), so it's announced correctly. It only communicates semantics, though — it doesn't add any of the native keyboard behavior or focusability a real element would have, so those still need to be implemented manually alongside it." },
-      { question: "What is the accessibility tree, and how does it relate to the DOM?", answer: "It's a separate tree, derived from the DOM, that represents each element's accessible role, name, state, and value — the actual structure assistive technology like screen readers consumes. Elements or attributes that are purely presentational (or explicitly hidden via aria-hidden) can be present in the DOM but omitted from the accessibility tree, and semantics added via ARIA can change how a node appears there without changing the DOM at all." },
-      { question: "A form shows an invalid input by giving it a red border and nothing else — what's the accessibility problem, and how would you fix it?", answer: "Color alone doesn't convey the error to colorblind users or anyone using a screen reader, which can't perceive a border color change at all. A fix pairs the visual indicator with a text error message associated to the field via `aria-describedby`, and marks the field with `aria-invalid=\"true\"` so assistive technology announces the invalid state explicitly." },
-      { question: "A screen reader announces a form field's error message twice — what's a likely cause?", answer: "The same error text is probably exposed to assistive technology through two separate mechanisms at once — for example, it's both visually rendered inside content referenced by `aria-describedby` and also announced separately via an `aria-live` region updating with the same message, so the user hears it announced from both paths." },
-      { question: "What's the difference between `aria-live=\"polite\"` and `aria-live=\"assertive\"`?", answer: "polite waits until the screen reader finishes whatever it's currently announcing before reading the update, so it doesn't interrupt the user. assertive interrupts immediately, regardless of what's being read — reserved for urgent updates, since overusing it is disorienting." },
+      { question: "What does web accessibility mean?", answer: "Building sites so people using assistive technology, such as screen readers or keyboard-only navigation, can perceive, understand, and use them." },
+      { question: "Why does alt text matter, and what makes it good?", answer: "A screen reader reads it in place of the image, so it's often the only way a non-sighted user learns what the image conveys. Good alt text describes the image's actual content or purpose; it isn't generic or missing." },
+      { question: "Why is using a real <button> element better than a styled <div> for something clickable?", answer: "A real button is focusable, works with the keyboard, and is announced correctly by screen readers, all automatically. A div has none of that unless you rebuild it by hand." },
+      { question: "What does ARIA stand for, and what's the 'first rule of ARIA'?", answer: "Accessible Rich Internet Applications: HTML attributes that describe roles, states, and properties to assistive technology. The first rule: if a native HTML element or attribute already gives you the semantics and behavior you need, use it instead of adding ARIA to a generic element. Native elements come with correct behavior; ARIA only adds semantics, not behavior." },
+      { question: "What's the difference between `aria-label` and `aria-labelledby`?", answer: "aria-label sets the accessible name directly as a string. aria-labelledby points to the id of another element on the page and uses its text as the name, which is handy when the label is already visible and shouldn't be duplicated." },
+      { question: "What does `aria-hidden=\"true\"` do, and what's a common mistake with it?", answer: "It removes an element and its descendants from the accessibility tree, so screen readers skip it entirely. A common mistake is using it on something still visible and focusable: a screen reader user's focus can land on a control that's never announced, which is confusing and effectively broken." },
+      { question: "What is a 'landmark region', and why does it matter for accessibility?", answer: "A semantic sectioning element like `<nav>`, `<main>`, `<header>`, or `<aside>` (or an equivalent ARIA landmark role) that marks a major region of the page. Screen reader users often jump between landmarks instead of reading top to bottom, so landmarks help them reach what they want quickly." },
+      { question: "What's the difference between `tabindex=\"0\"`, `tabindex=\"-1\"`, and a positive `tabindex` value?", answer: "tabindex=\"0\" puts the element in the natural tab order, matching its DOM position. tabindex=\"-1\" makes it focusable from JavaScript (e.g. after opening a dialog) but skips it when tabbing. A positive value pushes it ahead of the normal order; that's discouraged because the custom order easily drifts out of sync with the layout and is hard to maintain." },
+      { question: "A custom dropdown is built from a `<div>` with `tabindex=\"0\"` but no keyboard event handlers. What happens when a keyboard user tabs to it and presses Enter?", answer: "Nothing. tabindex=\"0\" makes the element reachable by Tab, not *activatable*. A native `<button>` responds to Enter/Space automatically; a div needs JavaScript to listen for those keys and run the action. Without that, it's a dead end for keyboard users." },
+      { question: "Why is focus trapping necessary in a modal dialog?", answer: "Without it, Tab can move focus out of the dialog onto content underneath that should be unreachable while it's open. Keyboard users end up tabbing through hidden content with no clear way back. Trapping keeps Tab cycling through the dialog's own focusable elements until it closes." },
+      { question: "What contrast ratio does WCAG's AA level require for normal text versus large text?", answer: "At least 4.5:1 for normal text and 3:1 for large text (about 18pt/24px regular, or 14pt/18.66px bold, and up). Larger text is easier to read against its background even at lower contrast." },
+      { question: "Why might you use a 'visually-hidden' CSS technique instead of `display: none` for some content?", answer: "display: none (and visibility: hidden) hide content from the accessibility tree too, so screen readers skip it. A visually-hidden class (clipping the element to a 1px box off-screen, without display:none) hides it from sighted users but keeps it available to assistive technology. It's used for skip links or extra context meant only for screen readers." },
+      { question: "What is a 'skip link', and what problem does it solve?", answer: "A link, usually the first focusable element on the page, that jumps straight to the main content past repeated navigation. Without it, keyboard and screen reader users tab through the same nav links on every page before reaching the content." },
+      { question: "Why is removing the default focus outline with `outline: none` a common accessibility trap?", answer: "The outline shows keyboard users which element is active. Removing it without a visible replacement (like a custom box-shadow or border on :focus-visible) leaves them unable to tell where they are, even though everything still technically works." },
+      { question: "What does a `<label>` element's `for` attribute do, and why does it matter beyond just sighted mouse users?", answer: "It links the label to a form control by id. Clicking the label text then focuses or activates the input, a bigger target for anyone with limited motor precision. And a screen reader reads the label with the input when it gets focus, instead of announcing an unlabeled field." },
+      { question: "What does the `role` attribute do when you're stuck using a non-semantic element for some custom widget?", answer: "It tells assistive technology what kind of control the element is (e.g. role=\"button\", role=\"tablist\") so it's announced correctly. It only adds semantics, not the keyboard behavior or focusability of a real element; you still have to build those yourself." },
+      { question: "What is the accessibility tree, and how does it relate to the DOM?", answer: "A separate tree, built from the DOM, that holds each element's accessible role, name, state, and value. It's what screen readers and other assistive technology actually use. Purely presentational elements, or ones hidden with aria-hidden, can be in the DOM but left out of it, and ARIA can change how a node appears there without changing the DOM." },
+      { question: "A form shows an invalid input by giving it a red border and nothing else — what's the accessibility problem, and how would you fix it?", answer: "Color alone doesn't reach colorblind users, and screen readers can't perceive a border color at all. Add a text error message linked to the field with `aria-describedby`, and mark the field `aria-invalid=\"true\"` so assistive technology announces the invalid state." },
+      { question: "A screen reader announces a form field's error message twice — what's a likely cause?", answer: "The same error text is probably exposed through two mechanisms at once, for example in content referenced by `aria-describedby` and also in an `aria-live` region showing the same message. The user hears it from both." },
+      { question: "What's the difference between `aria-live=\"polite\"` and `aria-live=\"assertive\"`?", answer: "polite waits until the screen reader finishes its current announcement, so it doesn't interrupt. assertive interrupts immediately. Save assertive for urgent updates; overusing it is disorienting." },
     ],
     prerequisites: ["html-basics"],
     relatedTopics: ["html-basics", "the-dom"],
@@ -500,31 +482,23 @@ little and help everyone.
     title: "Web Performance Basics",
     level: "intermediate",
     description:
-      "What actually makes a page feel slow to use, and the basic techniques for making it feel fast.",
+      "What makes a page feel slow, and the basic techniques for making it fast.",
     explanation: `
-A page can feel slow for a few very concrete reasons, and most of them
-come down to the browser being kept busy or waiting before it can show
-or use something. A big stylesheet or script that has to fully download
-and run *before* the browser can display anything is called
-**render-blocking** — the page sits blank while the browser waits on
-it. Large, unoptimized images can take a long time to download,
-delaying everything on the page that depends on them. And a large
-amount of JavaScript, even after it's downloaded, still takes time for
-the browser to parse and run, which can leave a page looking finished
-but unresponsive to clicks and taps.
+Most slowness comes from the browser being busy or waiting before it can
+show or use something:
 
-There are a handful of well-established techniques for addressing
-each of these. **Lazy loading** means not fetching something (like an
-image far down the page) until it's actually about to be needed,
-instead of loading everything up front. **Minification** strips
-unnecessary characters (whitespace, long variable names) out of CSS and
-JavaScript files before they're sent, so there's less data to transfer.
-And **caching** lets a browser reuse a file it already downloaded on a
-previous visit, instead of re-downloading something that hasn't
-changed.
+- A stylesheet or script that must download and run *before* anything shows is **render-blocking**. The page stays blank while the browser waits.
+- Large, unoptimized images take a long time to download, delaying everything that depends on them.
+- Lots of JavaScript still has to be parsed and run after downloading, so a page can look finished but not respond to clicks and taps.
+
+A few well-known techniques address these:
+
+- **Lazy loading** waits to fetch something (like an image far down the page) until it's about to be needed.
+- **Minification** strips unneeded characters (whitespace, long variable names) from CSS and JavaScript, so less data is sent.
+- **Caching** lets the browser reuse a file from an earlier visit instead of downloading it again when it hasn't changed.
   `.trim(),
     analogy:
-      "It's like being handed a phone book at the door before you're allowed into a restaurant, when all you needed was the menu. Render-blocking resources make you wait through unrelated work before you get the one thing you actually came for.",
+      "It's like being handed a phone book at a restaurant door when all you wanted was the menu. Render-blocking resources make you wait through unrelated work before you get what you came for.",
     examples: [
       {
         title: "Avoiding render-blocking scripts",
@@ -534,10 +508,10 @@ changed.
 <!-- Downloads in the background, runs after parsing finishes -->
 <script src="analytics.js" defer></script>`,
         explanation:
-          "Without defer, the browser stops parsing the rest of the HTML to fetch and run the script immediately. With defer, the script downloads in parallel and only runs once the page has finished parsing, so it no longer delays the visible page.",
+          "Without defer, the browser stops parsing the HTML to fetch and run the script right away. With defer, the script downloads in parallel and runs after parsing finishes, so it doesn't delay the visible page.",
         walkthrough: [
-          { code: '<script src="analytics.js"></script>', explanation: "The browser pauses HTML parsing here, fetches the script, and runs it before continuing — delaying everything after it on the page." },
-          { code: "defer", explanation: "Tells the browser to fetch this script in the background without pausing parsing, and to run it only after the HTML is fully parsed." },
+          { code: '<script src="analytics.js"></script>', explanation: "The browser pauses parsing here, fetches and runs the script, then continues. Everything after it waits." },
+          { code: "defer", explanation: "Fetch the script in the background without pausing parsing, and run it after the HTML is fully parsed." },
         ],
       },
       {
@@ -545,85 +519,78 @@ changed.
         code: `<img src="hero.jpg" alt="Product hero image">
 <img src="footer-banner.jpg" alt="Seasonal promotion" loading="lazy">`,
         explanation:
-          "The hero image loads immediately since it's visible right away. The footer banner, likely far below the visible area when the page first loads, is marked loading=\"lazy\" so the browser only fetches it once the user scrolls close to it.",
+          "The hero image loads right away because it's visible immediately. The footer banner is probably far below the first screen, so loading=\"lazy\" tells the browser to fetch it only when the user scrolls near it.",
       },
     ],
     howItWorks: `
-The browser can only do so much at once: parsing HTML, downloading
-files, parsing and running CSS and JavaScript, and rendering the result
-all compete for its attention. Techniques like deferring scripts,
-lazily loading offscreen images, and minifying files all work by
-reducing or rescheduling that competing work — either by shrinking how
-much data has to move over the network, or by making the browser wait
-less before it can show something useful. Caching works differently: it
-avoids the network entirely for files the browser recognizes it already
-has an unchanged copy of.
+Parsing HTML, downloading files, running CSS and JavaScript, and
+rendering all compete for the browser's time. Deferring scripts, lazy
+loading offscreen images, and minifying files reduce or reschedule that
+work: less data over the network, or less waiting before something
+useful appears.
+
+Caching works differently. It skips the network entirely for files the
+browser already has an unchanged copy of.
   `.trim(),
     whyItExists: `
-Performance work exists because a slow page directly costs user
-attention and, for businesses, real measurable outcomes — people
-abandon slow-loading pages far more readily than fast ones. As the
-average webpage has grown heavier over time (more images, more
-scripts, more third-party embeds), these techniques became necessary
-just to keep pages usable rather than optional polish.
+A slow page costs user attention and, for businesses, measurable
+results: people abandon slow pages far more often. As pages have grown
+heavier (more images, scripts, and third-party embeds), these techniques
+have become necessary to keep pages usable, not optional polish.
   `.trim(),
     whenToUse: `
-Apply these techniques by default on any real-world website: defer
-non-critical scripts, lazy-load offscreen images, minify production CSS
-and JavaScript, and set caching headers on assets that don't change
-often. Pay closer attention to performance whenever users report a page
-feeling slow, or whenever measuring actual load times reveals a
-problem.
+Use these by default on any real website: defer non-critical scripts,
+lazy-load offscreen images, minify production CSS and JavaScript, and set
+caching headers on assets that rarely change. Look closer when users
+report slowness or when measured load times show a problem.
   `.trim(),
     whenNotToUse: `
-Extremely small or low-traffic internal tools may not need aggressive
-performance tuning — the cost of, say, setting up a whole build
-pipeline for minification might outweigh the benefit if load time is
-already imperceptible. Optimizing prematurely, before knowing where
-real time is actually being spent, can also waste effort on the wrong
-thing.
+Very small or low-traffic internal tools may not need heavy tuning. For
+example, setting up a build pipeline just for minification may not pay
+off if load time is already unnoticeable. Optimizing before you know
+where the time goes can also waste effort on the wrong thing.
   `.trim(),
     commonMistakes: [
-      "Loading large, unoptimized images at full resolution when a much smaller version would look identical on screen.",
-      "Marking a critical, above-the-fold image as lazy-loaded, delaying content the user sees immediately.",
-      "Assuming minification alone fixes a performance problem caused by simply shipping too much JavaScript in the first place.",
+      "Loading large, unoptimized images at full resolution when a much smaller version would look the same on screen.",
+      "Lazy-loading a critical, above-the-fold image, which delays content the user sees right away.",
+      "Expecting minification to fix a problem caused by shipping too much JavaScript in the first place.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Add the loading=\"lazy\" attribute to images that appear below the visible area on a sample page." },
-      { difficulty: "Medium", prompt: "Take a page with a blocking <script> tag in the head and change it to use defer, then explain the difference in page load behavior." },
-      { difficulty: "Hard", prompt: "Using your browser's Network panel, measure a real page's load time, identify the largest resource slowing it down, and propose one concrete fix." },
+      { difficulty: "Easy", prompt: "Add the loading=\"lazy\" attribute to images below the visible area on a sample page." },
+      { difficulty: "Medium", prompt: "Change a blocking <script> tag in a page's head to use defer, then explain how page loading changes." },
+      { difficulty: "Hard", prompt: "In your browser's Network panel, measure a real page's load time, find the largest resource slowing it down, and propose one concrete fix." },
     ],
     interviewQuestions: [
-      { question: "What does 'render-blocking' mean?", answer: "A resource, like a script or stylesheet, that the browser must fully download (and sometimes run) before it can continue rendering the page, causing a visible delay." },
-      { question: "What is lazy loading, and when is it appropriate?", answer: "Deferring the loading of a resource, commonly an image, until it's actually about to be needed, such as when it scrolls near the visible viewport. It's appropriate for offscreen content, but not for content visible immediately on page load." },
-      { question: "How does caching improve web performance?", answer: "It lets a browser reuse a previously downloaded file instead of re-fetching it from the network, as long as the file hasn't changed, saving both time and bandwidth on repeat visits." },
-      { question: "What are the Core Web Vitals, and which three metrics make up the current set?", answer: "They're a specific set of metrics Google uses to measure real-world user experience: Largest Contentful Paint (LCP, loading speed), Interaction to Next Paint (INP, responsiveness), and Cumulative Layout Shift (CLS, visual stability)." },
-      { question: "What does Largest Contentful Paint (LCP) measure, and what's considered a good score?", answer: "It measures how long it takes for the largest visible content element (often a hero image or a large block of text) to finish rendering after the page starts loading. A score of 2.5 seconds or less is generally considered good." },
-      { question: "What does Cumulative Layout Shift (CLS) measure, and what commonly causes a poor score?", answer: "It measures how much visible content unexpectedly shifts position during page load, weighted by how much of the viewport moved and how far. Common causes include images or embeds without reserved width/height, content (like an ad or banner) injected above existing content after load, and web fonts swapping in with different metrics than their fallback." },
-      { question: "What replaced First Input Delay (FID) as a Core Web Vital, and why?", answer: "Interaction to Next Paint (INP) replaced it. FID only measured the delay before the *first* interaction started being processed, missing responsiveness problems later in a page's life. INP instead measures responsiveness across every interaction throughout the page's lifecycle, giving a more complete picture." },
-      { question: "What are the main stages of the critical rendering path?", answer: "The browser parses HTML into a DOM, parses CSS into a CSSOM, combines the two into a render tree of only the visible nodes with their computed styles, calculates each node's position and size (layout), and finally paints pixels to the screen." },
-      { question: "Why is CSS treated as render-blocking by default?", answer: "The browser deliberately waits for the full CSSOM to be built before rendering anything, to avoid painting unstyled content and then immediately repainting it once styles arrive — a jarring flash of unstyled content (FOUC) that blocking avoids by holding off the first paint until styling is known." },
-      { question: "What's the tradeoff between putting a `<link rel=\"stylesheet\">` in the `<head>` versus at the end of `<body>`?", answer: "In the head, the browser blocks rendering until the CSS is loaded, delaying first paint but guaranteeing the page never appears unstyled. At the end of the body, the browser may paint unstyled content briefly before the stylesheet loads and reflows everything, which usually looks worse even though something technically appears on screen sooner." },
-      { question: "What's the difference between `async` and `defer` on a `<script>` tag?", answer: "Both let the script download without blocking HTML parsing. async runs the script the instant it finishes downloading, which can interrupt parsing and doesn't guarantee execution order relative to other scripts. defer instead waits until the HTML is fully parsed, and multiple deferred scripts always run in their original document order — making defer the safer default for scripts that depend on the DOM or on each other." },
-      { question: "Why is reflow (layout) generally more expensive than repaint?", answer: "A repaint just redraws pixels that changed appearance (like a color) without affecting geometry. A reflow recalculates the position and size of the changed element *and* potentially every element affected by that change, which can cascade through large parts of the page, making it considerably more computationally expensive." },
-      { question: "What is 'layout thrashing', and what's a common way it happens by accident?", answer: "It's when code repeatedly forces the browser to synchronously recalculate layout many times in a tight loop, rather than once. A classic cause is reading a layout-dependent property (like `element.offsetHeight`) immediately after writing a style change, inside a loop — each read forces the browser to flush and recompute layout before it can answer, over and over." },
-      { question: "Why can overusing `will-change` hurt performance instead of helping it?", answer: "will-change is a hint that tells the browser to preemptively promote an element onto its own compositing layer in anticipation of an animation. Applying it broadly or to elements that don't actually need it creates many extra layers, consuming more GPU memory and potentially slowing things down rather than speeding them up." },
-      { question: "When would you still need an Intersection Observer-based lazy-loading approach instead of native `loading=\"lazy\"`?", answer: "When you need more control than the browser default gives you — like lazy-loading something other than images/iframes (e.g. a heavy component), customizing how far in advance loading starts, or supporting older browsers that don't implement the loading attribute." },
-      { question: "What is code splitting, and how does it help a large JavaScript application load faster?", answer: "It breaks a single large JavaScript bundle into smaller chunks that are loaded on demand — for example, per route — so a user's first visit only downloads and parses the code needed for the page they're actually viewing, instead of the entire application upfront." },
-      { question: "What does tree shaking remove from a JavaScript bundle?", answer: "Dead code — exports from a module that are never actually imported or used anywhere in the final application — based on static analysis of import/export statements, so the shipped bundle doesn't include library code the app never calls." },
-      { question: "What's the difference between `<link rel=\"preload\">`, `rel=\"prefetch\"`, and `rel=\"preconnect\"`?", answer: "preload tells the browser to fetch a resource it will definitely need for the *current* page, with high priority, sooner than it would discover it naturally. prefetch fetches something likely needed for a *future* navigation, at low priority. preconnect just establishes the network connection (DNS, TCP, TLS) to another origin ahead of time, without fetching a specific file, to save that setup time once a request to it is actually made." },
-      { question: "Your page's LCP element is a large hero image loading late. Name two concrete ways to improve it.", answer: "Preload the image with `<link rel=\"preload\" as=\"image\">` so the browser fetches it earlier instead of discovering it only after parsing reaches the img tag, and serve it as an appropriately sized, modern-format (e.g. WebP/AVIF) file so there's simply less data to download before it can render." },
-      { question: "Does minifying JavaScript reduce how long the browser takes to execute it?", answer: "Not meaningfully — minification shrinks file size (less to download and parse), but the actual logic still runs the same number of operations, so execution time stays roughly the same. This is why shipping too much JavaScript in the first place can't be fixed by minification alone." },
-      { question: "What is `font-display: swap`, and what performance/visual tradeoff does it introduce?", answer: "It tells the browser to render text immediately in a fallback font while a custom web font is still downloading, then swap to the real font once it arrives, avoiding invisible text during the wait. The tradeoff is that if the fallback and web font have different metrics (character widths, line height), the swap itself can cause a visible layout shift, hurting CLS." },
-      { question: "Why does compressing assets with gzip or Brotli improve load performance, and which one usually compresses better?", answer: "Both reduce the number of bytes that actually travel over the network for text-based assets like HTML, CSS, and JS, so they download faster. Brotli generally achieves a better compression ratio than gzip for the same content, though it can take slightly longer to compress, which matters more for build time than for the already-compressed file being served." },
-      { question: "How did HTTP/2 multiplexing reduce the value of older performance tricks like bundling many files together or sharding assets across multiple domains?", answer: "HTTP/1.1 could only send a limited number of requests in parallel per connection, so bundling files (fewer requests) and domain sharding (more parallel connections) worked around that limit. HTTP/2 multiplexes many requests over a single connection simultaneously, removing much of that per-request overhead, so aggressively bundling everything into one giant file can actually hurt caching efficiency without the payoff it used to have." },
-      { question: "Using browser DevTools, how would you tell whether a slow page load is bottlenecked by network transfer or by JavaScript execution?", answer: "The Network panel's waterfall shows how long each resource actually spent downloading versus waiting, which points to a network bottleneck if requests are large or slow. The Performance panel's main-thread flame chart instead shows time spent parsing/executing/compiling JavaScript and running layout/paint, which points to a CPU-bound bottleneck if that's where the time is concentrated." },
-      { question: "An `<img>` has no `width`/`height` attributes set. What layout symptom can result once it finishes loading on a slow connection, and how do you prevent it?", answer: "Before the image loads, the browser doesn't know its dimensions and reserves no space for it, so surrounding content occupies that area temporarily; once the image arrives, everything below it jumps to make room — a layout shift counted against CLS. Setting explicit width/height attributes (or a CSS `aspect-ratio`) lets the browser reserve the correct space upfront, before the image has even started downloading." },
-      { question: "What's the Core Web Vitals tradeoff between client-side rendering (CSR) and server-side rendering (SSR)?", answer: "SSR typically produces better LCP/FCP on first load, since the browser receives HTML with real content already in it rather than an empty shell waiting on JavaScript to fetch and render data. CSR often has a slower first load for that reason, but can feel faster on subsequent in-app navigations once the JavaScript bundle is already loaded and only data needs fetching." },
-      { question: "What does Time to First Byte (TTFB) measure, and what does a slow TTFB usually indicate?", answer: "It measures the time from a request being sent until the first byte of the response arrives, which mostly reflects server-side work — routing, database queries, server-side rendering — rather than front-end asset delivery. A slow TTFB points to a backend or network-latency problem, not something fixable with front-end techniques like minification or lazy loading." },
-      { question: "Mechanically, how does a CDN improve load performance?", answer: "It caches copies of static assets on servers geographically distributed closer to users, so a request is served from a nearby edge location instead of traveling all the way to a single origin server — reducing the network latency (round-trip time) involved in fetching the resource." },
-      { question: "A returning visitor loads a page much faster than a first-time visitor loading the exact same assets. What's the likely mechanism, given proper `Cache-Control` headers?", answer: "The browser's disk/memory cache already holds a copy of assets like CSS, JS, and images from the previous visit, and Cache-Control headers (e.g. a max-age) tell it those files are still valid, so it reuses them straight from cache instead of re-requesting them from the network at all — the first-time visitor has no such cache and must download everything." },
-      { question: "What's a common pitfall of giving a file like `app.js` a very long `Cache-Control: max-age`?", answer: "After deploying a new version, users with a cached copy keep using the stale old file until the cache expires, potentially running outdated (or broken, if it no longer matches a changed backend) code for a long time. The standard fix is to include a content hash in the filename (e.g. app.3f2a1c.js), so a new deploy produces a new filename and is fetched fresh immediately, while the long cache lifetime remains safe since a given filename's content never changes." },
+      { question: "What does 'render-blocking' mean?", answer: "A resource, like a script or stylesheet, that the browser must fully download (and sometimes run) before it can keep rendering, causing a visible delay." },
+      { question: "What is lazy loading, and when is it appropriate?", answer: "Waiting to load a resource, usually an image, until it's about to be needed, such as when it scrolls near the viewport. Use it for offscreen content, not for content visible as soon as the page loads." },
+      { question: "How does caching improve web performance?", answer: "The browser reuses a file it already downloaded instead of fetching it again, as long as it hasn't changed. That saves time and bandwidth on repeat visits." },
+      { question: "What are the Core Web Vitals, and which three metrics make up the current set?", answer: "Metrics Google uses to measure real-world user experience: Largest Contentful Paint (LCP, loading speed), Interaction to Next Paint (INP, responsiveness), and Cumulative Layout Shift (CLS, visual stability)." },
+      { question: "What does Largest Contentful Paint (LCP) measure, and what's considered a good score?", answer: "How long the largest visible content element (often a hero image or big block of text) takes to finish rendering after the page starts loading. 2.5 seconds or less is generally considered good." },
+      { question: "What does Cumulative Layout Shift (CLS) measure, and what commonly causes a poor score?", answer: "How much visible content unexpectedly moves during load, weighted by how much of the viewport moved and how far. Common causes: images or embeds with no reserved width/height, content (like an ad or banner) injected above existing content after load, and web fonts swapping in with different metrics than the fallback." },
+      { question: "What replaced First Input Delay (FID) as a Core Web Vital, and why?", answer: "Interaction to Next Paint (INP). FID only measured the delay before the *first* interaction began processing, missing problems later on. INP measures responsiveness across every interaction during the page's life, giving a fuller picture." },
+      { question: "What are the main stages of the critical rendering path?", answer: "Parse HTML into a DOM, parse CSS into a CSSOM, combine them into a render tree of visible nodes with computed styles, calculate each node's position and size (layout), then paint pixels to the screen." },
+      { question: "Why is CSS treated as render-blocking by default?", answer: "The browser waits for the full CSSOM before rendering so it doesn't paint unstyled content and then repaint it when styles arrive. That jarring flash of unstyled content (FOUC) is avoided by holding the first paint until styling is known." },
+      { question: "What's the tradeoff between putting a `<link rel=\"stylesheet\">` in the `<head>` versus at the end of `<body>`?", answer: "In the head, rendering waits for the CSS, so first paint is later but the page never appears unstyled. At the end of the body, the browser may briefly paint unstyled content, then reflow everything when the CSS loads. Something shows sooner, but it usually looks worse." },
+      { question: "What's the difference between `async` and `defer` on a `<script>` tag?", answer: "Both download without blocking parsing. async runs the script as soon as it downloads, which can interrupt parsing and doesn't guarantee order among scripts. defer waits until the HTML is fully parsed, and deferred scripts always run in document order. That makes defer the safer default for scripts that depend on the DOM or on each other." },
+      { question: "Why is reflow (layout) generally more expensive than repaint?", answer: "A repaint redraws pixels whose appearance changed (like a color) without touching geometry. A reflow recalculates the size and position of the changed element *and* possibly every element it affects, which can cascade across much of the page." },
+      { question: "What is 'layout thrashing', and what's a common way it happens by accident?", answer: "Code forcing the browser to recalculate layout synchronously many times in a tight loop instead of once. The classic cause is reading a layout property (like `element.offsetHeight`) right after a style change inside a loop: each read forces the browser to flush and recompute layout before answering." },
+      { question: "Why can overusing `will-change` hurt performance instead of helping it?", answer: "will-change hints that the browser should promote an element to its own compositing layer ahead of an animation. Using it broadly, or on elements that don't need it, creates many extra layers that use more GPU memory and can slow things down." },
+      { question: "When would you still need an Intersection Observer-based lazy-loading approach instead of native `loading=\"lazy\"`?", answer: "When you need more control than the default: lazy-loading something other than images/iframes (e.g. a heavy component), choosing how early loading starts, or supporting older browsers without the loading attribute." },
+      { question: "What is code splitting, and how does it help a large JavaScript application load faster?", answer: "It splits one large bundle into smaller chunks loaded on demand, for example per route. A first visit then downloads and parses only the code for the current page, not the whole app." },
+      { question: "What does tree shaking remove from a JavaScript bundle?", answer: "Dead code: module exports that are never imported or used. It works by static analysis of import/export statements, so the bundle leaves out library code the app never calls." },
+      { question: "What's the difference between `<link rel=\"preload\">`, `rel=\"prefetch\"`, and `rel=\"preconnect\"`?", answer: "preload fetches a resource the *current* page definitely needs, at high priority, before the browser would find it on its own. prefetch fetches something a *future* navigation probably needs, at low priority. preconnect only sets up the connection (DNS, TCP, TLS) to another origin in advance, without fetching a file, to save that time later." },
+      { question: "Your page's LCP element is a large hero image loading late. Name two concrete ways to improve it.", answer: "Preload it with `<link rel=\"preload\" as=\"image\">` so the browser fetches it early instead of finding it only when parsing reaches the img tag. And serve a properly sized, modern-format file (e.g. WebP/AVIF) so there's less to download." },
+      { question: "Does minifying JavaScript reduce how long the browser takes to execute it?", answer: "Not meaningfully. Minification makes the file smaller (less to download and parse), but the logic runs the same operations, so execution time stays about the same. That's why it can't fix shipping too much JavaScript." },
+      { question: "What is `font-display: swap`, and what performance/visual tradeoff does it introduce?", answer: "It shows text right away in a fallback font while the web font downloads, then swaps to the real font, so text is never invisible. The tradeoff: if the two fonts have different metrics (character widths, line height), the swap can shift the layout and hurt CLS." },
+      { question: "Why does compressing assets with gzip or Brotli improve load performance, and which one usually compresses better?", answer: "Both shrink the bytes sent for text assets like HTML, CSS, and JS, so they download faster. Brotli usually compresses better than gzip, though it can take a bit longer to compress. That affects build time more than serving an already-compressed file." },
+      { question: "How did HTTP/2 multiplexing reduce the value of older performance tricks like bundling many files together or sharding assets across multiple domains?", answer: "HTTP/1.1 allowed only a few parallel requests per connection, so bundling (fewer requests) and domain sharding (more connections) worked around the limit. HTTP/2 sends many requests over one connection at once, removing much of that overhead. Bundling everything into one giant file can now hurt caching without the old payoff." },
+      { question: "Using browser DevTools, how would you tell whether a slow page load is bottlenecked by network transfer or by JavaScript execution?", answer: "The Network panel's waterfall shows how long each resource spent downloading versus waiting; large or slow requests point to the network. The Performance panel's main-thread flame chart shows time spent parsing, compiling, and running JavaScript and doing layout/paint; if most time is there, you're CPU-bound." },
+      { question: "An `<img>` has no `width`/`height` attributes set. What layout symptom can result once it finishes loading on a slow connection, and how do you prevent it?", answer: "Before it loads, the browser doesn't know its size and reserves no space, so other content fills that area. When the image arrives, everything below jumps to make room, a layout shift that counts against CLS. Set width/height attributes (or CSS `aspect-ratio`) so the browser reserves the space before the image even starts downloading." },
+      { question: "What's the Core Web Vitals tradeoff between client-side rendering (CSR) and server-side rendering (SSR)?", answer: "SSR usually gives better LCP/FCP on first load, since the HTML arrives with real content instead of an empty shell waiting for JavaScript to fetch and render data. CSR is often slower on first load for that reason, but can feel faster on later in-app navigations, once the bundle is loaded and only data needs fetching." },
+      { question: "What does Time to First Byte (TTFB) measure, and what does a slow TTFB usually indicate?", answer: "The time from sending a request to receiving the first byte of the response. It mostly reflects server-side work (routing, database queries, server-side rendering), not front-end asset delivery. A slow TTFB points to a backend or network-latency problem that minification or lazy loading can't fix." },
+      { question: "Mechanically, how does a CDN improve load performance?", answer: "It caches static assets on servers spread out geographically, close to users. Requests are served from a nearby edge location instead of a distant origin server, cutting round-trip time." },
+      { question: "A returning visitor loads a page much faster than a first-time visitor loading the exact same assets. What's the likely mechanism, given proper `Cache-Control` headers?", answer: "The browser's disk/memory cache already holds the CSS, JS, and images from the last visit, and Cache-Control headers (e.g. a max-age) say they're still valid. So it uses them from cache without any network request. A first-time visitor has no cache and downloads everything." },
+      { question: "What's a common pitfall of giving a file like `app.js` a very long `Cache-Control: max-age`?", answer: "After a new deploy, users with a cached copy keep the old file until the cache expires, possibly running outdated code (or broken code, if the backend changed) for a long time. The standard fix is a content hash in the filename (e.g. app.3f2a1c.js). Each deploy produces a new filename that's fetched fresh, and the long cache is safe because a given filename's content never changes." },
     ],
     prerequisites: ["browser-rendering"],
     relatedTopics: ["browser-rendering", "responsive-design"],

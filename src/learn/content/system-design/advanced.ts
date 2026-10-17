@@ -664,20 +664,20 @@ server hold a connection open per client.
     id: "circuit-breaker",
     title: "Circuit Breaker & Retries",
     level: "advanced",
-    description: "Protecting a system from a failing dependency, instead of letting that failure cascade everywhere.",
+    description: "Protecting a system from a failing dependency so the failure doesn't spread.",
     explanation: `
-When one service calls another (common in microservices), that other
-service might be slow or down. Naively retrying the same failing call
-over and over can make things worse — it piles on more load exactly
-when the failing service can least handle it, and can even take down
-the caller too, as it piles up requests waiting on a response that
-never comes. A **circuit breaker** guards against this: after enough
-failures, it "trips" and stops sending requests to the failing
-dependency for a while, failing fast instead — giving the struggling
-service room to recover.
+When one service calls another (common in microservices), the other
+service may be slow or down. Retrying the failing call over and over
+can make things worse. It adds load exactly when the failing service
+can least handle it, and the caller can go down too as requests pile up
+waiting for answers that never come.
+
+A **circuit breaker** guards against this. After enough failures it
+"trips" and stops calling the failing dependency for a while, failing
+fast instead. That gives the struggling service room to recover.
     `.trim(),
     analogy:
-      "It's like an electrical circuit breaker in a house: rather than let a dangerous surge keep flowing and risk starting a fire, the breaker trips and cuts the circuit entirely. After some time (or once it's safe), it can be reset and power flows again.",
+      "It's like the circuit breaker in a house: instead of letting a dangerous surge keep flowing and risk a fire, it trips and cuts the circuit. Once it's safe, it's reset and power flows again.",
     examples: [
       {
         title: "A simple circuit breaker wrapping a risky call",
@@ -707,54 +707,50 @@ async function callWithBreaker(fn) {
   }
 }`,
         walkthrough: [
-          { code: "if (open) { ... }", explanation: "Once tripped, requests fail immediately without even attempting the risky call." },
-          { code: "Date.now() - openedAt < 30000", explanation: "After a cooldown period, the breaker allows a test attempt again." },
-          { code: "failureCount >= 5", explanation: "After enough consecutive failures, the breaker trips open, protecting the caller and the struggling dependency alike." },
+          { code: "if (open) { ... }", explanation: "Once tripped, requests fail immediately without trying the risky call." },
+          { code: "Date.now() - openedAt < 30000", explanation: "After a cooldown, the breaker allows a test attempt again." },
+          { code: "failureCount >= 5", explanation: "After enough consecutive failures, the breaker trips open, protecting both the caller and the struggling dependency." },
         ],
       },
     ],
     howItWorks: `
-A circuit breaker tracks recent failures for a given dependency. While
-failures stay below a threshold, it behaves normally (**closed** —
-requests flow through). Once failures cross that threshold, it
-**opens** — further calls fail immediately, without even attempting the
-network call, for a cooldown period. After that cooldown, it allows a
-small number of test requests through (**half-open**) to check if the
-dependency has recovered, closing again if so.
+A circuit breaker tracks recent failures for a dependency. It has three
+states:
+
+- **Closed**: failures are below a threshold, and requests flow through normally.
+- **Open**: failures crossed the threshold, so calls fail immediately, without a network call, for a cooldown period.
+- **Half-open**: after the cooldown, a few test requests go through. If the dependency has recovered, the breaker closes again.
     `.trim(),
     whyItExists: `
-Blindly retrying a failing dependency wastes time and resources on calls
-that are likely to fail anyway, and can pile up enough waiting requests
-to bring down the calling service too. A circuit breaker fails fast
-instead, protecting both the caller's own stability and giving the
-failing dependency breathing room to recover.
+Blind retries waste time and resources on calls likely to fail anyway,
+and enough waiting requests can bring down the caller too. A circuit
+breaker fails fast instead, keeping the caller stable and giving the
+failing dependency room to recover.
     `.trim(),
     whenToUse: `
-Use a circuit breaker around calls to any external dependency (another
-microservice, a third-party API) whose failure shouldn't be allowed to
-cascade into your own service failing too — especially in systems with
-many service-to-service calls.
+Wrap calls to any external dependency (another microservice, a
+third-party API) whose failure shouldn't take your service down with it,
+especially in systems with many service-to-service calls.
     `.trim(),
     whenNotToUse: `
-For calls where a failure genuinely should just fail immediately and be
-reported (no retrying makes sense, like a clearly invalid request), a
-circuit breaker adds complexity without benefit — it's specifically
-valuable for transient, recoverable failures.
+When a failure should just fail and be reported, with no point retrying
+(like a clearly invalid request), a circuit breaker adds complexity for
+nothing. It's for temporary, recoverable failures.
     `.trim(),
     commonMistakes: [
-      "Retrying a failing call immediately and indefinitely, without any backoff or circuit breaker, piling on load exactly when the dependency is already struggling.",
-      "Setting the failure threshold or cooldown so aggressively that the breaker trips on ordinary, brief blips instead of genuine sustained failures.",
-      "Forgetting to have a sensible fallback behavior for when the circuit is open, instead of just surfacing a confusing error to the end user.",
+      "Retrying a failing call immediately and forever, with no backoff or circuit breaker, adding load just when the dependency is struggling.",
+      "Setting the threshold or cooldown so tight that the breaker trips on brief blips instead of real, sustained failures.",
+      "Having no sensible fallback when the circuit is open, so users just see a confusing error.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, why blindly retrying a failing call can make an outage worse, not better." },
-      { difficulty: "Medium", prompt: "Describe the three states of a circuit breaker (closed, open, half-open) and what triggers moving between them." },
-      { difficulty: "Hard", prompt: "Explain what a good 'fallback' behavior might look like for a circuit breaker that's currently open, for a feature like showing product recommendations." },
+      { difficulty: "Easy", prompt: "Explain in your own words why blindly retrying a failing call can make an outage worse, not better." },
+      { difficulty: "Medium", prompt: "Describe the three states of a circuit breaker (closed, open, half-open) and what moves it between them." },
+      { difficulty: "Hard", prompt: "Explain what a good 'fallback' could look like while a circuit breaker is open, for a feature like product recommendations." },
     ],
     interviewQuestions: [
-      { question: "What problem does a circuit breaker solve?", answer: "It stops a caller from continuing to hammer a failing dependency with requests, failing fast instead to protect both the caller's own stability and give the dependency room to recover." },
-      { question: "What are the three states of a circuit breaker?", answer: "Closed (requests flow normally), open (requests fail immediately without attempting the call), and half-open (a few test requests are allowed through to check if the dependency has recovered)." },
-      { question: "Why is blind, unlimited retrying dangerous?", answer: "It can pile up load on an already-struggling dependency and cause the caller itself to back up waiting on responses, potentially cascading the failure further." },
+      { question: "What problem does a circuit breaker solve?", answer: "It stops a caller from hammering a failing dependency. Failing fast keeps the caller stable and gives the dependency room to recover." },
+      { question: "What are the three states of a circuit breaker?", answer: "Closed (requests flow normally), open (requests fail immediately without trying the call), and half-open (a few test requests go through to check whether the dependency has recovered)." },
+      { question: "Why is blind, unlimited retrying dangerous?", answer: "It piles load on an already struggling dependency and makes the caller back up waiting for responses, which can spread the failure further." },
     ],
     prerequisites: ["microservices-vs-monolith"],
     relatedTopics: ["microservices-vs-monolith", "rate-limiting"],
@@ -764,18 +760,18 @@ valuable for transient, recoverable failures.
     id: "idempotency",
     title: "Idempotency",
     level: "advanced",
-    description: "Designing an operation so that doing it more than once has the exact same effect as doing it once.",
+    description: "Designing an operation so doing it more than once has the same effect as doing it once.",
     explanation: `
-Networks are unreliable — a request might time out even though the
-server actually processed it successfully, leaving the client unsure
-whether to retry. If retrying could cause the operation to happen twice
-(charging a customer twice, sending a duplicate email), that's a real
-problem. An operation is called **idempotent** if performing it multiple
-times has the exact same effect as performing it once — making it safe
-to retry without fear of duplicating the result.
+Networks are unreliable. A request can time out even though the server
+processed it, leaving the client unsure whether to retry. If a retry
+could make the operation happen twice (charging a customer twice,
+sending a duplicate email), that's a real problem.
+
+An operation is **idempotent** if doing it many times has the same
+effect as doing it once. That makes it safe to retry.
     `.trim(),
     analogy:
-      "Pressing an elevator call button is idempotent — pressing it five times doesn't summon five elevators, the outcome is the same as pressing it once. Compare that to shouting 'add one more pizza to my order' five times — that genuinely places five separate orders, since each shout is a new instruction, not a repeat of the same one.",
+      "Pressing an elevator call button is idempotent: pressing it five times doesn't summon five elevators. Shouting 'add one more pizza to my order' five times is not; each shout is a new instruction, so you get five pizzas.",
     examples: [
       {
         title: "A non-idempotent request made safely idempotent",
@@ -794,54 +790,51 @@ function handlePayment(request, alreadyProcessed, previousResult, processPayment
   return processPayment(request); // otherwise process normally, and remember this key's result
 }`,
         walkthrough: [
-          { code: 'idempotencyKey: "req-8f3a2b"', explanation: "A unique id the client generates once per logical attempt, sent along with every retry of that same attempt." },
-          { code: "alreadyProcessed(request.idempotencyKey)", explanation: "Checks whether this exact request has already been handled." },
+          { code: 'idempotencyKey: "req-8f3a2b"', explanation: "A unique id the client creates once per logical attempt and sends with every retry of it." },
+          { code: "alreadyProcessed(request.idempotencyKey)", explanation: "Checks whether this exact request was already handled." },
           { code: "return previousResult(request.idempotencyKey);", explanation: "If so, returns the original result instead of processing (and charging) again." },
         ],
       },
     ],
     howItWorks: `
-The client generates a unique key for a given logical operation (not
-per network attempt — the same key is reused for retries of the same
-attempt) and sends it along with the request. The server remembers
-which keys it has already processed and their results; if the same key
-arrives again, it returns the stored result instead of repeating the
-underlying effect.
+The client creates a unique key per logical operation, not per network
+attempt (retries reuse the same key), and sends it with the request.
+
+The server remembers which keys it has processed and their results. If
+a key arrives again, it returns the stored result instead of repeating
+the effect.
     `.trim(),
     whyItExists: `
-Without idempotency, a client that can't tell whether a request actually
-succeeded (because the response was lost, not because the request
-failed) has no safe way to retry — retrying risks duplicating the
-effect, while not retrying risks leaving a legitimately failed operation
-unresolved. Idempotency removes that dilemma by making retries harmless.
+If the response was lost, the client can't tell whether the request
+succeeded. Retrying risks doing it twice; not retrying risks leaving a
+real failure unresolved. Idempotency removes that dilemma by making
+retries harmless.
     `.trim(),
     whenToUse: `
-Make an operation idempotent whenever it has a real-world effect that
-would be harmful to duplicate — payments, sending a notification,
-creating an order — especially for any operation a client might
-reasonably retry after an uncertain failure.
+Make an operation idempotent when duplicating it would cause real harm
+(payments, sending a notification, creating an order), especially if a
+client might retry after an unclear failure.
     `.trim(),
     whenNotToUse: `
-For an operation that's naturally already safe to repeat (checking a
-status, reading data, updating a value to a fixed target state)
-idempotency is often already free — no extra key or tracking is needed.
-Reserve the extra idempotency-key machinery for operations that
-genuinely aren't naturally idempotent, like "charge" or "send".
+Some operations are already safe to repeat (checking a status, reading
+data, setting a value to a fixed state), so no extra key or tracking is
+needed. Save the idempotency-key machinery for operations that aren't
+naturally idempotent, like "charge" or "send".
     `.trim(),
     commonMistakes: [
-      "Assuming GET requests need idempotency protection — reads are naturally idempotent already, since reading the same thing twice changes nothing.",
-      "Reusing a fresh idempotency key for every retry attempt instead of the same key for the same logical operation, which defeats the entire purpose.",
-      "Forgetting to eventually expire stored idempotency keys, causing unbounded storage growth over time.",
+      "Assuming GET requests need idempotency protection. Reads are already idempotent, since reading twice changes nothing.",
+      "Generating a fresh idempotency key for every retry instead of reusing one key per logical operation, which defeats the purpose.",
+      "Never expiring stored idempotency keys, so storage grows without limit.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, why retrying a payment request without idempotency protection is risky." },
-      { difficulty: "Medium", prompt: "Give one example of an operation that's naturally idempotent, and one that isn't, and explain the difference." },
-      { difficulty: "Hard", prompt: "Explain why the idempotency key must be generated once per logical attempt by the client, rather than by the server." },
+      { difficulty: "Easy", prompt: "Explain in your own words why retrying a payment request without idempotency protection is risky." },
+      { difficulty: "Medium", prompt: "Give one example of an operation that's naturally idempotent and one that isn't, and explain the difference." },
+      { difficulty: "Hard", prompt: "Explain why the client, not the server, must generate the idempotency key once per logical attempt." },
     ],
     interviewQuestions: [
-      { question: "What does it mean for an operation to be idempotent?", answer: "Performing it multiple times has the exact same effect as performing it once, making it safe to retry without duplicating the result." },
-      { question: "Why is idempotency especially important for payment APIs?", answer: "Because a client that isn't sure if a payment request succeeded needs a safe way to retry without risking charging the customer twice." },
-      { question: "Is a GET request typically idempotent?", answer: "Yes — reading the same data multiple times doesn't change anything, so GET requests are naturally idempotent without any extra design work." },
+      { question: "What does it mean for an operation to be idempotent?", answer: "Doing it many times has the same effect as doing it once, so it's safe to retry." },
+      { question: "Why is idempotency especially important for payment APIs?", answer: "A client unsure whether a payment went through needs a safe way to retry without charging the customer twice." },
+      { question: "Is a GET request typically idempotent?", answer: "Yes. Reading the same data repeatedly changes nothing, so GET is naturally idempotent with no extra design work." },
     ],
     prerequisites: ["rest-apis"],
     relatedTopics: ["rest-apis", "circuit-breaker"],
@@ -851,20 +844,22 @@ genuinely aren't naturally idempotent, like "charge" or "send".
     id: "monitoring-and-observability",
     title: "Monitoring & Observability",
     level: "advanced",
-    description: "Being able to tell what your system is actually doing, and why something went wrong, without guessing.",
+    description: "Knowing what your system is doing, and why something went wrong, without guessing.",
     explanation: `
-A system running in production will eventually behave unexpectedly —
-slow down, throw errors, or fail outright — and when it does, someone
-needs to figure out why, often under time pressure. **Monitoring** means
-continuously tracking key signals about a system's health (like error
-rates, response times, and resource usage) and alerting when something
-looks wrong. **Observability** is the broader ability to actually
-understand why, using tools like logs (a record of discrete events),
-metrics (numeric measurements over time), and traces (the path a single
-request took across multiple services).
+A production system will eventually slow down, throw errors, or fail,
+and someone has to find out why, often under pressure.
+
+**Monitoring** means tracking key health signals (error rates, response
+times, resource usage) and alerting when something looks wrong.
+
+**Observability** is the broader ability to understand *why*, using:
+
+- **Logs**: records of individual events.
+- **Metrics**: numeric measurements over time.
+- **Traces**: the path one request took across several services.
     `.trim(),
     analogy:
-      "Monitoring is like a car's dashboard warning lights — it tells you something is wrong (check engine, low oil) without necessarily telling you exactly why. Observability is like being able to pop the hood and actually trace the problem back to its source — a specific wire, a specific part — using the detailed information available, rather than just knowing a light came on.",
+      "Monitoring is like a car's dashboard warning lights: they tell you something is wrong (check engine, low oil) but not exactly why. Observability is like opening the hood and tracing the problem to a specific wire or part, instead of just knowing a light came on.",
     examples: [
       {
         title: "The three pillars, applied to one slow request",
@@ -878,57 +873,56 @@ logger.info("Checkout failed", { userId: 42, reason: "payment timeout" });
 // checkout-service (12ms) -> payment-service (4800ms) <- the slow one
 //                         -> inventory-service (8ms)`,
         walkthrough: [
-          { code: "metrics.increment(...)", explanation: 'Adds to a running count, useful for noticing "slow checkouts are up" at a glance, without any detail on a specific request.' },
-          { code: "logger.info(...)", explanation: "Records a detailed, specific event, useful for investigating exactly what happened for one user's request." },
-          { code: "The trace", explanation: "Shows exactly which service, out of several involved, was actually responsible for the slowness — here, payment-service." },
+          { code: "metrics.increment(...)", explanation: 'Adds to a running count. Good for spotting "slow checkouts are up" at a glance, with no detail on any one request.' },
+          { code: "logger.info(...)", explanation: "Records one detailed event, useful for investigating what happened to a specific user's request." },
+          { code: "The trace", explanation: "Shows which of the services involved caused the slowness: here, payment-service." },
         ],
       },
     ],
     howItWorks: `
-Metrics are lightweight numeric counters and measurements collected
-continuously (requests per second, average latency, error rate) and are
-cheap to store and graph over time, making them great for spotting
-trends and triggering alerts. Logs capture detailed, timestamped records
-of specific events, useful for digging into exactly what happened.
-Traces follow one individual request as it moves through multiple
-services, showing exactly where time was spent — essential once a
-system is split across many services, where a single log or metric
-alone can't show the full path.
+**Metrics** are lightweight counters and measurements collected
+continuously (requests per second, average latency, error rate). They're
+cheap to store and graph, so they're ideal for spotting trends and
+triggering alerts.
+
+**Logs** are detailed, timestamped records of specific events, for
+digging into exactly what happened.
+
+**Traces** follow one request through several services and show where
+the time went. Once a system is split into many services, no single log
+or metric can show the full path.
     `.trim(),
     whyItExists: `
-Without monitoring and observability, the only way to know something is
-wrong is when a user complains — and even then, there'd be no good way
-to figure out why. These tools let a team notice problems quickly (often
-before users do) and diagnose the actual root cause instead of
-guessing.
+Without them, you only learn something is wrong when a user complains,
+and then you can't easily find out why. These tools help a team spot
+problems quickly (often before users do) and find the real root cause
+instead of guessing.
     `.trim(),
     whenToUse: `
-Build in monitoring and observability from early on in any production
-system — metrics and alerts for overall health, logs for debugging
-specific incidents, and traces especially once a system involves
-multiple services calling each other.
+Build them in early for any production system: metrics and alerts for
+overall health, logs for debugging incidents, and traces once several
+services call each other.
     `.trim(),
     whenNotToUse: `
-For a small prototype or a personal project with no real users
-depending on it, full observability tooling (dedicated tracing
-infrastructure, alerting pipelines) is likely overkill — basic logging
-is often enough until the system actually matters to someone besides
-you.
+For a small prototype or personal project nobody depends on, full
+tooling (dedicated tracing, alerting pipelines) is likely overkill.
+Basic logging is often enough until the system matters to someone
+besides you.
     `.trim(),
     commonMistakes: [
-      "Logging so much low-value detail that genuinely important log entries get lost in the noise.",
-      "Having metrics and dashboards but no alerts, so problems are only noticed when someone happens to be looking at a graph.",
-      "Relying only on logs in a multi-service system, where a single request touches several services and no one log tells the full story — that's exactly what tracing is for.",
+      "Logging so much low-value detail that the important entries get lost in the noise.",
+      "Having metrics and dashboards but no alerts, so problems are noticed only if someone happens to look at a graph.",
+      "Relying only on logs in a multi-service system, where one request touches several services and no single log tells the full story. That's what tracing is for.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, the difference between a metric and a log." },
-      { difficulty: "Medium", prompt: "Describe a scenario where a metric alone would tell you something is wrong, but you'd need a trace to find out why." },
-      { difficulty: "Hard", prompt: "Explain why observability becomes significantly more important once a system moves from a monolith to microservices." },
+      { difficulty: "Easy", prompt: "Explain in your own words the difference between a metric and a log." },
+      { difficulty: "Medium", prompt: "Describe a scenario where a metric alone tells you something is wrong, but you'd need a trace to find out why." },
+      { difficulty: "Hard", prompt: "Explain why observability matters much more once a system moves from a monolith to microservices." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between monitoring and observability?", answer: "Monitoring tracks key signals and alerts when something looks wrong; observability is the broader ability to actually understand why, using logs, metrics, and traces together." },
-      { question: "What are the three commonly cited 'pillars' of observability?", answer: "Logs (detailed records of specific events), metrics (numeric measurements over time), and traces (the path of a single request across multiple services)." },
-      { question: "Why does tracing become especially important in a microservices architecture?", answer: "Because a single request can pass through many separate services, and no single log or metric can show the complete path — a trace ties all the pieces together." },
+      { question: "What's the difference between monitoring and observability?", answer: "Monitoring tracks key signals and alerts when something looks wrong. Observability is the broader ability to understand why, using logs, metrics, and traces together." },
+      { question: "What are the three commonly cited 'pillars' of observability?", answer: "Logs (detailed records of specific events), metrics (numeric measurements over time), and traces (the path of one request across several services)." },
+      { question: "Why does tracing become especially important in a microservices architecture?", answer: "One request can pass through many services, and no single log or metric shows the whole path. A trace ties the pieces together." },
     ],
     prerequisites: ["microservices-vs-monolith"],
     relatedTopics: ["microservices-vs-monolith", "circuit-breaker"],
