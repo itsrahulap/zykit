@@ -9,9 +9,11 @@ const docs: ToolDocs = {
     'To review markup you already have, switch to **Validate existing**, paste the JSON-LD (or the page snippet that contains it) and read which type was detected and what is missing.',
   ],
   howItWorks:
-    'Each type is described by a list of fields with a dotted path (for example `offers.price`), a format and a level taken from Google\'s structured-data documentation. The form values are assembled into a nested object: the first time a path enters a nested object it gets the right schema.org `@type` (`Offer`, `PostalAddress`, `Person`...), numbers and booleans are written as JSON numbers and booleans, and repeating items such as FAQ questions, steps, reviews or opening hours become arrays. Empty fields are left out.\n\n' +
+    'Each type is a list of fields, each with a dotted path (for example `offers.price`), a format and a level taken from Google\'s structured-data documentation. Your form values are built into a nested object:\n\n' +
+    '- Each nested object gets the right schema.org `@type` (`Offer`, `PostalAddress`, `Person`...).\n- Numbers and booleans are written as JSON numbers and booleans.\n- Repeating items such as FAQ questions, steps, reviews or opening hours become arrays.\n- Empty fields are left out.\n\n' +
     'Validation is plain pattern checking: http(s) URLs, ISO 8601 dates (checked against the real calendar), date-times with optional zone, durations like `PT1H30M`, prices with a dot decimal and no symbol, three-letter capital currency codes, 24-hour times and weekday names.\n\n' +
-    'The snippet is `JSON.stringify` with two-space indentation, with every `<` written as `\\u003c`, so text such as `</script>` inside a value cannot end the script element early. **Validate existing** parses your text as JSON (or pulls the `ld+json` script blocks out of HTML), follows `@graph` and arrays, finds each object\'s `@type` and runs the same checks, reading nested values whether they are objects, arrays or plain strings.',
+    'The snippet is `JSON.stringify` with two-space indentation and every `<` written as `\\u003c`, so text such as `</script>` inside a value cannot end the script element early.\n\n' +
+    '**Validate existing** parses your text as JSON (or pulls the `ld+json` script blocks out of HTML), follows `@graph` and arrays, and runs the same checks on each object\'s `@type`. Nested values can be objects, arrays or plain strings.',
   limits: [
     'Only the 14 listed type families are checked. Other `@type` values are listed as "not checked".',
     'Requirements follow Google\'s rich-result documentation, not the full schema.org vocabulary, so a property marked Optional here can still be valid and useful.',

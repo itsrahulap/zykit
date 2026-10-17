@@ -8,20 +8,23 @@ export const aiBeginnerTopics: Topic[] = [
     level: "beginner",
     description: "The vocabulary of the field: AI, machine learning, deep learning, generative AI, models, parameters, training and inference.",
     explanation: md(
-      "**Artificial intelligence (AI)** is the broad goal of making computers do things that normally need human intelligence: understanding language, recognising images, making decisions, writing text. It is an umbrella term, not one specific technique.",
-      "For decades most AI was **rule-based**: a programmer wrote the rules by hand. 'If the email contains the word *lottery* and comes from an unknown sender, mark it as spam.' That works until the world changes faster than you can write rules. Spammers simply write *l0ttery*.",
-      "**Machine learning (ML)** flips this around. Instead of writing the rules, you show the computer many examples (emails labelled spam or not spam) and let an algorithm *learn* the rules from the data. The thing that gets learned is called a **model**.",
-      "A **model** is just a function with adjustable numbers inside it. Those adjustable numbers are called **parameters** (or *weights*). A model that predicts house prices might be `price = w1 * size + w2 * bedrooms + b`, where `w1`, `w2` and `b` are parameters. **Training** means automatically nudging the parameters, example after example, until the model's outputs are close to the right answers. Using a trained model to get answers for new inputs is called **inference**.",
-      "**Deep learning** is a kind of machine learning that uses **neural networks** with many layers. A neural network is a big chain of simple maths operations (multiply by weights, add, apply a simple non-linear function), stacked in layers. 'Deep' just means many layers. Deep networks can have millions or billions of parameters, which lets them learn very rich patterns - from raw pixels to 'this is a cat', or from raw text to grammar, facts and style.",
-      "**Generative AI** is deep learning used to *create* new content - text, images, audio, code - rather than only to label or score things. A spam filter is *discriminative* (it picks a label). A model that writes an email is *generative*.",
-      "A **Large Language Model (LLM)** is a generative model for text, trained on enormous amounts of writing. Claude is an LLM. Everything in this subject - prompting, RAG, agents - is about building software around LLMs.",
+      "**Artificial intelligence (AI)** is the broad goal of making computers do tasks that normally need human intelligence, such as understanding language, recognising images, making decisions or writing text. It is an umbrella term, not one technique.",
+      "For decades most AI was **rule-based**: a programmer wrote the rules by hand. 'If the email contains the word *lottery* and comes from an unknown sender, mark it as spam.' This breaks when the world changes faster than you can write rules. Spammers just write *l0ttery*.",
+      "**Machine learning (ML)** flips this around. You show the computer many examples (emails labelled spam or not spam), and an algorithm *learns* the rules from the data. What it learns is called a **model**.",
+      "A **model** is a function with adjustable numbers inside it, called **parameters** (or *weights*). A house-price model might be `price = w1 * size + w2 * bedrooms + b`, where `w1`, `w2` and `b` are parameters.",
+      "**Training** means nudging the parameters, example by example, until the model's outputs are close to the right answers. **Inference** means using the trained model to get answers for new inputs.",
+      "**Deep learning** is machine learning with **neural networks** that have many layers. A neural network is a chain of simple maths steps (multiply by weights, add, apply a simple non-linear function), stacked in layers. 'Deep' just means many layers. With millions or billions of parameters, deep networks learn rich patterns: from raw pixels to 'this is a cat', or from raw text to grammar, facts and style.",
+      "**Generative AI** uses deep learning to *create* new content (text, images, audio, code) instead of only labelling or scoring things. A spam filter is *discriminative*: it picks a label. A model that writes an email is *generative*.",
+      "A **Large Language Model (LLM)** is a generative model for text, trained on huge amounts of writing. Claude is an LLM. This whole subject (prompting, RAG, agents) is about building software around LLMs.",
       "The nesting to remember:",
       "- **AI** - any technique that makes machines act intelligently (including hand-written rules).\n- **Machine learning** - AI that learns patterns from data instead of hand-written rules.\n- **Deep learning** - machine learning with many-layered neural networks.\n- **Generative AI** - deep learning models that produce new content.\n- **LLMs** - generative models specialised in language (and often images and code too).",
-      "Two other terms you will meet everywhere: **training data** (the examples a model learns from) and a **dataset split** into *training* data (used to adjust parameters) and *test* data (held back to check the model works on examples it has never seen). A model that memorises its training data but fails on new data is said to **overfit**.",
-      "As an engineer building AI applications you will almost never train an LLM yourself - that costs enormous compute. You will *use* a pretrained model through an **API** (a way for your program to send a request to another program over the network and get a response). Your job is to feed the model the right input, check its output, and connect it to your data and tools. That is what *AI engineering* means in this subject.",
+      "You will also meet these terms everywhere:",
+      "- **Training data**: the examples a model learns from.\n- **Dataset split**: *training* data adjusts the parameters; *test* data is held back to check the model works on examples it has never seen.\n- **Overfitting**: the model memorises its training data but fails on new data.",
+      "As an AI engineer you will almost never train an LLM yourself; that takes enormous compute. Instead you *use* a pretrained model through an **API** (a way for your program to send a request to another program over the network and get a response).",
+      "Your job is to give the model the right input, check its output, and connect it to your data and tools. That is what *AI engineering* means in this subject.",
     ),
     analogy:
-      "Rule-based AI is a cookbook: someone wrote down every step, and the cook follows it exactly. Machine learning is a trainee chef who tastes thousands of dishes, gets told 'good' or 'bad' each time, and slowly adjusts their instincts. Deep learning is that chef with an enormous memory for subtle patterns. Generative AI is the chef inventing a brand new dish in the style of everything they have tasted. An LLM is a chef who has 'tasted' a huge library of text and now writes new text in any style you ask for.",
+      "Rule-based AI is a cookbook: someone wrote every step, and the cook follows it exactly. Machine learning is a trainee chef who tastes thousands of dishes, hears 'good' or 'bad' each time, and slowly adjusts. Deep learning is that chef with a huge memory for subtle patterns. Generative AI is the chef inventing a new dish in the style of everything they have tasted. An LLM is a chef who has 'tasted' a huge library of text and can write new text in any style you ask for.",
     examples: [
       {
         title: "Rules vs learning: a tiny spam filter both ways",
@@ -60,11 +63,11 @@ const tests = ["claim your free prize", "team meeting on monday", "l0ttery winne
 for (const t of tests) {
   console.log(JSON.stringify(t), "rule:", ruleBased(t), "| learned:", learned(t));
 }`,
-        explanation: "The rule only knows the word 'lottery' and misses every other spam. The learned version picked up 'free', 'prize' and 'now' from data nobody wrote rules for. Real ML uses far better algorithms, but the idea is identical: the behaviour comes from data, not hand-written rules.",
+        explanation: "The rule only knows 'lottery', so it misses every other spam. The learned version picked up 'free', 'prize' and 'now' from the data, with no hand-written rules. Real ML uses far better algorithms, but the idea is the same: behaviour comes from data, not rules.",
         walkthrough: [
-          { code: "function ruleBased(email) { ... }", explanation: "Classic AI: a human-written rule. It cannot handle anything the author did not anticipate." },
+          { code: "function ruleBased(email) { ... }", explanation: "Classic AI: a hand-written rule. It cannot handle anything the author did not foresee." },
           { code: "const training = [[text, label], ...]", explanation: "Labelled examples - the training data." },
-          { code: "counts[label][word] = ...", explanation: "'Training': we compute numbers (word counts) from the data. These counts are this toy model's parameters." },
+          { code: "counts[label][word] = ...", explanation: "'Training': compute numbers (word counts) from the data. These counts are this toy model's parameters." },
           { code: "function learned(email)", explanation: "'Inference': use the learned numbers to label an email the model has never seen." },
         ],
       },
@@ -92,7 +95,7 @@ for (let step = 0; step <= 2000; step++) {
   }
 }
 console.log("prediction for x = 10:", (w * 10 + b).toFixed(2), "(true value 31)");`,
-        explanation: "This is gradient descent, the algorithm used to train essentially every neural network, including LLMs. An LLM does exactly this, but with billions of parameters instead of two, and with 'predict the next token' as the task instead of a straight line.",
+        explanation: "This is gradient descent, the algorithm used to train almost every neural network, including LLMs. An LLM does the same thing with billions of parameters instead of two, and with 'predict the next token' as the task instead of a straight line.",
       },
       {
         title: "Using a pretrained generative model (Python, Anthropic SDK)",
@@ -115,9 +118,10 @@ for block in resp.content:
       },
     ],
     howItWorks: md(
-      "Every machine learning system has the same three parts: **data** (examples), a **model** (a function with parameters), and a **training procedure** (an algorithm that adjusts the parameters to reduce a measure of error called the **loss**).",
-      "Training loop, in words: take an example, run the model to get a prediction, measure how wrong it was (loss), work out which direction to move each parameter to make it less wrong (the *gradient*), move each parameter a small step in that direction. Repeat millions of times. This is **gradient descent**.",
-      "Deep learning uses the same loop, but the model is a neural network with many layers. Each layer transforms its input a little; together the layers can represent complicated patterns. Nobody writes those patterns by hand - they emerge from training on data.",
+      "Every machine learning system has three parts:",
+      "- **Data**: the examples.\n- **Model**: a function with parameters.\n- **Training procedure**: an algorithm that adjusts the parameters to reduce a measure of error called the **loss**.",
+      "The training loop: take an example, run the model to get a prediction, and measure how wrong it was (the loss). Work out which way to move each parameter to reduce the error (the *gradient*), then move it a small step that way. Repeat millions of times. This is **gradient descent**.",
+      "Deep learning uses the same loop with a many-layered neural network. Each layer transforms its input a little; together the layers can represent complex patterns. Nobody writes those patterns by hand. They emerge from training on data.",
       "After training, the parameters are frozen and saved. **Inference** loads them and runs the function on new inputs. When you call an LLM API, the provider runs inference for you on their hardware and sends back the result.",
     ),
     diagram: `+--------------------------------------------+
@@ -140,14 +144,16 @@ for block in resp.content:
  data --> [training: adjust parameters] --> model
  new input --> [inference: run model] --> output`,
     whyItExists: md(
-      "Many valuable tasks - understanding a customer's question, summarising a contract, spotting a tumour in a scan - have no clean set of rules a human could write down. Machine learning exists because data is easier to collect than rules are to write, and because learned models keep improving as data grows.",
-      "Generative AI and LLMs exist because a single model trained on broad text turns out to be useful for thousands of tasks without task-specific training: you just describe the task in words.",
+      "Many valuable tasks, like understanding a customer's question, summarising a contract or spotting a tumour in a scan, have no clean rules a human could write down. Machine learning exists because data is easier to collect than rules are to write, and learned models keep improving as data grows.",
+      "Generative AI and LLMs exist because one model trained on broad text turns out to be useful for thousands of tasks without task-specific training. You just describe the task in words.",
     ),
     whenToUse: md(
-      "Reach for ML when the task is fuzzy (language, images, judgement calls), when rules would be endless, or when you have lots of examples of the right answer. Reach for a generative LLM when the input or output is natural language, code or loosely structured content: drafting, summarising, extracting, classifying, answering questions, operating tools.",
+      "Use ML when the task is fuzzy (language, images, judgement calls), when rules would never end, or when you have many examples of the right answer.",
+      "Use a generative LLM when the input or output is natural language, code or loosely structured content: drafting, summarising, extracting, classifying, answering questions, operating tools.",
     ),
     whenNotToUse: md(
-      "Do not use AI when a simple deterministic rule or formula does the job: tax calculations, sorting, validating an email format, looking up a record by id. Normal code is cheaper, faster, exact and testable. Do not use an LLM when every answer must be provably correct with no human or programmatic check - LLMs can be confidently wrong (see hallucinations-and-limitations).",
+      "Don't use AI when a simple deterministic rule or formula does the job: tax calculations, sorting, validating an email format, looking up a record by id. Normal code is cheaper, faster, exact and testable.",
+      "Don't use an LLM when every answer must be provably correct and no human or program checks it. LLMs can be confidently wrong (see hallucinations-and-limitations).",
     ),
     commonMistakes: [
       "Using 'AI', 'ML' and 'LLM' as synonyms - LLMs are one small (if very visible) part of AI.",
@@ -183,18 +189,23 @@ for block in resp.content:
     level: "beginner",
     description: "Next-token prediction, training data, the transformer and attention, pretraining vs instruction tuning vs RLHF, and why models can be wrong.",
     explanation: md(
-      "A **Large Language Model** does one thing: given some text, it predicts **what comes next**. Everything else - answering questions, writing code, following instructions - is built on top of that single ability.",
-      "Text is first split into **tokens**, small chunks such as whole words, parts of words or punctuation (`un`, `believ`, `able`). Each token has an id number. The model sees a sequence of token ids and outputs a **probability distribution** over its whole vocabulary for the next token. A probability distribution is just a list of possible outcomes with a likelihood for each, where the likelihoods add up to 1 (100%). For the input 'The cat sat on the', the model might output: `mat` 0.41, `floor` 0.18, `sofa` 0.09, ... thousands more with tiny probabilities.",
-      "To **generate** text, the system picks one token from that distribution, appends it to the input, and asks the model again. Token by token, one at a time. This is called **autoregressive** generation. When you watch a chatbot 'type', you are literally watching this loop.",
-      "**Where does the knowledge come from?** In **pretraining**, the model reads a huge amount of text (web pages, books, code, articles). For every position in that text it tries to predict the next token, compares its guess with the real next token, and adjusts its parameters slightly using gradient descent (see what-is-ai). After trillions of such guesses, the parameters encode grammar, facts, reasoning patterns and styles - because predicting text well *requires* those things. To predict the end of 'The capital of France is', it helps to have learned that the answer is Paris.",
-      "**The transformer.** Modern LLMs use a neural network architecture called the **transformer**. Its key idea is **attention**: when processing each token, the model looks back at all the earlier tokens and decides how much each one matters for understanding this one. In 'The animal didn't cross the street because *it* was too tired', attention lets the model connect *it* to *animal*. Each token is represented as a list of numbers (a *vector*); attention computes how well each pair of tokens 'matches' and blends information from the best matches. A transformer stacks dozens of these attention layers, each refining the representation.",
-      "**From text predictor to assistant.** A model that has only been pretrained (a **base model**) continues text; ask it 'What is the capital of France?' and it might continue with more quiz questions, because that is what such text looks like on the web. Two more training stages turn it into a helpful assistant:",
-      "- **Instruction tuning** (supervised fine-tuning): further training on many examples of instructions paired with good responses, written or curated by people. The model learns the *format* of being an assistant: read the request, answer it.\n- **Reinforcement learning from human feedback (RLHF)** and related methods: the model produces several answers, people (or a model trained on people's preferences) rank which is better, and the model is trained to produce more of the preferred kind - more helpful, more honest, safer. Some labs also use AI feedback guided by a written set of principles.",
-      "**Why models can be wrong.** An LLM is optimised to produce *plausible* continuations, not *verified true* ones. It has no built-in database of facts and no automatic way to check its output. If the training data was thin, outdated or contradictory on a topic, the most plausible-sounding continuation may be false - this is a **hallucination**. Its knowledge also stops at a **training cutoff** date, so it does not know about later events unless you give it that information in the prompt.",
-      "**What the model does NOT do:** it does not search the internet by itself (unless given a tool), it does not remember your previous conversations (unless you send them again), and it does not learn from your chats in real time - its parameters are fixed during inference.",
+      "A **Large Language Model** does one thing: given some text, it predicts **what comes next**. Everything else (answering questions, writing code, following instructions) is built on that single skill.",
+      "Text is first split into **tokens**: small chunks like whole words, parts of words or punctuation (`un`, `believ`, `able`). Each token has an id number.",
+      "The model reads a sequence of token ids and outputs a **probability distribution** over its whole vocabulary for the next token: a list of possible next tokens, each with a likelihood, adding up to 1 (100%). For 'The cat sat on the', it might output `mat` 0.41, `floor` 0.18, `sofa` 0.09, ... and thousands more with tiny probabilities.",
+      "To **generate** text, the system picks one token from that distribution, adds it to the input, and asks the model again, one token at a time. This is **autoregressive** generation. When a chatbot seems to 'type', you are watching this loop.",
+      "**Where does the knowledge come from?** In **pretraining**, the model reads a huge amount of text (web pages, books, code, articles). At every position it guesses the next token, compares the guess with the real one, and adjusts its parameters slightly using gradient descent (see what-is-ai).",
+      "After trillions of guesses, the parameters encode grammar, facts, reasoning patterns and styles, because predicting text well *requires* them. To finish 'The capital of France is', it helps to have learned that the answer is Paris.",
+      "**The transformer.** Modern LLMs use a neural network design called the **transformer**. Its key idea is **attention**: for each token, the model looks back at all earlier tokens and decides how much each one matters. In 'The animal didn't cross the street because *it* was too tired', attention lets the model link *it* to *animal*.",
+      "Each token is a list of numbers (a *vector*). Attention scores how well each pair of tokens 'matches' and blends in information from the best matches. A transformer stacks dozens of attention layers, each refining the representation.",
+      "**From text predictor to assistant.** A model that is only pretrained (a **base model**) just continues text. Ask it 'What is the capital of France?' and it may reply with more quiz questions, because that is what such text looks like on the web. Two more training stages make it a helpful assistant:",
+      "- **Instruction tuning** (supervised fine-tuning): more training on many instructions paired with good responses, written or curated by people. The model learns the *format* of being an assistant: read the request, answer it.\n- **Reinforcement learning from human feedback (RLHF)** and related methods: the model writes several answers, people (or a model trained on their preferences) rank them, and the model is trained to produce more of the preferred kind: more helpful, more honest, safer. Some labs also use AI feedback guided by a written set of principles.",
+      "**Why models can be wrong.** An LLM is trained to produce *plausible* text, not *verified true* text. It has no built-in fact database and no automatic way to check itself. If the training data on a topic was thin, outdated or contradictory, the most plausible answer may be false. This is a **hallucination**.",
+      "Its knowledge also stops at a **training cutoff** date. It does not know about later events unless you put that information in the prompt.",
+      "**What the model does NOT do:**",
+      "- Search the internet by itself (unless you give it a tool).\n- Remember your previous conversations (unless you send them again).\n- Learn from your chats in real time. Its parameters are fixed during inference.",
     ),
     analogy:
-      "Imagine the world's most voracious reader playing a game: you read them the start of a sentence and they must guess the next word. After reading a library bigger than any human could, they get astonishingly good - good enough that 'guessing the next word' of a question produces a correct, well-written answer. Instruction tuning is a finishing school that teaches them to respond to requests instead of rambling on. But they are still guessing: if they never read about something, they may confidently guess wrong rather than say 'I don't know'.",
+      "Picture the world's keenest reader playing a game: you read them the start of a sentence and they guess the next word. After reading a library bigger than any human could, they get so good that 'guessing the next word' after a question produces a correct, well-written answer. Instruction tuning is finishing school: it teaches them to answer requests instead of rambling on. But they are still guessing. If they never read about something, they may confidently guess wrong instead of saying 'I don't know'.",
     examples: [
       {
         title: "A toy next-word predictor from bigram counts",
@@ -243,11 +254,11 @@ for (let i = 0; i < 5; i++) {
   out.push(word);
 }
 console.log("generated:", out.join(" "));`,
-        explanation: "Notice the generated text loops ('the cat sat on the cat ...') because a bigram model only sees one word of context. Transformers fix this with attention over the entire context, which is why they produce coherent paragraphs.",
+        explanation: "The generated text loops ('the cat sat on the cat ...') because a bigram model sees only one word of context. Transformers fix this with attention over the whole context, which is why they write coherent paragraphs.",
         walkthrough: [
           { code: "next[a][b] = (next[a][b] || 0) + 1", explanation: "Training: count how often word b follows word a. These counts are the model's 'parameters'." },
           { code: "map(([w, c]) => [w, c / total])", explanation: "Convert counts to probabilities that add up to 1: a probability distribution over next words." },
-          { code: "word = dist[0][0]; out.push(word);", explanation: "Generation: pick a token, append it, predict again. This loop is exactly how LLMs produce text." },
+          { code: "word = dist[0][0]; out.push(word);", explanation: "Generation: pick a token, append it, predict again. LLMs produce text with exactly this loop." },
         ],
       },
       {
@@ -279,7 +290,7 @@ tokens.forEach((t, i) => {
   const bar = "#".repeat(Math.round(weights[i] * 60));
   console.log(t.padEnd(8), weights[i].toFixed(3), bar);
 });`,
-        explanation: "The vectors here are hand-picked to show the idea. In a real transformer, the query and key vectors are computed from the tokens by learned parameters, and many attention 'heads' run in parallel, each learning to track a different kind of relationship (who did what, which noun a pronoun refers to, matching brackets in code...).",
+        explanation: "The vectors here are hand-picked to show the idea. In a real transformer, learned parameters compute the query and key vectors from the tokens. Many attention 'heads' run in parallel, each tracking a different kind of relationship (who did what, which noun a pronoun refers to, matching brackets in code...).",
       },
       {
         title: "Watching autoregressive generation happen (Python, streaming)",
@@ -300,17 +311,20 @@ with client.messages.stream(
 final = stream.get_final_message()
 print()
 print("output tokens generated:", final.usage.output_tokens)`,
-        explanation: "Each printed chunk corresponds to one or a few newly generated tokens. The output token count tells you how many times the model ran its next-token step.",
+        explanation: "Each printed chunk is one or a few newly generated tokens. The output token count tells you how many times the model ran its next-token step.",
       },
     ],
     howItWorks: md(
       "**Step 1 - Tokenise.** The input text becomes a list of token ids, e.g. `[464, 3797, 3332, 319, 262]`.",
-      "**Step 2 - Embed.** Each token id is looked up in a learned table that maps it to a vector (a list of numbers). Information about each token's *position* is added, because otherwise the model could not tell 'dog bites man' from 'man bites dog'.",
-      "**Step 3 - Transformer layers.** The vectors pass through many layers. Each layer has an **attention** step (every token gathers information from relevant earlier tokens) and a **feed-forward** step (each token's vector is transformed independently, which is where much of the learned knowledge is thought to be stored). In a language model, attention is *causal*: a token can only look at tokens before it, never after, because at generation time the future does not exist yet.",
-      "**Step 4 - Predict.** The final vector of the last position is converted into one score per vocabulary token (called *logits*), and a function called **softmax** turns those scores into probabilities.",
-      "**Step 5 - Sample.** One token is chosen from the distribution (how exactly is covered in sampling-and-model-settings), appended to the input, and steps 1-5 repeat until the model produces a special end-of-turn token or hits the maximum length you allowed.",
-      "**Training stages, summarised:** pretraining (predict the next token on a vast text corpus - learns language and knowledge), instruction tuning (learn to follow instructions from example conversations), and preference training such as RLHF (learn which of several answers people prefer). The later stages are much smaller than pretraining but change the model's *behaviour* a lot.",
-      "**Why it can be wrong:** the model outputs the most *plausible* text given its training, and plausibility is not truth. Gaps or errors in training data, the training cutoff, ambiguous prompts and the randomness of sampling all lead to fluent but incorrect answers. Good AI engineering supplies the right facts in the prompt (RAG), lets the model use tools, and checks outputs.",
+      "**Step 2 - Embed.** A learned table maps each token id to a vector (a list of numbers). Each token's *position* is added too; otherwise the model could not tell 'dog bites man' from 'man bites dog'.",
+      "**Step 3 - Transformer layers.** The vectors pass through many layers. In each layer, an **attention** step lets every token gather information from relevant earlier tokens. A **feed-forward** step then transforms each token's vector on its own; much of the learned knowledge is thought to live here.",
+      "In a language model, attention is *causal*: a token can only look at tokens before it, because at generation time the future does not exist yet.",
+      "**Step 4 - Predict.** The final vector at the last position becomes one score per vocabulary token (*logits*). A function called **softmax** turns those scores into probabilities.",
+      "**Step 5 - Sample.** One token is picked from the distribution (see sampling-and-model-settings for how) and added to the input. Steps 1-5 repeat until the model outputs a special end-of-turn token or hits the maximum length you set.",
+      "**Training stages, in short:**",
+      "- Pretraining: predict the next token on a huge text corpus. Learns language and knowledge.\n- Instruction tuning: learn to follow instructions from example conversations.\n- Preference training such as RLHF: learn which of several answers people prefer.",
+      "The later stages are much smaller than pretraining but change the model's *behaviour* a lot.",
+      "**Why it can be wrong:** the model outputs the most *plausible* text, and plausible is not the same as true. Gaps or errors in training data, the training cutoff, vague prompts and random sampling all lead to fluent but wrong answers. Good AI engineering puts the right facts in the prompt (RAG), lets the model use tools, and checks outputs.",
     ),
     diagram: `"The cat sat on the"
         |  tokenise
@@ -332,15 +346,16 @@ print("output tokens generated:", final.usage.output_tokens)`,
         v
  "mat"  --> append, repeat`,
     whyItExists: md(
-      "Next-token prediction is a *self-supervised* task: the 'right answer' for every position is just the next token in existing text, so no human labelling is needed and you can train on almost unlimited data. Learning to predict text well forces the model to learn language, facts and reasoning patterns along the way.",
-      "The transformer exists because earlier sequence models processed text one word at a time and struggled to connect words far apart. Attention connects any two positions directly and can be computed in parallel on GPUs, which made training on huge datasets practical.",
-      "Instruction tuning and RLHF exist because a raw text predictor is not a helpful assistant; these stages align the model's behaviour with what users actually want.",
+      "Next-token prediction is *self-supervised*: the 'right answer' at every position is just the next token in existing text. No human labelling is needed, so you can train on almost unlimited data. Predicting text well forces the model to learn language, facts and reasoning patterns along the way.",
+      "The transformer exists because earlier sequence models read text one word at a time and struggled to connect distant words. Attention links any two positions directly and runs in parallel on GPUs, which made training on huge datasets practical.",
+      "Instruction tuning and RLHF exist because a raw text predictor is not a helpful assistant. These stages align the model's behaviour with what users want.",
     ),
     whenToUse: md(
-      "Understanding this mechanism helps you every day as an AI engineer: it explains why the prompt matters so much (it is the context for prediction), why output is billed per token, why long outputs take longer (one token at a time), why the model may be outdated (training cutoff), and why you must supply facts and verify outputs.",
+      "This mechanism explains much of daily AI engineering: why the prompt matters so much (it is the context for prediction), why you pay per token, why long outputs take longer (one token at a time), why the model may be outdated (training cutoff), and why you must supply facts and check outputs.",
     ),
     whenNotToUse: md(
-      "You do not need to understand the maths of transformers to build good applications; do not get stuck on matrix calculus before shipping your first prompt. Also avoid anthropomorphising: 'the model thinks/knows/wants' is convenient shorthand, but design your systems around what it actually is - a powerful next-token predictor shaped by training.",
+      "You don't need transformer maths to build good applications, so don't get stuck on matrix calculus before shipping your first prompt.",
+      "Also avoid treating the model like a person. 'The model thinks/knows/wants' is handy shorthand, but design your systems around what it really is: a powerful next-token predictor shaped by training.",
     ),
     commonMistakes: [
       "Believing the model retrieves sentences from a stored copy of its training data; it generates from learned parameters.",
@@ -378,17 +393,19 @@ print("output tokens generated:", final.usage.output_tokens)`,
     level: "beginner",
     description: "What tokens are, how tokenizers split text, why everything is counted in tokens, and how the context window limits what a model can see.",
     explanation: md(
-      "Models do not read letters or words; they read **tokens**. A token is a chunk of text from a fixed **vocabulary** that the model's **tokenizer** knows. Common words are often a single token (`the`, `cat`), rarer words are split into pieces (`tokenization` might become `token` + `ization`), and spaces and punctuation are part of tokens too. Each token maps to an integer **token id**.",
-      "Why not just use characters or whole words? Characters make sequences very long (more work per sentence). Whole words make the vocabulary enormous and cannot handle new words, typos or code. **Subword** tokenizers are the compromise: frequent chunks get their own token, and anything else can still be spelled out from smaller pieces. The most common family is **Byte Pair Encoding (BPE)**: start from single bytes/characters and repeatedly merge the most frequent adjacent pair into a new token.",
-      "A rough rule of thumb for English prose is that a token is about three-quarters of a word, or around four characters. Treat this only as a quick estimate: code, numbers, non-English languages and unusual formatting usually use more tokens per character, and different model families use different tokenizers. When the number matters, count with the provider's tokenizer or token-counting endpoint.",
+      "Models do not read letters or words; they read **tokens**. A token is a chunk of text from a fixed **vocabulary** that the model's **tokenizer** knows. Common words are often one token (`the`, `cat`), rarer words are split into pieces (`tokenization` might become `token` + `ization`), and spaces and punctuation are part of tokens too. Each token maps to an integer **token id**.",
+      "Why not use characters or whole words? Characters make sequences very long (more work per sentence). Whole words make the vocabulary huge and cannot handle new words, typos or code. **Subword** tokenizers are the compromise: frequent chunks get their own token, and anything else can be spelled out from smaller pieces.",
+      "The most common family is **Byte Pair Encoding (BPE)**: start from single bytes/characters and repeatedly merge the most frequent adjacent pair into a new token.",
+      "Rule of thumb for English prose: a token is about three-quarters of a word, or around four characters. Use this only as a quick estimate. Code, numbers, non-English languages and unusual formatting usually use more tokens per character, and different model families use different tokenizers. When the number matters, count with the provider's tokenizer or token-counting endpoint.",
       "Tokens matter for three practical reasons:",
       "- **Cost**: LLM APIs bill by input tokens (what you send) and output tokens (what the model writes), usually at different rates.\n- **Speed**: output is produced one token at a time, so longer answers take proportionally longer.\n- **Limits**: every model has a maximum context window and you set a maximum output length.",
-      "The **context window** is the maximum number of tokens the model can consider in one request - your system prompt, the whole conversation history, any documents you paste in, tool definitions, *and* the tokens it generates in its reply all share it. Anything outside the window simply does not exist for the model. Context windows of modern models are large (whole books can fit), but they are finite, and filling them has costs: more money, more latency, and often worse attention to details buried in the middle of a huge prompt.",
-      "Because the API is **stateless** (it does not remember previous requests), a chat application resends the entire conversation each turn. Long conversations therefore grow until they approach the window and must be trimmed or summarised. This is the root of many design decisions in RAG and agents: you cannot paste everything, so you must *choose* what goes into the context.",
-      "Tokenization also explains some odd model behaviours: counting the letters in a word, reversing strings, or exact character-level arithmetic can be harder than expected, because the model sees `straw` + `berry` as chunks, not as individual letters.",
+      "The **context window** is the maximum number of tokens the model can consider in one request. Your system prompt, the whole conversation history, any pasted documents, tool definitions *and* the reply it generates all share it. Anything outside the window does not exist for the model.",
+      "Modern context windows are large (whole books can fit), but finite. Filling them costs more money and latency, and the model often pays less attention to details buried in the middle of a huge prompt.",
+      "The API is **stateless** (it does not remember previous requests), so a chat app resends the whole conversation each turn. Long conversations grow until they near the window and must be trimmed or summarised. This drives many design choices in RAG and agents: you cannot paste everything, so you must *choose* what goes into the context.",
+      "Tokenization also explains some odd behaviours. Counting the letters in a word, reversing strings or exact character-level arithmetic can be harder than expected, because the model sees `straw` + `berry` as chunks, not individual letters.",
     ),
     analogy:
-      "Tokens are like Scrabble tiles that can hold several letters at once: common chunks get their own tile ('ing', 'the'), rare words must be built from several smaller tiles. The context window is the size of the table: the model can only look at the tiles on the table right now. Your instructions, the chat so far, any documents and the reply being written all have to fit on that table together.",
+      "Tokens are like Scrabble tiles that can hold several letters: common chunks get their own tile ('ing', 'the'), and rare words are built from several smaller tiles. The context window is the size of the table. The model can only see the tiles on the table right now, and your instructions, the chat so far, any documents and the reply being written must all fit on it together.",
     examples: [
       {
         title: "A toy tokenizer: greedy longest-match against a vocabulary",
@@ -418,7 +435,7 @@ for (const text of ["unbelievable", "tokenization", "the tokens", "unbelievable!
   console.log(JSON.stringify(text), "->", toks.map(t => JSON.stringify(t)).join(" "),
     "| ids:", toks.map(t => idOf[t]).join(","), "| count:", toks.length);
 }`,
-        explanation: "'unbelievable' costs 3 tokens because the vocabulary has those chunks. 'the tokens' needs a space token and then falls back to 's'. Words the vocabulary covers well are cheap; unusual strings cost more tokens.",
+        explanation: "'unbelievable' costs 3 tokens because the vocabulary has those chunks. 'the tokens' needs a space token and then falls back to 's'. Words the vocabulary covers well are cheap; unusual strings cost more.",
         walkthrough: [
           { code: "const vocab = [...]", explanation: "The tokenizer's fixed vocabulary. Position in the list = token id." },
           { code: "text.startsWith(t, i) && t.length > match.length", explanation: "At each position, pick the longest vocabulary piece that matches." },
@@ -461,7 +478,7 @@ const unique = [...new Set(words)];
 for (const w of unique) {
   console.log(w.padEnd(7), "->", seqs[words.indexOf(w)].join(" | "));
 }`,
-        explanation: "After a few merges, frequent chunks like 'low' and 'est' become single tokens. Real tokenizers run tens of thousands of merges over huge corpora, usually on raw bytes so any text (emoji, any language, binary-ish strings) can be encoded.",
+        explanation: "After a few merges, frequent chunks like 'low' and 'est' become single tokens. Real tokenizers run tens of thousands of merges over huge corpora, usually on raw bytes, so any text (emoji, any language, binary-ish strings) can be encoded.",
       },
       {
         title: "Budgeting a context window",
@@ -496,7 +513,7 @@ if (input + MAX_OUTPUT > WINDOW) {
   }
   console.log("too big: keeping the newest", kept.length, "of", history.length, "turns");
 }`,
-        explanation: "Every application that keeps a conversation going needs a policy like this: reserve output space, keep instructions, and trim or summarise old history. Better still, do not paste whole documents - retrieve only the relevant parts (what-is-rag).",
+        explanation: "Every app that keeps a conversation going needs a policy like this: reserve output space, keep the instructions, and trim or summarise old history. Better still, don't paste whole documents; retrieve only the relevant parts (what-is-rag).",
       },
       {
         title: "Counting tokens exactly with the API (Python)",
@@ -524,15 +541,15 @@ resp = client.messages.create(
 print("input tokens (billed):", resp.usage.input_tokens)
 print("output tokens:", resp.usage.output_tokens)
 print("stop reason:", resp.stop_reason)   # "max_tokens" means the reply was cut off`,
-        explanation: "Never guess token counts in production code that enforces limits; use the provider's counter. Every response also reports actual usage, which you should log for cost tracking.",
+        explanation: "Never guess token counts in production code that enforces limits; use the provider's counter. Every response also reports actual usage, which you should log to track cost.",
       },
     ],
     howItWorks: md(
-      "**Tokenizer training** happens once, before the model is trained: an algorithm such as BPE scans a large corpus and builds a vocabulary of frequent chunks. That vocabulary is then fixed for the model's lifetime - which is why different model families count tokens differently.",
+      "**Tokenizer training** happens once, before the model is trained: an algorithm such as BPE scans a large corpus and builds a vocabulary of frequent chunks. That vocabulary stays fixed for the model's lifetime, which is why different model families count tokens differently.",
       "**At request time**, your text is converted to token ids, the model processes them, and the generated ids are converted back to text (*detokenised*). The API reports how many input and output tokens were used.",
-      "**The context window** is a hard limit of the model architecture and serving setup: the total of input tokens plus generated output tokens must fit. `max_tokens` in your request caps the output part. If the model reaches it, generation stops mid-thought and the response's stop reason says so (`max_tokens`).",
-      "**Cost of long context**: attention compares tokens with each other, so processing very long inputs takes more compute and time. Providers price by token, and some offer *prompt caching* so a large, unchanging prefix (like a long document or system prompt) is cheaper and faster on repeat requests (see cost-and-latency).",
-      "**Quality in long context**: models can usually find information anywhere in their window, but performance on detailed reasoning tends to be best when the context is focused and relevant. Placing long documents first and the question at the end, and clearly labelling sections, helps.",
+      "**The context window** is a hard limit of the model and its serving setup: input tokens plus generated output tokens must fit. `max_tokens` in your request caps the output part. If the model reaches it, generation stops mid-thought and the stop reason says so (`max_tokens`).",
+      "**Cost of long context**: attention compares tokens with each other, so very long inputs take more compute and time. Providers price by token. Some offer *prompt caching*, which makes a large unchanging prefix (like a long document or system prompt) cheaper and faster on repeat requests (see cost-and-latency).",
+      "**Quality in long context**: models can usually find information anywhere in their window, but detailed reasoning tends to work best when the context is focused and relevant. It helps to put long documents first, the question at the end, and to label sections clearly.",
     ),
     diagram: `             CONTEXT WINDOW (fixed size)
 +-------------------------------------------------+
@@ -545,13 +562,13 @@ print("stop reason:", resp.stop_reason)   # "max_tokens" means the reply was cut
 
  "tokenization!" -> [token][ization][!] -> [8, 912, 0]`,
     whyItExists: md(
-      "Neural networks work on numbers, so text must be turned into numbers. Tokens are the unit that balances vocabulary size against sequence length. The context window exists because memory and compute grow with sequence length; providers set a maximum that their hardware and model can handle well.",
+      "Neural networks work on numbers, so text must become numbers. Tokens balance vocabulary size against sequence length. The context window exists because memory and compute grow with sequence length, so providers set a maximum their hardware and model handle well.",
     ),
     whenToUse: md(
-      "Think in tokens whenever you estimate cost, set `max_tokens`, decide how much history to keep, choose chunk sizes for RAG, or debug a cut-off answer. Count tokens precisely (with the API) when you enforce hard limits; use the rough 4-characters estimate only for back-of-the-envelope planning.",
+      "Think in tokens whenever you estimate cost, set `max_tokens`, decide how much history to keep, choose RAG chunk sizes, or debug a cut-off answer. Count tokens precisely (with the API) when you enforce hard limits. Use the rough 4-characters estimate only for back-of-the-envelope planning.",
     ),
     whenNotToUse: md(
-      "Do not try to fill the context window just because it is large. Stuffing in every document is slower, more expensive and often less accurate than retrieving the few relevant passages. Do not hard-code token estimates from one model's tokenizer when switching models; re-measure.",
+      "Don't fill the context window just because it is large. Stuffing in every document is slower, more expensive and often less accurate than retrieving the few relevant passages. When you switch models, don't reuse token estimates from the old tokenizer; re-measure.",
     ),
     commonMistakes: [
       "Assuming one word equals one token; code, numbers and non-English text often use many more.",
@@ -586,19 +603,19 @@ print("stop reason:", resp.stop_reason)   # "max_tokens" means the reply was cut
     id: "prompting-basics",
     title: "Prompt Engineering Basics",
     level: "beginner",
-    description: "How to write prompts that work: system vs user messages, clear instructions, context, examples (few-shot), XML-tag structure and asking for step-by-step reasoning.",
+    description: "Write prompts that work: system vs user messages, clear instructions, context, few-shot examples, XML tags and step-by-step reasoning.",
     explanation: md(
-      "A **prompt** is everything you send the model: instructions, context, examples, and the actual question. Since an LLM predicts the most plausible continuation of its input (see how-llms-work), the prompt *is* the program. **Prompt engineering** is the practice of writing that input so the model reliably does what you want.",
+      "A **prompt** is everything you send the model: instructions, context, examples and the question. An LLM predicts the most plausible continuation of its input (see how-llms-work), so the prompt *is* the program. **Prompt engineering** means writing that input so the model reliably does what you want.",
       "Chat APIs split the prompt into roles:",
-      "- **System prompt**: standing instructions that apply to the whole conversation - the model's role, rules, tone, output format, what to do when unsure. Set by you, the developer, not by the end user.\n- **User messages**: the requests (from your end user or from your code).\n- **Assistant messages**: the model's previous replies, which you send back to give it the conversation history.",
-      "The single most useful rule: **be clear and specific, as if briefing a smart new colleague who knows nothing about your project.** A vague prompt ('summarise this') gets a generic result. A specific prompt says who the output is for, what to include, how long, what format, and what to do in edge cases.",
+      "- **System prompt**: standing instructions for the whole conversation: the model's role, rules, tone, output format, and what to do when unsure. You, the developer, set it, not the end user.\n- **User messages**: the requests (from your end user or your code).\n- **Assistant messages**: the model's earlier replies, which you send back as conversation history.",
+      "The most useful rule: **be clear and specific, as if briefing a smart new colleague who knows nothing about your project.** A vague prompt ('summarise this') gets a generic result. A specific prompt says who the output is for, what to include, how long, what format, and what to do in edge cases.",
       "Techniques that consistently help:",
-      "- **Give context and the reason**: 'Summarise this incident report for the on-call engineer who needs to decide whether to page the database team' beats 'summarise'. Knowing *why* lets the model make good judgement calls.\n- **Say what to do, not only what not to do**: 'Write in plain prose paragraphs' works better than 'don't use bullet points'.\n- **Show examples (few-shot prompting)**: 2-5 examples of input and ideal output teach format and style far more precisely than description alone. Make them varied so the model does not copy one example too literally.\n- **Structure with XML tags**: wrap different parts in labelled tags such as `<document>`, `<instructions>`, `<example>`. This prevents the model from confusing your instructions with the data it should process, and lets you refer to parts by name ('using the report in the <report> tags').\n- **Put long documents first, the question last**: with lots of material, place the documents at the top and your instructions and question at the end.\n- **Ask for reasoning before the answer** when the task needs thinking: 'First work through the problem step by step, then give the final answer.' This is often called *chain-of-thought*. Many current models also have built-in thinking that you control with an effort setting (see sampling-and-model-settings).\n- **Define the output format precisely**: give a template or a schema; for machine-readable output use structured outputs (see structured-output).\n- **Allow uncertainty**: tell the model it may say it does not know, or that information is missing, instead of guessing.",
-      "Prompting is **iterative engineering**, not magic words. Write a prompt, run it on a set of realistic test inputs (including awkward ones), look at the failures, adjust, and run again. Keep prompts in version control and keep the test inputs, because a change that fixes one case can break another.",
-      "A common trap is the 'prompt that only works on the demo'. Real users paste messy text, ask off-topic questions, and write in other languages. Test with those.",
+      "- **Give context and the reason**: 'Summarise this incident report for the on-call engineer who must decide whether to page the database team' beats 'summarise'. Knowing *why* helps the model make good judgement calls.\n- **Say what to do, not only what not to do**: 'Write in plain prose paragraphs' works better than 'don't use bullet points'.\n- **Show examples (few-shot prompting)**: 2-5 examples of input and ideal output teach format and style far better than description alone. Vary them so the model does not copy one too literally.\n- **Structure with XML tags**: wrap parts in labelled tags such as `<document>`, `<instructions>`, `<example>`. This stops the model confusing your instructions with the data it should process, and lets you refer to parts by name ('using the report in the <report> tags').\n- **Put long documents first, the question last**: with lots of material, place the documents at the top and your instructions and question at the end.\n- **Ask for reasoning before the answer** when the task needs thinking: 'First work through the problem step by step, then give the final answer.' This is often called *chain-of-thought*. Many current models also have built-in thinking, controlled with an effort setting (see sampling-and-model-settings).\n- **Define the output format precisely**: give a template or schema. For machine-readable output, use structured outputs (see structured-output).\n- **Allow uncertainty**: tell the model it may say it does not know, or that information is missing, instead of guessing.",
+      "Prompting is **iterative engineering**, not magic words. Write a prompt, run it on realistic test inputs (including awkward ones), study the failures, adjust, and run again. Keep prompts and test inputs in version control, because a change that fixes one case can break another.",
+      "A common trap is the 'prompt that only works on the demo'. Real users paste messy text, ask off-topic questions and write in other languages. Test with those.",
     ),
     analogy:
-      "Prompting is like delegating to a brilliant contractor who has never visited your company. If you say 'fix the website', you get something - but probably not what you wanted. If you say 'the checkout button on mobile overlaps the price; customers are abandoning carts; keep the brand colours; here are two pages that look right', you get exactly what you need. The system prompt is the contractor's standing brief; examples are 'here is what good looks like'; XML tags are labelled folders so nothing gets mixed up.",
+      "Prompting is like delegating to a brilliant contractor who has never visited your company. Say 'fix the website' and you get something, but probably not what you wanted. Say 'the checkout button on mobile overlaps the price; customers are abandoning carts; keep the brand colours; here are two pages that look right', and you get exactly what you need. The system prompt is the contractor's standing brief, examples show what good looks like, and XML tags are labelled folders so nothing gets mixed up.",
     examples: [
       {
         title: "Assembling a well-structured prompt (offline)",
@@ -638,11 +655,11 @@ const prompt = buildPrompt({
 for (const line of prompt.split(" ~ ")) console.log(line);
 console.log("---");
 console.log("approx tokens:", Math.ceil(prompt.length / 4));`,
-        explanation: "Notice the structure: data in tags at the top, examples showing both a normal answer and the 'not found' answer, explicit instructions including the fallback, and the question last. This shape is reused in almost every RAG prompt later in the subject.",
+        explanation: "Note the structure: data in tags at the top, examples of both a normal answer and the 'not found' answer, explicit instructions including the fallback, and the question last. Almost every RAG prompt later in this subject reuses this shape.",
         walkthrough: [
-          { code: "<document> ... </document>", explanation: "The data is clearly separated from instructions, so text inside the document cannot be mistaken for an instruction." },
+          { code: "<document> ... </document>", explanation: "The data is clearly separated from the instructions, so text inside the document cannot be mistaken for an instruction." },
           { code: "examples.map(...)", explanation: "Few-shot examples: one normal answer and one 'not found' answer teach both behaviours." },
-          { code: "If the document does not contain the answer, reply exactly: NOT IN DOCUMENT.", explanation: "Explicit permission and format for uncertainty reduces made-up answers." },
+          { code: "If the document does not contain the answer, reply exactly: NOT IN DOCUMENT.", explanation: "Explicit permission and a fixed format for 'I don't know' reduce made-up answers." },
           { code: "Question: ...", explanation: "The actual question goes last, after all the long material." },
         ],
       },
@@ -676,7 +693,7 @@ resp = client.messages.create(
 )
 label = next(b.text for b in resp.content if b.type == "text").strip()
 print(label)   # most likely "account"`,
-        explanation: "The system prompt explains the task AND why the format matters (it feeds a routing system), gives the allowed labels, and resolves the ambiguous case. The examples demonstrate the exact output shape. In production, also validate the label in code (see structured-output).",
+        explanation: "The system prompt explains the task AND why the format matters (it feeds a routing system), lists the allowed labels, and settles the ambiguous case. The examples show the exact output shape. In production, also validate the label in code (see structured-output).",
       },
       {
         title: "Asking for reasoning before the answer (Python)",
@@ -706,14 +723,16 @@ text = next(b.text for b in resp.content if b.type == "text")
 # Show only the answer part to the end user
 start, end = text.find("<answer>"), text.find("</answer>")
 print(text[start + len("<answer>"):end].strip() if start != -1 else text)`,
-        explanation: "Writing out the steps gives the model 'room to think' in tokens before committing to an answer, which helps on multi-step problems. Separating reasoning and answer with tags lets your code show only the final part.",
+        explanation: "Writing out the steps gives the model 'room to think' in tokens before it commits to an answer, which helps on multi-step problems. Tags around the reasoning and the answer let your code show only the final part.",
       },
     ],
     howItWorks: md(
-      "The model conditions every generated token on the entire prompt. Clear instructions and examples shift the probabilities toward the outputs you want; ambiguity spreads probability over many reasonable-but-different outputs, which you experience as inconsistency.",
-      "**System prompts** are given special weight by chat-trained models because instruction tuning taught them that the system role holds the developer's rules. **Examples** work because the model is extremely good at continuing patterns (few-shot learning emerged from pretraining on text full of patterns). **XML tags** work because models were trained on lots of structured text and learn to treat tagged sections as distinct units.",
-      "**Step-by-step reasoning** helps because each generated token is computed with a fixed amount of work. Producing intermediate steps lets the model spread a hard problem across many tokens and then condition the final answer on its own worked steps.",
-      "A practical workflow: (1) write the task as if briefing a colleague; (2) collect 10-30 realistic test inputs including edge cases; (3) run and read the outputs; (4) fix the prompt where it failed, preferring explanations over shouting ('IMPORTANT!!!' tends to cause over-application); (5) re-run everything to catch regressions.",
+      "The model bases every generated token on the entire prompt. Clear instructions and examples shift the probabilities toward the outputs you want. Ambiguity spreads probability over many reasonable but different outputs, which you see as inconsistency.",
+      "Why the techniques work:",
+      "- **System prompts** get special weight because instruction tuning taught chat models that the system role holds the developer's rules.\n- **Examples** work because the model is extremely good at continuing patterns (few-shot learning emerged from pretraining on text full of patterns).\n- **XML tags** work because models were trained on lots of structured text and treat tagged sections as distinct units.",
+      "**Step-by-step reasoning** helps because each generated token gets a fixed amount of computation. Writing intermediate steps lets the model spread a hard problem across many tokens, then base the final answer on its own worked steps.",
+      "A practical workflow:",
+      "- Write the task as if briefing a colleague.\n- Collect 10-30 realistic test inputs, including edge cases.\n- Run them and read the outputs.\n- Fix the prompt where it failed. Prefer explanations over shouting ('IMPORTANT!!!' tends to make the model over-apply a rule).\n- Re-run everything to catch regressions.",
     ),
     diagram: `+-------------------- prompt --------------------+
 | SYSTEM: role, rules, format, why, fallbacks    |
@@ -729,13 +748,14 @@ print(text[start + len("<answer>"):end].strip() if start != -1 else text)`,
                       |
           check output -> adjust prompt -> rerun`,
     whyItExists: md(
-      "The same model can produce a mediocre or an excellent result depending only on its input. Prompt engineering exists because it is the cheapest, fastest lever you have: no training, no infrastructure, changes deploy instantly. Most tasks that people assume need fine-tuning are solved by a well-written prompt plus the right context.",
+      "The same model can give a mediocre or an excellent result depending only on its input. Prompting is the cheapest, fastest lever you have: no training, no infrastructure, and changes deploy instantly. Most tasks people assume need fine-tuning are solved by a well-written prompt plus the right context.",
     ),
     whenToUse: md(
-      "Always - every LLM feature starts with a prompt. Invest more effort when outputs feed other systems (strict format), when users are external (robustness to odd inputs), and when mistakes are expensive. Use few-shot examples whenever the exact output style matters; use XML tags whenever the prompt mixes instructions with data; ask for reasoning on multi-step or mathematical tasks.",
+      "Always: every LLM feature starts with a prompt. Put in more effort when outputs feed other systems (strict format), when users are external (odd inputs), and when mistakes are expensive.",
+      "Use few-shot examples when the exact output style matters, XML tags when the prompt mixes instructions with data, and ask for reasoning on multi-step or mathematical tasks.",
     ),
     whenNotToUse: md(
-      "Do not rely on prompting alone to enforce hard guarantees (valid JSON, allowed values, security rules) - validate in code and use structured outputs and permissions. Do not try to fix missing knowledge with clever wording; supply the knowledge with retrieval (what-is-rag). Do not chase 'magic phrases' from the internet instead of testing on your own data.",
+      "Don't rely on prompting alone for hard guarantees (valid JSON, allowed values, security rules). Validate in code, and use structured outputs and permissions. Don't try to fix missing knowledge with clever wording; supply it with retrieval (what-is-rag). Don't chase 'magic phrases' from the internet instead of testing on your own data.",
     ),
     commonMistakes: [
       "Writing vague instructions ('make it better') and blaming the model for generic results.",
@@ -773,18 +793,21 @@ print(text[start + len("<answer>"):end].strip() if start != -1 else text)`,
     level: "beginner",
     description: "How applications talk to a model: API keys, the messages format, roles, statelessness, streaming, usage and stop reasons, errors and retries.",
     explanation: md(
-      "An **API** (application programming interface) is a defined way for one program to ask another program to do something. LLM providers run the models on their servers; your code sends an HTTP request containing the prompt and receives a response containing the generated text. An **SDK** (software development kit) is a library, such as the `anthropic` Python package, that wraps those HTTP calls in convenient functions.",
-      "**API keys.** Every request is authenticated with a secret key tied to your account and billing. Keep it out of source code: store it in an environment variable (`ANTHROPIC_API_KEY`) or a secrets manager. Never ship it inside a browser or mobile app - anyone can extract it. Browser apps call *your* backend, which holds the key and calls the model.",
+      "An **API** (application programming interface) is a defined way for one program to ask another to do something. LLM providers run the models on their servers. Your code sends an HTTP request with the prompt and gets back a response with the generated text. An **SDK** (software development kit) is a library, such as the `anthropic` Python package, that wraps those HTTP calls in handy functions.",
+      "**API keys.** Every request is authenticated with a secret key tied to your account and billing. Keep it out of source code: store it in an environment variable (`ANTHROPIC_API_KEY`) or a secrets manager. Never ship it inside a browser or mobile app, where anyone can extract it. Browser apps call *your* backend, which holds the key and calls the model.",
       "**The Messages format.** A request contains:",
       "- `model` - which model to use.\n- `max_tokens` - the maximum number of tokens the model may generate in this reply.\n- `system` (optional) - the system prompt.\n- `messages` - the conversation so far: a list of `{\"role\": ..., \"content\": ...}` objects. Roles are `user` and `assistant`; the first message is from the user and roles alternate.",
-      "**The API is stateless.** The server does not remember your previous request. To have a multi-turn conversation, *your application* stores the history and sends all of it again each turn: user, assistant, user, assistant, ..., new user message. This is why long chats get more expensive per turn and why memory is an application concern (agent-memory).",
-      "**The response** contains `content` - a list of *content blocks* (for plain chat, text blocks with `.type == \"text\"` and `.text`); `stop_reason` - why generation stopped (`end_turn` = finished naturally, `max_tokens` = hit your limit, `stop_sequence` = hit a stop string you set, `tool_use` = wants to call a tool, `refusal` = declined for safety reasons, `pause_turn` = a long server-side operation paused and you should continue it); and `usage` - `input_tokens` and `output_tokens` for cost tracking.",
-      "**Streaming.** By default you wait for the whole answer. With streaming, the server sends tokens as they are generated, so users see text appear immediately. Use it for any user-facing chat, and for long outputs where waiting for the full response could hit request timeouts.",
-      "**Errors and retries.** Network calls fail. Expect: invalid requests (400 - fix your code, do not retry), authentication problems (401/403 - check the key), rate limits (429 - you sent too much too fast; slow down), server errors and overload (500s, including 529 'overloaded' on Anthropic's API - retry later). The standard fix for temporary errors is **retry with exponential backoff and jitter**: wait 1s, 2s, 4s, 8s ... plus a little randomness so many clients do not retry in lockstep. The official SDKs already retry some temporary errors automatically (configurable with `max_retries`), and raise typed exceptions you can catch.",
-      "**Timeouts.** Generation can take a while for long outputs. Set sensible timeouts, prefer streaming for long responses, and show progress to users.",
+      "**The API is stateless.** The server does not remember your previous request. For a multi-turn conversation, *your application* stores the history and sends all of it each turn: user, assistant, user, assistant, ..., new user message. That is why long chats cost more per turn, and why memory is an application concern (agent-memory).",
+      "**The response** contains:",
+      "- `content`: a list of *content blocks*. For plain chat these are text blocks with `.type == \"text\"` and `.text`.\n- `stop_reason`: why generation stopped. `end_turn` = finished naturally, `max_tokens` = hit your limit, `stop_sequence` = hit a stop string you set, `tool_use` = wants to call a tool, `refusal` = declined for safety reasons, `pause_turn` = a long server-side operation paused and you should continue it.\n- `usage`: `input_tokens` and `output_tokens`, for cost tracking.",
+      "**Streaming.** By default you wait for the whole answer. With streaming, the server sends tokens as they are generated, so users see text right away. Use it for any user-facing chat, and for long outputs where waiting for the full response could hit request timeouts.",
+      "**Errors and retries.** Network calls fail. Expect:",
+      "- Invalid requests (400): fix your code, don't retry.\n- Authentication problems (401/403): check the key.\n- Rate limits (429): you sent too much too fast; slow down.\n- Server errors and overload (500s, including 529 'overloaded' on Anthropic's API): retry later.",
+      "For temporary errors, **retry with exponential backoff and jitter**: wait 1s, 2s, 4s, 8s ... plus a little randomness so many clients don't retry in lockstep. The official SDKs already retry some temporary errors automatically (configurable with `max_retries`) and raise typed exceptions you can catch.",
+      "**Timeouts.** Long outputs can take a while. Set sensible timeouts, prefer streaming for long responses, and show progress to users.",
     ),
     analogy:
-      "Calling an LLM API is like ordering from a restaurant kitchen through a hatch, where the kitchen has no memory. Each time, you hand over a complete order slip: who you are (API key), which chef (model), the house rules (system prompt), the whole conversation so far (messages), and how much food at most (max_tokens). The kitchen sends back the dish, a note saying why they stopped cooking (stop_reason), and the bill (usage). If the hatch is busy, you wait a bit longer each time before trying again.",
+      "Calling an LLM API is like ordering through the hatch of a restaurant kitchen that has no memory. Each time, you hand over a complete order slip: who you are (API key), which chef (model), the house rules (system prompt), the whole conversation so far (messages), and the most food you want (max_tokens). The kitchen sends back the dish, a note saying why they stopped cooking (stop_reason), and the bill (usage). If the hatch is busy, you wait a bit longer each time before trying again.",
     examples: [
       {
         title: "Statelessness: the app must resend history (offline fake model)",
@@ -814,7 +837,7 @@ function chat(userText) {
 console.log("With history 1:", chat("Hi, I am Priya"));
 console.log("With history 2:", chat("What is my name?"));
 console.log("messages sent on turn 2:", history.length - 1);`,
-        explanation: "Real LLM APIs behave like this fake: each request is independent. 'Memory' in a chatbot is just the app resending earlier messages.",
+        explanation: "Real LLM APIs behave like this fake: each request stands alone. A chatbot's 'memory' is just the app resending earlier messages.",
         walkthrough: [
           { code: "fakeLLM([{ role: \"user\", content: \"What is my name?\" }])", explanation: "Only the newest message is sent, so the model has no way to know the name." },
           { code: "history.push({ role: \"user\", ... })", explanation: "The app keeps the conversation." },
@@ -862,7 +885,7 @@ function callWithRetry(fn, maxRetries = 5, baseMs = 1000, capMs = 30000) {
 }
 
 console.log(callWithRetry(fakeApi));`,
-        explanation: "In real code you would actually sleep for `wait` milliseconds. Note what is NOT retried: a 400 (bad request) will fail the same way every time, so retrying just wastes money and time.",
+        explanation: "In real code you would actually sleep for `wait` milliseconds. Note what is NOT retried: a 400 (bad request) fails the same way every time, so retrying only wastes money and time.",
       },
       {
         title: "A complete multi-turn chat loop (Python)",
@@ -893,7 +916,7 @@ while True:
     if resp.stop_reason == "max_tokens":
         print("(reply was cut off - consider raising max_tokens)")
     print(f"(tokens in/out: {resp.usage.input_tokens}/{resp.usage.output_tokens})")`,
-        explanation: "Watch the input token count grow each turn: that is the whole history being resent. Appending `resp.content` (not just the text) keeps every content block intact, which matters once tools are involved.",
+        explanation: "The input token count grows each turn because the whole history is resent. Appending `resp.content` (not just the text) keeps every content block intact, which matters once tools are involved.",
       },
       {
         title: "Streaming and error handling (Python)",
@@ -919,14 +942,15 @@ except anthropic.APIStatusError as e:
     print("API returned an error status:", e.status_code, e.message)
 except anthropic.APIConnectionError:
     print("Could not reach the API - check the network.")`,
-        explanation: "Typed exceptions let you treat errors differently: queue and retry rate limits, alert on authentication errors, fix the code on bad requests. Streaming keeps long responses responsive.",
+        explanation: "Typed exceptions let you handle errors differently: queue and retry rate limits, alert on authentication errors, fix the code on bad requests. Streaming keeps long responses responsive.",
       },
     ],
     howItWorks: md(
-      "Under the SDK, a call is an HTTPS POST to the provider's messages endpoint with a JSON body (model, max_tokens, system, messages) and headers carrying your API key and an API version. The provider tokenises the input, runs the model, and returns JSON with the content blocks, stop reason and usage.",
-      "With streaming, the response is sent as **server-sent events**: a series of small events (message start, content block start, text deltas, message stop) over one long-lived HTTP connection. The SDK's `text_stream` yields just the text deltas; `get_final_message()` assembles the complete message.",
-      "Rate limits are applied per organisation, typically on requests per minute and tokens per minute. Exceeding them returns 429 with headers indicating when to retry. Backoff with jitter spreads retries out so a temporary overload clears instead of being hammered by synchronised retries.",
-      "Production checklist: key in environment/secret store; backend-only calls; timeouts set; retries for transient errors only; log model, token usage, latency and stop reason for every call; handle `max_tokens` and `refusal` stop reasons explicitly.",
+      "Under the SDK, a call is an HTTPS POST to the provider's messages endpoint. The JSON body holds model, max_tokens, system and messages; headers carry your API key and an API version. The provider tokenises the input, runs the model, and returns JSON with the content blocks, stop reason and usage.",
+      "With streaming, the response arrives as **server-sent events**: small events (message start, content block start, text deltas, message stop) over one long-lived HTTP connection. The SDK's `text_stream` yields just the text deltas; `get_final_message()` assembles the full message.",
+      "Rate limits apply per organisation, usually on requests per minute and tokens per minute. Going over returns 429, with headers saying when to retry. Backoff with jitter spreads retries out, so a temporary overload can clear instead of being hammered by synchronised retries.",
+      "Production checklist:",
+      "- Key in an environment variable or secret store.\n- Calls from the backend only.\n- Timeouts set.\n- Retries for transient errors only.\n- Log model, token usage, latency and stop reason for every call.\n- Handle the `max_tokens` and `refusal` stop reasons explicitly.",
     ),
     diagram: `  your app (backend)                   provider
  +--------------------+  HTTPS POST  +-------------+
@@ -941,13 +965,13 @@ except anthropic.APIConnectionError:
  +--------------------+  usage
    on 429/5xx: wait 1s, 2s, 4s (+jitter), retry`,
     whyItExists: md(
-      "Running a large model needs specialised hardware; APIs let any application use state-of-the-art models with a few lines of code and pay per token. A stateless design keeps the service simple and scalable: any server can handle any request because everything needed is in the request itself.",
+      "Running a large model needs specialised hardware. APIs let any app use state-of-the-art models with a few lines of code and pay per token. The stateless design keeps the service simple and scalable: any server can handle any request, because everything it needs is in the request.",
     ),
     whenToUse: md(
-      "Use the hosted API for virtually all application development: prototypes, production chat, batch processing, agents. Use streaming for interactive UIs and long outputs. Use the SDK rather than hand-written HTTP calls - it handles retries, typing and streaming correctly.",
+      "Use the hosted API for almost all application work: prototypes, production chat, batch processing, agents. Use streaming for interactive UIs and long outputs. Use the SDK rather than hand-written HTTP calls; it handles retries, typing and streaming correctly.",
     ),
     whenNotToUse: md(
-      "Do not call the API directly from front-end code with your key. Do not block a web request on a very long non-streaming generation; stream it or move it to a background job. Do not call an LLM for work plain code does deterministically - it costs money and adds latency and failure modes.",
+      "Don't call the API from front-end code with your key. Don't block a web request on a very long non-streaming generation; stream it or move it to a background job. Don't call an LLM for work plain code does exactly; it costs money and adds latency and new ways to fail.",
     ),
     commonMistakes: [
       "Committing the API key to git or embedding it in a client-side app.",
@@ -985,16 +1009,16 @@ except anthropic.APIConnectionError:
     level: "beginner",
     description: "How the next token is chosen (greedy, temperature, top-k, top-p), and the settings you actually control: max tokens, stop sequences, effort and thinking.",
     explanation: md(
-      "At each step an LLM produces a probability distribution over possible next tokens (see how-llms-work). **Sampling** is the rule for picking one token from that distribution. The choice of rule controls whether output is predictable or varied.",
-      "- **Greedy decoding**: always take the single most likely token. Predictable, but tends to be repetitive and bland.\n- **Random sampling**: pick a token at random, weighted by its probability. A token with probability 0.4 is picked 40% of the time. Varied, but occasionally picks something odd.\n- **Temperature** reshapes the distribution before sampling. The model's raw scores (logits) are divided by the temperature `T` before softmax. `T < 1` sharpens the distribution (likely tokens become even more likely - closer to greedy). `T > 1` flattens it (unlikely tokens get more chances - more surprising, more errors). `T` near 0 is effectively greedy.\n- **Top-k**: only consider the `k` most likely tokens, then sample among them.\n- **Top-p (nucleus sampling)**: only consider the smallest set of top tokens whose probabilities add up to at least `p` (e.g. 0.9), then sample among them. This adapts: when the model is confident the set is tiny; when it is unsure the set is larger.",
-      "These knobs are general LLM concepts and many model APIs expose them as request parameters. However, **some of the newest models fix their sampling internally** and do not accept temperature or similar parameters - this includes the current Claude models used in this subject. Instead of tuning randomness, you steer them with the prompt and with an **effort** control.",
+      "At each step an LLM produces a probability distribution over possible next tokens (see how-llms-work). **Sampling** is the rule for picking one token from it. That rule decides whether output is predictable or varied.",
+      "- **Greedy decoding**: always take the most likely token. Predictable, but tends to be repetitive and bland.\n- **Random sampling**: pick a token at random, weighted by probability. A token with probability 0.4 is picked 40% of the time. Varied, but sometimes picks something odd.\n- **Temperature** reshapes the distribution before sampling: the raw scores (logits) are divided by `T` before softmax. `T < 1` sharpens it (likely tokens become even likelier, closer to greedy). `T > 1` flattens it (unlikely tokens get more chances: more surprise, more errors). `T` near 0 is effectively greedy.\n- **Top-k**: consider only the `k` most likely tokens, then sample among them.\n- **Top-p (nucleus sampling)**: consider only the smallest set of top tokens whose probabilities add up to at least `p` (e.g. 0.9), then sample among them. It adapts: the set is tiny when the model is confident and larger when it is unsure.",
+      "These are general LLM concepts, and many model APIs expose them as request parameters. However, **some of the newest models fix their sampling internally** and do not accept temperature or similar parameters. This includes the current Claude models used in this subject. You steer them with the prompt and an **effort** control instead.",
       "Settings you will use with current Claude models:",
-      "- `max_tokens` - the cap on generated tokens (including any thinking). Too low and replies get cut off (`stop_reason == \"max_tokens\"`); there is no charge for unused allowance, you pay for tokens actually produced.\n- `stop_sequences` - a list of strings; generation stops as soon as one is produced (`stop_reason == \"stop_sequence\"`). Useful for cutting output at a known delimiter.\n- `system` - the system prompt, which is the main way to control style and behaviour.\n- **Effort** - `output_config={\"effort\": ...}` with values `low`, `medium`, `high`, `xhigh` or `max`. Current models *think* adaptively (they may reason internally before answering); effort tells the model how much reasoning and thoroughness to apply. Lower effort means faster, cheaper, shorter work; higher effort means more careful reasoning on hard problems.",
-      "**Determinism.** Even at the lowest-randomness settings, LLM outputs are not guaranteed to be identical across calls (serving infrastructure, batching and model updates all play a part). Design systems that tolerate variation: validate outputs, use structured outputs for machine-readable data, and test with several runs.",
-      "Practical intuition for models that do expose temperature: low values for extraction, classification and factual Q&A; moderate values for general chat; higher values for brainstorming and creative writing - and change one setting at a time while measuring on a test set.",
+      "- `max_tokens`: the cap on generated tokens (including any thinking). Too low and replies get cut off (`stop_reason == \"max_tokens\"`). Unused allowance is free; you pay only for tokens actually produced.\n- `stop_sequences`: a list of strings. Generation stops as soon as one is produced (`stop_reason == \"stop_sequence\"`). Useful for cutting output at a known delimiter.\n- `system`: the system prompt, the main way to control style and behaviour.\n- **Effort**: `output_config={\"effort\": ...}` with values `low`, `medium`, `high`, `xhigh` or `max`. Current models *think* adaptively (they may reason internally before answering), and effort sets how much reasoning and thoroughness to apply. Lower effort is faster, cheaper and shorter; higher effort reasons more carefully on hard problems.",
+      "**Determinism.** Even at the lowest-randomness settings, outputs are not guaranteed to match across calls (serving infrastructure, batching and model updates all play a part). Design for variation: validate outputs, use structured outputs for machine-readable data, and test with several runs.",
+      "For models that do expose temperature: use low values for extraction, classification and factual Q&A, moderate values for general chat, and higher values for brainstorming and creative writing. Change one setting at a time and measure on a test set.",
     ),
     analogy:
-      "Picture the model holding a bag of marbles for the next word, with more marbles for likelier words. Greedy picks the colour with the most marbles every time. Temperature is like adding or removing marbles: low temperature gives the favourite colour almost all the marbles; high temperature evens the bag out. Top-k says 'throw out every colour except the k biggest piles'; top-p says 'keep only the biggest piles that together make up 90% of the bag'. Effort is different: it is like telling the player how long to think before drawing at all.",
+      "Picture the model holding a bag of marbles for the next word, with more marbles for likelier words. Greedy always picks the colour with the most marbles. Temperature adds or removes marbles: low temperature gives the favourite colour almost all of them; high temperature evens the bag out. Top-k says 'throw out every colour except the k biggest piles'; top-p says 'keep only the biggest piles that together make up 90% of the bag'. Effort is different: it tells the player how long to think before drawing at all.",
     examples: [
       {
         title: "Temperature sampling over a fixed distribution (seeded)",
@@ -1038,7 +1062,7 @@ for (const T of [0.2, 1.0, 2.0]) {
   tokens.forEach((t, i) =>
     console.log("  " + t.padEnd(7), "p=" + probs[i].toFixed(3), "picked", counts[i], "/1000"));
 }`,
-        explanation: "At T=0.2 'sunny' wins almost every time (near-greedy). At T=2.0 even 'purple' gets picked sometimes - more variety, more nonsense. That is the whole trade-off temperature controls.",
+        explanation: "At T=0.2 'sunny' wins almost every time (near-greedy). At T=2.0 even 'purple' gets picked sometimes: more variety, more nonsense. That is the trade-off temperature controls.",
         walkthrough: [
           { code: "scores.map(s => s / temperature)", explanation: "Temperature divides the raw scores: small T exaggerates differences, large T shrinks them." },
           { code: "Math.exp(s - max) ... / sum", explanation: "Softmax turns scores into probabilities that sum to 1." },
@@ -1114,14 +1138,16 @@ print(listing.stop_reason)   # "stop_sequence" if the delimiter was produced
 
 for r in (quick, careful, listing):
     print(r.stop_reason, r.usage.output_tokens)`,
-        explanation: "On current Claude models you do not set temperature; you control cost and depth with effort, length with max_tokens, and cut-off points with stop_sequences. Compare output token counts between low and high effort.",
+        explanation: "On current Claude models you don't set temperature. You control cost and depth with effort, length with max_tokens, and cut-off points with stop_sequences. Compare output token counts between low and high effort.",
       },
     ],
     howItWorks: md(
-      "The model's last layer outputs one **logit** (raw score) per vocabulary token. The decoding step then: (1) divides logits by the temperature, (2) applies softmax to get probabilities, (3) optionally removes tokens outside the top-k or top-p set and renormalises, (4) draws one token at random according to the remaining probabilities. Greedy decoding skips the randomness and takes the maximum.",
-      "Why not always use greedy? Always picking the top token often produces repetitive, dull or looping text (you saw this in the bigram demo), and it can lock the model into a poor early choice. A little randomness tends to produce more natural text.",
-      "Why do some newest models remove temperature? Their training and serving are tuned for a particular decoding setup, and their behaviour is better steered by instructions and an effort control than by low-level randomness knobs. The concepts still matter: they explain why the same prompt can give different answers, and you will see these parameters on many other models and local inference tools.",
-      "**Thinking and effort.** Current models can generate internal reasoning before the visible answer. With adaptive thinking, the model decides how much to think; the effort setting biases it toward less (fast, cheap) or more (thorough). Thinking tokens count as output tokens toward `max_tokens` and cost, so give enough headroom when using high effort.",
+      "The model's last layer outputs one **logit** (raw score) per vocabulary token. Decoding then:",
+      "- Divides the logits by the temperature.\n- Applies softmax to get probabilities.\n- Optionally removes tokens outside the top-k or top-p set and renormalises.\n- Draws one token at random using the remaining probabilities.",
+      "Greedy decoding skips the randomness and takes the maximum.",
+      "Why not always use greedy? Always picking the top token often gives repetitive, dull or looping text (as in the bigram demo), and can lock the model into a poor early choice. A little randomness tends to read more naturally.",
+      "Why do some of the newest models remove temperature? Their training and serving are tuned for one decoding setup, and instructions plus an effort control steer them better than low-level randomness knobs. The concepts still matter: they explain why one prompt can give different answers, and many other models and local inference tools still expose these parameters.",
+      "**Thinking and effort.** Current models can generate internal reasoning before the visible answer. With adaptive thinking, the model decides how much to think; effort pushes it toward less (fast, cheap) or more (thorough). Thinking tokens count as output tokens toward `max_tokens` and cost, so leave enough headroom at high effort.",
     ),
     diagram: `logits:  sunny 3.0  cloudy 2.2  rainy 1.8  purple -1.0
              |  divide by temperature T
@@ -1135,13 +1161,13 @@ softmax:  T=0.2 -> sunny .98 ...   (sharp, ~greedy)
              |
           append, repeat until end / max_tokens / stop seq`,
     whyItExists: md(
-      "A model only gives probabilities; something has to turn them into actual text. Sampling strategies exist to balance quality (pick likely tokens) against diversity (do not always pick the same one). Output settings like max_tokens and stop sequences exist to control cost and shape, and effort exists because different tasks deserve different amounts of reasoning.",
+      "A model only gives probabilities; something must turn them into text. Sampling strategies balance quality (pick likely tokens) against diversity (don't always pick the same one). Settings like max_tokens and stop sequences control cost and shape, and effort exists because different tasks deserve different amounts of reasoning.",
     ),
     whenToUse: md(
-      "Use low effort for simple, high-volume tasks (classification, short rewrites, routing) and higher effort for complex reasoning, coding and agentic work. Use stop sequences to end output at a known delimiter. On models that expose temperature, lower it for extraction and factual tasks and raise it for brainstorming; measure the effect on a test set.",
+      "Use low effort for simple, high-volume tasks (classification, short rewrites, routing) and higher effort for complex reasoning, coding and agentic work. Use stop sequences to end output at a known delimiter. On models that expose temperature, lower it for extraction and factual tasks and raise it for brainstorming, measuring the effect on a test set.",
     ),
     whenNotToUse: md(
-      "Do not rely on low randomness as a correctness guarantee - a wrong answer can be the most likely one. Do not pass temperature, top_p or top_k to models that do not support them. Do not set max_tokens as a way to request brevity (it truncates mid-sentence); ask for a short answer in the prompt instead.",
+      "Don't treat low randomness as a correctness guarantee: a wrong answer can be the most likely one. Don't pass temperature, top_p or top_k to models that don't support them. Don't use max_tokens to ask for brevity (it cuts off mid-sentence); ask for a short answer in the prompt instead.",
     ),
     commonMistakes: [
       "Expecting identical outputs for identical prompts; build validation and tests that tolerate variation.",
@@ -1175,18 +1201,19 @@ softmax:  T=0.2 -> sunny .98 ...   (sharp, ~greedy)
     id: "hallucinations-and-limitations",
     title: "Hallucinations and Limitations",
     level: "beginner",
-    description: "Why LLMs produce confident falsehoods, the other built-in limits (cutoff, no memory, arithmetic, bias, injection), and the engineering patterns that reduce the damage.",
+    description: "Why LLMs state falsehoods confidently, their other built-in limits (cutoff, no memory, arithmetic, bias, injection), and the patterns that reduce the damage.",
     explanation: md(
-      "A **hallucination** is output that is fluent and confident but false or unsupported: an invented citation, a non-existent API function, a wrong date, a made-up policy. It is not a bug in one place you can patch; it follows from what an LLM is - a predictor of *plausible* text (see how-llms-work). When the model lacks the information, the plausible continuation of 'The function that does X in library Y is' is still a function name, whether or not it exists.",
+      "A **hallucination** is fluent, confident output that is false or unsupported: an invented citation, a non-existent API function, a wrong date, a made-up policy.",
+      "It is not a bug in one place you can patch. It follows from what an LLM is: a predictor of *plausible* text (see how-llms-work). When the model lacks the information, the plausible continuation of 'The function that does X in library Y is' is still a function name, whether or not it exists.",
       "Hallucinations are most likely when:",
-      "- The question is about **rare, niche or private** information (your company's refund policy, a small library, a person who is not famous).\n- The answer needs **recent** information past the model's **training cutoff**.\n- The prompt **presupposes something false** ('Why did the 1990 Moon landing fail?') and the model goes along with it.\n- The task needs **exact details**: quotes, numbers, citations, URLs, identifiers.\n- The model is asked to produce **a lot of specific content** without sources to anchor it.",
+      "- The question is about **rare, niche or private** information (your company's refund policy, a small library, a person who is not famous).\n- The answer needs **recent** information past the model's **training cutoff**.\n- The prompt **presupposes something false** ('Why did the 1990 Moon landing fail?') and the model plays along.\n- The task needs **exact details**: quotes, numbers, citations, URLs, identifiers.\n- The model must produce **a lot of specific content** with no sources to anchor it.",
       "Other limitations every AI engineer must design around:",
-      "- **Knowledge cutoff**: no knowledge of events after training unless you supply it.\n- **No memory between requests**: the API is stateless.\n- **Exact computation**: long arithmetic, counting characters and precise date maths can go wrong; give the model a calculator or code tool.\n- **Context limits**: it can only use what fits in the context window, and attention to details in very long inputs is not perfect.\n- **Non-determinism**: the same prompt can give different answers.\n- **Bias**: models absorb biases present in training data.\n- **Sycophancy**: a tendency to agree with the user, including with wrong claims in the question.\n- **Prompt injection**: text inside documents or web pages can contain instructions that try to hijack the model (see ai-security).\n- **No built-in self-verification**: the model does not automatically check facts against a source.",
+      "- **Knowledge cutoff**: no knowledge of events after training unless you supply it.\n- **No memory between requests**: the API is stateless.\n- **Exact computation**: long arithmetic, counting characters and precise date maths can go wrong. Give the model a calculator or code tool.\n- **Context limits**: it can only use what fits in the context window, and its attention to details in very long inputs is imperfect.\n- **Non-determinism**: the same prompt can give different answers.\n- **Bias**: models absorb biases in their training data.\n- **Sycophancy**: a tendency to agree with the user, even with wrong claims in the question.\n- **Prompt injection**: text inside documents or web pages can carry instructions that try to hijack the model (see ai-security).\n- **No built-in self-verification**: the model does not check facts against a source by itself.",
       "You cannot make hallucinations impossible, but you can make them **rare, detectable and low-impact**:",
-      "- **Ground the model**: put the relevant facts in the prompt (retrieval - see what-is-rag) and instruct it to answer only from them.\n- **Allow 'I don't know'**: give an explicit fallback phrase for missing information.\n- **Ask for evidence**: require quotes or citations from the provided sources, and verify them in code.\n- **Use tools** for facts and calculation: search, databases, calculators, code execution.\n- **Constrain outputs**: structured outputs, allowed values, validation.\n- **Check consistency**: ask several times or ask a second model call to verify claims against sources.\n- **Keep a human in the loop** where mistakes are costly (legal, medical, financial, irreversible actions).\n- **Evaluate**: measure hallucination rates on a test set before and after changes (evaluating-rag).",
+      "- **Ground the model**: put the relevant facts in the prompt (retrieval, see what-is-rag) and tell it to answer only from them.\n- **Allow 'I don't know'**: give an explicit fallback phrase for missing information.\n- **Ask for evidence**: require quotes or citations from the provided sources, and verify them in code.\n- **Use tools** for facts and calculation: search, databases, calculators, code execution.\n- **Constrain outputs**: structured outputs, allowed values, validation.\n- **Check consistency**: ask several times, or have a second model call verify claims against sources.\n- **Keep a human in the loop** where mistakes are costly (legal, medical, financial, irreversible actions).\n- **Evaluate**: measure hallucination rates on a test set before and after changes (evaluating-rag).",
     ),
     analogy:
-      "An LLM is like a brilliant student taking an oral exam who has read a huge amount but is never allowed to say 'I don't know' unless you explicitly permit it. On topics they studied, they are excellent. On a topic they barely saw, they will still produce a smooth, confident answer, stitched together from things that sound right. Giving them the textbook page (grounding), allowing 'I'm not sure', and asking them to point to the line they are quoting turns a bluffer into a careful researcher.",
+      "An LLM is like a brilliant student in an oral exam who has read a huge amount but may never say 'I don't know' unless you explicitly allow it. On topics they studied, they are excellent. On a topic they barely saw, they still give a smooth, confident answer stitched together from things that sound right. Hand them the textbook page (grounding), allow 'I'm not sure', and ask them to point to the line they are quoting, and the bluffer becomes a careful researcher.",
     examples: [
       {
         title: "A simple grounding check: are the answer's facts in the source?",
@@ -1212,11 +1239,11 @@ for (const a of answers) {
   const bad = claimsNotInSource(a, source);
   console.log(bad.length ? "UNSUPPORTED " + JSON.stringify(bad) : "OK          ", "|", a);
 }`,
-        explanation: "The second answer sounds just as confident as the first, but '2012', 'Porto', 'Maria' and 'Silva' appear nowhere in the source. Cheap programmatic checks like this catch a surprising number of hallucinations in grounded systems.",
+        explanation: "The second answer sounds just as confident as the first, but '2012', 'Porto', 'Maria' and 'Silva' appear nowhere in the source. Cheap checks in code like this catch a surprising number of hallucinations in grounded systems.",
         walkthrough: [
           { code: "answer.match(/\\d+(\\.\\d+)?/g)", explanation: "Pull out every number the answer claims." },
           { code: "answer.match(/\\b[A-Z][a-z]+\\b/g)", explanation: "Pull out capitalised words as rough 'names'." },
-          { code: "if (!source.includes(n)) suspicious.push(n)", explanation: "Anything not present in the source is unsupported and should be flagged, removed or reviewed." },
+          { code: "if (!source.includes(n)) suspicious.push(n)", explanation: "Anything missing from the source is unsupported and should be flagged, removed or reviewed." },
         ],
       },
       {
@@ -1253,7 +1280,7 @@ for (const q of ["capital of France", "founding year of a tiny local bakery"]) {
   const verdict = r.agreement >= 0.8 ? "confident" : "LOW AGREEMENT - verify or say unsure";
   console.log(q, "->", r.best, "| agreement", r.agreement.toFixed(2), "|", verdict, JSON.stringify(r.votes));
 }`,
-        explanation: "When the model actually 'knows' something, repeated answers agree. When it is guessing, answers scatter. Sampling several times and checking agreement costs more tokens but is a useful signal for high-stakes questions. It is not proof: a model can be consistently wrong.",
+        explanation: "When the model really 'knows' something, repeated answers agree. When it is guessing, answers scatter. Sampling several times and checking agreement costs more tokens but is a useful signal for high-stakes questions. It is not proof: a model can be consistently wrong.",
       },
       {
         title: "Grounded answer with an 'I don't know' path and citations (Python)",
@@ -1291,13 +1318,15 @@ for block in resp.content:
         print(block.text)
         for c in (block.citations or []):
             print("   [source:", c.document_title, "]", repr(c.cited_text))`,
-        explanation: "The document is supplied, the model is told to answer only from it and how to behave when information is missing, and citations tie each claim to an exact passage you can show to users or verify. The 'different card' part is not covered by the policy, so a good answer says so.",
+        explanation: "The document is supplied, and the model is told to answer only from it and what to do when information is missing. Citations tie each claim to an exact passage you can show users or verify. The policy does not cover the 'different card' part, so a good answer says so.",
       },
     ],
     howItWorks: md(
-      "During pretraining the model is rewarded for predicting likely text, never for saying 'I don't know'. Instruction tuning and preference training teach models to express uncertainty and decline more often, which reduces hallucinations considerably, but the underlying mechanism still produces the most plausible continuation given what is in the context and the parameters.",
-      "Grounding works because it changes *what is plausible*: when the correct facts are in the context window, copying or summarising them becomes by far the most likely continuation. Citations work because each claim must point at a real span of text that your code can check exists. Tools work because the answer comes from a system that actually computes or looks up the fact.",
-      "A layered defence looks like this: retrieve sources, prompt with explicit rules and a fallback, generate with citations or structured output, validate in code (formats, allowed values, quotes exist in the source), optionally run a verifier step, and route low-confidence or high-impact cases to a human. Measure each layer's effect with an evaluation set.",
+      "Pretraining rewards the model for predicting likely text, never for saying 'I don't know'. Instruction tuning and preference training teach models to express uncertainty and decline more often, which cuts hallucinations a lot. But the underlying mechanism still produces the most plausible continuation given the context and the parameters.",
+      "Grounding works because it changes *what is plausible*: when the correct facts are in the context window, copying or summarising them becomes by far the likeliest continuation. Citations work because each claim must point at a real span of text that your code can check. Tools work because the answer comes from a system that actually computes or looks up the fact.",
+      "A layered defence:",
+      "- Retrieve sources.\n- Prompt with explicit rules and a fallback.\n- Generate with citations or structured output.\n- Validate in code (formats, allowed values, quotes exist in the source).\n- Optionally run a verifier step.\n- Send low-confidence or high-impact cases to a human.",
+      "Measure each layer's effect with an evaluation set.",
     ),
     diagram: `  question
      |
@@ -1319,13 +1348,13 @@ for block in resp.content:
      v
   show answer with sources`,
     whyItExists: md(
-      "These limitations are a direct consequence of how LLMs are built: trained on a fixed snapshot of text to predict likely continuations, run statelessly, and operating on tokens rather than verified facts. Understanding them is what separates a demo from a dependable product - every serious AI system design (RAG, tools, validation, evaluation, human review) exists partly to manage them.",
+      "These limits come straight from how LLMs are built: trained on a fixed snapshot of text to predict likely continuations, run statelessly, and working on tokens rather than verified facts. Understanding them separates a demo from a dependable product. Every serious AI design pattern (RAG, tools, validation, evaluation, human review) exists partly to manage them.",
     ),
     whenToUse: md(
-      "Apply these mitigations everywhere output is shown to users or drives actions, and most strictly where errors are costly: customer-facing answers about policies or prices, legal and medical content, code that will run, and agent actions that change data. Add citations whenever users need to trust or verify answers.",
+      "Apply these safeguards wherever output is shown to users or drives actions. Be strictest where errors are costly: customer-facing answers about policies or prices, legal and medical content, code that will run, and agent actions that change data. Add citations whenever users need to trust or verify answers.",
     ),
     whenNotToUse: md(
-      "Heavy verification is overkill for low-stakes creative tasks (brainstorming names, drafting a birthday message) where 'plausible' is exactly what you want. And do not use an LLM at all as the source of truth for facts you can look up exactly - query the database instead and let the model phrase the result.",
+      "Heavy verification is overkill for low-stakes creative tasks (brainstorming names, drafting a birthday message), where 'plausible' is exactly what you want. And never use an LLM as the source of truth for facts you can look up exactly. Query the database instead and let the model phrase the result.",
     ),
     commonMistakes: [
       "Assuming a confident tone means a correct answer.",
@@ -1361,18 +1390,19 @@ for block in resp.content:
     id: "structured-output",
     title: "Structured Output: JSON, Schemas and Validation",
     level: "beginner",
-    description: "Getting machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
+    description: "Get machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
     explanation: md(
-      "Most LLM output in real applications is read by **code**, not people: a ticket category to route, fields extracted from an invoice, a list of tags to save in a database. Code needs **structured output** - data in a predictable shape - not a friendly paragraph.",
+      "In real applications, most LLM output is read by **code**, not people: a ticket category to route, fields from an invoice, tags to save in a database. Code needs **structured output** (data in a predictable shape), not a friendly paragraph.",
       "The usual format is **JSON** (JavaScript Object Notation): text that represents objects `{\"key\": value}`, arrays `[1, 2, 3]`, strings, numbers, booleans and null. Almost every language can parse it.",
-      "A **schema** describes the shape the JSON must have: which fields exist, their types, which are required, allowed values. **JSON Schema** is the standard language for that, and tools like **Pydantic** (Python) or **Zod** (TypeScript) let you define the shape as a class or object and validate data against it.",
-      "There are three levels of reliability, from weakest to strongest:",
-      "- **Ask nicely**: 'Reply with JSON containing category and urgent.' Usually works, but you may get extra prose, markdown code fences, missing fields, or a different spelling of a value.\n- **Ask with a schema and examples, then validate and retry**: include the schema in the prompt, parse the result, validate it, and on failure send the error back and ask again. Works with any model.\n- **Use the API's structured-output feature**: you pass the schema with the request and the API constrains the model's output to match it, so the response parses and conforms to the schema's structure. With the Anthropic Python SDK, `client.messages.parse(..., output_format=YourPydanticModel)` does this and returns the parsed object in `resp.parsed_output`.",
-      "Even with guaranteed structure, **validate the meaning** in code. A schema can guarantee `amount` is a number; it cannot guarantee the number is the right one from the invoice. Business rules (amount > 0, due date after issue date, the category exists in your system) are your code's job.",
-      "**Design tips for schemas**: keep them as flat and small as the task allows; use enums (a fixed list of allowed values) for categories; give fields clear names and descriptions; allow `null` for information that may genuinely be missing, so the model does not have to invent a value; and if you want the model to think before filling fields, add a `reasoning` field *before* the answer fields.",
+      "A **schema** describes the shape the JSON must have: which fields exist, their types, which are required, and allowed values. **JSON Schema** is the standard language for this. Tools like **Pydantic** (Python) or **Zod** (TypeScript) let you define the shape as a class or object and validate data against it.",
+      "Three levels of reliability, weakest to strongest:",
+      "- **Ask nicely**: 'Reply with JSON containing category and urgent.' Usually works, but you may get extra prose, markdown code fences, missing fields, or a value spelled differently.\n- **Ask with a schema and examples, then validate and retry**: put the schema in the prompt, parse and validate the result, and on failure send the error back and ask again. Works with any model.\n- **Use the API's structured-output feature**: pass the schema with the request, and the API constrains the output to match it, so the response parses and conforms to the schema's structure. With the Anthropic Python SDK, `client.messages.parse(..., output_format=YourPydanticModel)` does this and returns the parsed object in `resp.parsed_output`.",
+      "Even with guaranteed structure, **validate the meaning** in code. A schema can guarantee `amount` is a number, not that it is the right number from the invoice. Business rules (amount > 0, due date after issue date, the category exists in your system) are your code's job.",
+      "**Schema design tips:**",
+      "- Keep schemas as flat and small as the task allows.\n- Use enums (a fixed list of allowed values) for categories.\n- Give fields clear names and descriptions.\n- Allow `null` for information that may really be missing, so the model does not have to invent a value.\n- To make the model think before filling fields, add a `reasoning` field *before* the answer fields.",
     ),
     analogy:
-      "Asking for free-text answers is like asking a colleague to 'tell me about the invoice' over the phone - you get a story you have to interpret. Structured output is handing them a form with labelled boxes: vendor, date, amount, currency. A schema is the form's design; validation is the clerk who checks every box is filled in properly before the form goes into the filing system.",
+      "Asking for free text is like asking a colleague to 'tell me about the invoice' over the phone: you get a story you must interpret. Structured output is handing them a form with labelled boxes: vendor, date, amount, currency. The schema is the form's design; validation is the clerk who checks every box before the form is filed.",
     examples: [
       {
         title: "Parse, validate and report errors (offline)",
@@ -1420,11 +1450,11 @@ for (const out of modelOutputs) {
     console.log("NOT JSON:", e.message.slice(0, 60));
   }
 }`,
-        explanation: "Four realistic outputs from 'just asking for JSON': one good, one wrapped in a code fence with a wrong type, one with an invalid enum value and a missing field, and one with chatty text around it. This is why you validate - or better, use the API's structured-output support.",
+        explanation: "Four realistic outputs from 'just asking for JSON': one good, one in a code fence with a wrong type, one with an invalid enum value and a missing field, and one with chatty text around it. This is why you validate, or better, use the API's structured-output support.",
         walkthrough: [
           { code: "const schema = { category: { enum: [...] }, ... }", explanation: "The contract: field names, types and allowed values." },
           { code: "function extractJson(text)", explanation: "Defensive parsing: remove code fences, then JSON.parse (which throws on invalid JSON)." },
-          { code: "validate(obj, schema)", explanation: "Check every rule and collect readable error messages - these can be sent back to the model in a retry." },
+          { code: "validate(obj, schema)", explanation: "Check every rule and collect readable error messages. You can send these back to the model in a retry." },
         ],
       },
       {
@@ -1458,7 +1488,7 @@ function getStructured(task, maxAttempts = 3) {
 }
 
 console.log("result:", JSON.stringify(getStructured("Classify: 'I was charged twice!'")));`,
-        explanation: "Feeding the specific validation error back is much more effective than simply asking again. Always cap the attempts and have a fallback (default value, human review) when the cap is reached.",
+        explanation: "Sending back the specific validation error works much better than just asking again. Always cap the attempts, with a fallback (default value, human review) when the cap is reached.",
       },
       {
         title: "Structured outputs with Pydantic and messages.parse (Python)",
@@ -1492,7 +1522,7 @@ print(inv.vendor, inv.invoice_number, inv.total, inv.currency, inv.due_date)
 # Structure is guaranteed; business rules are still your job:
 if inv.total <= 0:
     raise ValueError("total must be positive")`,
-        explanation: "The Pydantic model is converted to a JSON Schema and sent with the request; the output is constrained to it and parsed back into a typed Python object. Note `due_date` is optional: the invoice gives '14 days', not a date, so `None` is the honest answer rather than an invented date.",
+        explanation: "The Pydantic model becomes a JSON Schema sent with the request; the output is constrained to it and parsed back into a typed Python object. `due_date` is optional: the invoice says '14 days', not a date, so `None` is the honest answer, not an invented date.",
       },
       {
         title: "Validate-and-retry with Pydantic (works with any model)",
@@ -1521,14 +1551,15 @@ for attempt in range(3):
         messages.append({"role": "user", "content": f"That was invalid: {e}. Reply with corrected JSON only."})
 
 print(ticket)`,
-        explanation: "This is the portable pattern: parse, validate, and send the validation error back. Prefer `messages.parse` when available because it removes most failures up front.",
+        explanation: "This is the portable pattern: parse, validate, and send the validation error back. Prefer `messages.parse` when available, because it removes most failures up front.",
       },
     ],
     howItWorks: md(
-      "**Prompt-only JSON** relies on the model following instructions; it is usually right but has no guarantee, so parsing can fail.",
-      "**Constrained decoding** (what API structured-output features do under the hood) restricts which tokens the model may choose at each step so the text being generated always stays a valid prefix of something matching the schema. If the schema says the next thing must be `true` or `false`, tokens that would start anything else are excluded. The result always parses and matches the structure.",
-      "The SDK's `parse` helper converts your Pydantic class to JSON Schema, sends it with the request, and validates the response back into an instance. Some JSON Schema features may not be supported by the constraint engine (for example certain numeric or string-length constraints); keep schemas simple and enforce extra rules in your own validation.",
-      "Validation layers: (1) syntax - is it JSON? (2) structure - required fields and types (schema); (3) semantics - business rules and cross-field checks (your code); (4) truth - does the value match the source (spot checks, evaluation).",
+      "**Prompt-only JSON** relies on the model following instructions. It is usually right, but nothing guarantees it, so parsing can fail.",
+      "**Constrained decoding** (what API structured-output features use under the hood) limits which tokens the model may pick at each step, so the text always stays a valid prefix of something matching the schema. If the schema says the next value must be `true` or `false`, tokens that would start anything else are excluded. The result always parses and matches the structure.",
+      "The SDK's `parse` helper converts your Pydantic class to JSON Schema, sends it with the request, and validates the response back into an instance. The constraint engine may not support some JSON Schema features (for example certain numeric or string-length constraints), so keep schemas simple and enforce extra rules in your own validation.",
+      "Validation layers:",
+      "- **Syntax**: is it JSON?\n- **Structure**: required fields and types (the schema).\n- **Semantics**: business rules and cross-field checks (your code).\n- **Truth**: does the value match the source? (spot checks, evaluation)",
     ),
     diagram: `   input text
        |
@@ -1545,13 +1576,13 @@ print(ticket)`,
        v
   typed object -> database / API / UI`,
     whyItExists: md(
-      "Integrating LLMs into software requires outputs that code can rely on. Free text breaks parsers in production at the worst moments. Schemas, validation and constrained decoding turn an LLM from a text generator into a dependable component: an extractor, classifier or router with a typed interface.",
+      "Software needs LLM outputs it can rely on, and free text breaks parsers in production at the worst moments. Schemas, validation and constrained decoding turn an LLM from a text generator into a dependable component: an extractor, classifier or router with a typed interface.",
     ),
     whenToUse: md(
-      "Use structured output whenever code consumes the result: classification, extraction from documents, routing decisions, generating records, filling forms, producing tool arguments, scoring in evaluations. Use enums for anything that maps to fixed options in your system.",
+      "Use structured output whenever code consumes the result: classification, extraction from documents, routing decisions, generating records, filling forms, tool arguments, scoring in evaluations. Use enums for anything that maps to fixed options in your system.",
     ),
     whenNotToUse: md(
-      "Do not force JSON for content meant for humans (an email reply, an explanation) - it adds escaping noise and can lower writing quality. For long prose plus a little metadata, return the prose as a string field or use tags. Do not build huge, deeply nested schemas for a single call; split the task.",
+      "Don't force JSON for content meant for humans (an email reply, an explanation); it adds escaping noise and can lower writing quality. For long prose plus a little metadata, return the prose as a string field or use tags. Don't build huge, deeply nested schemas for one call; split the task.",
     ),
     commonMistakes: [
       "Calling `JSON.parse`/`json.loads` on raw model text with no error handling.",
@@ -1585,20 +1616,22 @@ print(ticket)`,
     id: "embeddings",
     title: "Embeddings and Vector Similarity",
     level: "beginner",
-    description: "Turning text into vectors of numbers that capture meaning, and comparing them with cosine similarity and dot product - the foundation of semantic search and RAG.",
+    description: "Turn text into vectors of numbers that capture meaning, and compare them with cosine similarity and dot product: the foundation of semantic search and RAG.",
     explanation: md(
-      "A **vector** is simply a list of numbers, like `[0.2, -1.3, 0.7]`. You can picture a vector with two numbers as an arrow (or a point) on a flat map, three numbers as a point in 3D space, and a vector with 384 or 1024 numbers as a point in a space with that many **dimensions** - impossible to picture, but the maths is the same.",
-      "An **embedding** is a vector produced by a model (an **embedding model**) to represent a piece of text - a word, sentence, paragraph or document - such that **texts with similar meaning get vectors that are close together**. 'How do I reset my password?' and 'I forgot my login credentials' share almost no words, but their embeddings are near each other; 'best pizza in Naples' is far away from both.",
-      "This is what makes **semantic search** possible: instead of matching keywords, you embed every document once, embed the user's query, and return the documents whose vectors are closest to the query vector. It is the retrieval step at the heart of RAG.",
+      "A **vector** is a list of numbers, like `[0.2, -1.3, 0.7]`. Two numbers are a point on a flat map, three are a point in 3D space, and 384 or 1024 numbers are a point in a space with that many **dimensions**. You can't picture that, but the maths is the same.",
+      "An **embedding** is a vector that a model (an **embedding model**) produces to represent a piece of text (a word, sentence, paragraph or document), so that **texts with similar meaning get vectors that are close together**. 'How do I reset my password?' and 'I forgot my login credentials' share almost no words, but their embeddings are near each other; 'best pizza in Naples' is far from both.",
+      "This makes **semantic search** possible. Instead of matching keywords, you embed every document once, embed the user's query, and return the documents whose vectors are closest to it. It is the retrieval step at the heart of RAG.",
       "**Measuring closeness.** The common measures:",
-      "- **Dot product**: multiply matching positions and add them up: `a1*b1 + a2*b2 + ...`. Bigger means more similar, but it is also affected by the vectors' lengths.\n- **Cosine similarity**: the dot product divided by both vectors' lengths. It measures the *angle* between vectors and ignores length. It ranges from -1 (opposite) through 0 (unrelated) to 1 (same direction). For text embeddings, values are usually compared relative to each other rather than read as absolute scores.\n- **Euclidean distance**: the straight-line distance between the points. Smaller means more similar.",
-      "**Normalization** means scaling a vector so its length is exactly 1 (divide every number by the vector's length). For normalized vectors, cosine similarity and dot product give the *same* number, and ranking by Euclidean distance gives the same order. That is why many systems normalize embeddings once and then use the fast dot product.",
-      "**Dimensions** are how many numbers each vector has. More dimensions can capture more nuance but cost more storage and compute. Each embedding model has a fixed output size, and **vectors from different models cannot be compared** - a vector only has meaning relative to other vectors from the same model. If you change embedding models, you must re-embed everything.",
-      "**Where embeddings come from.** An embedding model is a neural network (often a transformer, like an LLM but trained differently) trained on pairs of texts that should be close (a question and its answer, a title and its article) and pairs that should be far apart. Training pushes related texts together and unrelated ones apart in the vector space. You do not train one yourself: you use an existing model, either a local open-source one (for example via the `sentence-transformers` library) or a hosted embeddings API from providers such as Voyage AI, OpenAI or Cohere. Anthropic does not offer its own embedding model.",
+      "- **Dot product**: multiply matching positions and add them up: `a1*b1 + a2*b2 + ...`. Bigger means more similar, but the vectors' lengths also affect it.\n- **Cosine similarity**: the dot product divided by both vectors' lengths. It measures the *angle* between vectors and ignores length, ranging from -1 (opposite) through 0 (unrelated) to 1 (same direction). For text embeddings, compare values with each other rather than reading them as absolute scores.\n- **Euclidean distance**: the straight-line distance between the points. Smaller means more similar.",
+      "**Normalization** scales a vector so its length is exactly 1 (divide every number by the vector's length). For normalized vectors, cosine similarity and dot product give the *same* number, and ranking by Euclidean distance gives the same order. So many systems normalize embeddings once and then use the fast dot product.",
+      "**Dimensions** are how many numbers each vector has. More dimensions can capture more nuance but cost more storage and compute. Each embedding model has a fixed output size.",
+      "**Vectors from different models cannot be compared.** A vector only has meaning relative to other vectors from the same model. If you change embedding models, you must re-embed everything.",
+      "**Where embeddings come from.** An embedding model is a neural network (often a transformer, like an LLM but trained differently). It is trained on pairs of texts that should be close (a question and its answer, a title and its article) and pairs that should be far apart, which pushes related texts together and unrelated ones apart.",
+      "You don't train one yourself. You use an existing model: a local open-source one (for example via the `sentence-transformers` library) or a hosted embeddings API from providers such as Voyage AI, OpenAI or Cohere. Anthropic does not offer its own embedding model.",
       "Embeddings capture *meaning* well but are weaker at *exact* matches: product codes, error numbers, rare names. That is why production search often combines embeddings with keyword search (see retrieval-strategies).",
     ),
     analogy:
-      "Imagine a huge library where books are not shelved alphabetically but by what they are about: cookbooks in one area, Italian cookbooks in one corner of that area, pasta books right next to each other. An embedding is a book's exact location (its coordinates) in that library. To find books about a question, you work out where the question would be shelved and grab the nearest books. Cosine similarity asks 'are these two books in the same direction from the entrance?' regardless of how far down the aisle each one is.",
+      "Imagine a huge library where books are shelved by topic, not alphabetically: cookbooks in one area, Italian cookbooks in one corner of it, pasta books side by side. An embedding is a book's exact coordinates in that library. To find books for a question, work out where the question would be shelved and grab the nearest books. Cosine similarity asks 'are these two books in the same direction from the entrance?', however far down the aisle each one is.",
     examples: [
       {
         title: "Dot product, length, normalization and cosine similarity",
@@ -1618,7 +1651,7 @@ console.log("cosine(a,c) =", cosine(a, c).toFixed(3));
 const na = normalize(a), nb = normalize(b);
 console.log("normalized a =", na.map(x => x.toFixed(3)).join(", "), "| length", length(na).toFixed(3));
 console.log("dot of normalized a,b =", dot(na, nb).toFixed(3), "= cosine");`,
-        explanation: "Once vectors are normalized to length 1, the dot product IS the cosine similarity. This is why vector databases often store normalized vectors and use the cheaper dot product.",
+        explanation: "Once vectors are normalized to length 1, the dot product IS the cosine similarity. That is why vector databases often store normalized vectors and use the cheaper dot product.",
         walkthrough: [
           { code: "const dot = (a, b) => ...", explanation: "Multiply matching positions and sum." },
           { code: "const length = a => Math.sqrt(dot(a, a))", explanation: "A vector's length (magnitude) is the square root of its dot product with itself." },
@@ -1652,7 +1685,7 @@ for (const [q, qv] of Object.entries(queries)) {
   console.log("Query:", q);
   for (const [title, score] of ranked.slice(0, 3)) console.log("  " + score.toFixed(3), title);
 }`,
-        explanation: "'I forgot my login credentials' shares no keywords with 'How to reset your password', yet it ranks first because their vectors point the same way. A real embedding model produces such vectors automatically from the text.",
+        explanation: "'I forgot my login credentials' shares no keywords with 'How to reset your password', yet it ranks first because the vectors point the same way. A real embedding model produces such vectors from the text automatically.",
       },
       {
         title: "Bag-of-words vectors: why learned embeddings are needed",
@@ -1673,7 +1706,7 @@ console.log("vocabulary (" + vocab.length + " dims):", vocab.join(", "));
 const q = embed(query);
 for (const d of docs) console.log(cosine(q, embed(d)).toFixed(3), d);
 console.log("'login credentials' vs 'password':", cosine(embed("login credentials"), embed("password")).toFixed(3));`,
-        explanation: "Word counts only match exact words: 'login credentials' and 'password' score 0 even though they mean nearly the same thing. Learned embeddings fix this by placing synonyms and paraphrases close together. Word-count ideas are still useful, though - BM25 keyword search builds on them (retrieval-strategies).",
+        explanation: "Word counts only match exact words: 'login credentials' and 'password' score 0 even though they mean nearly the same thing. Learned embeddings fix this by placing synonyms and paraphrases close together. Word-count ideas are still useful: BM25 keyword search builds on them (retrieval-strategies).",
       },
       {
         title: "Real embeddings with sentence-transformers (Python)",
@@ -1699,14 +1732,16 @@ q_vec = model.encode([query], normalize_embeddings=True)[0]   # shape (384,)
 scores = doc_vecs @ q_vec        # dot product = cosine similarity (vectors are normalized)
 for i in np.argsort(-scores):
     print(f"{scores[i]:.3f}  {docs[i]}")`,
-        explanation: "Embed documents once (store the vectors), embed each query at search time, and rank by dot product. Exact scores depend on the model; what matters is the ranking. The same pattern scales to millions of documents with a vector database (vector-databases).",
+        explanation: "Embed documents once (store the vectors), embed each query at search time, and rank by dot product. Exact scores depend on the model; the ranking is what matters. The same pattern scales to millions of documents with a vector database (vector-databases).",
       },
     ],
     howItWorks: md(
-      "An embedding model reads the text (as tokens), runs it through its network, and combines the token representations into one fixed-size vector (for example by averaging them). The output is usually a few hundred to a few thousand numbers.",
-      "Training uses **contrastive learning**: show the model a text and a related text (a question and its answer), plus unrelated texts. The loss rewards high similarity for related pairs and low similarity for unrelated ones. After training on many such pairs, *meaning* is encoded as *direction* in the vector space.",
-      "**Search** with embeddings: (1) split documents into chunks, (2) embed each chunk and store vector + text + metadata, (3) embed the query with the *same* model, (4) find the nearest stored vectors (top-k), (5) return their texts. For small collections you can compare against every vector (exact search); for large ones, vector databases use approximate nearest-neighbour indexes to stay fast.",
-      "Some embedding models expect different handling for queries versus documents (for example an instruction prefix or a separate input type). Read the model's documentation and apply it consistently.",
+      "An embedding model reads the text (as tokens), runs it through its network, and combines the token representations into one fixed-size vector (for example by averaging). The output is usually a few hundred to a few thousand numbers.",
+      "Training uses **contrastive learning**: show the model a text, a related text (a question and its answer) and unrelated texts. The loss rewards high similarity for related pairs and low similarity for unrelated ones. After many such pairs, *meaning* is encoded as *direction* in the vector space.",
+      "**Search** with embeddings:",
+      "- Split documents into chunks.\n- Embed each chunk and store vector + text + metadata.\n- Embed the query with the *same* model.\n- Find the nearest stored vectors (top-k).\n- Return their texts.",
+      "For small collections you can compare against every vector (exact search). For large ones, vector databases use approximate nearest-neighbour indexes to stay fast.",
+      "Some embedding models treat queries and documents differently (for example an instruction prefix or a separate input type). Read the model's documentation and apply it consistently.",
     ),
     diagram: `     meaning space (2 of many dimensions)
    accounts ^
@@ -1721,13 +1756,13 @@ for i in np.argsort(-scores):
  query vector . each doc vector -> scores
  top-k closest -> returned as search results`,
     whyItExists: md(
-      "Keyword search fails when users describe things in different words than the documents use. Embeddings give computers a numeric notion of *meaning*, so search, recommendation, clustering, deduplication and classification can work on what text is about rather than the exact words it contains.",
+      "Keyword search fails when users use different words than the documents. Embeddings give computers a numeric sense of *meaning*, so search, recommendation, clustering, deduplication and classification can work on what text is about, not the exact words.",
     ),
     whenToUse: md(
-      "Use embeddings for semantic search and RAG retrieval, finding similar items (similar tickets, duplicate questions), clustering documents by topic, and as features for lightweight classifiers. Normalize vectors and use dot product or cosine consistently with how your vector store is configured.",
+      "Use embeddings for semantic search and RAG retrieval, finding similar items (similar tickets, duplicate questions), clustering documents by topic, and as features for lightweight classifiers. Normalize vectors, and use dot product or cosine consistently with how your vector store is configured.",
     ),
     whenNotToUse: md(
-      "Do not rely on embeddings alone for exact identifiers (SKUs, error codes, names) - combine with keyword search or filters. Do not compare vectors from different embedding models. Do not use embeddings when a structured database query answers the question exactly ('orders over $100 last week').",
+      "Don't rely on embeddings alone for exact identifiers (SKUs, error codes, names); combine them with keyword search or filters. Don't compare vectors from different embedding models. Don't use embeddings when a structured database query answers the question exactly ('orders over $100 last week').",
     ),
     commonMistakes: [
       "Mixing vectors from two different embedding models (or versions) in the same index.",
@@ -1762,19 +1797,19 @@ for i in np.argsort(-scores):
     id: "what-is-rag",
     title: "What is RAG and Why It Exists",
     level: "beginner",
-    description: "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, private-data-aware and citable - compared with fine-tuning and long context.",
+    description: "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, use private data and can cite sources. Compared with fine-tuning and long context.",
     explanation: md(
-      "**Retrieval-Augmented Generation (RAG)** is a pattern for answering questions with an LLM using *your* information. Instead of hoping the model memorised the answer during training, you **retrieve** the most relevant pieces of your documents at question time and **augment** the prompt with them, then the model **generates** an answer based on that material.",
-      "It solves the problems from hallucinations-and-limitations directly:",
-      "- **Private data**: the model never saw your internal wiki, contracts or support tickets. RAG supplies them.\n- **Freshness**: update a document and the next answer uses it - no retraining.\n- **Grounding**: the model answers from supplied text, which greatly reduces made-up answers.\n- **Citations**: you know which passages were used, so you can show sources and users can verify.\n- **Access control**: you can retrieve only documents the current user is allowed to see.",
+      "**Retrieval-Augmented Generation (RAG)** is a pattern for answering questions with an LLM using *your* information. Instead of hoping the model memorised the answer in training, you **retrieve** the most relevant pieces of your documents at question time, **augment** the prompt with them, and the model **generates** an answer from that material.",
+      "It directly tackles the problems from hallucinations-and-limitations:",
+      "- **Private data**: the model never saw your internal wiki, contracts or support tickets. RAG supplies them.\n- **Freshness**: update a document and the next answer uses it, with no retraining.\n- **Grounding**: the model answers from supplied text, which greatly reduces made-up answers.\n- **Citations**: you know which passages were used, so you can show sources and users can verify.\n- **Access control**: you can retrieve only documents the current user may see.",
       "A RAG system has two phases:",
       "- **Indexing (offline, ahead of time)**: load documents, split them into **chunks** (passages of a few hundred tokens), compute an **embedding** for each chunk, and store chunk text + vector + metadata (source, title, date, permissions) in a **vector store**.\n- **Querying (online, per question)**: embed the question, find the top-k most similar chunks, optionally **rerank** them, put the best ones into a prompt with clear instructions ('answer only from these sources, cite them, say you don't know otherwise'), and call the LLM.",
       "**RAG vs the alternatives:**",
-      "- **Fine-tuning** (further training the model on your data) is good at changing *behaviour, style and format*, but it is a poor way to add *facts*: it is slow and costly to update, cannot cite sources, cannot enforce per-user permissions, and the model can still misremember. Use RAG for knowledge, fine-tuning (rarely) for behaviour (see fine-tuning-vs-rag).\n- **Long context** (just paste all the documents into the prompt) is perfectly reasonable when the material is small enough to fit comfortably and does not change much - it is the simplest solution and avoids retrieval errors. Prompt caching can make repeated long prompts cheaper. But it does not scale to large or growing collections, costs more per request, adds latency, and focus can suffer when the relevant part is a tiny fraction of a huge prompt. Many systems combine both: retrieve, then give the model generous context.\n- **Tools / agents**: for structured data (orders, accounts) the model can call an API or database query instead of retrieving text; agentic RAG lets the model decide when and what to search.",
-      "RAG quality depends mostly on **retrieval**: if the right chunk is not retrieved, the model cannot use it (and may guess). Most of the RAG section of this subject is about doing retrieval well: loading, chunking, embedding, hybrid search, reranking and evaluation.",
+      "- **Fine-tuning** (further training the model on your data) is good for changing *behaviour, style and format*, but poor for adding *facts*: it is slow and costly to update, cannot cite sources, cannot enforce per-user permissions, and the model can still misremember. Use RAG for knowledge and fine-tuning (rarely) for behaviour (see fine-tuning-vs-rag).\n- **Long context** (paste all the documents into the prompt) is fine when the material fits comfortably and rarely changes. It is the simplest option and avoids retrieval errors, and prompt caching can make repeated long prompts cheaper. But it does not scale to large or growing collections, costs more per request, adds latency, and focus can suffer when the relevant part is a tiny slice of a huge prompt. Many systems combine both: retrieve, then give the model generous context.\n- **Tools / agents**: for structured data (orders, accounts) the model can call an API or database query instead of retrieving text. Agentic RAG lets the model decide when and what to search.",
+      "RAG quality depends mostly on **retrieval**: if the right chunk is not retrieved, the model cannot use it (and may guess). Most of this subject's RAG section is about doing retrieval well: loading, chunking, embedding, hybrid search, reranking and evaluation.",
     ),
     analogy:
-      "A closed-book exam versus an open-book exam. A plain LLM sits a closed-book exam: it answers from memory and sometimes misremembers. RAG turns it into an open-book exam where a librarian first fetches the three most relevant pages and puts them on the desk, and the rules say 'answer from these pages and write down which page you used'. Fine-tuning is making the student study for weeks - great for learning the exam's style, but slow, and they still might misremember a detail. Long context is dumping the whole library on the desk: fine if it is a small shelf, unworkable if it is a building.",
+      "Closed-book versus open-book exam. A plain LLM sits a closed-book exam: it answers from memory and sometimes misremembers. RAG makes it open-book: a librarian first puts the three most relevant pages on the desk, and the rules say 'answer from these pages and note which page you used'. Fine-tuning is making the student study for weeks: great for learning the exam's style, but slow, and they may still misremember a detail. Long context is dumping the whole library on the desk: fine for a small shelf, unworkable for a building.",
     examples: [
       {
         title: "A complete RAG loop, offline (toy retrieval + fake LLM)",
@@ -1824,7 +1859,7 @@ for (const question of ["Can I get refunds on annual plans?", "How do I enable t
   console.log("   retrieved:", hits.map(h => h.id + " (" + h.score.toFixed(2) + ")").join(", ") || "nothing");
   console.log("   A:", fakeLLM(buildPrompt(question, hits)));
 }`,
-        explanation: "Every real RAG system has these four steps. Swap the word-count embedding for a real embedding model, the array for a vector database, and the fake LLM for an API call, and you have a production architecture. Note the third question: nothing relevant is retrieved, so the system says it does not know instead of inventing an address.",
+        explanation: "Every real RAG system has these four steps. Swap the word-count embedding for a real embedding model, the array for a vector database and the fake LLM for an API call, and you have a production architecture. In the third question nothing relevant is retrieved, so the system says it does not know instead of inventing an address.",
         walkthrough: [
           { code: "const index = chunks.map(c => ({ ...c, vector: embed(c.text) }))", explanation: "Indexing: compute and store a vector for every chunk, once, ahead of time." },
           { code: "function retrieve(question, k = 2)", explanation: "Embed the question and return the k most similar chunks." },
@@ -1874,7 +1909,7 @@ def answer(question: str) -> str:
     return next(b.text for b in resp.content if b.type == "text")
 
 print(answer("I'm on the annual plan - can I get money back if I cancel?"))`,
-        explanation: "Notice the question shares few words with the right chunk ('money back' vs 'refunded'), which semantic embeddings handle. The rest of the RAG section upgrades each part: a persistent vector database, better chunking, hybrid search, reranking, and citations.",
+        explanation: "The question shares few words with the right chunk ('money back' vs 'refunded'), which semantic embeddings handle. The rest of the RAG section upgrades each part: a persistent vector database, better chunking, hybrid search, reranking and citations.",
       },
       {
         title: "Choosing between long context, RAG and fine-tuning",
@@ -1888,14 +1923,15 @@ Different users may see different documents   -> RAG with permission filters
 Live structured data (orders, balances)       -> Tools / API calls
 Consistent style, tone or output format       -> Prompting first, fine-tuning rarely
 Teach the model new facts                     -> RAG, not fine-tuning`,
-        explanation: "A quick decision table. In practice, start with the simplest thing that works (often prompting plus long context), and move to RAG as the corpus grows.",
+        explanation: "A quick decision table. In practice, start with the simplest thing that works (often prompting plus long context) and move to RAG as the corpus grows.",
       },
     ],
     howItWorks: md(
       "**Indexing pipeline**: documents -> loaders (extract clean text from PDFs, HTML, etc.) -> chunker (split into passages, often with some overlap) -> embedding model -> vector store (vector + text + metadata). This runs whenever documents change.",
       "**Query pipeline**: question -> (optional) rewrite the question into a better search query -> embed -> similarity search for the top-k chunks (often 20-50 candidates) -> (optional) rerank to the best few -> build a prompt with sources in tags and grounding instructions -> LLM -> answer with citations -> (optional) validate citations.",
-      "**Why the pieces matter**: chunk too large and retrieval gets vague and the prompt fills with irrelevant text; too small and chunks lose context. Pure vector search misses exact terms; keyword search misses paraphrases; hybrid search combines both. Rerankers read the question and each candidate together for a more accurate relevance judgement. The prompt's instructions decide whether the model admits ignorance or guesses.",
-      "**Evaluating RAG** separates two questions: did retrieval find the right chunks (retrieval metrics like recall@k), and did the model answer faithfully from them (faithfulness, answer relevance)? Debugging always starts by checking which one failed (evaluating-rag).",
+      "**Why the pieces matter:**",
+      "- Chunks too large make retrieval vague and fill the prompt with irrelevant text; too small and they lose context.\n- Pure vector search misses exact terms, and keyword search misses paraphrases. Hybrid search combines both.\n- Rerankers read the question and each candidate together, for a more accurate relevance judgement.\n- The prompt's instructions decide whether the model admits it doesn't know or guesses.",
+      "**Evaluating RAG** asks two separate questions: did retrieval find the right chunks (retrieval metrics like recall@k), and did the model answer faithfully from them (faithfulness, answer relevance)? Debugging always starts by checking which one failed (evaluating-rag).",
     ),
     diagram: `INDEXING (offline)
  docs -> load -> chunk -> embed -> [vector store]
@@ -1913,13 +1949,13 @@ QUERYING (per question)
                          v
              answer + citations [id]`,
     whyItExists: md(
-      "LLMs know a lot, but not *your* information, not anything after their training cutoff, and not reliably the exact details that matter in business answers. Retraining a model whenever a document changes is impractical. RAG exists because it is the cheapest, most up-to-date and most verifiable way to connect a general model to specific knowledge: update the index, not the model.",
+      "LLMs know a lot, but not *your* information, nothing after their training cutoff, and not reliably the exact details business answers depend on. Retraining whenever a document changes is impractical. RAG is the cheapest, most up-to-date and most verifiable way to connect a general model to specific knowledge: update the index, not the model.",
     ),
     whenToUse: md(
-      "Use RAG for question answering over documentation, policies, knowledge bases, tickets, contracts, research papers and code - especially when the content is large, changes often, is private, needs per-user permissions, or answers must cite sources.",
+      "Use RAG for question answering over documentation, policies, knowledge bases, tickets, contracts, research papers and code, especially when the content is large, changes often, is private, needs per-user permissions, or answers must cite sources.",
     ),
     whenNotToUse: md(
-      "If all your material comfortably fits in the context window and rarely changes, skip the retrieval machinery and include it directly (with prompt caching). If the answer lives in structured data, query the database through a tool instead of embedding rows as text. If you need a different style or format, try prompting before anything else. And RAG cannot fix poor source documents - if the docs are wrong or missing, so are the answers.",
+      "If all your material fits comfortably in the context window and rarely changes, skip retrieval and include it directly (with prompt caching). If the answer lives in structured data, query the database through a tool instead of embedding rows as text. If you need a different style or format, try prompting first. And RAG cannot fix poor source documents: if the docs are wrong or missing, so are the answers.",
     ),
     commonMistakes: [
       "Building a complex RAG pipeline when the documents would simply fit in the prompt.",

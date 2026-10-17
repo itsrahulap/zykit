@@ -2,16 +2,17 @@ import type { ToolDocs } from '../types';
 
 const docs: ToolDocs = {
   howToUse: [
-    'Paste one or more PEM blocks into **PEM input**, such as a certificate, a whole chain, a CSR or a public key. Or click **Open file** (or drop a file) for a `.pem`, `.crt`, `.cer`, `.der`, `.csr`, `.key` or `.pub` file.',
+    'Paste one or more PEM blocks (a certificate, a whole chain, a CSR or a public key) into **PEM input**. Or click **Open file**, or drop a `.pem`, `.crt`, `.cer`, `.der`, `.csr`, `.key` or `.pub` file.',
     'Try it with **Load sample chain**, a test leaf, intermediate and root.',
-    'Read each block’s card: for a certificate, the subject, issuer, validity, public key, signature algorithm, serial, extensions and SHA-256 / SHA-1 fingerprints.',
+    'Read each block’s card. A certificate shows its subject, issuer, validity, public key, signature algorithm, serial, extensions and SHA-256 / SHA-1 fingerprints.',
     'If you pasted several certificates, check the **Chain** panel for their leaf-to-root order, missing issuers and signature checks.',
     'Click **Copy** next to a fingerprint to copy it, or **Clear** to start again.',
   ],
   howItWorks:
-    'The text is scanned for `-----BEGIN …-----` / `-----END …-----` blocks; each body is Base64-decoded to DER and read by a strict DER parser that rejects indefinite lengths, non-minimal encodings, truncated data and trailing bytes. The PEM label decides how a block is decoded. A file that starts with a DER `SEQUENCE` byte, or text that is bare Base64 without PEM lines, is decoded by recognising its structure.\n\n' +
-    'Certificates are read as X.509: version, serial, issuer and subject names, validity, public key (RSA size and exponent, EC curve, Ed25519, Ed448, X25519, X448, DSA size) and signature algorithm, including RSA-PSS parameters. Decoded extensions include subject and issuer alternative names, key usage, extended key usage, basic constraints, subject and authority key identifiers, CRL distribution points, authority and subject information access, certificate policies, SCT counts, the precertificate flag and OCSP Must-Staple; others are listed by name. Fingerprints are SHA-256 and SHA-1 of the DER, from the Web Crypto API.\n\n' +
-    'With several certificates, each one’s issuer name is matched against the others’ subject names, and key identifiers when both are present, to order the chain from leaf to root. Each signature is then checked with Web Crypto against the next certificate’s public key (or its own, for a self-signed root) for RSA PKCS#1 v1.5, ECDSA on P-256, P-384 and P-521, and Ed25519.\n\n' +
+    'The text is scanned for `-----BEGIN …-----` / `-----END …-----` blocks. Each body is Base64-decoded to DER and read by a strict DER parser that rejects indefinite lengths, non-minimal encodings, truncated data and trailing bytes. The PEM label decides how a block is decoded. A file that starts with a DER `SEQUENCE` byte, or bare Base64 text without PEM lines, is decoded by recognising its structure.\n\n' +
+    'Certificates are read as X.509: version, serial, issuer and subject names, validity, public key (RSA size and exponent, EC curve, Ed25519, Ed448, X25519, X448, DSA size) and signature algorithm, including RSA-PSS parameters.\n\n' +
+    'Decoded extensions include subject and issuer alternative names, key usage, extended key usage, basic constraints, subject and authority key identifiers, CRL distribution points, authority and subject information access, certificate policies, SCT counts, the precertificate flag and OCSP Must-Staple. Other extensions are listed by name. Fingerprints are SHA-256 and SHA-1 of the DER, from the Web Crypto API.\n\n' +
+    'With several certificates, the chain is ordered from leaf to root by matching each issuer name to the others’ subject names (and key identifiers, when both are present). Each signature is then checked with Web Crypto against the next certificate’s public key, or its own for a self-signed root. Supported: RSA PKCS#1 v1.5, ECDSA on P-256, P-384 and P-521, and Ed25519.\n\n' +
     'For private keys, only the format, key type and size are read; the key material is never shown.',
   limits: [
     'Files up to 5 MB, and up to 50 PEM blocks per input.',

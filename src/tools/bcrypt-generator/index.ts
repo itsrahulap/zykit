@@ -5,7 +5,7 @@ const bcryptGenerator: ToolDefinition = {
   name: 'Bcrypt Generator',
   tagline: 'Hash and verify bcrypt passwords',
   description:
-    'Generate bcrypt hashes with a chosen cost and check a password against an existing hash. It runs in a Web Worker in your browser and nothing is uploaded or saved.',
+    'Generate bcrypt hashes with a chosen cost and verify passwords against a hash. Runs in your browser; nothing is uploaded or saved.',
   category: 'Security',
   icon: 'lock',
   tags: ['bcrypt', 'Hash', 'Password', 'Verify'],

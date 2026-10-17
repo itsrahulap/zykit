@@ -9,7 +9,8 @@ const docs: ToolDocs = {
     'Download the sheet, or download every sheet at once as a ZIP.',
   ],
   howItWorks:
-    'An .xlsx file is a ZIP of XML files. The tool unzips it in your browser, reads the sheet list, the shared text table and the cell styles, then turns each cell into text: shared and inline strings, numbers, TRUE/FALSE, error codes, and dates (cells with a date format) as ISO dates. Merged cells are filled with their value and empty trailing rows and columns are dropped.',
+    'An .xlsx file is a ZIP of XML files. The tool unzips it in your browser and reads the sheet list, the shared text table and the cell styles.\n\n' +
+    'Each cell becomes text: shared and inline strings, numbers, TRUE/FALSE, error codes, and dates (cells with a date format) as ISO dates. Merged cells are filled with their value, and empty trailing rows and columns are dropped.',
   limits: [
     'Only .xlsx and .xlsm files; legacy .xls and password-protected workbooks are rejected.',
     'Files up to 100 MB and 5 million cells.',

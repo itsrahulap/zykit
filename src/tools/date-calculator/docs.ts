@@ -10,7 +10,11 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'Times are converted to instants with the browser’s `Intl` time zone data, so daylight saving changes in the chosen zone are taken into account. A **Difference** is broken down on the wall clock: whole months are counted first, then the remaining days, hours, minutes and seconds. The totals (days, weeks, hours, minutes, seconds) are exact elapsed time. If a daylight saving change falls in the range, a note shows how much the two differ.\n\n' +
-    '**Add / subtract** works like the upcoming JavaScript Temporal API. Years and months move the calendar date, and if the day doesn’t exist in the target month it is clamped to the month’s last day (31 January + 1 month is 28 or 29 February). Weeks and days move whole calendar days and keep the same clock time, even across a daylight saving change. Hours, minutes and seconds are added as exact elapsed time. If the result lands in a daylight saving gap, it is moved later and a note says so.\n\n' +
+    '**Add / subtract** works like the upcoming JavaScript Temporal API:\n\n' +
+    '- Years and months move the calendar date. If the day doesn’t exist in the target month, it is clamped to the month’s last day (31 January + 1 month is 28 or 29 February).\n' +
+    '- Weeks and days move whole calendar days and keep the same clock time, even across a daylight saving change.\n' +
+    '- Hours, minutes and seconds are added as exact elapsed time.\n\n' +
+    'If the result lands in a daylight saving gap, it is moved later and a note says so.\n\n' +
     '**Business days** uses dates only. The count includes both the start and end date, like a spreadsheet’s `NETWORKDAYS`, and skips weekend days and holidays. **Add business days** works like `WORKDAY`: the start date itself doesn’t count, and 0 returns the start date.',
   limits: [
     'Duration fields take whole numbers only, up to 1,000,000 each. Results of **Add / subtract** must fall in the years 1–9999.',

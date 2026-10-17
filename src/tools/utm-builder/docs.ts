@@ -10,8 +10,12 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'The base URL is parsed with the browser’s `URL` API. If it has no scheme, `https://` is added; anything other than `http` or `https`, or a host without a dot (except `localhost`), is rejected.\n\n' +
-    'Each value is trimmed, optionally lower-cased, and runs of whitespace are replaced with `-`, `_` or a single space depending on the **Spaces** setting. The non-empty values are then appended in a fixed order (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, then the GA4 fields) and encoded with `encodeURIComponent`, so a space becomes `%20`. Existing query parameters are kept exactly as written, except UTM parameters you are setting, which are replaced instead of duplicated. The `#fragment` stays at the end.\n\n' +
-    'Warnings appear for a missing required field, values that mix upper and lower case (analytics tools treat `Email` and `email` as different), a scheme that was added, replaced UTM parameters, and links whose host matches your site’s domain or one of its subdomains, because UTM tags on internal links start a new session and overwrite the original traffic source.',
+    'Each value is trimmed and optionally lower-cased. Runs of whitespace become `-`, `_` or a single space, depending on **Spaces**. Non-empty values are appended in a fixed order (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, then the GA4 fields) and encoded with `encodeURIComponent`, so a space becomes `%20`. Existing query parameters are kept exactly as written, except UTM parameters you are setting, which are replaced rather than duplicated. The `#fragment` stays at the end.\n\n' +
+    'Warnings appear for:\n\n' +
+    '- a missing required field\n' +
+    '- values that mix upper and lower case (analytics tools treat `Email` and `email` as different)\n' +
+    '- a scheme that was added, or UTM parameters that were replaced\n' +
+    '- links whose host matches your site’s domain or a subdomain, because UTM tags on internal links start a new session and overwrite the original traffic source',
   limits: [
     'Only `http` and `https` URLs are accepted, and a URL can’t contain spaces.',
     'A link is still built when a required field is missing; it gets a warning instead of being blocked.',
@@ -20,7 +24,7 @@ const docs: ToolDocs = {
     'The tool builds links only. It can’t check that the destination page exists or that your analytics records the visit.',
   ],
   privacy:
-    'Links are built entirely in your browser, and the site’s Content Security Policy blocks requests to other servers. Links you copy or **Save** are kept in this browser’s local storage under **History**, never uploaded; click **Clear history** to delete them. Nothing else is stored, and there is no share link. If you use **Send to…**, the link is handed over through this tab’s session storage and removed as soon as the receiving tool reads it.',
+    'Links are built in your browser, and the site’s Content Security Policy blocks requests to other servers. Links you copy or **Save** are kept in this browser’s local storage under **History**, never uploaded; **Clear history** deletes them. Nothing else is stored, and there is no share link. **Send to…** passes the link through this tab’s session storage, removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Which UTM parameters are required?',

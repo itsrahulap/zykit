@@ -9,7 +9,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Spot Instances', 'Standard Reserved Instances', 'On-Demand Instances', 'Dedicated Hosts'],
     answer: [2],
     explanation:
-      '**On-Demand Instances** have no commitment and cannot be interrupted by AWS, so they suit short-term, unpredictable workloads. Spot Instances can be interrupted, Standard Reserved Instances need a 1- or 3-year term, and Dedicated Hosts are physical servers for licensing or compliance needs, not a way to handle unpredictable usage cheaply.',
+      '**On-Demand Instances** have no commitment and AWS can’t interrupt them, so they suit short-term, unpredictable workloads. Spot Instances can be interrupted, Standard Reserved Instances need a 1- or 3-year term, and Dedicated Hosts are physical servers for licensing or compliance, not a cheap way to handle unpredictable usage.',
   },
   {
     id: 'bill-002',
@@ -19,7 +19,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Spot Instances', 'On-Demand Instances', 'Convertible Reserved Instances', 'On-Demand Capacity Reservations'],
     answer: [0],
     explanation:
-      '**Spot Instances** use spare EC2 capacity at steep discounts and are ideal for fault-tolerant, interruptible work such as batch jobs. On-Demand is more expensive, Convertible Reserved Instances need a long-term commitment, and Capacity Reservations are billed at On-Demand rates to guarantee capacity rather than lower cost.',
+      '**Spot Instances** use spare EC2 capacity at steep discounts and are ideal for fault-tolerant, interruptible work such as batch jobs. On-Demand costs more, Convertible Reserved Instances need a long-term commitment, and Capacity Reservations bill at On-Demand rates to guarantee capacity, not to lower cost.',
   },
   {
     id: 'bill-003',
@@ -34,7 +34,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Convertible Reserved Instances** can be exchanged for RIs with a different instance family, operating system or tenancy during the term. Standard RIs cannot change instance family, Spot Instances are not a reservation and can be interrupted, and Dedicated Instances are a tenancy option, not a discount model.',
+      '**Convertible Reserved Instances** can be exchanged during the term for RIs with a different instance family, operating system, or tenancy. Standard RIs can’t change instance family, Spot isn’t a reservation and can be interrupted, and Dedicated Instances are a tenancy option, not a discount model.',
   },
   {
     id: 'bill-004',
@@ -59,7 +59,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Compute Savings Plans** apply automatically to EC2 usage regardless of instance family, size, Region, OS or tenancy, and also to Fargate and Lambda. EC2 Instance Savings Plans are tied to one instance family in one Region and do not cover Fargate or Lambda, and EC2 Reserved Instances (Standard or Convertible) cover only EC2 instances.',
+      '**Compute Savings Plans** apply automatically to EC2 usage of any instance family, size, Region, OS, or tenancy, and also to Fargate and Lambda. EC2 Instance Savings Plans are tied to one instance family in one Region and don’t cover Fargate or Lambda, and EC2 Reserved Instances (Standard or Convertible) cover only EC2.',
   },
   {
     id: 'bill-006',
@@ -74,7 +74,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      'An **EC2 Instance Savings Plan** is a 1- or 3-year commitment to a dollar-per-hour spend on **one instance family in one Region**, with flexibility on size, OS and tenancy within that family. Fargate and Lambda are covered only by Compute Savings Plans, Savings Plans cannot be resold, and Savings Plans give a billing discount without reserving capacity.',
+      'An **EC2 Instance Savings Plan** is a 1- or 3-year commitment to a dollar-per-hour spend on **one instance family in one Region**, with flexibility on size, OS, and tenancy within that family. Only Compute Savings Plans cover Fargate and Lambda, Savings Plans can’t be resold, and they discount billing without reserving capacity.',
   },
   {
     id: 'bill-007',
@@ -84,7 +84,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Dedicated Instances', 'Spot Instances', 'On-Demand Capacity Reservations', 'Dedicated Hosts'],
     answer: [3],
     explanation:
-      '**Dedicated Hosts** are physical servers allocated to you, with visibility into sockets and cores, which supports bring-your-own-license (BYOL) models tied to physical hardware. Dedicated Instances run on single-tenant hardware but do not expose sockets and cores, Spot Instances are shared spare capacity, and Capacity Reservations only reserve capacity.',
+      '**Dedicated Hosts** are physical servers allocated to you, with visibility into sockets and cores, which supports bring-your-own-license (BYOL) models tied to hardware. Dedicated Instances are single-tenant but don’t expose sockets and cores, Spot Instances are shared spare capacity, and Capacity Reservations only reserve capacity.',
   },
   {
     id: 'bill-008',
@@ -98,7 +98,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Dedicated Instances** run on hardware dedicated to a single customer, but AWS manages placement and you get no host-level visibility. Controlling placement on a specific server (host affinity) is a **Dedicated Hosts** feature, shared hardware describes default tenancy, and interruption describes Spot Instances.',
+      '**Dedicated Instances** run on hardware dedicated to one customer, but AWS manages placement and you get no host-level visibility. Controlling placement on a specific server (host affinity) is a **Dedicated Hosts** feature, shared hardware is default tenancy, and interruption describes Spot Instances.',
   },
   {
     id: 'bill-009',
@@ -113,7 +113,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**On-Demand Capacity Reservations** reserve capacity in a specific Availability Zone for any duration, with no long-term commitment; you pay On-Demand rates whether or not you use the capacity. Regional Reserved Instances and Savings Plans give billing discounts but do not reserve capacity and need a 1- or 3-year term, and Spot Instances can be interrupted.',
+      '**On-Demand Capacity Reservations** reserve capacity in a specific Availability Zone for any length of time, with no long-term commitment; you pay On-Demand rates whether or not you use it. Regional Reserved Instances and Savings Plans give billing discounts but don’t reserve capacity and need a 1- or 3-year term, and Spot Instances can be interrupted.',
   },
   {
     id: 'bill-010',
@@ -123,7 +123,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['No Upfront', 'Partial Upfront', 'All Upfront', 'Monthly billing at On-Demand rates'],
     answer: [2],
     explanation:
-      'With Reserved Instances, the more you pay up front, the larger the discount, so **All Upfront** gives the biggest saving. No Upfront and Partial Upfront still discount the price but less, and paying On-Demand rates gives no discount at all.',
+      'With Reserved Instances, the more you pay up front, the bigger the discount, so **All Upfront** saves the most. No Upfront and Partial Upfront save less, and On-Demand rates give no discount.',
   },
   {
     id: 'bill-011',
@@ -138,7 +138,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'AWS generally does **not charge for inbound** data transfer from the internet, but **does charge for outbound** data transfer to the internet. Data transfer between Regions is charged, data transfer between Availability Zones is usually charged too, and outbound data charges do not depend on Free Tier status.',
+      'AWS generally **doesn’t charge for inbound** data from the internet but **does charge for outbound** data to the internet. Transfer between Regions is charged, transfer between Availability Zones usually is too, and outbound charges don’t depend on Free Tier status.',
   },
   {
     id: 'bill-012',
@@ -153,7 +153,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**S3 Glacier Deep Archive** is the lowest-cost S3 storage class and is built for long-term archives that are rarely accessed and can wait hours for retrieval. S3 Standard and Standard-IA cost more to store, and Intelligent-Tiering is aimed at data with unknown or changing access patterns.',
+      '**S3 Glacier Deep Archive** is the cheapest S3 storage class, built for rarely accessed long-term archives that can wait hours for retrieval. S3 Standard and Standard-IA cost more to store, and Intelligent-Tiering is for data with unknown or changing access patterns.',
   },
   {
     id: 'bill-013',
@@ -168,7 +168,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**S3 Intelligent-Tiering** monitors access and moves objects between tiers automatically for a small per-object monitoring fee, with no retrieval fees. One Zone-IA and Glacier Flexible Retrieval charge for retrievals and do not move data automatically, and S3 Standard does not optimize cost for infrequently accessed data.',
+      '**S3 Intelligent-Tiering** monitors access and moves objects between tiers automatically for a small per-object monitoring fee, with no retrieval fees. One Zone-IA and Glacier Flexible Retrieval charge for retrievals and don’t move data automatically, and S3 Standard doesn’t optimize cost for infrequently accessed data.',
   },
   {
     id: 'bill-014',
@@ -183,7 +183,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'Amazon EBS volumes are billed on the **provisioned size** for as long as the volume exists, whether or not it is full and whether or not the instance is running. Billing for the data actually stored is how Amazon S3 works, and EBS storage is not tied to instance running time or to I/O activity.',
+      'EBS volumes are billed on **provisioned size** for as long as the volume exists, full or not, and whether or not the instance is running. Paying for data actually stored is how S3 works, and EBS storage isn’t tied to instance run time or I/O.',
   },
   {
     id: 'bill-015',
@@ -207,7 +207,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2, 4],
     explanation:
-      'Consolidated billing gives **one bill** for all accounts and **combines usage** so the organization can reach volume pricing tiers sooner; it also lets accounts share Reserved Instance and Savings Plans discounts. It does not grant a TAM or a support plan to member accounts, and normal data transfer charges still apply.',
+      'Consolidated billing gives **one bill** for all accounts and **combines usage** so you reach volume pricing tiers sooner. It also lets accounts share Reserved Instance and Savings Plans discounts. It doesn’t give member accounts a TAM or a support plan, and normal data transfer charges still apply.',
   },
   {
     id: 'bill-017',
@@ -222,7 +222,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS Cost Explorer** lets you visualize, filter and analyze historical costs and usage, and forecast future costs. Pricing Calculator estimates costs for planned architectures, Budgets is for setting thresholds and alerts, and the Cost and Usage Report is a raw detailed data file rather than an interactive graphing tool.',
+      '**AWS Cost Explorer** lets you visualize, filter, and analyze past cost and usage, and forecast future costs. Pricing Calculator estimates planned architectures, Budgets sets thresholds and alerts, and the Cost and Usage Report is a raw data file, not an interactive graphing tool.',
   },
   {
     id: 'bill-018',
@@ -232,7 +232,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['AWS Budgets', 'AWS Cost Explorer', 'AWS Pricing Calculator', 'AWS Compute Optimizer'],
     answer: [0],
     explanation:
-      '**AWS Budgets** lets you set custom cost or usage budgets and sends alerts when actual or **forecasted** amounts go over a threshold. Cost Explorer is for analysis and does not send threshold alerts, Pricing Calculator estimates costs before you build, and Compute Optimizer gives rightsizing recommendations.',
+      '**AWS Budgets** lets you set cost or usage budgets and alerts you when actual or **forecasted** amounts cross a threshold. Cost Explorer is for analysis and doesn’t send threshold alerts, Pricing Calculator estimates costs before you build, and Compute Optimizer gives rightsizing recommendations.',
   },
   {
     id: 'bill-019',
@@ -242,7 +242,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['AWS Cost Explorer', 'AWS Pricing Calculator', 'AWS Budgets', 'AWS Billing Conductor'],
     answer: [1],
     explanation:
-      '**AWS Pricing Calculator** estimates the cost of AWS services for a planned architecture, without needing an existing deployment. Cost Explorer and Budgets work with actual usage on an existing account, and Billing Conductor customizes how billing data is shown to groups of accounts.',
+      '**AWS Pricing Calculator** estimates the cost of a planned architecture, with nothing deployed yet. Cost Explorer and Budgets work with actual usage in an existing account, and Billing Conductor customizes how billing data is shown to groups of accounts.',
   },
   {
     id: 'bill-020',
@@ -257,7 +257,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'The **AWS Cost and Usage Report** (now set up through **Data Exports**) delivers the most granular cost and usage data to an S3 bucket, where it can be queried with Athena or loaded into other tools. Cost Explorer shows summarized views in the console, Budgets sends alerts, and Trusted Advisor gives best-practice recommendations.',
+      'The **AWS Cost and Usage Report** (now set up through **Data Exports**) delivers the most detailed cost and usage data to an S3 bucket, where you can query it with Athena or load it into other tools. Cost Explorer shows summaries in the console, Budgets sends alerts, and Trusted Advisor gives best-practice recommendations.',
   },
   {
     id: 'bill-021',
@@ -272,7 +272,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0, 3],
     explanation:
-      '**AWS Budgets** sends alerts on actual or forecasted cost and usage, and **budget actions** can respond automatically, for example by applying an IAM policy or service control policy. Budgets never buys Reserved Instances for you, pre-deployment estimates come from AWS Pricing Calculator, and rightsizing recommendations come from tools such as AWS Compute Optimizer.',
+      '**AWS Budgets** alerts on actual or forecasted cost and usage, and **budget actions** can respond automatically, for example by applying an IAM policy or service control policy. Budgets never buys Reserved Instances for you, pre-deployment estimates come from AWS Pricing Calculator, and rightsizing recommendations come from tools such as AWS Compute Optimizer.',
   },
   {
     id: 'bill-022',
@@ -282,7 +282,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['AWS Budgets', 'AWS Trusted Advisor', 'Amazon GuardDuty', 'AWS Cost Anomaly Detection'],
     answer: [3],
     explanation:
-      '**AWS Cost Anomaly Detection** uses machine learning to learn normal spending patterns and alert you to unusual cost spikes. AWS Budgets relies on thresholds that you set, Trusted Advisor checks resources against best practices, and GuardDuty detects security threats, not cost anomalies.',
+      '**AWS Cost Anomaly Detection** uses machine learning to learn your normal spending and alert you to unusual spikes. AWS Budgets relies on thresholds you set, Trusted Advisor checks resources against best practices, and GuardDuty detects security threats, not cost anomalies.',
   },
   {
     id: 'bill-023',
@@ -297,7 +297,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'User-defined tags must be **activated as cost allocation tags** in the Billing and Cost Management console before they can be used to filter and group costs. CloudTrail records API activity, not costs, cost allocation tags do not need a paid support plan, and VPCs have nothing to do with cost reporting.',
+      'User-defined tags must be **activated as cost allocation tags** in the Billing and Cost Management console before you can filter and group costs by them. CloudTrail records API activity, not costs, cost allocation tags don’t need a paid support plan, and VPCs have nothing to do with cost reporting.',
   },
   {
     id: 'bill-024',
@@ -312,7 +312,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS Billing Conductor** lets you group accounts and apply custom pricing rules to create alternative billing data for showback and chargeback, which is common for resellers and large enterprises. Cost Explorer shows actual AWS costs, Pricing Calculator estimates future costs, and Cost Anomaly Detection flags unusual spend.',
+      '**AWS Billing Conductor** groups accounts and applies custom pricing rules to produce alternative billing data for showback and chargeback, common for resellers and large enterprises. Cost Explorer shows actual AWS costs, Pricing Calculator estimates future costs, and Cost Anomaly Detection flags unusual spend.',
   },
   {
     id: 'bill-025',
@@ -322,7 +322,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['AWS Pricing Calculator', 'AWS Budgets', 'AWS Compute Optimizer', 'Amazon Inspector'],
     answer: [2],
     explanation:
-      '**AWS Compute Optimizer** analyzes historical utilization and recommends optimal resources, such as smaller EC2 instance types, to reduce cost. Pricing Calculator only estimates prices, Budgets tracks spend against thresholds, and Amazon Inspector scans for software vulnerabilities.',
+      '**AWS Compute Optimizer** analyzes past utilization and recommends better-fitting resources, such as smaller EC2 instance types, to cut cost. Pricing Calculator only estimates prices, Budgets tracks spend against thresholds, and Amazon Inspector scans for software vulnerabilities.',
   },
   {
     id: 'bill-026',
@@ -337,7 +337,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1, 4],
     explanation:
-      '**Low utilization EC2 instances** and **unassociated Elastic IP addresses** are cost optimization checks because they point to resources you pay for but are not using well. S3 bucket permissions and root account MFA are security checks, and service quotas belong to the service limits category.',
+      '**Low utilization EC2 instances** and **unassociated Elastic IP addresses** are cost optimization checks: you pay for these resources but aren’t using them well. S3 bucket permissions and root account MFA are security checks, and service quotas belong to the service limits category.',
   },
   {
     id: 'bill-027',
@@ -347,7 +347,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Basic', 'Enterprise Support', 'Unified Operations', 'Business Support+'],
     answer: [3],
     explanation:
-      'The full set of Trusted Advisor checks needs a **paid** support plan, and **Business Support+** is the lowest-cost paid plan. Basic includes only a core set of checks, and Enterprise Support and Unified Operations include the full set at a higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
+      'The full set of Trusted Advisor checks needs a **paid** support plan, and **Business Support+** is the cheapest one. Basic includes only a core set of checks, and Enterprise Support and Unified Operations include the full set at a higher cost. Older material may use the plan names AWS replaced in December 2025: Developer, Business, and Enterprise On-Ramp.',
   },
   {
     id: 'bill-028',
@@ -357,7 +357,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Enterprise Support', 'Business Support+', 'Basic', 'Unified Operations'],
     answer: [0],
     explanation:
-      '**Enterprise Support** is the lowest-cost plan with a **designated** TAM. Unified Operations also includes one but sits above Enterprise at a higher cost, and Business Support+ and Basic do not include a TAM. The retired Enterprise On-Ramp plan offered a *pool* of TAMs rather than a designated one.',
+      '**Enterprise Support** is the cheapest plan with a **designated** TAM. Unified Operations also has one but costs more, and Business Support+ and Basic have no TAM. The retired Enterprise On-Ramp plan offered a *pool* of TAMs, not a designated one.',
   },
   {
     id: 'bill-029',
@@ -377,7 +377,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Business Support+', 'Enterprise Support', 'Basic', 'Unified Operations'],
     answer: [2],
     explanation:
-      '**Basic Support** is included for all AWS customers and covers account and billing help, documentation, re:Post, the AWS Health Dashboard and core Trusted Advisor checks, but not technical support cases. Business Support+, Enterprise Support and Unified Operations all include technical support.',
+      '**Basic Support** is included for every customer and covers account and billing help, documentation, re:Post, the AWS Health Dashboard, and core Trusted Advisor checks, but not technical support cases. Business Support+, Enterprise Support, and Unified Operations all include technical support.',
   },
   {
     id: 'bill-031',
@@ -392,7 +392,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      'All customers, including those on **Basic Support**, get the **AWS Health Dashboard** and a **core set of Trusted Advisor checks**. Technical support cases need a paid plan (Business Support+ or higher), a TAM comes only with Enterprise Support and Unified Operations, and the AWS Support API needs a paid plan.',
+      'Every customer, including those on **Basic Support**, gets the **AWS Health Dashboard** and a **core set of Trusted Advisor checks**. Technical support cases need a paid plan (Business Support+ or higher), a TAM comes only with Enterprise Support and Unified Operations, and the AWS Support API needs a paid plan.',
   },
   {
     id: 'bill-032',
@@ -401,7 +401,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Basic', 'Business Support+', 'Enterprise Support', 'Unified Operations', 'AWS re:Post'],
     answer: [2, 3],
     explanation:
-      '**Enterprise Support** and **Unified Operations** both include a designated TAM; Unified Operations is the higher tier. Basic and Business Support+ do not include a TAM, and AWS re:Post is a community Q&A site, not a support plan. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
+      '**Enterprise Support** and **Unified Operations** both include a designated TAM; Unified Operations is the higher tier. Basic and Business Support+ have no TAM, and AWS re:Post is a community Q&A site, not a support plan. Older material may use the plan names AWS replaced in December 2025: Developer, Business, and Enterprise On-Ramp.',
   },
   {
     id: 'bill-033',
@@ -411,7 +411,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Business Support+', 'Basic', 'Enterprise Support', 'Unified Operations'],
     answer: [0],
     explanation:
-      '**Business Support+** is the lowest-cost plan with 24/7 phone, web and chat access to AWS Support. Basic has no technical support, and Enterprise Support and Unified Operations add a designated TAM at a much higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
+      '**Business Support+** is the cheapest plan with 24/7 phone, web, and chat access to AWS Support. Basic has no technical support, and Enterprise Support and Unified Operations add a designated TAM at a much higher cost. Older material may use the plan names AWS replaced in December 2025: Developer, Business, and Enterprise On-Ramp.',
   },
   {
     id: 'bill-034',
@@ -426,7 +426,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'The **AWS Health Dashboard** is free for everyone, but programmatic access through the **AWS Health API** requires a **paid support plan**. AWS Organizations can aggregate Health events across accounts, but it does not replace the support plan requirement, and Marketplace is unrelated.',
+      'The **AWS Health Dashboard** is free for everyone, but programmatic access through the **AWS Health API** needs a **paid support plan**. AWS Organizations can aggregate Health events across accounts but doesn’t remove the support plan requirement, and Marketplace is unrelated.',
   },
   {
     id: 'bill-035',
@@ -451,7 +451,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'The **full set of Trusted Advisor checks** and the **AWS Support API** need a paid plan such as Business Support+. The Health Dashboard, documentation, re:Post and account and billing customer service are available to every customer on Basic.',
+      'The **full set of Trusted Advisor checks** and the **AWS Support API** need a paid plan such as Business Support+. The Health Dashboard, documentation, re:Post, and account and billing customer service are available to everyone on Basic.',
   },
   {
     id: 'bill-037',
@@ -466,7 +466,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS re:Post** is the community question-and-answer service where anyone can ask questions and get answers from the community and AWS experts. Knowledge Center offers articles that AWS writes in answer to common support questions, Prescriptive Guidance offers strategies and patterns, and Marketplace sells software.',
+      '**AWS re:Post** is the community Q&A service where anyone can ask questions and get answers from the community and AWS experts. Knowledge Center has articles AWS writes for common support questions, Prescriptive Guidance offers strategies and patterns, and Marketplace sells software.',
   },
   {
     id: 'bill-038',
@@ -481,7 +481,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'The **AWS Knowledge Center** (part of AWS re:Post) contains articles and videos covering the most frequent questions and requests from AWS customers. Prescriptive Guidance focuses on strategies, guides and patterns, the Health Dashboard reports AWS events, and the Partner Network is a program for AWS Partners.',
+      'The **AWS Knowledge Center** (part of AWS re:Post) has articles and videos covering customers’ most frequent questions and requests. Prescriptive Guidance focuses on strategies, guides, and patterns, the Health Dashboard reports AWS events, and the Partner Network is a program for AWS Partners.',
   },
   {
     id: 'bill-039',
@@ -496,7 +496,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS Prescriptive Guidance** provides strategies, guides and patterns from AWS and AWS Partners to help speed up migration, modernization and optimization projects. Knowledge Center answers common support questions, Trusted Advisor checks your account against best practices, and Marketplace is a software catalog.',
+      '**AWS Prescriptive Guidance** provides strategies, guides, and patterns from AWS and AWS Partners to speed up migration, modernization, and optimization projects. Knowledge Center answers common support questions, Trusted Advisor checks your account against best practices, and Marketplace is a software catalog.',
   },
   {
     id: 'bill-040',
@@ -511,7 +511,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**AWS Professional Services** is a global team of AWS experts that works with customers, often alongside AWS Partners, to deliver projects such as migrations. AWS Managed Services operates infrastructure on an ongoing basis, Marketplace sells third-party software, and Trust & Safety handles abuse reports.',
+      '**AWS Professional Services** is a global team of AWS experts that works with customers, often alongside AWS Partners, on projects such as migrations. AWS Managed Services runs infrastructure on an ongoing basis, Marketplace sells third-party software, and Trust & Safety handles abuse reports.',
   },
   {
     id: 'bill-041',
@@ -526,7 +526,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      'The APN is a global community of companies: **Consulting (services) Partners** deliver professional and managed services, and **Technology (software) Partners** build products that run on or integrate with AWS. Partners are not AWS employees, customers do not need to join the APN to use Marketplace, and abuse reports go to the AWS Trust & Safety team.',
+      'The APN is a global community of companies. **Consulting (services) Partners** deliver professional and managed services, and **Technology (software) Partners** build products that run on or integrate with AWS. Partners aren’t AWS employees, customers don’t need to join the APN to use Marketplace, and abuse reports go to the AWS Trust & Safety team.',
   },
   {
     id: 'bill-042',
@@ -541,7 +541,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS Marketplace** is a curated digital catalog of third-party software, data and services that can be bought and billed through your AWS account. The Partner Network is a program for partner companies, Professional Services is AWS consulting, and Service Catalog lets an organization manage its own approved catalog of IT products.',
+      '**AWS Marketplace** is a curated digital catalog of third-party software, data, and services, bought and billed through your AWS account. The Partner Network is a program for partner companies, Professional Services is AWS consulting, and Service Catalog lets an organization manage its own catalog of approved IT products.',
   },
   {
     id: 'bill-043',
@@ -556,7 +556,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'Suspected abuse from AWS resources, such as spam, port scanning, DoS attacks or malware, should be reported to the **AWS Trust & Safety team**. Concierge handles billing and account questions, Professional Services delivers projects, and a TAM is an Enterprise-tier advisor, not the abuse reporting channel.',
+      'Report suspected abuse from AWS resources, such as spam, port scanning, DoS attacks, or malware, to the **AWS Trust & Safety team**. Concierge handles billing and account questions, Professional Services delivers projects, and a TAM is an Enterprise-tier advisor, not the abuse channel.',
   },
   {
     id: 'bill-044',
@@ -571,7 +571,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS Managed Services (AMS)** operates AWS infrastructure on your behalf, handling tasks such as patching, backup, monitoring and incident response. Professional Services focuses on project engagements rather than ongoing operations, Concierge covers billing and account questions, and Systems Manager is a tool you operate yourself.',
+      '**AWS Managed Services (AMS)** runs your AWS infrastructure for you, handling patching, backup, monitoring, and incident response. Professional Services does project work rather than ongoing operations, Concierge covers billing and account questions, and Systems Manager is a tool you run yourself.',
   },
   {
     id: 'bill-045',
@@ -586,7 +586,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'With consolidated billing, Reserved Instance and Savings Plans **discounts are shared** across accounts in the organization by default, so unused RI hours from Account A can apply to matching usage in Account B. RIs are not limited to the buying account when sharing is on, they are never converted to Savings Plans, and unused hours are not refunded.',
+      'With consolidated billing, Reserved Instance and Savings Plans **discounts are shared** across the organization by default, so Account A’s unused RI hours can apply to matching usage in Account B. RIs aren’t limited to the buying account when sharing is on, they never convert to Savings Plans, and unused hours aren’t refunded.',
   },
   {
     id: 'bill-046',
@@ -601,7 +601,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0, 4],
     explanation:
-      '**Reserved Instances** and **Savings Plans** give discounts in exchange for a 1-year or 3-year commitment. Spot Instances and On-Demand Instances need no commitment, and On-Demand Capacity Reservations can be created and cancelled without a 1- or 3-year term.',
+      '**Reserved Instances** and **Savings Plans** give discounts in exchange for a 1- or 3-year commitment. Spot and On-Demand Instances need no commitment, and On-Demand Capacity Reservations can be created and cancelled without a 1- or 3-year term.',
   },
   {
     id: 'bill-047',
@@ -615,7 +615,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'AWS can **interrupt** a Spot Instance when it needs the capacity, after giving a **two-minute interruption notice**. Spot Instances are not switched to On-Demand billing, there is no bidding window, and they are not moved to Dedicated Hosts.',
+      'AWS can **interrupt** a Spot Instance when it needs the capacity, after a **two-minute interruption notice**. Spot Instances aren’t switched to On-Demand billing, there’s no bidding window, and they aren’t moved to Dedicated Hosts.',
   },
   {
     id: 'bill-048',
@@ -625,7 +625,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Savings Plans', 'Spot Instances', 'On-Demand Instances', 'Dedicated Instances'],
     answer: [0],
     explanation:
-      '**Savings Plans** are defined by a commitment to a consistent spend in **dollars per hour** for 1 or 3 years. Spot Instances use spare capacity with no commitment, On-Demand has no commitment or discount, and Dedicated Instances are a tenancy option rather than a discount model.',
+      '**Savings Plans** are a commitment to a consistent spend in **dollars per hour** for 1 or 3 years. Spot uses spare capacity with no commitment, On-Demand has no commitment or discount, and Dedicated Instances are a tenancy option, not a discount model.',
   },
   {
     id: 'bill-049',
@@ -654,7 +654,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'Data transfer between EC2 instances in the **same Availability Zone over private IP addresses** is free. Outbound traffic to the internet is charged, traffic between Regions is charged, and traffic between Availability Zones is charged in each direction.',
+      'Data transfer between EC2 instances in the **same Availability Zone over private IP addresses** is free. Outbound traffic to the internet, traffic between Regions, and traffic between Availability Zones (in each direction) are all charged.',
   },
   {
     id: 'bill-051',
@@ -669,7 +669,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [2, 3],
     explanation:
-      '**AWS Cost Explorer** lets you **view and filter historical** cost and usage and **forecast** future spend. Estimating new services is the job of AWS Pricing Calculator, line-item files in S3 come from the Cost and Usage Report (Data Exports), and custom pricing rates are a feature of AWS Billing Conductor.',
+      '**AWS Cost Explorer** lets you **view and filter past** cost and usage and **forecast** future spend. Estimating new services is AWS Pricing Calculator, line-item files in S3 come from the Cost and Usage Report (Data Exports), and custom pricing rates are an AWS Billing Conductor feature.',
   },
   {
     id: 'bill-052',
@@ -684,7 +684,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'With consolidated billing, the **management account** pays all the charges of the member accounts on a single bill. Member accounts do not pay separately, a delegated administrator manages specific AWS services rather than billing, and payment is not assigned by usage.',
+      'With consolidated billing, the **management account** pays all member accounts’ charges on one bill. Member accounts don’t pay separately, a delegated administrator manages specific AWS services rather than billing, and payment isn’t assigned by usage.',
   },
   {
     id: 'bill-053',
@@ -699,7 +699,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'The **AWS Billing and Cost Management console** is where you manage payment methods, view and download bills and invoices, and reach tools such as Budgets and Cost Explorer. Cost Explorer analyzes spend but does not manage payments, Trusted Advisor gives recommendations, and Pricing Calculator produces estimates.',
+      'The **AWS Billing and Cost Management console** is where you manage payment methods, view and download bills and invoices, and open tools such as Budgets and Cost Explorer. Cost Explorer analyzes spend but doesn’t manage payments, Trusted Advisor gives recommendations, and Pricing Calculator makes estimates.',
   },
   {
     id: 'bill-054',
@@ -714,7 +714,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'AWS uses **tiered (volume-based) pricing** for some services, so you **pay less per unit as usage increases**. This is also why combining usage through consolidated billing can lower costs. The other options do not describe how tiered pricing works.',
+      'AWS uses **tiered (volume-based) pricing** for some services, so you **pay less per unit as usage grows**. That’s also why combining usage through consolidated billing can lower costs. The other options don’t describe tiered pricing.',
   },
   {
     id: 'bill-055',
@@ -724,7 +724,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     options: ['Basic', 'Enterprise Support', 'Business Support+', 'Unified Operations'],
     answer: [2],
     explanation:
-      'The **AWS Support API** needs a paid plan, and **Business Support+** is the lowest-cost one. Basic does not include Support API access, and Enterprise Support and Unified Operations include it at a higher cost. In December 2025 AWS replaced the Developer, Business and Enterprise On-Ramp plans; older study material and exam questions may still use those names.',
+      'The **AWS Support API** needs a paid plan, and **Business Support+** is the cheapest one. Basic has no Support API access, and Enterprise Support and Unified Operations include it at a higher cost. Older material may use the plan names AWS replaced in December 2025: Developer, Business, and Enterprise On-Ramp.',
   },
   {
     id: 'bill-056',
@@ -755,7 +755,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Dedicated Instances** run on hardware dedicated to one customer while AWS handles placement, so there are no hosts to manage. Dedicated Hosts also meet the rule but add host management and are mainly needed for socket- or core-based licensing, while Spot and default-tenancy instances may share hardware with other customers.',
+      '**Dedicated Instances** run on hardware dedicated to one customer while AWS handles placement, so there are no hosts to manage. Dedicated Hosts also meet the rule but add host management and are mainly for socket- or core-based licensing, while Spot and default-tenancy instances may share hardware.',
   },
   {
     id: 'bill-058',
@@ -770,7 +770,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'The **AWS Health Dashboard** shows the status of AWS services and personalized information about events, such as scheduled maintenance, that affect your own resources, and it is available to all customers. Trusted Advisor checks best practices, Cost Anomaly Detection watches spend, and CloudWatch monitors metrics and logs that you define.',
+      'The **AWS Health Dashboard** shows AWS service status and personalized events, such as scheduled maintenance, that affect your own resources, and every customer has it. Trusted Advisor checks best practices, Cost Anomaly Detection watches spend, and CloudWatch monitors the metrics and logs you define.',
   },
   {
     id: 'bill-059',
@@ -784,7 +784,7 @@ export const billingSupportQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'AWS Lambda charges for the **number of requests** and the **duration** your code runs, which depends on the memory you allocate. You pay nothing while a function sits idle, there is no fixed monthly fee per function, and code size does not affect compute charges.',
+      'AWS Lambda charges for the **number of requests** and the **duration** your code runs, which depends on the memory you allocate. An idle function costs nothing, there’s no fixed monthly fee per function, and code size doesn’t affect compute charges.',
   },
   {
     id: 'bill-060',

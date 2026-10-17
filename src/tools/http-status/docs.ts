@@ -4,13 +4,13 @@ const docs: ToolDocs = {
   howToUse: [
     'Type in **Search**: a code (`404`), the start of one (`4` or `42`), a class (`5xx`), a name (`teapot`) or any words from the explanation or a header name (`rate limit`, `Retry-After`).',
     'Narrow the list with the **Class** buttons: All, 1xx, 2xx, 3xx, 4xx or 5xx.',
-    'Read each card: what the code means, when to use it, whether it is cacheable by default, whether a retry can help, related headers and the RFC that defines it.',
-    'Click a code to link straight to it: an address ending in `#404` scrolls to and highlights that card.',
+    'Each card shows what the code means, when to use it, whether it is cacheable by default, whether a retry can help, related headers and the RFC that defines it.',
+    'Click a code to link to it. An address ending in `#404` scrolls to and highlights that card.',
   ],
   howItWorks:
     'The list is built into the page: 63 codes, covering the IANA HTTP Status Code Registry plus 418 I’m a teapot, each with the RFC section that defines it (mostly RFC 9110, HTTP Semantics). Obsolete codes such as 305 Use Proxy and 306 are marked **Deprecated**.\n\n' +
     'Search runs as you type. A one- to three-digit number matches codes starting with it, `4xx` matches a whole class, and other text matches when every word appears in the code’s name, meaning, usage notes or headers. Exact and name matches are listed first.\n\n' +
-    '“Cacheable by default” follows RFC 9110 and RFC 9111: caches may store these responses without explicit freshness headers. The retry hint says whether repeating the same request can succeed (yes, no or depends).',
+    '“Cacheable by default” follows RFC 9110 and RFC 9111: caches may store these responses without explicit freshness headers. The retry hint says whether repeating the request can succeed (yes, no or depends).',
   limits: [
     'Only registered codes (and 418) are listed. Vendor-specific codes such as nginx’s 499 or Cloudflare’s 52x aren’t included.',
     'Search is English-only and matches whole words or word fragments; it doesn’t correct typos.',
@@ -27,7 +27,7 @@ const docs: ToolDocs = {
     {
       question: 'Should I use 301 or 308 for a permanent redirect?',
       answer:
-        'Both mean “moved permanently”. With 301, clients may change a POST into a GET at the new URL; 308 requires them to repeat the same method and body. Use 308 for APIs and form endpoints, 301 is fine for page moves.',
+        'Both mean “moved permanently”. With 301, clients may change a POST into a GET at the new URL; 308 requires the same method and body. Use 308 for APIs and form endpoints; 301 is fine for page moves.',
     },
     {
       question: 'What does “Cacheable by default” mean?',

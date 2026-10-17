@@ -5,7 +5,7 @@ const textToSpeech: ToolDefinition = {
   name: 'Text to Speech',
   tagline: 'Read text aloud with your browser\'s voices',
   description:
-    'Have text read aloud using the voices built into your device, with speed, pitch and voice choice. The text stays in the page, but some voices are processed by your browser or OS vendor.',
+    'Read text aloud with your device’s built-in voices and choose voice, speed and pitch. Online voices may send text to your browser or OS vendor.',
   category: 'Text',
   icon: 'text',
   tags: ['TTS', 'Speech', 'Voice'],

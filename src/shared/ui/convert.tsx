@@ -119,6 +119,7 @@ export function OutputPanel({
   mime,
   busy,
   kind,
+  children,
 }: {
   title: string;
   icon?: IconName;
@@ -128,6 +129,8 @@ export function OutputPanel({
   busy?: boolean;
   /** What the output is, for "Send to…"; inferred from `mime` when omitted. */
   kind?: DataKind;
+  /** Replaces the read-only preview, e.g. with an editor bound to `text`. */
+  children?: ReactNode;
 }) {
   const preview = text.length > MAX_PREVIEW_CHARS ? text.slice(0, MAX_PREVIEW_CHARS) : text;
   const ext = fileName.slice(fileName.lastIndexOf('.'));
@@ -148,8 +151,8 @@ export function OutputPanel({
         </div>
       </header>
       <div className="p-4">
-        <CodeBlock className={`max-h-[36rem] overflow-y-auto ${busy ? 'opacity-60' : ''}`}>{preview}</CodeBlock>
-        {preview.length < text.length && (
+        {children ?? <CodeBlock className={`max-h-[36rem] overflow-y-auto ${busy ? 'opacity-60' : ''}`}>{preview}</CodeBlock>}
+        {!children && preview.length < text.length && (
           <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
             Showing the first {formatBytes(MAX_PREVIEW_CHARS)} of the output. Copy or download to get all of it.
           </p>

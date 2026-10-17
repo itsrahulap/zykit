@@ -8,16 +8,17 @@ const docs: ToolDocs = {
     'Check **Key headers** for Reply-To or Return-Path mismatches, and **Hops** for the delivery path, per-hop delays and clock skew.',
   ],
   howItWorks:
-    'The text is split into header fields, joining folded continuation lines (RFC 5322) and stopping at the first blank line, so a pasted body is ignored. Encoded words such as `=?UTF-8?B?…?=` and `=?iso-8859-1?Q?…?=` are decoded by the tool’s own RFC 2047 decoder.\n\n' +
-    'Each `Received` header is cut into its `from`, `by`, `with`, `via`, `id` and `for` clauses, with the date after the last semicolon; hops are listed bottom-up (where the message started first), with the delay from the previous hop and a clock-skew flag when a hop is more than a minute earlier than the one before. `Authentication-Results` (RFC 8601), `ARC-Authentication-Results`, `ARC-Seal`, `Received-SPF` and `DKIM-Signature` are parsed for results and domains. Verdicts come from the topmost `Authentication-Results`, because lower ones may be forged by the sender, and DMARC-style relaxed alignment compares the From domain with the SPF and DKIM domains.',
+    'The text is split into header fields, joining folded continuation lines (RFC 5322). Parsing stops at the first blank line, so a pasted body is ignored. Encoded words such as `=?UTF-8?B?…?=` and `=?iso-8859-1?Q?…?=` are decoded by the tool’s own RFC 2047 decoder.\n\n' +
+    'Each `Received` header is split into its `from`, `by`, `with`, `via`, `id` and `for` clauses, with the date after the last semicolon. Hops are listed bottom-up, starting where the message began. Each shows the delay from the previous hop, and a clock-skew flag when it is more than a minute earlier than the one before.\n\n' +
+    '`Authentication-Results` (RFC 8601), `ARC-Authentication-Results`, `ARC-Seal`, `Received-SPF` and `DKIM-Signature` are parsed for results and domains. Verdicts come from the topmost `Authentication-Results`, because the sender may forge lower ones. DMARC-style relaxed alignment compares the From domain with the SPF and DKIM domains.',
   limits: [
-    'Nothing is verified cryptographically or looked up in DNS: the tool reports what the receiving servers wrote, not its own SPF/DKIM checks.',
+    'Nothing is verified cryptographically or looked up in DNS. The tool reports what the receiving servers wrote; it doesn’t run its own SPF/DKIM checks.',
     'Alignment uses an approximate organizational domain (last two labels, or three for suffixes like `co.uk`), not the full Public Suffix List.',
     'Only the first address of From and Reply-To is analysed.',
     'Red flags are heuristics. A clean result doesn’t prove an email is safe, and some flags (such as a different Return-Path) are normal for newsletters.',
   ],
   privacy:
-    'Headers are parsed in your browser. They are never uploaded or stored, and this tool doesn’t create share links, since headers contain email addresses and IP addresses.',
+    'Headers are parsed in your browser and never uploaded or stored. There are no share links, because headers contain email and IP addresses.',
   faqs: [
     {
       question: 'What do SPF, DKIM and DMARC mean?',
@@ -27,7 +28,7 @@ const docs: ToolDocs = {
     {
       question: 'Why are there several Authentication-Results headers?',
       answer:
-        'Each server that checks the message can add one. Only the topmost, added by your own mail provider, is trustworthy; a sender can insert fake ones lower down, so the tool flags results from multiple servers.',
+        'Each server that checks the message can add one. Only the topmost, added by your own mail provider, is trustworthy. A sender can insert fake ones lower down, so the tool flags results from multiple servers.',
     },
     {
       question: 'What does clock skew mean in the hops?',

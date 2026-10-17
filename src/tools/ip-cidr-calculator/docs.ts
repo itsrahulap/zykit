@@ -3,7 +3,7 @@ import type { ToolDocs } from '../types';
 const docs: ToolDocs = {
   howToUse: [
     'Type an address into **IP / CIDR**: a CIDR such as `192.168.1.10/24` or `2001:db8::/32`, an IPv4 address with a netmask (`10.1.2.3 255.255.255.0` or `10.1.2.3/255.255.255.0`), or a bare IP. Press **Try IPv6** for an IPv6 example.',
-    'Read the network details: network, broadcast, netmask and wildcard (for IPv6, the last address), first and last host, usable hosts and total addresses, the class (IPv4) or compressed and expanded forms (IPv6), plus the binary form with the network bits highlighted, the integer and hex value and the reverse DNS name. **Copy CIDR** copies the network.',
+    'Read the results: network, broadcast, netmask and wildcard (last address for IPv6), first and last host, usable hosts, total addresses, the class (IPv4) or compressed and expanded forms (IPv6), the binary form with network bits highlighted, integer and hex values, and the reverse DNS name. **Copy CIDR** copies the network.',
     'Check the badge: **Public** or **Special-purpose**, with the range’s name and RFC, for example private (RFC 1918), loopback, documentation or multicast.',
     'Under **Is this IP in the range?**, enter an **IP or CIDR to check** to see whether it lies inside the network.',
     'Use **Split into subnets** by **New prefix** or **Number of subnets**, and **Summarise a list of CIDRs** to merge a list of CIDRs or IPs (one per line) into the fewest covering blocks.',

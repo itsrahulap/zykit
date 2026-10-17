@@ -6,7 +6,7 @@ import { webFundamentalsAdvancedTopics } from "./advanced";
 export const webFundamentalsSubject: Subject = {
   id: "web-fundamentals",
   title: "Web Fundamentals",
-  description: "How browsers, HTML, CSS, and the web platform actually work.",
+  description: "How browsers, HTML, CSS, and the web platform work.",
   topics: [
     ...webFundamentalsBeginnerTopics,
     ...webFundamentalsIntermediateTopics,

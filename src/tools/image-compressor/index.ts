@@ -5,7 +5,7 @@ const imageCompressor: ToolDefinition = {
   name: 'Image Compressor',
   tagline: 'Shrink JPEG, WebP and AVIF images in your browser',
   description:
-    'Compress photos with a quality slider and optional max size, compare before and after, and download one file or a ZIP of the whole batch. Nothing is uploaded.',
+    'Compress photos with a quality slider and optional max size, compare before and after, and download one file or a ZIP. Nothing is uploaded.',
   category: 'Images',
   icon: 'image',
   tags: ['JPEG', 'WebP', 'AVIF', 'Compress', 'Batch'],

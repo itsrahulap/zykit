@@ -6,24 +6,22 @@ export const typescriptAdvancedTopics: Topic[] = [
     title: "Mapped Types",
     level: "advanced",
     description:
-      "Building a brand-new type by looping over every property of an existing type and transforming each one the same way.",
+      "Build a new type by looping over every property of an existing type and transforming each one the same way.",
     explanation: `
-You've already used utility types like \`Partial<T>\` and \`Record<K, V>\` —
-built-in helpers that take a type and produce a related one. Have you
-wondered how something like \`Partial<T>\` is actually implemented? It's
-not a compiler special case; it's built using a feature you can use
-yourself, called a **mapped type**.
+Utility types like \`Partial<T>\` and \`Record<K, V>\` aren't compiler
+special cases. They're built with a feature you can use yourself: the
+**mapped type**.
 
 A mapped type looks like an object type, but instead of listing properties
-by name, it loops over the keys of another type using a syntax similar to
-a \`for...in\` loop: \`{ [K in keyof T]: ... }\`. \`keyof T\` gives you a
-union of all of \`T\`'s property names, and the mapped type then produces a
-new property for *each* of those names, letting you transform the type of
-every property the same way — add \`?\` to make them optional, wrap them,
-change their type, or even change whether they're \`readonly\`.
+it loops over another type's keys, a bit like \`for...in\`:
+\`{ [K in keyof T]: ... }\`. \`keyof T\` is a union of \`T\`'s property
+names, and the mapped type creates one property for *each* name.
+
+That lets you transform every property the same way: add \`?\` to make it
+optional, wrap it, change its type, or change whether it's \`readonly\`.
     `.trim(),
     analogy:
-      "A mapped type is like running every item on a checklist through the same rubber stamp. Whatever properties the original type has, the stamp visits each one in turn and applies the same transformation — \"make it optional,\" \"make it read-only,\" \"wrap it in a box\" — without you ever having to name the properties by hand.",
+      "A mapped type is like running every item on a checklist through the same rubber stamp. The stamp visits each property in turn and applies the same change (\"make it optional,\" \"make it read-only,\" \"wrap it in a box\") without you naming the properties by hand.",
     examples: [
       {
         title: "Reimplementing Partial and Readonly by hand",
@@ -45,11 +43,11 @@ type MyReadonly<T> = {
 type PartialTask = MyPartial<Task>;   // { title?: string; done?: boolean }
 type ReadonlyTask = MyReadonly<Task>; // { readonly title: string; readonly done: boolean }`,
         explanation:
-          "`[K in keyof T]` loops over every key of `Task` (`\"title\"` and `\"done\"`), and `T[K]` looks up that property's original type. Adding `?` or `readonly` in front applies that modifier to every generated property at once.",
+          "`[K in keyof T]` loops over every key of `Task` (`\"title\"` and `\"done\"`), and `T[K]` looks up that property's original type. A `?` or `readonly` applies that modifier to every generated property at once.",
         walkthrough: [
-          { code: "type MyPartial<T> = {", explanation: "Declares a generic mapped type that will transform any type T passed in." },
-          { code: "  [K in keyof T]?: T[K];", explanation: "For each key K of T, produce an optional property of the same name, with T's original type for that key." },
-          { code: "type PartialTask = MyPartial<Task>;", explanation: "Substituting Task for T expands the mapped type into { title?: string; done?: boolean }." },
+          { code: "type MyPartial<T> = {", explanation: "A generic mapped type that transforms any type T." },
+          { code: "  [K in keyof T]?: T[K];", explanation: "For each key K of T, make an optional property with the same name and T's original type for it." },
+          { code: "type PartialTask = MyPartial<Task>;", explanation: "With Task as T, this expands to { title?: string; done?: boolean }." },
         ],
       },
       {
@@ -72,80 +70,76 @@ type ConfigGetters = Getters<Config>;
 //   getDebug: () => boolean;
 // }`,
         explanation:
-          "Mapped types can also rename keys (using an `as` clause) and change each property's type entirely — here, every original property becomes a zero-argument function returning that property's type, with a renamed \"getX\" key.",
+          "Mapped types can also rename keys (with an `as` clause) and change each property's type entirely. Here every property becomes a zero-argument function returning its original type, under a renamed \"getX\" key.",
       },
     ],
     howItWorks: `
-When the compiler encounters \`{ [K in keyof T]: ... }\`, it first resolves
-\`keyof T\` to the union of \`T\`'s literal property-name types (for
-\`Task\`, that's \`"title" | "done"\`). It then iterates that union once per
-member, binding \`K\` to each individual key in turn, and generates one
-property per iteration using whatever expression appears after the colon
-(often \`T[K]\`, an **indexed access type** that looks up the type of that
-specific property on \`T\`). The optional \`as\` clause lets each iteration
-rename the resulting key instead of keeping the original name. All of this
-happens purely at compile time — the result is a fully expanded object
-type with no loop or runtime cost involved.
+For \`{ [K in keyof T]: ... }\`, the compiler first resolves \`keyof T\` to
+the union of \`T\`'s property names (for \`Task\`, \`"title" | "done"\`).
+
+It then goes through that union, binding \`K\` to each key in turn, and
+creates one property per key from the expression after the colon. That's
+often \`T[K]\`, an **indexed access type** that looks up that property's
+type on \`T\`. The optional \`as\` clause renames each key.
+
+It all happens at compile time. The result is a fully expanded object type
+with no loop and no runtime cost.
     `.trim(),
     whyItExists: `
-Without mapped types, transforming every property of a type the same way
-(making them all optional, all readonly, all wrapped in a function) would
-require manually rewriting the type by hand every time the original
-changed, or hard-coding a small set of transformations directly into the
-compiler. Mapped types let library authors and everyday developers alike
-express "apply this transformation to every property" once, generically,
-for any type — which is exactly how built-in utility types like
-\`Partial\`, \`Readonly\`, and \`Record\` are themselves implemented.
+Without mapped types, applying the same change to every property (all
+optional, all readonly, all wrapped in a function) would mean rewriting the
+type by hand whenever the original changed, or building a few fixed
+transformations into the compiler.
+
+Mapped types let anyone write "apply this to every property" once, for any
+type. That's exactly how \`Partial\`, \`Readonly\` and \`Record\` are built.
     `.trim(),
     whenToUse: `
-Reach for a mapped type when none of the built-in utility types quite do
-what you need — for example, turning every property into a getter
-function, deeply changing property names in a predictable pattern, or
-building a domain-specific transformation (like a "validators" object
-mirroring a form's fields) that you'll reuse across multiple types.
+Use a mapped type when no built-in utility type fits: turning every
+property into a getter, renaming properties in a predictable pattern, or a
+reusable domain-specific transformation (like a "validators" object that
+mirrors a form's fields).
     `.trim(),
     whenNotToUse: `
 If a built-in utility type (\`Partial\`, \`Pick\`, \`Omit\`, \`Record\`,
-\`Readonly\`) already does what you need, use that directly instead of
-reinventing it — it's clearer to readers already familiar with the
-standard set. Save custom mapped types for transformations those built-ins
-genuinely don't cover.
+\`Readonly\`) already does the job, use it. Readers already know it. Save
+custom mapped types for what the built-ins don't cover.
     `.trim(),
     commonMistakes: [
-      "Forgetting that `keyof T` produces a union of T's key names, not an array — you can't use array methods on it, only union-style operations.",
-      "Writing `[K in keyof T]: T` instead of `[K in keyof T]: T[K]`, which repeats the same whole type for every property instead of looking up each individual property's own type.",
-      "Not realizing that renaming keys requires the `as` clause — writing `[K in keyof T]: ...` alone can transform values but never changes the key names themselves.",
+      "Treating `keyof T` as an array. It's a union of key names, so only union-style operations work on it.",
+      "Writing `[K in keyof T]: T` instead of `[K in keyof T]: T[K]`, which gives every property the whole type instead of its own type.",
+      "Forgetting that renaming keys needs the `as` clause. Without it, `[K in keyof T]: ...` can change values but never key names.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a mapped type `Nullable<T>` that turns every property of T into `T[K] | null`, keeping the property required." },
-      { difficulty: "Medium", prompt: "Write a mapped type `Stringify<T>` that turns every property of T into a `string`, regardless of its original type." },
-      { difficulty: "Hard", prompt: "Write a mapped type `EventHandlers<T>` that, for an object type T describing event names mapped to payload types, produces a new type where each key is renamed to `on\\${Capitalize<key>}` and each value is a function taking that payload and returning void." },
+      { difficulty: "Easy", prompt: "Write a mapped type `Nullable<T>` that turns every property of T into `T[K] | null`, keeping it required." },
+      { difficulty: "Medium", prompt: "Write a mapped type `Stringify<T>` that turns every property of T into a `string`, whatever its original type." },
+      { difficulty: "Hard", prompt: "Write a mapped type `EventHandlers<T>`. T maps event names to payload types. Rename each key to `on\\${Capitalize<key>}` and make each value a function that takes that payload and returns void." },
     ],
     interviewQuestions: [
-      { question: "What is a mapped type?", answer: "A type that generates a new object type by iterating over the keys of an existing type (via `[K in keyof T]`) and applying the same transformation to each resulting property." },
-      { question: "What does `keyof T` produce?", answer: "A union type made up of the literal names of every property on T." },
-      { question: "How are built-in utility types like `Partial<T>` implemented?", answer: "They are themselves ordinary mapped types defined in TypeScript's standard type definitions — for example, Partial<T> is `{ [K in keyof T]?: T[K] }`." },
-      { question: "What does the `as` clause inside a mapped type let you do that you can't do without it?", answer: "It lets each iteration rename the resulting property key using a computed expression — for example, renaming a key `title` to `getTitle` by building the new name with `Capitalize` and a template literal type inside the `as` clause. Without `as`, a mapped type can only transform the *value* of each property — the key name is always copied straight from the union being iterated." },
-      { question: "What do the `+` and `-` modifier prefixes mean in a mapped type, and what does no prefix default to?", answer: "`-readonly` and `-?` explicitly *strip* that modifier from every generated property, while `+readonly` and `+?` explicitly *add* it. Omitting the sign (just writing `readonly` or `?`) is shorthand for `+readonly`/`+?` — a bare mapped type can only add modifiers, never remove them, without an explicit `-`." },
-      { question: "Given `type Req<T> = { [K in keyof T]-?: T[K] }`, what does `Req<{ a?: string; b: number }>` resolve to?", answer: "`{ a: string; b: number }` — the `-?` strips optionality from every property, turning the optional `a` into a required one; `b` was already required, so it's unaffected. This is exactly how the built-in `Required<T>` is implemented." },
-      { question: "What makes a mapped type \"homomorphic,\" and why does it matter?", answer: "A mapped type is homomorphic when it maps directly over `[K in keyof T]` for some generic `T` — the compiler treats it as structurally mirroring `T`, so it automatically copies over `T`'s existing `readonly`/`?` modifiers (unless overridden with `+`/`-`) and preserves array/tuple shapes instead of collapsing them into a plain object. A mapped type iterating some other key union (not `keyof T` itself) isn't homomorphic and gets none of that automatic copying." },
-      { question: "Given `interface Point { readonly x: number; y?: number }`, what does `type Copy<T> = { [K in keyof T]: T[K] }` produce for `Copy<Point>`, even though the mapped type never mentions `readonly` or `?`?", answer: "`{ readonly x: number; y?: number }` — identical to `Point`. Because the mapping is homomorphic (it iterates `keyof T` directly), TypeScript preserves each property's original modifiers automatically; they'd only change if the mapped type wrote an explicit `+`/`-readonly` or `?` itself." },
-      { question: "A mapped type written as `{ [K in keyof T]: T }` compiles but produces the wrong result — what's the mistake, and what's the fix?", answer: "It reuses the whole type `T` as the value for every property instead of looking up each property's own type — every generated property ends up typed as the entire object `T`, not its original field type. The fix is `T[K]` (an indexed access into `T` at key `K`), giving each property back its actual original type." },
-      { question: "How does a mapped type differ from `Record<K, V>`?", answer: "`Record<K, V>` is itself a mapped type, defined as `{ [P in K]: V }` — it applies one fixed value type `V` to every key in `K`. A custom mapped type over `keyof T` can instead look up each property's *own* original type via `T[K]`, so different properties end up with different resulting types, which `Record` alone can't express." },
-      { question: "Why does `Capitalize<string & K>` include the `string &` intersection instead of just `Capitalize<K>`?", answer: "`Capitalize` requires its type argument to be assignable to `string`, but `K` (bound from `keyof T`) is typed as `string | number | symbol` in general, since object keys aren't restricted to strings. Intersecting with `string` narrows `K` down to only its string-compatible part for each iteration, satisfying `Capitalize`'s constraint." },
-      { question: "Name the built-in string-manipulation utility types mapped types commonly combine with `as`.", answer: "`Uppercase<S>`, `Lowercase<S>`, `Capitalize<S>`, and `Uncapitalize<S>` — they transform a string literal type's casing at compile time the same way their runtime namesakes would transform an actual string value." },
-      { question: "How would you write a mapped type `PickByType<T, V>` that keeps only the properties of T whose value type extends V?", answer: "`type PickByType<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] }` — the `as` clause runs a conditional per key; a key whose value doesn't extend `V` maps to `never`, and mapping a key to `never` inside `as` drops that property from the result entirely." },
-      { question: "What does `{ [K in keyof T as never]: T[K] }` produce for any T, and why?", answer: "The empty object type `{}` — mapping every key's `as` expression to `never` tells the compiler to omit that property from the output, so doing it unconditionally for every key removes all of them, regardless of what T originally contained." },
-      { question: "How is a mapped type different from an index signature like `{ [key: string]: number }`?", answer: "An index signature describes an *open-ended* object — any string key maps to `number`, and the property names aren't known ahead of time. A mapped type instead enumerates a *specific, known* set of keys (typically `keyof T`) and produces exactly one property per key it iterates — the resulting property names are fixed and visible in the type." },
-      { question: "Can the `in` clause of a mapped type iterate over a union of string literals that isn't derived from `keyof`? Give an example.", answer: "Yes — `type Flags = { [K in \"draft\" | \"published\" | \"archived\"]: boolean }` produces `{ draft: boolean; published: boolean; archived: boolean }`. The `in` clause accepts any union of key-like literal types, not only one produced by `keyof T`." },
-      { question: "How would you write a mapped type that wraps every property's value in `T[K] | null`, without disturbing whatever `readonly`/`?` modifiers the original type already had?", answer: "`type Nullable<T> = { [K in keyof T]: T[K] | null }` — leaving off any `+`/`-`/`readonly`/`?` means the modifiers are simply inherited from T, since iterating `keyof T` directly makes the mapping homomorphic; only the value type expression after the colon needs to change." },
-      { question: "Why does writing `{ [K in SomeObjectType]: ... }` fail, if `SomeObjectType` is an interface rather than a union of key names?", answer: "The `in` clause needs a union of key-like literal types (string, number, or symbol literals) to iterate over — an object type itself isn't one. You have to convert it first with `keyof SomeObjectType`, which produces the union of its property names, before the mapped type can loop over it." },
-      { question: "You wrote a mapped type to rename every key with a `get` prefix but forgot the `as` clause, writing `{ [K in keyof T]: () => T[K] }` instead. What's wrong with the output, and would TypeScript catch it?", answer: "It compiles fine and does wrap every value in a function — but the keys are never renamed; you get `{ title: () => string }`, not `{ getTitle: () => string }`. TypeScript won't flag this as an error, since transforming values without renaming keys is perfectly valid; the missing `as` clause is a silent logic gap, not a type error." },
-      { question: "Is there really a difference between `Partial<T>` and a hand-written `{ [K in keyof T]?: T[K] }`?", answer: "No — they're not just similar, they're identical: `Partial<T>` is defined in TypeScript's own standard library exactly as `{ [K in keyof T]?: T[K] }`, so writing that mapped type yourself produces the same type the compiler generates from `Partial<T>`." },
-      { question: "Does adding `readonly` inside a mapped type do anything to the object at runtime?", answer: "No. `readonly`, `?`, and the `+`/`-` modifiers are purely compile-time constraints checked by the type system — they affect what the compiler lets you write, but generate no runtime code and don't freeze, seal, or otherwise change the actual JavaScript object produced when the code runs." },
-      { question: "You need a type where every property becomes a validator function `(value: OriginalType) => boolean`, but the property names stay exactly the same. Do you need the `as` clause?", answer: "No — `as` is only needed to change the *keys*. Here only the value type changes, so `{ [K in keyof T]: (value: T[K]) => boolean }` is enough; adding an `as` clause without actually renaming anything would be pointless." },
-      { question: "Can a homomorphic mapped type preserve an array or tuple type instead of turning it into a plain object?", answer: "Yes — because a homomorphic mapped type (one written as `[K in keyof T]` over generic T) structurally mirrors whatever T actually is, passing an array or tuple type as T produces a new array/tuple of the same shape with each element type transformed, rather than collapsing into an object type keyed by numeric-looking indices." },
-      { question: "How does combining a mapped type with a conditional in the `as` clause differ from just using `Pick<T, K>`?", answer: "`Pick<T, K>` requires you to already know and name the specific keys K you want. A mapped type with a conditional `as` clause (`[K in keyof T as T[K] extends Cond ? K : never]`) instead selects keys *dynamically*, based on a structural test against each property's value type, without enumerating them by name." },
+      { question: "What is a mapped type?", answer: "A type that builds a new object type by looping over an existing type's keys (with `[K in keyof T]`) and applying the same transformation to each property." },
+      { question: "What does `keyof T` produce?", answer: "A union of the literal names of every property on T." },
+      { question: "How are built-in utility types like `Partial<T>` implemented?", answer: "As ordinary mapped types in TypeScript's standard type definitions. For example, Partial<T> is `{ [K in keyof T]?: T[K] }`." },
+      { question: "What does the `as` clause inside a mapped type let you do that you can't do without it?", answer: "Rename each key with a computed expression, for example turning `title` into `getTitle` with `Capitalize` and a template literal type. Without `as`, a mapped type can only change each property's *value*; the key is copied straight from the union." },
+      { question: "What do the `+` and `-` modifier prefixes mean in a mapped type, and what does no prefix default to?", answer: "`-readonly` and `-?` *remove* that modifier from every property; `+readonly` and `+?` *add* it. No sign (`readonly` or `?`) means `+`. You can only remove modifiers with an explicit `-`." },
+      { question: "Given `type Req<T> = { [K in keyof T]-?: T[K] }`, what does `Req<{ a?: string; b: number }>` resolve to?", answer: "`{ a: string; b: number }`. `-?` removes optionality, so `a` becomes required; `b` already was. This is exactly how `Required<T>` is implemented." },
+      { question: "What makes a mapped type \"homomorphic,\" and why does it matter?", answer: "It maps directly over `[K in keyof T]` for a generic `T`. The compiler treats it as mirroring `T`: it copies `T`'s existing `readonly`/`?` modifiers (unless overridden with `+`/`-`) and keeps array/tuple shapes instead of turning them into plain objects. A mapped type over some other key union gets none of that." },
+      { question: "Given `interface Point { readonly x: number; y?: number }`, what does `type Copy<T> = { [K in keyof T]: T[K] }` produce for `Copy<Point>`, even though the mapped type never mentions `readonly` or `?`?", answer: "`{ readonly x: number; y?: number }`, identical to `Point`. The mapping is homomorphic, so original modifiers are preserved unless the mapped type explicitly writes `+`/`-readonly` or `?`." },
+      { question: "A mapped type written as `{ [K in keyof T]: T }` compiles but produces the wrong result — what's the mistake, and what's the fix?", answer: "Every property gets the whole type `T` instead of its own type. Use `T[K]` (an indexed access into `T` at key `K`) to give each property its original type." },
+      { question: "How does a mapped type differ from `Record<K, V>`?", answer: "`Record<K, V>` is itself a mapped type, `{ [P in K]: V }`, giving every key the same value type `V`. A custom mapped type over `keyof T` can use each property's own type via `T[K]`, so properties can end up with different types." },
+      { question: "Why does `Capitalize<string & K>` include the `string &` intersection instead of just `Capitalize<K>`?", answer: "`Capitalize` needs a `string`, but `K` from `keyof T` is generally `string | number | symbol`, since keys aren't only strings. `string & K` keeps just the string part, satisfying the constraint." },
+      { question: "Name the built-in string-manipulation utility types mapped types commonly combine with `as`.", answer: "`Uppercase<S>`, `Lowercase<S>`, `Capitalize<S>` and `Uncapitalize<S>`. They change a string literal type's casing at compile time, like their runtime namesakes do to real strings." },
+      { question: "How would you write a mapped type `PickByType<T, V>` that keeps only the properties of T whose value type extends V?", answer: "`type PickByType<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] }`. The `as` clause tests each key; keys whose value doesn't extend `V` map to `never`, which drops them from the result." },
+      { question: "What does `{ [K in keyof T as never]: T[K] }` produce for any T, and why?", answer: "The empty object type `{}`. Mapping a key to `never` in `as` removes it, so doing that for every key removes all of them." },
+      { question: "How is a mapped type different from an index signature like `{ [key: string]: number }`?", answer: "An index signature is *open-ended*: any string key maps to `number`, and names aren't known ahead of time. A mapped type goes through a *specific, known* set of keys (usually `keyof T`) and creates exactly one property per key, with fixed, visible names." },
+      { question: "Can the `in` clause of a mapped type iterate over a union of string literals that isn't derived from `keyof`? Give an example.", answer: "Yes. `type Flags = { [K in \"draft\" | \"published\" | \"archived\"]: boolean }` gives `{ draft: boolean; published: boolean; archived: boolean }`. `in` accepts any union of key-like literal types." },
+      { question: "How would you write a mapped type that wraps every property's value in `T[K] | null`, without disturbing whatever `readonly`/`?` modifiers the original type already had?", answer: "`type Nullable<T> = { [K in keyof T]: T[K] | null }`. With no `+`/`-`/`readonly`/`?`, modifiers are inherited from T because the mapping is homomorphic. Only the value type changes." },
+      { question: "Why does writing `{ [K in SomeObjectType]: ... }` fail, if `SomeObjectType` is an interface rather than a union of key names?", answer: "`in` needs a union of key-like literal types (string, number or symbol literals), and an object type isn't one. Use `keyof SomeObjectType` to get the union of its property names first." },
+      { question: "You wrote a mapped type to rename every key with a `get` prefix but forgot the `as` clause, writing `{ [K in keyof T]: () => T[K] }` instead. What's wrong with the output, and would TypeScript catch it?", answer: "It compiles and wraps every value in a function, but the keys aren't renamed: you get `{ title: () => string }`, not `{ getTitle: () => string }`. TypeScript won't flag it, since that's valid. It's a silent logic bug, not a type error." },
+      { question: "Is there really a difference between `Partial<T>` and a hand-written `{ [K in keyof T]?: T[K] }`?", answer: "No, they're identical. `Partial<T>` is defined in the standard library exactly as `{ [K in keyof T]?: T[K] }`." },
+      { question: "Does adding `readonly` inside a mapped type do anything to the object at runtime?", answer: "No. `readonly`, `?` and the `+`/`-` modifiers are compile-time only. They generate no runtime code and don't freeze, seal or otherwise change the JavaScript object." },
+      { question: "You need a type where every property becomes a validator function `(value: OriginalType) => boolean`, but the property names stay exactly the same. Do you need the `as` clause?", answer: "No. `as` is only for changing *keys*. Here only the value changes, so `{ [K in keyof T]: (value: T[K]) => boolean }` is enough." },
+      { question: "Can a homomorphic mapped type preserve an array or tuple type instead of turning it into a plain object?", answer: "Yes. A homomorphic mapped type (`[K in keyof T]` over generic T) mirrors whatever T is, so an array or tuple T produces an array/tuple of the same shape with each element type transformed, not an object keyed by indexes." },
+      { question: "How does combining a mapped type with a conditional in the `as` clause differ from just using `Pick<T, K>`?", answer: "`Pick<T, K>` needs you to name the keys. A conditional `as` clause (`[K in keyof T as T[K] extends Cond ? K : never]`) picks keys *dynamically* by testing each property's value type, without naming them." },
     ],
     prerequisites: ["generics", "utility-types"],
     relatedTopics: ["utility-types", "conditional-types", "generics"],

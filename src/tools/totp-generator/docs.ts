@@ -3,15 +3,15 @@ import type { ToolDocs } from '../types';
 const docs: ToolDocs = {
   howToUse: [
     'Paste a Base32 secret or a whole `otpauth://` URI into **Secret (Base32) or otpauth:// URI**, or click **New secret** or **Try an example**. A URI fills in every option for you.',
-    'Check the **Type** (**TOTP (time)** or **HOTP (counter)**), **Algorithm**, **Digits** and **Period** (or **Counter** for HOTP) match the service you are testing.',
+    'Make sure **Type** (**TOTP (time)** or **HOTP (counter)**), **Algorithm**, **Digits** and **Period** (or **Counter** for HOTP) match the service you are testing.',
     'Read the **Current code** with the seconds left, plus the codes for the previous and next step. For HOTP, step through with **Next counter** and **Previous**.',
     'To test a code, type it into **Code to check** and choose an **Accept window**. The result says whether it matches and how many steps ahead or behind it is.',
     'Fill in **Issuer** and **Account** to build an otpauth:// URI that authenticator apps can import, and copy it with the copy button next to **URI for authenticator apps**.',
   ],
   howItWorks:
-    'The secret is decoded from Base32 (RFC 4648); spaces, hyphens, lowercase letters and trailing `=` padding are accepted. HOTP (RFC 4226) computes an HMAC of an 8-byte big-endian counter with the browser’s Web Crypto API (`crypto.subtle.sign`), using SHA-1, SHA-256 or SHA-512, then applies dynamic truncation and keeps the last 6, 7 or 8 decimal digits.\n\n' +
-    'TOTP (RFC 6238) is HOTP with the counter set to the number of whole periods since the Unix epoch, taken from this device’s clock and refreshed four times a second. Verification tries the current step first, then each step outward up to the accept window, so the closest match is reported.\n\n' +
-    'An otpauth:// URI is read in the Key Uri Format: the label gives issuer and account, and `secret`, `issuer`, `algorithm`, `digits`, `period` and `counter` set the options, defaulting to SHA-1, 6 digits and 30 seconds. **New secret** makes a 160-bit secret with `crypto.getRandomValues`, the length RFC 4226 recommends.',
+    'The secret is decoded from Base32 (RFC 4648); spaces, hyphens, lowercase and trailing `=` padding are fine. HOTP (RFC 4226) takes an HMAC of an 8-byte big-endian counter with the browser’s Web Crypto API (`crypto.subtle.sign`), using SHA-1, SHA-256 or SHA-512. Dynamic truncation then keeps the last 6, 7 or 8 decimal digits.\n\n' +
+    'TOTP (RFC 6238) is HOTP where the counter is the number of whole periods since the Unix epoch, from this device’s clock, refreshed four times a second. Verification tries the current step, then each step outward up to the accept window, so the closest match is reported.\n\n' +
+    'otpauth:// URIs are read in the Key Uri Format. The label gives issuer and account; `secret`, `issuer`, `algorithm`, `digits`, `period` and `counter` set the options (default SHA-1, 6 digits, 30 seconds). **New secret** makes a 160-bit secret with `crypto.getRandomValues`, the length RFC 4226 recommends.',
   limits: [
     'Codes depend on this device’s clock; if it is wrong, TOTP codes will be too.',
     'The page offers 6 or 8 digits and a 30 or 60 second period. A URI can also set 7 digits or any whole period from 1 to 3,600 seconds.',

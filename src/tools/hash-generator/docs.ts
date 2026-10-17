@@ -9,8 +9,9 @@ const docs: ToolDocs = {
     'Use the copy button next to a value to copy just that one.',
   ],
   howItWorks:
-    'Text is encoded as UTF-8 and hashed as those bytes; a file is read into memory and hashed exactly as stored. SHA-1, SHA-256, SHA-384 and SHA-512 come from the browser’s Web Crypto API (`crypto.subtle.digest`). Web Crypto has no MD5, so MD5 is computed with a small built-in JavaScript implementation.\n\n' +
-    'In HMAC mode, the key is encoded as UTF-8 and imported as a raw HMAC key, and the HMACs are computed with `crypto.subtle.sign` for SHA-1, SHA-256, SHA-384 and SHA-512 (RFC 2104). All algorithms run together on each change, so you always see every result for the same input.',
+    'Text is hashed as UTF-8 bytes; a file is read into memory and hashed exactly as stored.\n\n' +
+    'SHA-1, SHA-256, SHA-384 and SHA-512 come from the browser’s Web Crypto API (`crypto.subtle.digest`). Web Crypto has no MD5, so MD5 is computed with a small built-in JavaScript implementation.\n\n' +
+    'In HMAC mode, the key is encoded as UTF-8 and imported as a raw HMAC key. HMACs are computed with `crypto.subtle.sign` for SHA-1, SHA-256, SHA-384 and SHA-512 (RFC 2104). All algorithms run together on each change, so every result is for the same input.',
   limits: [
     'Files up to 200 MB; the whole file is held in memory while hashing. Text files dropped on the text box are limited to 10 MB.',
     'HMAC-MD5 is not supported, because Web Crypto doesn’t offer it.',
@@ -19,7 +20,7 @@ const docs: ToolDocs = {
     'MD5 and SHA-1 are broken for security purposes: fine for checksums and compatibility, not for signatures or passwords.',
   ],
   privacy:
-    'Text, files and HMAC keys are processed only in your browser and never uploaded or stored. Text received through **Send to…** from another tool is passed via this tab’s session storage and removed as soon as this tool reads it.',
+    'Text, files and HMAC keys are processed only in your browser and never uploaded or stored. Text received through **Send to…** passes through this tab’s session storage and is removed as soon as this tool reads it.',
   faqs: [
     {
       question: 'Why doesn’t my hash match the one from the command line?',
@@ -34,7 +35,7 @@ const docs: ToolDocs = {
     {
       question: 'What is the difference between a hash and an HMAC?',
       answer:
-        'A hash depends only on the data, so anyone can compute it. An HMAC also mixes in a secret key, so only someone with the key can produce or check it. It is used to sign webhooks and API requests.',
+        'A hash depends only on the data, so anyone can compute it. An HMAC also mixes in a secret key, so only someone with the key can produce or check it. HMACs are used to sign webhooks and API requests.',
     },
     {
       question: 'Why is there no HMAC-MD5?',

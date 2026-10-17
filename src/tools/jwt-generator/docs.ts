@@ -8,8 +8,9 @@ const docs: ToolDocs = {
     'The **Signed token** updates as you edit. Copy it with **Copy token**, or check it with **Open in JWT Decoder**.',
   ],
   howItWorks:
-    'The header and payload are parsed as JSON objects, serialised compactly, and Base64URL-encoded; the header’s `alg` is always set to the selected algorithm. The text `header.payload` is then signed with the browser’s Web Crypto API (`crypto.subtle.sign`) and the signature is appended as the third Base64URL segment (RFC 7515).\n\n' +
-    'HS256/384/512 use HMAC with SHA-256/384/512. RS algorithms use RSASSA-PKCS1-v1_5, PS algorithms RSA-PSS with a salt as long as the hash, ES256/384/512 ECDSA on P-256, P-384 and P-521, and EdDSA uses Ed25519. Private keys are accepted as PKCS#8 PEM (`BEGIN PRIVATE KEY`) or as a JWK with its private `d` part.\n\n' +
+    'The header and payload are parsed as JSON objects, serialised compactly and Base64URL-encoded. The header’s `alg` is always set to the selected algorithm. The browser’s Web Crypto API (`crypto.subtle.sign`) signs the text `header.payload`, and the signature becomes the third Base64URL segment (RFC 7515).\n\n' +
+    '- HS256/384/512: HMAC with SHA-256/384/512\n- RS: RSASSA-PKCS1-v1_5\n- PS: RSA-PSS with a salt as long as the hash\n- ES256/384/512: ECDSA on P-256, P-384 and P-521\n- EdDSA: Ed25519\n\n' +
+    'Private keys are accepted as PKCS#8 PEM (`BEGIN PRIVATE KEY`) or as a JWK with its private `d` part.\n\n' +
     'Generated key pairs come from `crypto.subtle.generateKey`: RSA 2048-bit with exponent 65537 for RS and PS, the matching curve for ES, or Ed25519. You get the public and private keys as PEM and JWK. The default and **Random secret** values are made from `crypto.getRandomValues`.',
   limits: [
     'Only signed tokens (JWS) are produced; encrypted tokens (JWE) and unsigned `"alg": "none"` tokens are not.',

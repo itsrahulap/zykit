@@ -8,7 +8,10 @@ const docs: ToolDocs = {
     'Click a row to expand it as pretty-printed JSON (or the full text of a multi-line entry), then use **Export filtered NDJSON** to download what matches.',
   ],
   howItWorks:
-    'Each line that starts with `{` and parses as a JSON object is a JSON entry. Its level is read from `level`, `lvl`, `severity` or `loglevel` (text, or numbers 10 to 60 as used by pino), its time from `time`, `timestamp`, `ts`, `@timestamp` and similar (ISO text, or epoch seconds or milliseconds) and its message from `msg` or `message`. Any other line is plain text: an ISO timestamp (with `T` or a space, `.` or `,` fractions) followed by an optional level such as `INFO`, `[ERROR]` or `WARN:`; a line that starts with a level alone is also understood. Indented lines with no timestamp are joined to the entry above, so stack traces stay together.\n\nField filters match flattened paths (`user.name`) exactly, ignoring case. Only the rows in view are drawn. Exported plain-text lines become `{time, level, message}` objects so the result is valid NDJSON.',
+    'A line that starts with `{` and parses as a JSON object is a JSON entry:\n\n' +
+    '- Level comes from `level`, `lvl`, `severity` or `loglevel` (text, or numbers 10 to 60 as used by pino).\n- Time comes from `time`, `timestamp`, `ts`, `@timestamp` and similar (ISO text, or epoch seconds or milliseconds).\n- Message comes from `msg` or `message`.\n\n' +
+    'Any other line is plain text: an ISO timestamp (with `T` or a space, `.` or `,` fractions) followed by an optional level such as `INFO`, `[ERROR]` or `WARN:`. A line that starts with just a level is also understood. Indented lines with no timestamp join the entry above, so stack traces stay together.\n\n' +
+    'Field filters match flattened paths (`user.name`) exactly, ignoring case. Only the rows in view are drawn. Exported plain-text lines become `{time, level, message}` objects so the result is valid NDJSON.',
   limits: [
     'Files up to 50 MB can be opened; larger ones are refused.',
     'Logs are parsed on the page itself, so very large files can pause it briefly.',

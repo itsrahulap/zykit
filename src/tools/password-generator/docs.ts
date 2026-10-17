@@ -5,14 +5,14 @@ const docs: ToolDocs = {
     'Choose a **Mode**: **Password** for random characters or **Passphrase** for random words.',
     'For a password, set the **Length** and tick the **Characters** to use. Optionally turn on **Exclude look-alikes (0 O 1 l I |)** or **At least one of each chosen set**, and list any other characters under **Also exclude**.',
     'For a passphrase, set the number of **Words**, pick a **Separator**, and optionally turn on **Capitalise words** or **Add a number**.',
-    'Set **How many** to generate, then read the strength, entropy and estimated time to crack. Click **Generate** for a fresh set.',
+    'Set **How many** to generate, then check the strength, entropy and estimated time to crack. Click **Generate** for a fresh set.',
     'Copy one value with its copy button, or every value (one per line) with **Copy all**.',
   ],
   howItWorks:
-    'Every random choice comes from the browser’s secure random generator, `crypto.getRandomValues`. To avoid modulo bias, random 32-bit values that fall in the incomplete top slice of the range are thrown away and drawn again (rejection sampling), so each character or word is equally likely.\n\n' +
-    'A password picks each character independently from the pool of ticked sets, minus look-alikes and anything under **Also exclude**. With **At least one of each chosen set**, a password missing a set is discarded and redrawn, which keeps the result uniform over all valid passwords; only if 200 attempts fail is one character from each set placed and the rest shuffled in.\n\n' +
+    'Every random choice comes from the browser’s secure random generator, `crypto.getRandomValues`. To avoid modulo bias, 32-bit values in the incomplete top slice of the range are discarded and redrawn (rejection sampling), so each character or word is equally likely.\n\n' +
+    'A password picks each character independently from the ticked sets, minus look-alikes and anything under **Also exclude**. With **At least one of each chosen set**, a password missing a set is discarded and redrawn, which keeps the result uniform over all valid passwords. Only if 200 attempts fail is one character from each set placed and the rest shuffled in.\n\n' +
     'A passphrase picks each word independently from a built-in list of 2,494 short, common, lowercase English words. **Add a number** appends one random digit to one random word.\n\n' +
-    'Entropy is `length × log2(pool size)` for passwords and `words × log2(2,494)` for passphrases, plus `log2(10 × words)` when a number is added. The time to crack is the average time to search half of that space at 100 billion guesses per second, roughly a GPU rig attacking a leaked, fast hash offline.',
+    'Entropy is `length × log2(pool size)` for passwords and `words × log2(2,494)` for passphrases, plus `log2(10 × words)` when a number is added. The time to crack is the average time to search half that space at 100 billion guesses per second, roughly a GPU rig attacking a leaked, fast hash offline.',
   limits: [
     'Passwords are 8 to 128 characters; passphrases are 3 to 12 words; up to 50 can be generated at once.',
     'Symbols are limited to `!@#$%^&*()-_=+[]{};:,.<>/?~|`. Characters outside the four sets can’t be added.',
@@ -21,7 +21,7 @@ const docs: ToolDocs = {
     'The word list is English only and can’t be replaced with your own.',
   ],
   privacy:
-    'Passwords and passphrases are generated in your browser and never uploaded or stored; reloading the page clears them. This tool doesn’t create share links. Copied values stay in your clipboard until you replace them.',
+    'Passwords and passphrases are generated in your browser and are never uploaded or stored; reloading the page clears them. This tool doesn’t create share links. Copied values stay in your clipboard until you replace them.',
   faqs: [
     {
       question: 'Is a passphrase as strong as a password?',

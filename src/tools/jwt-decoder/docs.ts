@@ -10,7 +10,9 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'A JWT is three base64url segments separated by dots: header, payload and signature. The decoder base64url-decodes the first two, reads them as strict UTF-8 and parses them as JSON objects. The signature is decoded but not interpreted.\n\n' +
-    'Verification uses the browser’s Web Crypto API (`crypto.subtle.verify`) over the exact `header.payload` text, with the algorithm named in the header’s `alg`: HMAC for HS256/384/512, RSASSA-PKCS1-v1_5 for RS256/384/512, RSA-PSS for PS256/384/512 and ECDSA (P-256, P-384, P-521) for ES256/384/512. Public keys are imported as SPKI PEM (`BEGIN PUBLIC KEY`), a JWK or a JWK Set, where the key matching the token’s `kid` is picked.',
+    'Verification runs the browser’s Web Crypto API (`crypto.subtle.verify`) over the exact `header.payload` text, using the algorithm in the header’s `alg`:\n\n' +
+    '- HMAC for HS256/384/512\n- RSASSA-PKCS1-v1_5 for RS256/384/512\n- RSA-PSS for PS256/384/512\n- ECDSA (P-256, P-384, P-521) for ES256/384/512\n\n' +
+    'Public keys can be SPKI PEM (`BEGIN PUBLIC KEY`), a JWK, or a JWK Set, from which the key matching the token’s `kid` is picked.',
   limits: [
     'Encrypted tokens (JWE, five segments) can’t be decoded; only signed tokens (JWS, three segments) are supported.',
     'Tokens signed with EdDSA or other algorithms outside HS, RS, PS and ES 256/384/512 can be decoded but not verified. Unsigned tokens (`"alg": "none"`) have nothing to verify and are flagged.',

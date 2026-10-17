@@ -8,8 +8,8 @@ const docs: ToolDocs = {
     'Copy the hash. A new random salt is used on every run, so the same password gives a different hash each time.',
   ],
   howItWorks:
-    'This is an implementation of bcrypt (EksBlowfishSetup) written for this page. The Blowfish tables are computed from the digits of pi, the key schedule is run 2^cost times with your password and the salt, and the text `OrpheanBeholderScryDoubt` is then encrypted 64 times. The result is written in bcrypt’s own Base64 alphabet.\n\n' +
-    'The work runs in a Web Worker so the page stays responsive. The 16-byte salt comes from `crypto.getRandomValues`. Verifying re-hashes with the salt and cost found in the hash and compares in constant time. The time estimates come from a quick cost-4 run on your device, doubled per step.',
+    'The page uses its own bcrypt (EksBlowfishSetup) implementation. The Blowfish tables come from the digits of pi. The key schedule runs 2^cost times with your password and the salt, then the text `OrpheanBeholderScryDoubt` is encrypted 64 times. The result is written in bcrypt’s own Base64 alphabet.\n\n' +
+    'The work runs in a Web Worker so the page stays responsive. The 16-byte salt comes from `crypto.getRandomValues`. Verifying re-hashes with the salt and cost stored in the hash and compares in constant time. Time estimates come from a quick cost-4 run on your device, doubled per step.',
   limits: [
     'bcrypt reads only the first 72 bytes of the password, counting a trailing NUL byte, so at most 71 bytes of UTF-8 are used. Longer input is silently cut off; the page warns you.',
     'Cost is limited to 4–15. Cost 14 and 15 can take many seconds to minutes in a browser.',

@@ -5,36 +5,34 @@ export const whatsappCaseStudy: CaseStudy = {
   title: "WhatsApp",
   difficulty: "Hard",
   summary:
-    "Design a real-time messaging system: one-to-one and group chats with reliable delivery, delivery/read receipts, and end-to-end encryption.",
+    "Design real-time messaging: one-to-one and group chats with reliable delivery, read receipts, and end-to-end encryption.",
   problemStatement: `
-Two people (or a group of them) exchange text messages, photos, and voice
-notes, and expect them to arrive in something close to real time —
-generally within a second — even though either side might be on a flaky
-mobile connection, might have the app closed, or might be offline
-entirely. When someone comes back online, every message they missed should
-be waiting for them, in order, exactly once. That's the product; the system
-design problem is almost entirely about the machinery needed to make "send
-a message" actually mean "deliver it reliably, ordered, and privately" at a
-scale of billions of messages a day.
+Two people, or a group, exchange text, photos, and voice notes. They
+expect messages to arrive within about a second, even on flaky mobile
+connections, with the app closed, or fully offline. When someone comes
+back online, every missed message should be waiting, in order, exactly
+once.
 
-Three things make this harder than it looks. First, delivery has to work
-regardless of whether the recipient is currently connected — the system
-needs to hold a message durably and push it the instant the recipient
-reconnects, which means tracking who's online right now across billions of
-users and maintaining a persistent connection (not just request/response)
-to each of them. Second, messages need end-to-end encryption, meaning even
-the server operating the system cannot read message content — which
-changes how storage, search, and multi-device sync all have to work,
-since the usual trick of "decrypt on the server to do something useful
-with the data" is off the table by design. Third, groups fan a single
-message out to potentially hundreds of recipients, each of whom needs
-their own delivery/ack tracking, without the group case degrading into a
-mess of duplicated logic from the one-to-one case.
+The design problem is making "send a message" mean "deliver it reliably,
+in order, and privately" at billions of messages a day. Three things make
+this hard:
 
-None of this is solved by a database schema alone — it requires a real
-notion of a persistent connection per online user, a durable per-recipient
-inbox for offline delivery, and a delivery-state machine (sent → delivered
-→ read) tracked per message per recipient.
+- **Delivery must work whether or not the recipient is connected.** The
+  system holds messages durably and pushes them the instant the recipient
+  reconnects. That means tracking who's online across billions of users
+  and keeping a persistent connection (not just request/response) to
+  each.
+- **End-to-end encryption.** Even the server can't read message content.
+  That changes how storage, search, and multi-device sync work, because
+  "decrypt on the server" is off the table.
+- **Groups** fan one message out to possibly hundreds of recipients, each
+  with their own delivery tracking, without duplicating the one-to-one
+  logic.
+
+A database schema alone doesn't solve this. You need a persistent
+connection per online user, a durable per-recipient inbox for offline
+delivery, and a delivery-state machine (sent → delivered → read) per
+message per recipient.
   `.trim(),
   requirements: {
     functional: [
@@ -86,7 +84,7 @@ inbox for offline delivery, and a delivery-state machine (sent → delivered
     },
   ],
   capacityNotes:
-    "The number that shapes this design more than raw message throughput is concurrent connections: hundreds of millions of persistent, mostly-idle sockets need to be held open simultaneously, which is a fundamentally different capacity problem than 'requests per second' — it's about how many long-lived connections one connection-handling server can hold in memory, not how fast it can respond. That pushes the architecture toward a dedicated, horizontally-scaled fleet of connection servers, separate from the stateless application logic that decides what to do with a message once it arrives.",
+    "Concurrent connections shape this design more than message throughput. Hundreds of millions of persistent, mostly idle sockets stay open at once. That's a different problem from 'requests per second': it's about how many long-lived connections one server can hold in memory, not how fast it responds. So the architecture uses a dedicated, horizontally scaled fleet of connection servers, separate from the stateless logic that handles messages.",
   apiDesign: [
     { method: "WS", path: "/ws/connect", description: "Establishes a persistent WebSocket connection for the authenticated user; used for both sending and receiving messages in real time." },
     { method: "POST", path: "/api/v1/messages", description: "Fallback/HTTP path to send a message when a live socket isn't used (e.g. from a server-to-server client); body: { recipientId or groupId, ciphertext, clientMessageId }." },
@@ -128,35 +126,35 @@ messenger's server-side storage is meant to be transient by design, not an
 archive.
   `.trim(),
   highLevelDesign: `
-Every online client holds a persistent connection (WebSocket, or a similar
-long-lived protocol) to a **connection server**, whose only job is routing:
-matching a \`user_id\` to the specific server and socket currently serving
-that user, out of a large horizontally-scaled fleet. Because there are
-hundreds of millions of these connections at once, this fleet is scaled
-and reasoned about separately from the rest of the backend — a connection
-server needs to hold many idle sockets cheaply in memory, which is a very
-different resource profile than a stateless request-handling app server.
+Every online client holds a persistent connection (WebSocket or similar)
+to a **connection server**. Its only job is routing: matching a
+\`user_id\` to the server and socket serving that user. With hundreds of
+millions of connections, this fleet is scaled separately from the rest of
+the backend. It must hold many idle sockets cheaply in memory, a very
+different profile from a stateless app server.
 
-When a client sends a message, its connection server hands it to a
-messaging service, which writes the message (as opaque ciphertext) durably,
-determines the recipient(s) from the conversation, and looks up where each
-recipient is currently connected (via a presence/routing registry, often
-backed by something like Redis mapping \`user_id -> connection server\`).
-If the recipient is online, the message is pushed immediately over their
-socket; if not, it's placed in their durable \`pending_inbox\` and pushed
-the moment they reconnect. Either way, the server acks the sender only once
-the message is durably stored — durability, not delivery, is what the
-sender's "sent" checkmark actually represents.
+When a client sends a message:
 
-Group messaging reuses this exact same per-recipient pipeline rather than
-inventing a separate mechanism: a group message is simply fanned out to
-each member's individual delivery path (live push or pending inbox),
-exactly like a batch of one-to-one sends, with delivery-status tracked per
-member so the sender's checkmarks reflect the slowest member to receive
-it. Media (photos, voice notes) rides a separate path — encrypted, then
-uploaded to object storage, with only a pointer and encryption key sent
-through the low-latency messaging pipeline itself, keeping the socket
-traffic light regardless of attachment size.
+- Its connection server hands it to a messaging service, which stores it
+  durably as opaque ciphertext.
+- The service finds the recipient(s) and looks up where each is connected
+  in a presence/routing registry (often Redis mapping
+  \`user_id -> connection server\`).
+- Online recipients get an immediate push. Offline ones get it in their
+  durable \`pending_inbox\`, pushed the moment they reconnect.
+
+Either way, the server acks the sender only once the message is durably
+stored. The "sent" checkmark means durability, not delivery.
+
+Groups reuse the same per-recipient pipeline. A group message fans out to
+each member's delivery path (live push or pending inbox), like a batch of
+one-to-one sends. Status is tracked per member, so the sender's checkmarks
+reflect the slowest member.
+
+Media (photos, voice notes) takes a separate path. It's encrypted and
+uploaded to object storage, and only a pointer and the encryption key go
+through the messaging pipeline. Socket traffic stays light whatever the
+attachment size.
   `.trim(),
   highLevelDiagram: `
    Client A                                          Client B
@@ -186,157 +184,139 @@ traffic light regardless of attachment size.
     {
       title: "End-to-end encryption and what it removes from the server's job",
       explanation: `
-End-to-end encryption (e.g. via the Signal Protocol, which WhatsApp is
-built on) means every message is encrypted on the sender's device with a
-key the server never has, and decrypted only on the recipient's device.
-This one property reshapes several parts of the design that would
-otherwise be simple server-side features:
+End-to-end encryption (e.g. the Signal Protocol, which WhatsApp uses)
+means each message is encrypted on the sender's device with a key the
+server never has, and decrypted only on the recipient's device. This
+reshapes features that would otherwise be simple on the server:
 
-- **No server-side search over message content** — the server can't grep
-  ciphertext. Search has to happen entirely on-device, over messages the
-  device has already decrypted and stored locally.
-- **No server-side content moderation of message text** — whatever
-  abuse-prevention exists has to work on metadata (who's messaging whom,
-  how often, reports from recipients) rather than content inspection.
-- **Multi-device support is a genuine hard problem**, not an
-  afterthought: if a user's key lives only on one phone, a new linked
-  device (a laptop, say) needs its own way to receive messages, which
-  typically means each device gets its own keys and the sender's device
-  encrypts the same message separately for each of the recipient's active
-  devices, rather than the server ever fanning out one decrypted copy.
-- **Key exchange is a first-class flow**: before two users can message
-  encrypted, their devices need to fetch each other's public key bundle
-  from the server and establish a session — the server's role here is
-  purely as a directory for public keys, never a party to the actual
-  encrypted conversation.
+- **No server-side search of message content.** The server can't search
+  ciphertext. Search runs on-device, over messages already decrypted and
+  stored locally.
+- **No server-side moderation of message text.** Abuse prevention must
+  use metadata (who messages whom, how often, recipient reports), not
+  content.
+- **Multi-device is genuinely hard.** If a user's key lives on one phone,
+  a newly linked device (say, a laptop) needs its own way to receive
+  messages. Usually each device gets its own keys, and the sender's
+  device encrypts the message separately for each of the recipient's
+  active devices. The server never fans out a decrypted copy.
+- **Key exchange is a core flow.** Before messaging, devices fetch each
+  other's public key bundle from the server and set up a session. The
+  server is only a public-key directory, never part of the conversation.
 
-The upshot: encryption isn't a checkbox added at the end, it constrains
-what the server is *allowed* to be useful for, and several features that
-would be one-line database queries in a non-encrypted system (search,
-content moderation) simply move to the client instead.
+Encryption isn't a checkbox added at the end. It limits what the server
+is *allowed* to do, and features that would be one-line queries elsewhere
+(search, moderation) move to the client.
       `.trim(),
     },
     {
       title: "Reliable, ordered, exactly-once-feeling delivery",
       explanation: `
-The underlying transport is realistically at-least-once (a network can
-retry a send that actually succeeded), but users need the experience to
-feel exactly-once, and ordered:
+The transport is realistically at-least-once (a network can retry a send
+that already succeeded). Users still need it to feel exactly-once and in
+order:
 
-- Each message carries a \`client_message_id\` generated on the sending
-  device before it's sent. If the network causes the client to retry, the
-  server recognizes the duplicate id and does not re-deliver or double-count
-  it — this is the same idempotency pattern used anywhere a client might
-  retry a write it's unsure succeeded.
-- Ordering within a single conversation is preserved by attaching a
-  sequence number (or relying on a single ordered queue per conversation)
-  so a recipient's client can detect a gap and know to wait for or request
-  a missing message, rather than rendering messages out of order.
-- The **sent / delivered / read** state machine is tracked per message per
-  recipient: "sent" means the server has durably stored it, "delivered"
-  means it reached the recipient's device, "read" means the recipient's
-  client has explicitly acknowledged it was opened. Each transition is
-  itself a small message flowing back through the same pipeline, which is
-  why group chats can show a partial-delivery state (delivered to 3 of 5
-  members) instead of a single boolean.
+- Each message carries a \`client_message_id\`, generated on the sending
+  device. If the client retries, the server sees the duplicate id and
+  doesn't re-deliver or double-count it. This is the standard idempotency
+  pattern for retried writes.
+- Order within a conversation comes from a sequence number (or one
+  ordered queue per conversation). The recipient's client can spot a gap
+  and wait for or request the missing message instead of showing messages
+  out of order.
+- The **sent / delivered / read** state is tracked per message per
+  recipient. "Sent" means the server stored it durably, "delivered" means
+  it reached the recipient's device, and "read" means the recipient's
+  client confirmed it was opened. Each transition is a small message back
+  through the same pipeline. That's why groups can show partial delivery
+  (delivered to 3 of 5 members) instead of a single yes/no.
       `.trim(),
     },
     {
       title: "Offline delivery and the pending inbox",
       explanation: `
-A recipient being offline can't be allowed to mean "the message is lost"
-or "the sender has to keep retrying forever" — the server takes
-responsibility for holding the message until it can be delivered:
+An offline recipient must not mean "the message is lost" or "the sender
+retries forever." The server holds the message until it can deliver it:
 
-- When the presence/routing registry shows no active connection for a
-  recipient, the message is written into that recipient's
-  \`pending_inbox\` instead of attempting a live push. This is a durable,
-  per-recipient queue, not a best-effort cache — losing it would mean
-  losing a real, undelivered message.
-- The moment that recipient's device establishes a new connection, the
-  connection server (or the messaging service, notified of the new
-  connection) drains their \`pending_inbox\` in order and pushes everything
-  waiting, then the client acks each one back through the delivery-status
-  pipeline.
-- This queue only needs to hold messages for however long a device is
-  realistically offline (hours to a few days, with a bounded retention
-  policy after which delivery is considered to have failed) — it is not
-  a long-term store, which keeps it small relative to the platform's total
-  message volume even though total volume is enormous.
+- If the presence/routing registry shows no connection for a recipient,
+  the message goes into their \`pending_inbox\` instead of a live push.
+  This is a durable per-recipient queue, not a best-effort cache. Losing
+  it would lose real, undelivered messages.
+- When the recipient's device reconnects, the connection server (or the
+  messaging service, notified of the connection) drains their
+  \`pending_inbox\` in order and pushes everything. The client then acks
+  each message through the delivery-status pipeline.
+- The queue only holds messages while a device is offline: hours to a few
+  days, with a bounded retention policy after which delivery counts as
+  failed. It isn't a long-term store, so it stays small compared to total
+  message volume.
       `.trim(),
     },
     {
       title: "Group messaging as fan-out over the same per-recipient pipeline",
       explanation: `
-A naive group chat implementation might be tempted to build an entirely
-separate code path from one-to-one messaging; a cleaner design recognizes
-that a group message is just N individual deliveries sharing one piece of
-ciphertext logic:
+Don't build a separate code path for groups. A group message is just N
+individual deliveries sharing one piece of ciphertext logic:
 
-- On send, the messaging service resolves the group's current member list
-  and performs the exact same per-recipient routing decision (push live,
-  or land in \`pending_inbox\`) for each member independently — a member
-  who's offline doesn't block delivery to members who are online.
-- With end-to-end encryption, this fan-out has a real cost: the sending
-  device must encrypt the message separately for each recipient (or each
-  recipient device, under multi-device), since there's no single shared
-  key the server could use to encrypt once for everyone — group size is
-  therefore a real, visible cost on the sender's side, not just a server
-  scaling concern.
-- Delivery-status tracking is naturally per-member (via the same
-  \`delivery_status\` table used for 1:1 chats), which is what lets the
-  UI show "delivered to all," "delivered to some," or "read by 3" without
-  any group-specific schema.
+- On send, the messaging service gets the group's current members and
+  makes the same routing decision (push live, or land in
+  \`pending_inbox\`) for each one. An offline member doesn't block
+  delivery to online ones.
+- With end-to-end encryption, fan-out has a real cost. The sending device
+  must encrypt separately for each recipient (or each recipient device,
+  with multi-device), since there's no shared key the server could use
+  once for everyone. Group size is a visible cost for the sender, not
+  just a server scaling concern.
+- Delivery status is per member (the same \`delivery_status\` table as 1:1
+  chats). That lets the UI show "delivered to all," "delivered to some,"
+  or "read by 3" with no group-specific schema.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-The first thing to strain in this design is the connection-handling fleet
-itself: hundreds of millions of concurrent, mostly-idle sockets is a
-memory and file-descriptor problem more than a CPU or bandwidth one, so
-connection servers scale by adding more machines to hold more sockets, with
-the presence/routing registry (mapping \`user_id\` to connection server)
-sharded and replicated so that lookup stays fast as the fleet grows. A
-sudden reconnection storm — a regional network outage ending, or a
-new-year spike — is the specific event this layer has to be provisioned to
-absorb, since it can momentarily multiply both new connections and
-pending-inbox drains at once.
+The connection fleet strains first. Hundreds of millions of concurrent,
+mostly idle sockets is a memory and file-descriptor problem more than a
+CPU or bandwidth one. Connection servers scale by adding machines. The
+presence/routing registry (\`user_id\` to connection server) is sharded
+and replicated so lookups stay fast as the fleet grows.
 
-Past that, the messaging service and message/inbox stores scale
-horizontally by sharding on conversation or recipient id, so any one
-conversation's ordering and delivery-state tracking stays on one shard
-while overall throughput scales by adding shards; media rides an entirely
-separate, already-horizontally-scaled object storage + CDN path so large
-attachments never compete with the latency-sensitive text-message
-pipeline for capacity.
+This layer must be sized for a reconnection storm, such as a regional
+outage ending or a New Year spike. That briefly multiplies both new
+connections and pending-inbox drains.
+
+Beyond that, the messaging service and message/inbox stores shard by
+conversation or recipient id. Each conversation's ordering and delivery
+state stays on one shard, and throughput grows by adding shards. Media
+uses the separate object storage + CDN path, so large attachments never
+compete with the latency-sensitive text pipeline.
   `.trim(),
   tradeOffs: [
     {
       decision: "Persistent connections (WebSockets) vs. polling for message delivery",
       explanation:
-        "Persistent connections were chosen to get near-real-time delivery and low per-message overhead, at the cost of a fundamentally different (and expensive) capacity problem: holding hundreds of millions of concurrent idle sockets open, which requires a dedicated connection-server fleet. Polling would avoid that operational burden but couldn't deliver sub-second latency at this scale without polling so frequently it recreates most of the same cost anyway.",
+        "Use persistent connections for near-real-time delivery and low per-message overhead. The cost is a different, expensive capacity problem: holding hundreds of millions of idle sockets open, which needs a dedicated connection-server fleet. Polling avoids that, but can't reach sub-second latency at this scale without polling so often it costs about the same.",
     },
     {
       decision: "End-to-end encryption vs. server-side (transport-only) encryption",
       explanation:
-        "End-to-end encryption was chosen for genuine message privacy — the server operator cannot read content even under compulsion or breach — at the real cost of giving up server-side search, content moderation on text, and simple single-copy fan-out for groups and multi-device, all of which have to be rebuilt as client-side or metadata-only features instead.",
+        "Use end-to-end encryption for real privacy: the operator can't read content even under compulsion or breach. The cost is losing server-side search, text moderation, and simple single-copy fan-out for groups and multi-device. Those must be rebuilt as client-side or metadata-only features.",
     },
     {
       decision: "Transient server-side message storage vs. treating the server as a permanent archive",
       explanation:
-        "Messages are deleted from server storage once delivered (or after a bounded retention window) rather than kept indefinitely, consistent with end-to-end encryption's privacy goal and keeping the durable pending-inbox store small. The cost is that a user's message history lives only on their own devices — losing every device can mean losing history that a server-as-archive design would have preserved centrally.",
+        "Delete messages from the server once delivered (or after a bounded retention window). This fits end-to-end encryption's privacy goal and keeps the pending-inbox store small. The cost: history lives only on the user's devices, so losing every device can mean losing history a server archive would have kept.",
     },
     {
       decision: "At-least-once delivery with client-side deduplication vs. exactly-once transport",
       explanation:
-        "The system accepts an at-least-once transport (simpler, and the honest reality of unreliable networks) and achieves an exactly-once user experience via client-generated idempotency ids, rather than trying to build a transport that guarantees exactly-once end to end, which is significantly harder to get right and still needs a fallback for edge cases anyway.",
+        "Accept an at-least-once transport (simpler, and the reality of unreliable networks) and get an exactly-once experience from client-generated idempotency ids. A transport that guarantees exactly-once end to end is much harder to build and still needs a fallback for edge cases.",
     },
   ],
   interviewTips: [
-    "Lead with persistent connections and presence tracking — it's the piece that most distinguishes this from a generic CRUD/feed system and shows you're not just reusing a feed-design template.",
-    "Bring up end-to-end encryption's implications unprompted (no server-side search, multi-device fan-out cost) — it's the detail that most differentiates a strong answer here.",
-    "Explain the sent/delivered/read state machine as tracked per-recipient, and use that to explain group chat delivery status naturally, rather than treating groups as a separate problem.",
-    "Justify why messages don't need to live forever on the server — tie it back to end-to-end encryption and the pending-inbox's bounded retention.",
+    "Lead with persistent connections and presence tracking. They set this apart from a generic CRUD/feed system.",
+    "Raise end-to-end encryption's implications unprompted (no server-side search, multi-device fan-out cost). This most sets a strong answer apart.",
+    "Explain the sent/delivered/read state machine as per-recipient, and use it to explain group delivery status instead of treating groups as a separate problem.",
+    "Explain why messages don't need to live forever on the server. Tie it to end-to-end encryption and the pending inbox's bounded retention.",
     "If pressed on scale, name concurrent connections (not messages/second) as the number that most shapes the architecture.",
   ],
   relatedTopics: [

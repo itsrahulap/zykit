@@ -5,7 +5,7 @@ const imageResizer: ToolDefinition = {
   name: 'Image Resizer',
   tagline: 'Resize images by pixels, percentage or to fit a box',
   description:
-    'Resize one image or a batch with the aspect ratio locked, by percentage, or to fit, fill or cover a size. Presets for 1080p, 4K, Instagram, Twitter headers and favicons.',
+    'Resize one image or a batch by pixels, percentage or to fit a box, with presets for 1080p, 4K, Instagram, Twitter headers and favicons.',
   category: 'Images',
   icon: 'grid',
   tags: ['Resize', 'Scale', 'JPEG', 'PNG', 'WebP', 'Batch'],

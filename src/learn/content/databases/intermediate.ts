@@ -5,26 +5,25 @@ export const databasesIntermediateTopics: Topic[] = [
     id: "joins",
     title: "Joins",
     level: "intermediate",
-    description: "Combining matching rows from two or more tables into a single set of results, using the foreign keys that link them.",
+    description: "Combine matching rows from two or more tables into one result, using the foreign keys that link them.",
     explanation: `
-You've split your data across tables on purpose — a \`users\` table and an
-\`orders\` table, linked by a \`user_id\` foreign key. That's great for
-avoiding duplication, but eventually you need to ask a question that
-spans both: "show me each order along with the name of the person who
-placed it." Neither table alone has both pieces of information.
+You split data across tables on purpose: \`users\` and \`orders\`, linked by
+a \`user_id\` foreign key. But some questions span both, like "show each
+order with the name of the person who placed it." Neither table has both
+pieces.
 
-A **join** is how SQL answers that. It combines rows from two tables
-based on a matching column (usually a foreign key matching a primary
-key), producing results that look like the two tables had been "glued
-together" side by side, row by row, wherever they match.
+A **join** answers that. It combines rows from two tables on a matching
+column (usually a foreign key matching a primary key), as if the tables
+were glued side by side wherever they match.
 
-The two most common kinds: an **INNER JOIN** returns only rows that
-have a match in both tables. A **LEFT JOIN** returns every row from the
-left (first) table, filling in empty values when there's no match in
-the right table.
+The two most common kinds:
+
+- **INNER JOIN** returns only rows with a match in both tables.
+- **LEFT JOIN** returns every row from the left (first) table, with empty
+values where the right table has no match.
     `.trim(),
     analogy:
-      "Imagine two spreadsheets: one lists employees and their department ID, another lists department IDs and department names. A join is like a coworker who takes both spreadsheets and hands you one combined sheet where every employee row also shows their department's actual name, matched up by that shared ID.",
+      "Picture two spreadsheets: employees with a department ID, and department IDs with names. A join is a coworker who hands you one combined sheet where each employee row also shows the department name, matched by that shared ID.",
     examples: [
       {
         title: "INNER JOIN — only matching rows",
@@ -32,11 +31,11 @@ the right table.
 FROM orders
 INNER JOIN users ON orders.user_id = users.id;`,
         language: "sql",
-        explanation: "Returns one row per order, but only for orders whose user_id actually matches a real user — an order with a broken or missing user_id would be left out entirely.",
+        explanation: "Returns one row per order, but only for orders whose user_id matches a real user. An order with a broken or missing user_id is left out.",
         walkthrough: [
-          { code: "SELECT orders.id, orders.total_cents, users.name", explanation: "Pulls columns from both tables into one result — this is only possible because they're being joined together." },
+          { code: "SELECT orders.id, orders.total_cents, users.name", explanation: "Pulls columns from both tables, which works because they're joined." },
           { code: "FROM orders", explanation: "Starts from the orders table." },
-          { code: "INNER JOIN users ON orders.user_id = users.id;", explanation: "For each order, finds the user row where users.id matches orders.user_id, and glues that row's columns on. Orders with no matching user are dropped." },
+          { code: "INNER JOIN users ON orders.user_id = users.id;", explanation: "For each order, finds the user whose id matches orders.user_id and adds that user's columns. Orders with no matching user are dropped." },
         ],
       },
       {
@@ -45,57 +44,51 @@ INNER JOIN users ON orders.user_id = users.id;`,
 FROM users
 LEFT JOIN orders ON orders.user_id = users.id;`,
         language: "sql",
-        explanation: "Returns every user, even ones who have never placed an order — for those, order_id simply comes back as empty (NULL) instead of the row disappearing.",
+        explanation: "Returns every user, even those with no orders. For them, order_id comes back as empty (NULL) instead of the row disappearing.",
       },
     ],
     howItWorks: `
-For each row in the first table, the database looks for row(s) in the
-second table where the join condition (\`ON ...\`) is true, and produces
-one combined result row for every match found. With \`INNER JOIN\`, a row
-from the first table with zero matches contributes nothing to the
-results. With \`LEFT JOIN\`, a row from the first (left) table with zero
-matches still appears once, with the second table's columns filled in as
-empty.
+For each row in the first table, the database finds rows in the second
+table where the \`ON ...\` condition is true, and outputs one combined row
+per match.
 
-Under the hood, the database often uses an index on the joined column
-to find matches quickly rather than comparing every row against every
-other row.
+- \`INNER JOIN\`: a first-table row with no matches adds nothing.
+- \`LEFT JOIN\`: a left-table row with no matches still appears once, with
+the second table's columns empty.
+
+The database often uses an index on the joined column to find matches
+fast, instead of comparing every row with every other row.
     `.trim(),
     whyItExists: `
-Joins exist because splitting data into separate, non-duplicated tables
-(which is exactly what normalization recommends) would be nearly
-useless if you couldn't easily bring related pieces back together for a
-single question. Joins are what make normalized, non-redundant table
-design actually practical to query.
+Normalization splits data into separate, non-duplicated tables. That would
+be nearly useless if you couldn't bring related pieces back together for
+one question. Joins make normalized design practical to query.
     `.trim(),
     whenToUse: `
-Use a join whenever an answer requires information that's split across
-two or more related tables — showing an order with the customer's name,
-listing a blog post with its author, showing a product with its category.
-Use LEFT JOIN specifically when you want to keep rows from the first
-table even when there's no match (like showing all users, including
-ones with zero orders).
+Use a join when the answer needs data from two or more related tables: an
+order with the customer's name, a blog post with its author, a product with
+its category. Use LEFT JOIN to keep first-table rows that have no match
+(like all users, including those with zero orders).
     `.trim(),
     whenNotToUse: `
-If you only ever need data from a single table, a join adds unnecessary
-complexity and cost. And joining very large tables without a supporting
-index can be slow — sometimes it's worth reconsidering the schema (or
-adding an index) rather than joining freely everywhere.
+If you only need data from one table, a join just adds complexity and
+cost. Joining very large tables without a supporting index can be slow;
+sometimes it's better to add an index or rethink the schema.
     `.trim(),
     commonMistakes: [
-      "Forgetting the ON condition, which produces a 'cross join' — every row from the first table paired with every row from the second, a combinatorial explosion.",
-      "Using INNER JOIN when you actually wanted to keep unmatched rows, silently losing data (like customers with no orders vanishing from the results).",
-      "Not qualifying column names (like using just id instead of orders.id) when both joined tables have a column with the same name, causing ambiguity errors.",
+      "Forgetting the ON condition, which creates a 'cross join': every row of the first table paired with every row of the second, a combinatorial explosion.",
+      "Using INNER JOIN when you wanted to keep unmatched rows, silently losing data (like customers with no orders vanishing).",
+      "Not qualifying column names (id instead of orders.id) when both tables share a column name, causing ambiguity errors.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write an INNER JOIN between a products table and a categories table (products has a category_id foreign key) to list each product with its category name." },
-      { difficulty: "Medium", prompt: "Write a LEFT JOIN that lists every category along with its products, including categories that currently have zero products." },
-      { difficulty: "Hard", prompt: "Explain what result you'd get from joining two tables with an ON condition that's always true (e.g. ON 1 = 1), and why that's usually a mistake." },
+      { difficulty: "Easy", prompt: "Write an INNER JOIN between products and categories (products has a category_id foreign key) to list each product with its category name." },
+      { difficulty: "Medium", prompt: "Write a LEFT JOIN listing every category with its products, including categories with zero products." },
+      { difficulty: "Hard", prompt: "Explain what you'd get from joining two tables with an always-true ON condition (e.g. ON 1 = 1), and why that's usually a mistake." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between an INNER JOIN and a LEFT JOIN?", answer: "INNER JOIN returns only rows that have a match in both tables; LEFT JOIN returns every row from the left table, filling in empty values when there's no matching row on the right." },
-      { question: "Why are joins necessary if data is split across normalized tables?", answer: "Because normalization intentionally avoids duplicating data across tables, and joins are how you recombine related data from those separate tables when a query needs both." },
-      { question: "What happens if you write a join without an ON condition?", answer: "You get a cross join — every row from the first table paired with every row from the second table, which is almost never what's intended." },
+      { question: "What's the difference between an INNER JOIN and a LEFT JOIN?", answer: "INNER JOIN returns only rows with a match in both tables. LEFT JOIN returns every row from the left table, with empty values where the right side has no match." },
+      { question: "Why are joins necessary if data is split across normalized tables?", answer: "Normalization deliberately avoids duplicating data across tables. Joins recombine that related data when a query needs both." },
+      { question: "What happens if you write a join without an ON condition?", answer: "You get a cross join: every row of the first table paired with every row of the second. That's almost never what you want." },
     ],
     prerequisites: ["primary-and-foreign-keys", "basic-sql-queries"],
     relatedTopics: ["primary-and-foreign-keys", "normalization", "aggregation"],
@@ -105,30 +98,28 @@ adding an index) rather than joining freely everywhere.
     id: "aggregation",
     title: "Aggregation",
     level: "intermediate",
-    description: "Collapsing many rows down into a single summary value — a count, a total, an average — instead of listing every individual row.",
+    description: "Turn many rows into a summary value, like a count, total, or average.",
     explanation: `
-Sometimes you don't want the individual rows at all — you want a summary
-across them. "How many orders total?" "What's the total revenue?"
-"What's the average order value per customer?" These are **aggregation**
-questions: turning many rows into one (or a few) summary numbers.
+Sometimes you want a summary, not the rows: "How many orders?" "Total
+revenue?" "Average order value per customer?" These are **aggregation**
+questions: turning many rows into one or a few numbers.
 
-SQL provides aggregate functions like \`COUNT\`, \`SUM\`, \`AVG\`, \`MIN\`, and
-\`MAX\` for exactly this. On their own, they summarize an entire table
-into one row. Paired with \`GROUP BY\`, they summarize *per group* — one
-summary row per distinct value in a column, like "total revenue per
-customer" instead of one grand total across everyone.
+SQL's aggregate functions \`COUNT\`, \`SUM\`, \`AVG\`, \`MIN\`, and \`MAX\` do
+this. On their own, they summarize a whole table into one row. With
+\`GROUP BY\`, they summarize *per group*: one row per distinct value in a
+column, like "revenue per customer" instead of one grand total.
     `.trim(),
     analogy:
-      "If a table of orders is a pile of individual receipts, aggregation is adding them all up on a calculator to get one total. GROUP BY is sorting the receipts into piles by customer first, then running the calculator on each pile separately, giving you one total per customer instead of one total overall.",
+      "If orders are a pile of receipts, aggregation is adding them all up on a calculator. GROUP BY is sorting the receipts into piles by customer first, then totaling each pile, so you get one total per customer.",
     examples: [
       {
         title: "A single summary value",
         code: `SELECT COUNT(*) AS total_orders, SUM(total_cents) AS revenue_cents
 FROM orders;`,
         language: "sql",
-        explanation: "Collapses the entire orders table into one row: how many orders exist, and their combined total.",
+        explanation: "Collapses the whole orders table into one row: how many orders exist, and their combined total.",
         walkthrough: [
-          { code: "SELECT COUNT(*) AS total_orders,", explanation: "Counts how many rows are in the table, and labels that result column total_orders." },
+          { code: "SELECT COUNT(*) AS total_orders,", explanation: "Counts the rows and labels the result total_orders." },
           { code: "SUM(total_cents) AS revenue_cents", explanation: "Adds up the total_cents column across every row." },
           { code: "FROM orders;", explanation: "Both aggregate functions run over every row of the orders table." },
         ],
@@ -139,53 +130,49 @@ FROM orders;`,
 FROM orders
 GROUP BY user_id;`,
         language: "sql",
-        explanation: "Instead of one grand total, this produces one row per distinct user_id — each with that user's own order count and revenue total.",
+        explanation: "Instead of one grand total, this gives one row per user_id, each with that user's order count and revenue.",
       },
     ],
     howItWorks: `
-Without \`GROUP BY\`, an aggregate function scans every row that survives
-any \`WHERE\` clause and folds them into a single result. With
-\`GROUP BY <column>\`, the database first buckets rows by that column's
-value, then runs the aggregate function separately within each bucket,
-producing one result row per bucket.
+Without \`GROUP BY\`, an aggregate function folds every row that passes
+\`WHERE\` into one result. With \`GROUP BY <column>\`, the database first
+buckets rows by that column's value, then runs the function in each
+bucket, giving one row per bucket.
 
-A \`HAVING\` clause can then filter *those group results* — for example,
-"only show customers with more than 5 orders" — which is different from
-\`WHERE\`, which filters individual rows *before* grouping happens.
+\`HAVING\` then filters *the group results* (for example, "only customers
+with more than 5 orders"). That's different from \`WHERE\`, which filters
+individual rows *before* grouping.
     `.trim(),
     whyItExists: `
-Individual rows are often too granular to be useful for decisions —
-nobody reads a million individual order rows to understand revenue.
-Aggregation exists so the database can do that summarizing work
-directly, efficiently, and correctly, instead of every application
-pulling all the raw rows and computing totals in its own code.
+Individual rows are too detailed for most decisions; nobody reads a
+million orders to understand revenue. Aggregation lets the database
+summarize efficiently and correctly, instead of every app pulling raw rows
+and totaling them in its own code.
     `.trim(),
     whenToUse: `
-Reach for aggregation any time you need a count, total, average, or
-extreme value — dashboards, reports, "top N by revenue" style features,
-or any question phrased as "how many," "how much," or "on average."
+Use aggregation whenever you need a count, total, average, minimum, or
+maximum: dashboards, reports, "top N by revenue" features, or any "how
+many," "how much," or "on average" question.
     `.trim(),
     whenNotToUse: `
-If you need the individual rows themselves (not a summary), aggregation
-isn't the tool — a plain SELECT with WHERE and ORDER BY is. Aggregating
-extremely large tables on every request without caching can also be
-slow; some apps precompute and store summaries instead of recalculating
-them live every time.
+If you need the rows themselves, use a plain SELECT with WHERE and ORDER
+BY. Aggregating very large tables on every request without caching can be
+slow; some apps precompute and store summaries instead.
     `.trim(),
     commonMistakes: [
-      "Selecting a non-aggregated, non-grouped column alongside an aggregate function, which most databases reject or handle unpredictably.",
-      "Using WHERE to try to filter on an aggregate result (like WHERE COUNT(*) > 5) instead of the required HAVING clause.",
-      "Forgetting that COUNT(*) counts rows including ones with empty values, while COUNT(column_name) skips rows where that specific column is empty.",
+      "Selecting a column that's neither aggregated nor grouped alongside an aggregate. Most databases reject it or behave unpredictably.",
+      "Filtering on an aggregate with WHERE (like WHERE COUNT(*) > 5) instead of HAVING.",
+      "Forgetting that COUNT(*) counts all rows, including those with empty values, while COUNT(column_name) skips rows where that column is empty.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a query that returns the total number of rows and the average price from a products table." },
-      { difficulty: "Medium", prompt: "Write a query using GROUP BY to show the number of orders placed per user_id in an orders table." },
-      { difficulty: "Hard", prompt: "Extend the previous query with a HAVING clause that only shows users with more than 3 orders." },
+      { difficulty: "Easy", prompt: "Write a query returning the total row count and average price from a products table." },
+      { difficulty: "Medium", prompt: "Using GROUP BY, show the number of orders per user_id in an orders table." },
+      { difficulty: "Hard", prompt: "Add a HAVING clause to the previous query so it only shows users with more than 3 orders." },
     ],
     interviewQuestions: [
-      { question: "What does GROUP BY do?", answer: "It buckets rows by the value of one or more columns, then runs any aggregate functions separately within each bucket, producing one result row per group." },
-      { question: "What's the difference between WHERE and HAVING?", answer: "WHERE filters individual rows before grouping happens; HAVING filters the summarized group results after aggregation." },
-      { question: "What's the difference between COUNT(*) and COUNT(column_name)?", answer: "COUNT(*) counts every row regardless of empty values; COUNT(column_name) only counts rows where that specific column has a non-empty value." },
+      { question: "What does GROUP BY do?", answer: "It buckets rows by one or more columns' values and runs aggregate functions in each bucket, giving one result row per group." },
+      { question: "What's the difference between WHERE and HAVING?", answer: "WHERE filters individual rows before grouping. HAVING filters the group results after aggregation." },
+      { question: "What's the difference between COUNT(*) and COUNT(column_name)?", answer: "COUNT(*) counts every row, empty values or not. COUNT(column_name) counts only rows where that column has a value." },
     ],
     prerequisites: ["basic-sql-queries", "filtering-and-sorting"],
     relatedTopics: ["filtering-and-sorting", "joins", "indexes"],
@@ -195,23 +182,20 @@ them live every time.
     id: "indexes",
     title: "Indexes",
     level: "intermediate",
-    description: "A separate lookup structure the database maintains so it can jump straight to matching rows instead of scanning the whole table.",
+    description: "A lookup structure that lets the database jump to matching rows instead of scanning the whole table.",
     explanation: `
-Picture a \`users\` table with 10 million rows, and you run
-\`SELECT * FROM users WHERE email = 'amara@example.com'\`. Without any
-help, the database has no shortcut — it has to check every single row's
-email column, one by one, until it either finds a match or reaches the
-end. On a huge table, that's slow, and it gets slower as the table
-grows.
+Say \`users\` has 10 million rows and you run
+\`SELECT * FROM users WHERE email = 'amara@example.com'\`. With no shortcut,
+the database checks every row's email until it finds a match or reaches
+the end. That's slow, and it gets slower as the table grows.
 
-An **index** fixes this. It's a separate, ordered structure — much like
-the index at the back of a textbook — that maps values in a specific
-column straight to the location of the rows that have them. With an
-index on \`email\`, the database can jump almost directly to the matching
-row, instead of reading the whole table.
+An **index** fixes this. It's a separate, ordered structure, like the
+index at the back of a textbook, that maps a column's values to the rows
+that hold them. With an index on \`email\`, the database jumps almost
+straight to the matching row.
     `.trim(),
     analogy:
-      "Without an index, finding a topic in a book means flipping through every page from the start. With an index at the back of the book, you look up the topic alphabetically and it tells you exactly which page to turn to — you skip straight there.",
+      "Without an index, finding a topic in a book means flipping through every page. With the index at the back, you look the topic up alphabetically and it tells you which page to turn to.",
     examples: [
       {
         title: "Before: scanning every row",
@@ -220,7 +204,7 @@ row, instead of reading the whole table.
 -- until it finds (or rules out) a match.
 SELECT * FROM users WHERE email = 'amara@example.com';`,
         language: "sql",
-        explanation: "On a table with millions of rows and no index, this query's cost grows directly with the table's size — it's called a 'full table scan.'",
+        explanation: "With millions of rows and no index, this query's cost grows with the table's size. This is a 'full table scan.'",
       },
       {
         title: "After: creating an index",
@@ -229,59 +213,54 @@ SELECT * FROM users WHERE email = 'amara@example.com';`,
 -- Same query as before, now much faster:
 SELECT * FROM users WHERE email = 'amara@example.com';`,
         language: "sql",
-        explanation: "After the index exists, the same query can jump almost directly to the matching row using the index, instead of checking every row in the table.",
+        explanation: "With the index in place, the same query jumps almost directly to the matching row instead of checking every row.",
         walkthrough: [
-          { code: "CREATE INDEX idx_users_email ON users (email);", explanation: "Builds a separate, ordered lookup structure mapping email values to their row locations." },
-          { code: "SELECT * FROM users WHERE email = 'amara@example.com';", explanation: "The database recognizes it can use idx_users_email to jump straight to matching rows, instead of scanning the whole table." },
+          { code: "CREATE INDEX idx_users_email ON users (email);", explanation: "Builds an ordered lookup structure mapping email values to row locations." },
+          { code: "SELECT * FROM users WHERE email = 'amara@example.com';", explanation: "The database sees it can use idx_users_email to jump to matching rows instead of scanning the table." },
         ],
       },
     ],
     howItWorks: `
 Most indexes are built as a **B-tree** — a sorted, tree-shaped structure
-that lets the database narrow down to a matching value in a small
-number of steps, similar to how you'd find a word in a sorted dictionary
-by repeatedly splitting the search space in half, rather than reading
-every entry from the start.
+that finds a value in a few steps. It's like finding a word in a
+dictionary by repeatedly splitting the search space in half, instead of
+reading from the start.
 
-The tradeoff: an index isn't free. Every time a row is inserted, updated,
-or deleted, every index on that table has to be updated too, which adds
-overhead to writes. Indexes also take up extra disk space. That's why
-databases don't index every column automatically — indexing is a
-deliberate choice, usually made for columns that are frequently searched
-or joined on.
+The tradeoff: indexes aren't free. Every insert, update, or delete must
+also update every index on the table, which slows writes. Indexes also use
+extra disk space. So databases don't index every column automatically;
+you choose, usually for columns often searched or joined on.
     `.trim(),
     whyItExists: `
-Without indexes, every query that filters or joins on a non-trivial
-condition would need to scan an entire table, and query time would grow
-linearly (or worse) with data size. Indexes exist to trade a bit of
-extra storage and slightly slower writes for dramatically faster reads
-on the columns that matter most.
+Without indexes, any query that filters or joins on a real condition would
+scan the whole table, and query time would grow linearly (or worse) with
+data size. Indexes trade a little storage and slightly slower writes for
+much faster reads on the columns that matter.
     `.trim(),
     whenToUse: `
-Add an index on columns that are frequently used in WHERE clauses, JOIN
-conditions, or ORDER BY clauses — especially on large tables. Foreign
-key columns are also strong candidates, since they're joined on often.
+Index columns often used in WHERE, JOIN, or ORDER BY, especially on large
+tables. Foreign key columns are strong candidates, since they're joined on
+often.
     `.trim(),
     whenNotToUse: `
-Avoid indexing columns that are rarely searched or that change on
-almost every write (since every index update adds write overhead), and
-avoid indexing very small tables — scanning a few hundred rows is
-already fast enough that an index adds cost without meaningful benefit.
+Skip indexes on columns that are rarely searched or that change on almost
+every write (each index update adds write cost). Skip them on very small
+tables too: scanning a few hundred rows is already fast.
     `.trim(),
     commonMistakes: [
-      "Adding an index to every column 'just in case,' which slows down every write without meaningfully speeding up reads that don't use those columns.",
-      "Expecting an index to help a query that doesn't filter, join, or sort on the indexed column at all.",
-      "Forgetting that foreign key columns often benefit from an index too, since joins on them are common.",
+      "Indexing every column 'just in case,' which slows every write without speeding up reads that don't use those columns.",
+      "Expecting an index to help a query that doesn't filter, join, or sort on that column.",
+      "Forgetting that foreign key columns often need an index too, since joins on them are common.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain in your own words why a full table scan gets slower as a table grows, but an indexed lookup barely does." },
-      { difficulty: "Medium", prompt: "Write a CREATE INDEX statement for a status column on an orders table that's frequently filtered by status." },
-      { difficulty: "Hard", prompt: "Describe a scenario where adding an index would actually hurt overall performance rather than help it." },
+      { difficulty: "Easy", prompt: "In your own words, explain why a full table scan slows down as a table grows, but an indexed lookup barely does." },
+      { difficulty: "Medium", prompt: "Write a CREATE INDEX statement for the status column of an orders table that's often filtered by status." },
+      { difficulty: "Hard", prompt: "Describe a scenario where adding an index would hurt overall performance instead of helping." },
     ],
     interviewQuestions: [
-      { question: "What is a database index?", answer: "A separate, ordered lookup structure the database maintains for a column, letting it jump to matching rows instead of scanning the whole table." },
-      { question: "What's the tradeoff of adding an index?", answer: "Faster reads on the indexed column, at the cost of extra disk space and slower writes, since every insert, update, or delete has to update the index too." },
-      { question: "What data structure do most database indexes use internally?", answer: "A B-tree, which allows narrowing down to a matching value in relatively few steps by keeping data sorted in a tree shape." },
+      { question: "What is a database index?", answer: "A separate, ordered lookup structure for a column that lets the database jump to matching rows instead of scanning the whole table." },
+      { question: "What's the tradeoff of adding an index?", answer: "Faster reads on that column, but extra disk space and slower writes, since every insert, update, or delete must update the index too." },
+      { question: "What data structure do most database indexes use internally?", answer: "A B-tree. It keeps data sorted in a tree shape, so finding a value takes relatively few steps." },
     ],
     prerequisites: ["filtering-and-sorting"],
     relatedTopics: ["filtering-and-sorting", "joins", "query-optimization"],
@@ -291,22 +270,20 @@ already fast enough that an index adds cost without meaningful benefit.
     id: "normalization",
     title: "Normalization",
     level: "intermediate",
-    description: "Organizing tables so each piece of information is stored in exactly one place, instead of copied and repeated everywhere it's needed.",
+    description: "Organize tables so each fact is stored in exactly one place, not copied everywhere it's needed.",
     explanation: `
-Imagine a single \`orders\` table that stores the customer's name and
-email directly on every order row, instead of just a \`user_id\`. If that
-customer changes their email, you'd need to find and update it on
-*every single order they've ever placed* — miss one, and now your data
-disagrees with itself about what their email is.
+Imagine an \`orders\` table that stores the customer's name and email on
+every order, instead of a \`user_id\`. If the customer changes their email,
+you must update *every order they've ever placed*. Miss one, and your data
+disagrees with itself.
 
-**Normalization** is the practice of restructuring tables so each fact
-is stored exactly once, and everything else references it (usually via
-a foreign key) instead of copying it. It doesn't eliminate the
-relationship between orders and customer info — it just makes sure that
-info lives in one authoritative place.
+**Normalization** restructures tables so each fact is stored once, and
+everything else references it (usually with a foreign key) instead of
+copying it. Orders are still linked to customer info; that info just lives
+in one authoritative place.
     `.trim(),
     analogy:
-      "Storing a customer's email on every order is like writing a friend's phone number on every single letter you send them. Normalization is like writing their name in your address book once, and just referencing 'call the number in my address book' everywhere else — update it once, and every future reference is correct.",
+      "Storing a customer's email on every order is like writing a friend's phone number on every letter you send them. Normalization is writing it once in your address book and pointing there everywhere else. Update it once, and every reference is correct.",
     examples: [
       {
         title: "Before: duplicated data",
@@ -318,7 +295,7 @@ id | customer_name | customer_email      | total_cents
 
 -- Amara's email is repeated on every single order.
 -- Changing it means updating all 3 rows, and it's easy to miss one.`,
-        explanation: "The same customer's name and email are copied into every order row — a change to her email requires finding and fixing every one of these rows.",
+        explanation: "The customer's name and email are copied into every order. Changing her email means finding and fixing every one of these rows.",
       },
       {
         title: "After: normalized into two tables",
@@ -334,54 +311,51 @@ id | user_id | total_cents
 
 -- Amara's email now lives in exactly one row.
 -- Updating it there instantly applies everywhere it's referenced.`,
-        explanation: "Now Amara's details exist in exactly one row. Every order just references her by user_id, so updating her email means changing a single row, and every order automatically reflects the correct value through a join.",
+        explanation: "Amara's details now live in one row. Each order references her by user_id, so updating her email changes one row, and every order shows the correct value through a join.",
       },
     ],
     howItWorks: `
-Normalization is usually described in stages called **normal forms**,
-each fixing a specific kind of duplication or inconsistency — for
-example, making sure a column doesn't hold multiple values at once, or
-that non-key columns don't depend on only part of a multi-column key.
-In practice, most everyday schema design just applies the core idea
-repeatedly: if a fact could change and would require updating more than
-one row to stay correct, pull it into its own table and reference it
-with a foreign key instead.
+Normalization is usually described in stages called **normal forms**.
+Each fixes a specific kind of duplication or inconsistency, such as a
+column holding several values at once, or non-key columns depending on
+only part of a multi-column key.
+
+In everyday design, you mostly apply one idea: if a fact could change and
+would need updating in more than one row, move it to its own table and
+reference it with a foreign key.
     `.trim(),
     whyItExists: `
-Duplicated data is a breeding ground for inconsistency — the same fact
-stored in ten places will eventually disagree with itself, because
-someone updates nine of them and misses one. Normalization exists to
-guarantee that each fact has exactly one authoritative home, so there's
-never a question of "which copy is correct."
+Duplicated data drifts apart. A fact stored in ten places will eventually
+disagree with itself when someone updates nine and misses one.
+Normalization gives each fact one authoritative home, so there's never a
+question of "which copy is correct."
     `.trim(),
     whenToUse: `
-Normalize whenever a piece of information logically belongs to one
-entity (a customer's email, a product's price) and might change over
-time — keeping it in one place makes updates safe and consistent. This
-is the default approach for most relational schema design.
+Normalize when information belongs to one entity (a customer's email, a
+product's price) and may change over time. Keeping it in one place makes
+updates safe. This is the default for most relational schema design.
     `.trim(),
     whenNotToUse: `
-Heavily normalized data requires more joins to reassemble, which can
-cost performance on read-heavy systems. Sometimes a deliberate amount
-of duplication (**denormalization**) is accepted for speed — for
-example, storing a product's name directly on a historical order line
-item, so an old receipt still shows the product's name at the time of
-purchase even if the product is later renamed.
+Heavily normalized data needs more joins to reassemble, which can slow
+read-heavy systems. Sometimes some duplication (**denormalization**) is
+accepted for speed. For example, storing a product's name on a historical
+order line item keeps old receipts showing the name at purchase time, even
+if the product is renamed later.
     `.trim(),
     commonMistakes: [
-      "Storing a repeatable value (like a customer's address) directly on every related row instead of referencing it from a single source table.",
-      "Over-normalizing every last detail, resulting in so many tables that simple queries require deep chains of joins.",
-      "Confusing normalization with just 'having multiple tables' — the goal is eliminating duplicated, update-prone facts, not table count for its own sake.",
+      "Storing a repeated value (like a customer's address) on every related row instead of referencing one source table.",
+      "Over-normalizing every detail, so simple queries need long chains of joins.",
+      "Thinking normalization just means 'more tables'. The goal is removing duplicated, update-prone facts, not adding tables.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain what could go wrong if a shipping address were duplicated across every order a customer places, instead of stored once." },
-      { difficulty: "Medium", prompt: "Take a single 'employees' table that repeats department name and department manager on every employee row, and redesign it into two normalized tables." },
-      { difficulty: "Hard", prompt: "Describe a realistic situation where deliberately keeping some duplicated data (denormalization) would be a reasonable tradeoff." },
+      { difficulty: "Easy", prompt: "Explain what could go wrong if a shipping address were copied onto every order a customer places, instead of stored once." },
+      { difficulty: "Medium", prompt: "An 'employees' table repeats the department name and manager on every row. Redesign it as two normalized tables." },
+      { difficulty: "Hard", prompt: "Describe a realistic case where deliberately keeping some duplicated data (denormalization) is a reasonable tradeoff." },
     ],
     interviewQuestions: [
-      { question: "What problem does normalization solve?", answer: "It prevents the same fact from being duplicated across many rows, which would otherwise create the risk of those copies becoming inconsistent with each other." },
-      { question: "What's the tradeoff of a highly normalized schema?", answer: "Reassembling related data requires more joins, which can add query complexity and cost compared to having some data duplicated." },
-      { question: "What is denormalization?", answer: "A deliberate decision to duplicate some data (accepting the inconsistency risk) in exchange for faster reads or simpler queries." },
+      { question: "What problem does normalization solve?", answer: "It stops the same fact being copied across many rows, where the copies could drift out of sync." },
+      { question: "What's the tradeoff of a highly normalized schema?", answer: "Reassembling related data needs more joins, adding query complexity and cost compared with some duplication." },
+      { question: "What is denormalization?", answer: "Deliberately duplicating some data, accepting the inconsistency risk, for faster reads or simpler queries." },
     ],
     prerequisites: ["primary-and-foreign-keys", "joins"],
     relatedTopics: ["primary-and-foreign-keys", "joins", "nosql-data-modeling"],
@@ -391,24 +365,24 @@ purchase even if the product is later renamed.
     id: "constraints",
     title: "Constraints",
     level: "intermediate",
-    description: "Rules attached directly to a table's columns that the database itself enforces, so invalid data can never be saved in the first place.",
+    description: "Rules on a table's columns that the database enforces, so invalid data can't be saved.",
     explanation: `
-Primary and foreign keys are actually just two specific kinds of a
-broader idea: a **constraint** — a rule attached to a column (or a
-combination of columns) that the database refuses to let a row violate.
-Beyond keys, the most common constraints are \`NOT NULL\` (this column
-can never be left empty), \`UNIQUE\` (no two rows may share the same
-value here), \`DEFAULT\` (fill in a value automatically when none is
-given), and \`CHECK\` (a custom condition the value must satisfy, like
-"price must be greater than zero").
+Primary and foreign keys are two kinds of a broader idea: a
+**constraint**, a rule on a column (or set of columns) that no row may
+break. Beyond keys, the common ones are:
 
-The point of all of them is the same: instead of trusting every piece
-of application code, forever, to remember to validate something, the
-database enforces the rule itself, permanently, no matter what code
-tries to write to it.
+- \`NOT NULL\`: the column can never be empty.
+- \`UNIQUE\`: no two rows may share the same value.
+- \`DEFAULT\`: fill in a value automatically when none is given.
+- \`CHECK\`: a custom condition the value must meet, like "price must be
+greater than zero."
+
+The point is the same for all of them: instead of trusting every piece of
+app code, forever, to validate, the database enforces the rule itself, no
+matter what code writes to it.
     `.trim(),
     analogy:
-      "Constraints are like the physical slots on a vending machine tray — a can simply cannot be placed sideways or upside down, not because someone remembered to check, but because the slot itself is shaped so it won't fit any other way. Application-level validation is more like a sign asking people to load cans right-side up: helpful, but nothing stops someone from ignoring it.",
+      "Constraints are like the slots on a vending machine tray. A can won't fit sideways, not because someone checked, but because the slot is shaped that way. App-level validation is more like a sign asking people to load cans upright: helpful, but easy to ignore.",
     examples: [
       {
         title: "The four common non-key constraints",
@@ -420,11 +394,11 @@ tries to write to it.
   in_stock BOOLEAN NOT NULL DEFAULT true
 );`,
         language: "sql",
-        explanation: "Four different rules, each enforced permanently by the database itself: no two products can share a sku, name and price_cents can never be left empty, price_cents must be a positive number, and in_stock quietly defaults to true when not specified.",
+        explanation: "Four rules the database always enforces: no two products share a sku, name and price_cents can't be empty, price_cents must be positive, and in_stock defaults to true when not given.",
         walkthrough: [
-          { code: "sku TEXT UNIQUE NOT NULL", explanation: "Combines two constraints on one column: it must have a value, and that value must not already exist on another row." },
-          { code: "price_cents INTEGER NOT NULL CHECK (price_cents > 0)", explanation: "CHECK enforces an arbitrary condition — here, that a nonsensical price like 0 or -500 can never be saved, regardless of what application code sends." },
-          { code: "in_stock BOOLEAN NOT NULL DEFAULT true", explanation: "If an INSERT doesn't mention in_stock at all, the database fills in true automatically rather than leaving it empty." },
+          { code: "sku TEXT UNIQUE NOT NULL", explanation: "Two constraints on one column: it must have a value, and no other row may have the same value." },
+          { code: "price_cents INTEGER NOT NULL CHECK (price_cents > 0)", explanation: "CHECK enforces a custom condition. Here a price like 0 or -500 can never be saved, whatever the app sends." },
+          { code: "in_stock BOOLEAN NOT NULL DEFAULT true", explanation: "If an INSERT leaves out in_stock, the database fills in true." },
         ],
       },
       {
@@ -433,55 +407,51 @@ tries to write to it.
 VALUES ('SKU-1', 'Desk Lamp', -500);
 -- ERROR: new row violates check constraint "products_price_cents_check"`,
         language: "sql",
-        explanation: "The insert never happens at all — the database rejects the entire statement the moment any one constraint fails, rather than saving a partially-valid row.",
+        explanation: "The insert never happens. The database rejects the whole statement as soon as any constraint fails, instead of saving a partly valid row.",
       },
     ],
     howItWorks: `
-Every constraint is checked at the moment a row is inserted or updated,
-before the change is actually committed. If any constraint on the row
-fails, the entire statement is rejected outright and nothing is written
-— there's no such thing as a row that's "half-valid." This makes
-constraints the last line of defense: even if application-level
-validation has a bug, gets bypassed, or a second application (or a
-future developer) writes to the same table without knowing about that
-validation, the database itself still refuses invalid data.
+Constraints are checked whenever a row is inserted or updated, before the
+change is committed. If any constraint fails, the whole statement is
+rejected and nothing is written. There's no "half-valid" row.
+
+That makes constraints the last line of defense. Even if app validation
+has a bug, gets bypassed, or another app (or a future developer) writes to
+the table without knowing the rules, the database still refuses invalid
+data.
     `.trim(),
     whyItExists: `
-Relying purely on application code to validate data means every single
-place that ever writes to a table — every service, every script, every
-future feature — has to remember and correctly reimplement the same
-rules. Constraints exist to move the rule into the one place all of
-those writers ultimately pass through: the database itself, where it
-can never be forgotten or bypassed.
+If only app code validates data, every place that writes to a table (every
+service, script, and future feature) must remember and correctly repeat
+the same rules. Constraints put the rule in the one place all writers pass
+through: the database, where it can't be forgotten or bypassed.
     `.trim(),
     whenToUse: `
-Add a constraint for any rule that must hold no matter what — a price
-that can never be negative, an email that must be unique, a status
-that can never be left blank. Application-level validation is still
-worth having too (for friendlier error messages, shown earlier), but
-the constraint is what actually guarantees the rule holds.
+Add a constraint for any rule that must always hold: a price that's never
+negative, an email that must be unique, a status that's never blank. Keep
+app-level validation too (for friendlier, earlier error messages), but the
+constraint is what guarantees the rule.
     `.trim(),
     whenNotToUse: `
-Constraints aren't the right tool for validation that depends on
-context the database doesn't have — like "this discount code is only
-valid for accounts created in the last 30 days" — or for anything that
-needs a friendly, specific error message shown immediately in a form;
-that kind of logic belongs in application-level validation instead.
+Constraints can't handle validation that needs context the database
+doesn't have, like "this discount code only works for accounts created in
+the last 30 days." They also can't give friendly, specific form error
+messages. Put that logic in app-level validation.
     `.trim(),
     commonMistakes: [
-      "Validating a rule only in application code and assuming that's sufficient, when a second script, migration, or service writing to the same table can easily bypass it.",
-      "Adding a UNIQUE constraint after a table already contains duplicate values, which fails immediately until the existing duplicates are cleaned up first.",
-      "Forgetting that a failed constraint rejects the entire statement — not just the one offending column — so other valid-looking changes in the same INSERT or UPDATE are rejected too.",
+      "Validating only in app code and assuming that's enough, when another script, migration, or service writing to the table can bypass it.",
+      "Adding a UNIQUE constraint to a table that already has duplicates. It fails until you clean them up.",
+      "Forgetting that a failed constraint rejects the whole statement, not just the bad column, so the other changes in that INSERT or UPDATE are rejected too.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a CREATE TABLE for a coupons table where the code column must be unique and not null." },
-      { difficulty: "Medium", prompt: "Add a CHECK constraint to a reservations table ensuring that a party_size column is always greater than 0." },
-      { difficulty: "Hard", prompt: "Explain why relying only on application-level validation for 'email must be unique' can still result in duplicate emails, and how a UNIQUE constraint prevents that regardless of the application's behavior." },
+      { difficulty: "Easy", prompt: "Write a CREATE TABLE for a coupons table whose code column must be unique and not null." },
+      { difficulty: "Medium", prompt: "Add a CHECK constraint to a reservations table so party_size is always greater than 0." },
+      { difficulty: "Hard", prompt: "Explain why app-only validation of 'email must be unique' can still let duplicate emails in, and how a UNIQUE constraint prevents that whatever the app does." },
     ],
     interviewQuestions: [
-      { question: "What is a database constraint?", answer: "A rule attached to a column or combination of columns that the database itself enforces, rejecting any row that would violate it." },
-      { question: "What's the difference between NOT NULL and CHECK?", answer: "NOT NULL simply requires a column to have some value; CHECK enforces an arbitrary custom condition that value must satisfy, like being greater than zero." },
-      { question: "Why add a database constraint if the application already validates the same rule?", answer: "Because application-level validation can be bypassed, buggy, or simply missing in some other piece of code that writes to the same table — the constraint is what guarantees the rule holds no matter what writes to the database." },
+      { question: "What is a database constraint?", answer: "A rule on a column or set of columns that the database enforces, rejecting any row that breaks it." },
+      { question: "What's the difference between NOT NULL and CHECK?", answer: "NOT NULL only requires a value. CHECK requires the value to meet a custom condition, like being greater than zero." },
+      { question: "Why add a database constraint if the application already validates the same rule?", answer: "App validation can be bypassed, buggy, or missing in other code that writes to the same table. The constraint guarantees the rule holds whatever writes to the database." },
     ],
     prerequisites: ["primary-and-foreign-keys"],
     relatedTopics: ["primary-and-foreign-keys", "basic-sql-queries", "normalization"],
@@ -491,29 +461,28 @@ that kind of logic belongs in application-level validation instead.
     id: "transactions-and-acid",
     title: "Transactions & ACID",
     level: "intermediate",
-    description: "Grouping several database operations into one all-or-nothing unit, so a failure partway through never leaves data half-changed.",
+    description: "Group several operations into one all-or-nothing unit, so a failure never leaves data half-changed.",
     explanation: `
-Imagine transferring money between two bank accounts: subtract $100 from
-Account A, then add $100 to Account B. Those are two separate
-operations. If the database crashes, or the connection drops, right
-after the subtraction but before the addition, Account A just lost $100
-that vanished into nowhere.
+A money transfer is two operations: subtract $100 from Account A, then add
+$100 to Account B. If the database crashes or the connection drops between
+them, $100 just vanishes.
 
-A **transaction** groups multiple operations into a single all-or-nothing
-unit: either every operation in it succeeds and is saved permanently, or
-if anything fails partway through, everything in the transaction is
-rolled back as if none of it had ever happened. There's no in-between,
-half-applied state.
+A **transaction** groups operations into one all-or-nothing unit. Either
+every operation succeeds and is saved, or if anything fails, everything is
+rolled back as if it never happened. There's no half-applied state.
 
-The guarantees transactions provide are usually summarized by the
-acronym **ACID**: **Atomicity** (all-or-nothing), **Consistency** (the
-data always ends up following the rules you've defined, like foreign
-keys), **Isolation** (transactions running at the same time don't see
-each other's half-finished work), and **Durability** (once a transaction
-is confirmed, it survives even a crash right afterward).
+Transaction guarantees are summed up as **ACID**:
+
+- **Atomicity**: all or nothing.
+- **Consistency**: data always follows the rules you've defined, like
+foreign keys.
+- **Isolation**: transactions running at the same time don't see each
+other's half-finished work.
+- **Durability**: once confirmed, a transaction survives even a crash
+right afterward.
     `.trim(),
     analogy:
-      "A transaction is like sealing several steps of a task inside an envelope: either the whole envelope gets delivered exactly as sealed, or it never gets sent at all. Nobody ever receives half an envelope.",
+      "A transaction is like sealing several steps in one envelope: either the whole envelope is delivered as sealed, or it's never sent. Nobody gets half an envelope.",
     examples: [
       {
         title: "A money transfer as a transaction",
@@ -524,12 +493,12 @@ UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 
 COMMIT;`,
         language: "sql",
-        explanation: "Both updates are wrapped between BEGIN and COMMIT. If anything fails after the first UPDATE but before COMMIT, the database can roll the whole thing back, and Account 1's balance is restored as if the transfer never started.",
+        explanation: "Both updates sit between BEGIN and COMMIT. If anything fails before COMMIT, the database rolls it all back and Account 1's balance is restored.",
         walkthrough: [
-          { code: "BEGIN;", explanation: "Starts a new transaction — nothing inside it is made permanent yet." },
-          { code: "UPDATE accounts SET balance = balance - 100 WHERE id = 1;", explanation: "Subtracts from the first account. Still not permanent — only visible within this transaction so far." },
+          { code: "BEGIN;", explanation: "Starts a transaction. Nothing inside is permanent yet." },
+          { code: "UPDATE accounts SET balance = balance - 100 WHERE id = 1;", explanation: "Subtracts from the first account. Not permanent yet; only visible inside this transaction." },
           { code: "UPDATE accounts SET balance = balance + 100 WHERE id = 2;", explanation: "Adds to the second account." },
-          { code: "COMMIT;", explanation: "Confirms both changes together, permanently. If this line is never reached, neither change is kept." },
+          { code: "COMMIT;", explanation: "Makes both changes permanent together. If this line is never reached, neither change is kept." },
         ],
       },
       {
@@ -540,56 +509,51 @@ UPDATE inventory SET quantity = quantity - 1 WHERE product_id = 42;
 -- Suppose application code checks the new quantity and finds it went negative:
 ROLLBACK;`,
         language: "sql",
-        explanation: "ROLLBACK explicitly undoes every change made since BEGIN, as if the transaction never happened — useful when application logic detects a problem partway through.",
+        explanation: "ROLLBACK undoes every change since BEGIN, as if the transaction never happened. Useful when app logic spots a problem partway through.",
       },
     ],
     howItWorks: `
-When a transaction begins, the database tracks every change made within
-it but doesn't make those changes visible or permanent to anyone else
-yet. \`COMMIT\` tells the database to make all of those changes permanent
-at once. \`ROLLBACK\` tells it to discard all of them, restoring the data
-to how it was before \`BEGIN\`.
+Inside a transaction, the database tracks every change but doesn't make it
+visible or permanent to anyone else yet. \`COMMIT\` makes all the changes
+permanent at once. \`ROLLBACK\` discards them all, restoring the data to how
+it was before \`BEGIN\`.
 
-To achieve isolation, the database controls how much (and when) one
-transaction's in-progress changes are visible to other transactions
-running at the same time, so two transfers happening simultaneously
-don't corrupt each other's math.
+For isolation, the database controls how much (and when) one
+transaction's in-progress changes are visible to others running at the
+same time, so two simultaneous transfers don't corrupt each other's math.
     `.trim(),
     whyItExists: `
-Real-world operations are frequently made of multiple steps that only
-make sense together. Without transactions, a crash, a network drop, or
-a bug partway through a multi-step operation could leave the database in
-a state that no correct sequence of operations would ever produce —
-money debited but never credited, an order marked paid with no payment
-recorded. Transactions exist to make "partly done" impossible.
+Many real operations are several steps that only make sense together.
+Without transactions, a crash, network drop, or bug partway through could
+leave data in a state no correct sequence would produce: money debited but
+never credited, or an order marked paid with no payment recorded.
+Transactions make "partly done" impossible.
     `.trim(),
     whenToUse: `
-Wrap operations in a transaction whenever multiple statements need to
-succeed or fail together to keep the data correct — financial transfers,
-placing an order that also decrements inventory, creating a user account
-alongside its related settings row.
+Use a transaction whenever several statements must succeed or fail
+together to keep data correct: money transfers, placing an order that also
+reduces inventory, creating a user account along with its settings row.
     `.trim(),
     whenNotToUse: `
-A single, standalone statement doesn't need an explicit transaction —
-most databases already treat one statement as its own transaction by
-default. Also avoid holding a transaction open for a long time (e.g.
-across a slow external API call), since it can block other transactions
-from proceeding.
+A single statement doesn't need an explicit transaction; most databases
+already treat each statement as its own transaction. Also avoid keeping a
+transaction open for long (e.g. across a slow external API call), since it
+can block other transactions.
     `.trim(),
     commonMistakes: [
-      "Forgetting to COMMIT, leaving changes uncommitted and eventually rolled back or lost.",
-      "Doing slow, unrelated work (like calling an external API) inside an open transaction, which can block other operations waiting on the same rows.",
-      "Assuming a crash mid-transaction leaves partial changes in place — properly used transactions guarantee it does not.",
+      "Forgetting to COMMIT, so the changes are eventually rolled back or lost.",
+      "Doing slow, unrelated work (like calling an external API) inside an open transaction, blocking other operations waiting on the same rows.",
+      "Assuming a crash mid-transaction leaves partial changes. Properly used transactions guarantee it doesn't.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, what would go wrong with a money transfer if it were not wrapped in a transaction and the app crashed halfway through." },
-      { difficulty: "Medium", prompt: "Write a transaction that inserts a new order row and decrements a product's stock quantity, so both happen together or not at all." },
-      { difficulty: "Hard", prompt: "Explain each of the four ACID properties in your own words, using the money transfer example to illustrate each one." },
+      { difficulty: "Easy", prompt: "In your own words, explain what would go wrong with a money transfer that isn't in a transaction if the app crashed halfway." },
+      { difficulty: "Medium", prompt: "Write a transaction that inserts an order row and reduces a product's stock quantity, so both happen or neither does." },
+      { difficulty: "Hard", prompt: "Explain each of the four ACID properties in your own words, using the money transfer example for each." },
     ],
     interviewQuestions: [
-      { question: "What does a database transaction guarantee?", answer: "That a group of operations either all succeed and become permanent, or if any part fails, none of them take effect — there's no partially applied state." },
-      { question: "What does the 'A' in ACID stand for, and what does it mean?", answer: "Atomicity — all operations in a transaction are treated as a single indivisible unit; either all of them apply or none do." },
-      { question: "What is the difference between COMMIT and ROLLBACK?", answer: "COMMIT makes every change in the current transaction permanent; ROLLBACK discards every change made since the transaction began, as if it never happened." },
+      { question: "What does a database transaction guarantee?", answer: "A group of operations either all succeed and become permanent, or, if any part fails, none take effect. There's no partly applied state." },
+      { question: "What does the 'A' in ACID stand for, and what does it mean?", answer: "Atomicity: the transaction's operations form one indivisible unit. Either all apply or none do." },
+      { question: "What is the difference between COMMIT and ROLLBACK?", answer: "COMMIT makes every change in the transaction permanent. ROLLBACK discards every change since the transaction began, as if it never happened." },
     ],
     prerequisites: ["basic-sql-queries"],
     relatedTopics: ["basic-sql-queries", "connection-pooling"],
@@ -599,23 +563,20 @@ from proceeding.
     id: "orms",
     title: "ORMs",
     level: "intermediate",
-    description: "A library that lets application code work with database rows as regular objects, generating SQL behind the scenes instead of you writing it by hand.",
+    description: "A library that lets your code work with database rows as objects and writes the SQL for you.",
     explanation: `
-Writing raw SQL strings inside application code works, but it can get
-repetitive and error-prone — building queries by concatenating strings,
-manually mapping columns back into your programming language's objects,
-and re-typing similar SELECT/INSERT/UPDATE patterns over and over.
+Raw SQL strings in app code work, but they get repetitive and error-prone:
+building queries by joining strings, mapping columns back into objects by
+hand, and retyping the same SELECT/INSERT/UPDATE patterns.
 
-An **ORM** (Object-Relational Mapper) is a library that bridges that
-gap. It lets you work with rows as regular objects in your programming
-language — creating a \`User\` object, setting its properties, calling
-\`.save()\` — and it translates those actions into the actual SQL
-statements behind the scenes. You describe *what* you want in the
-language you're already writing in, and the ORM generates the *how* in
+An **ORM** (Object-Relational Mapper) bridges that gap. You work with rows
+as regular objects in your language (create a \`User\`, set its properties,
+call \`.save()\`), and the ORM turns those actions into SQL. You say *what*
+you want in the language you already use; the ORM generates the *how* in
 SQL.
     `.trim(),
     analogy:
-      "An ORM is like a translator at a business meeting between two people who speak different languages. You speak your own language (your application code) and the translator (the ORM) converts your requests into the other language (SQL) that the database actually understands, then translates the reply back.",
+      "An ORM is like a translator at a meeting. You speak your language (app code), the translator (the ORM) turns your requests into the language the database understands (SQL), then translates the reply back.",
     examples: [
       {
         title: "Raw SQL vs. an ORM (JavaScript, using a Prisma-style ORM)",
@@ -630,11 +591,11 @@ const user = result.rows[0];
 const user = await prisma.user.findUnique({
   where: { id: userId },
 });`,
-        explanation: "Both approaches fetch the same row, but the ORM version reads like ordinary application code and returns a ready-to-use object, with the SQL generated automatically underneath.",
+        explanation: "Both fetch the same row. The ORM version reads like normal app code and returns a ready-to-use object, with the SQL generated for you.",
         walkthrough: [
-          { code: 'const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);', explanation: "Sends a raw SQL string to the database, manually passing userId as a parameter." },
-          { code: "const user = result.rows[0];", explanation: "Manually pulls the first matching row out of the raw result." },
-          { code: "const user = await prisma.user.findUnique({ where: { id: userId } });", explanation: "The ORM builds the equivalent SQL query itself and returns the row already shaped as a plain object." },
+          { code: 'const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);', explanation: "Sends a raw SQL string, passing userId as a parameter." },
+          { code: "const user = result.rows[0];", explanation: "Pulls the first row out of the raw result by hand." },
+          { code: "const user = await prisma.user.findUnique({ where: { id: userId } });", explanation: "The ORM builds the same SQL and returns the row as a plain object." },
         ],
       },
       {
@@ -647,56 +608,51 @@ await prisma.user.update({
   where: { id: user.id },
   data: { email: "amara@newmail.com" },
 });`,
-        explanation: "Equivalent to an INSERT followed by an UPDATE statement, but expressed as method calls on objects rather than hand-written SQL strings.",
+        explanation: "The same as an INSERT then an UPDATE, written as method calls instead of SQL strings.",
       },
     ],
     howItWorks: `
-An ORM keeps a mapping between your programming language's classes or
-object shapes and the database's tables and columns. When you call a
-method like \`.create()\` or \`.findUnique()\`, the ORM builds the
-corresponding SQL statement, sends it to the database, and converts the
-raw rows that come back into objects matching your application's data
-shapes.
+An ORM maps your language's classes or object shapes to the database's
+tables and columns. When you call a method like \`.create()\` or
+\`.findUnique()\`, it builds the SQL, sends it, and turns the returned rows
+into objects shaped like your app's data.
 
-Most ORMs also handle a related concern called migrations (versioned
-scripts that change the schema over time), connection management, and
-often let you "drop down" to raw SQL for the rare query that's awkward
-to express through the ORM's own API.
+Most ORMs also handle migrations (versioned scripts that change the
+schema over time) and connection management. Many let you "drop down" to
+raw SQL for the rare query that's awkward in the ORM's API.
     `.trim(),
     whyItExists: `
-Hand-writing SQL for every operation in a large application means a lot
-of repetitive string-building, manual type conversion, and a bigger
-surface for mistakes (like accidentally leaving a query open to SQL
-injection). ORMs exist to remove that repetition, let you stay in one
-programming language most of the time, and provide safer defaults (like
-automatically parameterizing values) out of the box.
+Hand-writing SQL for every operation in a large app means lots of
+repetitive string-building, manual type conversion, and more room for
+mistakes (like leaving a query open to SQL injection). ORMs remove the
+repetition, keep you in one language most of the time, and give safer
+defaults (like automatically parameterizing values).
     `.trim(),
     whenToUse: `
-ORMs are a good fit for the majority of everyday application code —
-straightforward CRUD operations, standard relationships, typical
-filtering — where the productivity and safety benefits outweigh the
-abstraction cost.
+ORMs fit most everyday app code: simple CRUD, standard relationships,
+typical filtering. There, the productivity and safety gains outweigh the
+cost of the abstraction.
     `.trim(),
     whenNotToUse: `
-For complex, performance-critical queries — heavy aggregations, deeply
-nested joins, database-specific features — an ORM's generated SQL can be
-inefficient or awkward to express, and writing raw SQL directly (which
-most ORMs still allow as an escape hatch) is often clearer and faster.
+For complex, performance-critical queries (heavy aggregations, deeply
+nested joins, database-specific features), ORM-generated SQL can be slow
+or awkward. Raw SQL, which most ORMs allow as an escape hatch, is often
+clearer and faster.
     `.trim(),
     commonMistakes: [
-      "Assuming an ORM automatically produces efficient SQL — it can generate slow queries (like fetching related rows one at a time in a loop) just as easily as hand-written code can.",
-      "Never learning the underlying SQL, which makes debugging a slow or wrong query much harder when the ORM is the only thing understood.",
-      "Fighting the ORM to force an awkward query through it, instead of just dropping down to raw SQL for that one case.",
+      "Assuming an ORM writes efficient SQL. It can generate slow queries (like fetching related rows one at a time in a loop) as easily as hand-written code.",
+      "Never learning the underlying SQL, which makes slow or wrong queries much harder to debug.",
+      "Fighting the ORM to force an awkward query through it instead of using raw SQL for that one case.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, what an ORM does between your application code and the database." },
+      { difficulty: "Easy", prompt: "In your own words, explain what an ORM does between your app code and the database." },
       { difficulty: "Medium", prompt: "Write the raw SQL equivalent of an ORM call that finds all orders where total_cents is greater than 1000." },
-      { difficulty: "Hard", prompt: "Describe a scenario where writing raw SQL directly would be a better choice than using an ORM's query builder." },
+      { difficulty: "Hard", prompt: "Describe a scenario where raw SQL is a better choice than an ORM's query builder." },
     ],
     interviewQuestions: [
-      { question: "What is an ORM?", answer: "A library that lets you work with database rows as objects in your programming language, translating those object operations into SQL behind the scenes." },
-      { question: "What's a downside of relying entirely on an ORM?", answer: "It can generate inefficient SQL for complex queries, and developers who never learn the underlying SQL can struggle to debug or optimize slow queries." },
-      { question: "Do ORMs prevent you from writing raw SQL when needed?", answer: "No — most ORMs provide an escape hatch to run raw SQL directly for cases their query API doesn't handle well." },
+      { question: "What is an ORM?", answer: "A library that lets you work with database rows as objects in your language, turning those object operations into SQL." },
+      { question: "What's a downside of relying entirely on an ORM?", answer: "It can generate inefficient SQL for complex queries, and developers who never learn SQL struggle to debug or tune slow queries." },
+      { question: "Do ORMs prevent you from writing raw SQL when needed?", answer: "No. Most ORMs have an escape hatch for running raw SQL when their query API doesn't fit." },
     ],
     prerequisites: ["basic-sql-queries"],
     relatedTopics: ["basic-sql-queries", "database-migrations", "connection-pooling"],
@@ -706,19 +662,20 @@ most ORMs still allow as an escape hatch) is often clearer and faster.
     id: "postgresql-deep-dive",
     title: "PostgreSQL in Depth",
     level: "intermediate",
-    description: "The PostgreSQL-specific features beyond standard SQL — richer data types, auto-incrementing ids, and the psql command-line client.",
+    description: "PostgreSQL features beyond standard SQL: richer data types, auto-incrementing ids, and the psql client.",
     explanation: `
-Everything covered so far — SELECT, JOIN, WHERE — is standard SQL that
-works, with minor syntax differences, across most relational databases.
-**PostgreSQL** (often just "Postgres") is one of the most widely used
-databases, and it adds its own extensions on top of that standard
-worth knowing specifically: richer column types like **JSONB**
-(structured, queryable JSON stored in an efficient binary form) and
-arrays, auto-incrementing id columns, and \`psql\`, its interactive
-command-line client for talking to a database directly.
+SELECT, JOIN, and WHERE are standard SQL that works, with minor syntax
+differences, across most relational databases. **PostgreSQL** ("Postgres")
+is one of the most widely used databases, and it adds its own extensions:
+
+- richer column types like **JSONB** (structured, queryable JSON stored in
+an efficient binary form) and arrays
+- auto-incrementing id columns
+- \`psql\`, an interactive command-line client for talking to a database
+directly
     `.trim(),
     analogy:
-      "Standard SQL is like standard English, understood everywhere. Postgres-specific features are a rich regional vocabulary — genuinely more expressive if you're speaking with someone who knows it, but meaningless if you switch to a database that only speaks the standard dialect.",
+      "Standard SQL is like standard English, understood everywhere. Postgres features are a rich regional vocabulary: more expressive with someone who knows it, meaningless to a database that only speaks the standard dialect.",
     examples: [
       {
         title: "Postgres-specific column types",
@@ -730,11 +687,11 @@ command-line client for talking to a database directly.
   created_at TIMESTAMPTZ DEFAULT now()
 );`,
         language: "sql",
-        explanation: "SERIAL sets up an auto-incrementing integer id, TEXT[] stores a list of strings directly in one column, JSONB holds a flexible structured document, and TIMESTAMPTZ is a timezone-aware timestamp that defaults to the current time.",
+        explanation: "SERIAL gives an auto-incrementing integer id, TEXT[] stores a list of strings in one column, JSONB holds a flexible structured document, and TIMESTAMPTZ is a timezone-aware timestamp defaulting to now.",
         walkthrough: [
-          { code: "id SERIAL PRIMARY KEY", explanation: "Postgres creates a hidden sequence behind the scenes and uses it to auto-generate the next integer id for every new row." },
-          { code: "tags TEXT[]", explanation: "An array column — no separate 'tags' table needed for a simple list of strings attached to each row." },
-          { code: "metadata JSONB", explanation: "Stores arbitrary structured data (not a fixed set of columns), parsed into an efficient binary form that can still be indexed and queried." },
+          { code: "id SERIAL PRIMARY KEY", explanation: "Postgres creates a hidden sequence that generates the next integer id for each new row." },
+          { code: "tags TEXT[]", explanation: "An array column, so a simple list of strings needs no separate 'tags' table." },
+          { code: "metadata JSONB", explanation: "Stores arbitrary structured data (not fixed columns) in an efficient binary form that can still be indexed and queried." },
         ],
       },
       {
@@ -743,53 +700,51 @@ command-line client for talking to a database directly.
 FROM products
 WHERE metadata->>'in_stock' = 'true';`,
         language: "sql",
-        explanation: "-> extracts a nested value as JSON, while ->> extracts it as plain text — here ->> is used because the color is being compared and displayed as ordinary text, not nested JSON.",
+        explanation: "-> extracts a nested value as JSON; ->> extracts it as plain text. ->> is used here because the color is compared and shown as ordinary text.",
       },
     ],
     howItWorks: `
-\`JSONB\` isn't stored as the raw text you typed — Postgres parses it
-into a decomposed binary format up front, which is what lets it support
-indexing (a GIN index can index the keys/values inside a JSONB column)
-and fast operators like \`->\` and \`->>\`, at the cost of a small
-overhead when the value is first written. The \`psql\` client connects
-directly to a database (\`psql -h host -U user -d dbname\`) and gives you
-commands like \`\\dt\` to list tables or \`\\d products\` to inspect a
-table's columns — useful for quickly inspecting data or debugging
-without writing a script.
+\`JSONB\` isn't stored as the text you typed. Postgres parses it into a
+decomposed binary format up front. That enables indexing (a GIN index can
+index the keys/values inside a JSONB column) and fast operators like \`->\`
+and \`->>\`, at the cost of a little overhead on write.
+
+The \`psql\` client connects straight to a database
+(\`psql -h host -U user -d dbname\`). Commands like \`\\dt\` list tables and
+\`\\d products\` shows a table's columns, handy for inspecting data or
+debugging without writing a script.
     `.trim(),
     whyItExists: `
-Real projects often need a mix of strict, well-known relational data
-(like a user's id and email) alongside genuinely flexible or
-per-row-variable data (like a product's optional custom attributes).
-JSONB lets Postgres handle both in one database, instead of needing a
-separate document database purely for the flexible parts.
+Projects often mix strict relational data (a user's id and email) with
+flexible, per-row data (a product's optional custom attributes). JSONB lets
+Postgres handle both, so you don't need a separate document database just
+for the flexible parts.
     `.trim(),
     whenToUse: `
-Use JSONB for a handful of genuinely flexible or sparse fields — custom
-attributes, a webhook payload, per-user settings. Use psql for quickly
-inspecting data, running ad-hoc queries, or debugging directly against
-a database during development.
+Use JSONB for a few truly flexible or sparse fields: custom attributes, a
+webhook payload, per-user settings. Use psql to inspect data, run ad-hoc
+queries, or debug against a database during development.
     `.trim(),
     whenNotToUse: `
-Don't store your whole schema as JSONB just because it's flexible — you
-give up the enforcement, clarity, and full indexing support of proper
-columns and foreign keys. If a field has a known, stable shape and you
-regularly query or join on it, model it as a real column instead.
+Don't store your whole schema as JSONB just because it's flexible. You
+lose the enforcement, clarity, and full indexing support of real columns
+and foreign keys. If a field has a known, stable shape and you query or
+join on it often, make it a real column.
     `.trim(),
     commonMistakes: [
-      "Using -> (which returns JSON) when a plain text value was expected from ->> , leading to confusing type-mismatch errors in comparisons.",
-      "Reaching for a JSONB column to avoid designing a proper related table, out of laziness rather than genuine flexibility needs.",
-      "Assuming SERIAL ids are gapless — deleted rows leave permanent gaps, since the underlying sequence never goes backward.",
+      "Using -> (which returns JSON) when you wanted plain text from ->>, causing confusing type-mismatch errors in comparisons.",
+      "Using a JSONB column to avoid designing a proper related table, out of laziness rather than real need for flexibility.",
+      "Assuming SERIAL ids have no gaps. Deleted rows leave permanent gaps, since the sequence never goes backward.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a CREATE TABLE statement for an 'events' table with a SERIAL id and a JSONB 'payload' column." },
-      { difficulty: "Medium", prompt: "Write a query that selects rows from a JSONB 'settings' column where a nested key 'theme' equals 'dark'." },
-      { difficulty: "Hard", prompt: "Describe a scenario where you'd choose a JSONB column over creating a proper related table, and one where you'd choose the related table instead." },
+      { difficulty: "Easy", prompt: "Write a CREATE TABLE for an 'events' table with a SERIAL id and a JSONB 'payload' column." },
+      { difficulty: "Medium", prompt: "Write a query selecting rows whose JSONB 'settings' column has a nested key 'theme' equal to 'dark'." },
+      { difficulty: "Hard", prompt: "Describe one case where you'd choose a JSONB column over a proper related table, and one where you'd choose the related table." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between JSON and JSONB in PostgreSQL?", answer: "JSON is stored as the exact text you inserted; JSONB is parsed into a decomposed binary form, which is slightly slower to write but supports indexing and faster queries." },
-      { question: "What does a SERIAL column do?", answer: "It creates an auto-incrementing integer column backed by a hidden sequence that generates each new row's id." },
-      { question: "When would you reach for a JSONB column instead of normalizing into another table?", answer: "When the data's shape is genuinely variable or sparse per row and isn't something you heavily query or join on — otherwise a proper related table is usually the better fit." },
+      { question: "What's the difference between JSON and JSONB in PostgreSQL?", answer: "JSON is stored as the exact text you inserted. JSONB is parsed into a decomposed binary form: slightly slower to write, but it supports indexing and faster queries." },
+      { question: "What does a SERIAL column do?", answer: "It creates an auto-incrementing integer column, backed by a hidden sequence that generates each new row's id." },
+      { question: "When would you reach for a JSONB column instead of normalizing into another table?", answer: "When the data's shape really varies or is sparse per row, and you don't query or join on it much. Otherwise a related table usually fits better." },
     ],
     prerequisites: ["basic-sql-queries", "tables-rows-columns"],
     relatedTopics: ["basic-sql-queries", "indexes", "normalization"],
@@ -799,20 +754,20 @@ regularly query or join on it, model it as a real column instead.
     id: "subqueries-and-ctes",
     title: "Subqueries & CTEs",
     level: "intermediate",
-    description: "Nesting one query inside another, or naming a step with WITH, to break a complex question into smaller, readable pieces.",
+    description: "Nest one query in another, or name a step with WITH, to split a complex question into readable pieces.",
     explanation: `
-Some questions can't be answered with one flat query. "Find users who
-have placed more than 3 orders" needs an intermediate step: first figure
-out which user ids have more than 3 orders, then look up those users.
+Some questions need more than one flat query. "Find users with more than
+3 orders" needs a middle step: find the user ids with more than 3 orders,
+then look up those users.
 
-A **subquery** is a query nested inside another one, usable in a
-\`WHERE\`, \`FROM\`, or \`SELECT\` clause. A **CTE** (Common Table
-Expression), written with \`WITH\`, does something similar but gives that
-intermediate step a name you can reference afterward like a temporary
-table — often making a multi-step query much easier to read.
+- A **subquery** is a query nested inside another, in a \`WHERE\`, \`FROM\`,
+or \`SELECT\` clause.
+- A **CTE** (Common Table Expression), written with \`WITH\`, does the same
+but names the middle step so you can use it like a temporary table. This
+often makes multi-step queries much easier to read.
     `.trim(),
     analogy:
-      "Writing a subquery is like doing scratch work on the side of the page before answering the real question. A CTE is doing that same scratch work but labeling it clearly — 'Step 1: frequent buyers' — so anyone reading it later (including future you) doesn't have to mentally unpack a nested block to see what it's for.",
+      "A subquery is scratch work in the margin before answering the real question. A CTE is the same scratch work with a clear label ('Step 1: frequent buyers'), so later readers, including future you, don't have to unpick a nested block.",
     examples: [
       {
         title: "A subquery in WHERE",
@@ -823,10 +778,10 @@ WHERE id IN (
   HAVING COUNT(*) > 3
 );`,
         language: "sql",
-        explanation: "The inner query first finds every user_id with more than 3 orders; the outer query then finds the actual users matching those ids.",
+        explanation: "The inner query finds every user_id with more than 3 orders. The outer query then finds the users with those ids.",
         walkthrough: [
-          { code: "SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 3", explanation: "Runs first (conceptually) and produces a list of user ids meeting the condition." },
-          { code: "WHERE id IN (...)", explanation: "The outer query filters users down to only those whose id appears in that inner list." },
+          { code: "SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 3", explanation: "Runs first (conceptually) and returns the user ids that meet the condition." },
+          { code: "WHERE id IN (...)", explanation: "The outer query keeps only users whose id is in that list." },
         ],
       },
       {
@@ -840,52 +795,49 @@ SELECT users.name
 FROM users
 JOIN frequent_buyers ON frequent_buyers.user_id = users.id;`,
         language: "sql",
-        explanation: "The WITH clause names the intermediate result frequent_buyers, and the rest of the query can join against it just like a real table — arguably easier to follow than a nested subquery once there's more than one step.",
+        explanation: "WITH names the middle result frequent_buyers, and the rest of the query joins against it like a real table. Often easier to follow than a nested subquery once there's more than one step.",
       },
     ],
     howItWorks: `
-Conceptually, the database evaluates the inner subquery (or each CTE)
-first, producing an intermediate result set, and then runs the outer
-query against that result. Postgres treats a CTE largely as a named,
-temporary result you can select from or join against; for genuinely
-hierarchical data (like a tree of comment replies), it also supports
-\`WITH RECURSIVE\`, which repeats a query against its own previous
-results until nothing new is found.
+Conceptually, the database runs the inner subquery (or each CTE) first to
+get a middle result, then runs the outer query against it.
+
+Postgres treats a CTE mostly as a named, temporary result you can select
+from or join. For hierarchical data (like a tree of comment replies), it
+also supports \`WITH RECURSIVE\`, which repeats a query against its own
+previous results until nothing new is found.
     `.trim(),
     whyItExists: `
-Real questions — "customers who bought X but never Y," "the best-selling
-product in each category" — often can't be expressed as a single flat
-SELECT. Subqueries and CTEs exist to let you build up an answer in
-stages within one query, without needing separate round trips to the
-database or manually managed temporary tables.
+Many real questions ("customers who bought X but never Y," "the
+best-selling product in each category") can't be one flat SELECT.
+Subqueries and CTEs let you build the answer in stages inside one query,
+without extra round trips or hand-managed temporary tables.
     `.trim(),
     whenToUse: `
-Reach for a CTE when a query has multiple logical steps and naming each
-one makes the whole thing easier to read. Reach for an inline subquery
-for a small, self-contained filtering condition that doesn't need its
-own name.
+Use a CTE when a query has several logical steps and naming them makes it
+easier to read. Use an inline subquery for a small, self-contained filter
+that doesn't need a name.
     `.trim(),
     whenNotToUse: `
-If a plain JOIN or a simple aggregation already answers the question
-directly, wrapping it in a subquery or CTE just adds indirection.
-Deeply nested subqueries, several levels deep, also tend to become hard
-to read and to optimize — that's usually a sign to pull one level out
-into a named CTE, or reconsider the query's shape entirely.
+If a plain JOIN or simple aggregation already answers the question, a
+subquery or CTE just adds indirection. Subqueries nested several levels
+deep get hard to read and optimize; pull a level out into a named CTE or
+rethink the query.
     `.trim(),
     commonMistakes: [
-      "Writing a correlated subquery (one that references a column from the outer query) that effectively reruns once per outer row, becoming very slow on large tables.",
-      "Assuming a CTE is always computed once and cached — that behavior can differ across databases and versions, so it isn't guaranteed to be a free optimization.",
-      "Nesting several layers of subqueries instead of naming intermediate steps with CTEs, making the query difficult for anyone else (or future you) to follow.",
+      "Writing a correlated subquery (one that uses a column from the outer query) that effectively reruns once per outer row, which is very slow on large tables.",
+      "Assuming a CTE is always computed once and cached. This differs across databases and versions, so it isn't a guaranteed free optimization.",
+      "Nesting several layers of subqueries instead of naming steps with CTEs, making the query hard for others (or future you) to follow.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Rewrite a subquery used with = into an equivalent using IN, for finding orders placed by a specific customer looked up by email." },
-      { difficulty: "Medium", prompt: "Write a CTE that computes the average order total, then a query that selects all orders above that average." },
-      { difficulty: "Hard", prompt: "Explain the difference between a correlated and a non-correlated subquery, with a concrete example of each and why the correlated one is typically slower." },
+      { difficulty: "Easy", prompt: "Rewrite a subquery that uses = into one that uses IN, to find orders placed by a customer looked up by email." },
+      { difficulty: "Medium", prompt: "Write a CTE that computes the average order total, then select all orders above that average." },
+      { difficulty: "Hard", prompt: "Explain the difference between a correlated and a non-correlated subquery, with an example of each, and why the correlated one is usually slower." },
     ],
     interviewQuestions: [
-      { question: "What is a CTE and why use one instead of a plain subquery?", answer: "A WITH clause that names an intermediate query result — mainly used to make a multi-step query more readable by labeling each stage instead of nesting subqueries." },
-      { question: "What is a correlated subquery?", answer: "A subquery that references a column from its outer query, meaning it conceptually needs to be re-evaluated once per row of the outer query." },
-      { question: "Can a single query define more than one CTE?", answer: "Yes — multiple CTEs can be chained in one WITH clause, comma-separated, and later ones can reference earlier ones." },
+      { question: "What is a CTE and why use one instead of a plain subquery?", answer: "A WITH clause that names a middle query result. It mainly makes multi-step queries easier to read by labeling each stage instead of nesting subqueries." },
+      { question: "What is a correlated subquery?", answer: "A subquery that uses a column from its outer query, so it conceptually reruns once per outer row." },
+      { question: "Can a single query define more than one CTE?", answer: "Yes. List several CTEs in one WITH clause, separated by commas; later ones can reference earlier ones." },
     ],
     prerequisites: ["joins", "aggregation"],
     relatedTopics: ["joins", "aggregation", "basic-sql-queries"],
@@ -895,24 +847,21 @@ into a named CTE, or reconsider the query's shape entirely.
     id: "pagination",
     title: "Pagination",
     level: "intermediate",
-    description: "Returning a large result set in smaller pages instead of all at once, using LIMIT/OFFSET or a keyset approach.",
+    description: "Return a large result in smaller pages, using LIMIT/OFFSET or keyset pagination.",
     explanation: `
-An endpoint like \`GET /products\` might match thousands of rows —
-sending every one of them back in a single response wastes bandwidth,
-memory, and rendering time on both ends, for data almost nobody actually
-scrolls down to see. **Pagination** splits a large result into smaller
-pages, returning one chunk at a time along with a way to fetch the next.
+An endpoint like \`GET /products\` might match thousands of rows. Sending
+them all at once wastes bandwidth, memory, and rendering time on data
+almost nobody scrolls to. **Pagination** returns one smaller page at a
+time, plus a way to fetch the next.
 
-The simplest approach is \`LIMIT\`/\`OFFSET\`: skip a number of rows, then
-take the next batch. It's easy to reason about ("give me page 3, 20 per
-page"), but gets slower the deeper you page, since the database still
-has to walk past every skipped row. **Keyset pagination** ("give me
-everything after id 340") avoids that by filtering directly on a
-column's value instead of counting through rows, so it stays fast no
-matter how far into the results you go.
+- \`LIMIT\`/\`OFFSET\` skips some rows and takes the next batch. It's easy to
+reason about ("page 3, 20 per page") but slows down the deeper you go,
+because the database still walks past every skipped row.
+- **Keyset pagination** ("everything after id 340") filters on a column's
+value instead of counting rows, so it stays fast at any depth.
     `.trim(),
     analogy:
-      "OFFSET/LIMIT pagination is like flipping through a phone book from page 1 every single time someone asks for page 50 — you still have to count past pages 1 through 49 first. Keyset pagination is like bookmarking exactly where you left off, so the next request opens straight to that spot.",
+      "OFFSET/LIMIT is like opening a phone book at page 1 every time someone asks for page 50: you still count past pages 1 to 49. Keyset pagination is a bookmark, so the next request opens straight to where you left off.",
     examples: [
       {
         title: "OFFSET/LIMIT pagination",
@@ -921,11 +870,11 @@ SELECT * FROM products
 ORDER BY id
 LIMIT 20 OFFSET 40;`,
         language: "sql",
-        explanation: "Skips the first 40 rows (pages 1 and 2), then returns the next 20 — page 3.",
+        explanation: "Skips the first 40 rows (pages 1 and 2), then returns the next 20: page 3.",
         walkthrough: [
-          { code: "ORDER BY id", explanation: "Gives every page a stable, repeatable order — pagination without one can show duplicate or missing rows if the underlying order isn't guaranteed between requests." },
-          { code: "LIMIT 20", explanation: "Caps how many rows this particular page returns." },
-          { code: "OFFSET 40", explanation: "Skips the rows that belong to earlier pages before starting to collect this page's rows." },
+          { code: "ORDER BY id", explanation: "Gives pages a stable order. Without it, pages can show duplicate or missing rows, since order isn't guaranteed between requests." },
+          { code: "LIMIT 20", explanation: "Caps how many rows this page returns." },
+          { code: "OFFSET 40", explanation: "Skips the rows on earlier pages." },
         ],
       },
       {
@@ -935,51 +884,46 @@ WHERE id > 340
 ORDER BY id
 LIMIT 20;`,
         language: "sql",
-        explanation: "Instead of counting past rows with OFFSET, this jumps directly to rows after the last id seen on the previous page (340) — with an index on id, the database can find that starting point instantly, regardless of how deep into the results you are.",
+        explanation: "Instead of counting past rows with OFFSET, this jumps to rows after the last id on the previous page (340). With an index on id, the database finds that point instantly, however deep you are.",
       },
     ],
     howItWorks: `
-With \`OFFSET\`/\`LIMIT\`, the database still has to generate (or at least
-count through) every row up to the offset before it can return the
-requested slice, even though most of those rows are immediately
-discarded — the deeper the page, the more wasted work. Keyset
-pagination instead uses a \`WHERE\` condition on an indexed, ordered
-column (like \`id\` or \`created_at\`) to jump straight to the right
-starting point, so requesting "page 5,000" costs about the same as
-requesting page 1.
+With \`OFFSET\`/\`LIMIT\`, the database still generates (or at least counts
+through) every row up to the offset, then throws most of them away. The
+deeper the page, the more wasted work.
+
+Keyset pagination uses a \`WHERE\` condition on an indexed, ordered column
+(like \`id\` or \`created_at\`) to jump straight to the starting point. Page
+5,000 costs about the same as page 1.
     `.trim(),
     whyItExists: `
-Pagination exists so that list endpoints and UIs don't have to load,
-transmit, and render every row that matches a query at once — most of a
-large result set is never actually looked at by the user, so returning
-all of it upfront wastes work at every layer, from the database to the
-network to the browser.
+Most of a large result is never looked at. Pagination saves list endpoints
+and UIs from loading, sending, and rendering every matching row at once,
+which wastes work in the database, the network, and the browser.
     `.trim(),
     whenToUse: `
-Use OFFSET/LIMIT for small-to-moderate result sets, or when users need
-to jump directly to an arbitrary page number. Use keyset pagination for
-large, fast-growing tables, infinite-scroll feeds, or any API where
-performance at deep pages actually matters.
+Use OFFSET/LIMIT for small to moderate results, or when users need to jump
+to any page number. Use keyset pagination for large, fast-growing tables,
+infinite-scroll feeds, or any API where deep-page speed matters.
     `.trim(),
     whenNotToUse: `
-For result sets small enough to return comfortably in one response (a
-settings list, a handful of categories), pagination adds complexity for
-no real benefit — just return everything.
+If the result easily fits in one response (a settings list, a few
+categories), skip pagination and return everything.
     `.trim(),
     commonMistakes: [
-      "Paginating without an ORDER BY, letting rows shift between pages — a row appearing twice, or never at all — if the underlying data changes between requests.",
-      "Using large OFFSET values on a constantly growing table and expecting consistent performance, when OFFSET's cost grows with how deep the page is.",
-      "Building keyset pagination on a column that isn't unique or isn't indexed, which can be just as slow as OFFSET, or skip/duplicate rows when values tie.",
+      "Paginating without ORDER BY, so rows shift between pages (appearing twice or never) when data changes between requests.",
+      "Using large OFFSETs on a growing table and expecting steady speed. OFFSET's cost grows with page depth.",
+      "Using keyset pagination on a column that isn't unique or indexed. It can be as slow as OFFSET, or skip/duplicate rows when values tie.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write an OFFSET/LIMIT query for page 2 of a products table, 10 rows per page." },
-      { difficulty: "Medium", prompt: "Convert that same query into keyset pagination, given the last product id seen on page 1." },
-      { difficulty: "Hard", prompt: "Explain why OFFSET 100000 LIMIT 20 is slow on a large table, and why an equivalent keyset query for that same depth isn't." },
+      { difficulty: "Medium", prompt: "Convert that query to keyset pagination, given the last product id on page 1." },
+      { difficulty: "Hard", prompt: "Explain why OFFSET 100000 LIMIT 20 is slow on a large table, and why a keyset query at the same depth isn't." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between OFFSET/LIMIT and keyset pagination?", answer: "OFFSET/LIMIT skips a count of rows before returning a page, getting slower the deeper you page; keyset pagination filters directly on an indexed column's value, staying fast regardless of depth." },
-      { question: "Why does pagination need a stable ORDER BY?", answer: "Without one, the database doesn't guarantee row order between requests, so pages can end up showing duplicate or missing rows if the data or query plan shifts between calls." },
-      { question: "Why is deep OFFSET pagination slow on large tables?", answer: "The database still has to walk through (or count) all the skipped rows before it can return the requested slice, even though none of those skipped rows are actually returned." },
+      { question: "What's the difference between OFFSET/LIMIT and keyset pagination?", answer: "OFFSET/LIMIT skips a number of rows before returning a page, so it slows down at deeper pages. Keyset pagination filters on an indexed column's value and stays fast at any depth." },
+      { question: "Why does pagination need a stable ORDER BY?", answer: "Without it, row order isn't guaranteed between requests, so pages can show duplicate or missing rows if the data or query plan changes." },
+      { question: "Why is deep OFFSET pagination slow on large tables?", answer: "The database still walks through (or counts) every skipped row before returning the page, even though none of them are returned." },
     ],
     prerequisites: ["filtering-and-sorting", "indexes"],
     relatedTopics: ["filtering-and-sorting", "indexes", "query-optimization"],

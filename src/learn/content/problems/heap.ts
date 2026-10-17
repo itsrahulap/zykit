@@ -7,18 +7,14 @@ export const heapProblems: Problem[] = [
     difficulty: "Easy",
     category: "heap",
     description: `
-Design a class that keeps track of the *kth largest* element in a
-growing collection of numbers, as new numbers keep arriving one at a
-time.
+Design a class that tracks the *kth largest* element in a collection of
+numbers that arrive one at a time.
 
-The class is constructed with an integer \`k\` and an initial array of
-numbers. It supports one operation, \`add(val)\`, which adds \`val\` to the
-collection and then returns the kth largest element in the collection
-*so far* (with duplicates counted - the kth largest, not the kth
-distinct value).
+The constructor takes an integer \`k\` and an initial array of numbers.
+\`add(val)\` adds \`val\` and returns the kth largest element *so far*.
+Duplicates count: it's the kth largest, not the kth distinct value.
 
-You're guaranteed there will always be at least k numbers in the
-collection whenever \`add\` is called.
+There will always be at least k numbers when \`add\` is called.
     `.trim(),
     examples: [
       {
@@ -34,27 +30,23 @@ collection whenever \`add\` is called.
       "At most 10^4 calls to add",
     ],
     hints: [
-      "You could re-sort the whole collection on every add() call, but that repeats a lot of work as the stream grows.",
-      "You only ever need to know the k *largest* values - the rest of the numbers don't matter at all once you know they're not in the top k.",
-      "What if you kept a small collection of exactly the k largest values seen so far, and could instantly tell which one of those k is the smallest?",
+      "Re-sorting on every add() call repeats a lot of work as the stream grows.",
+      "You only need the k *largest* values. Numbers outside the top k don't matter.",
+      "What if you kept only the k largest values so far, and could instantly see the smallest of them?",
     ],
     approachOverview: `
-Re-sorting everything on every call wastes time re-examining numbers
-that were never going to be in the top k anyway. Instead, keep a
-running collection of *only* the k largest values seen so far.
+Re-sorting on every call re-examines numbers that will never be in the
+top k. Instead, keep *only* the k largest values seen so far.
 
-A **min-heap of size k** is perfect for this: it holds the k largest
-values, and its top (the minimum of those k) is exactly the kth largest
-value overall - because among the top k values, the smallest one is,
-by definition, the kth largest. When a new value arrives, add it to the
-heap; if that grows the heap past size k, remove the heap's minimum
-(it's no longer one of the top k). Whatever remains on top is the
-answer.
+A **min-heap of size k** fits this well. It holds the k largest values,
+and its top (the smallest of those k) is the kth largest overall. When a
+value arrives, add it. If the heap grows past size k, remove its minimum,
+which is no longer in the top k. The top is the answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort on Every Call",
-        explanation: "Keep all numbers in an array. Every time add() is called, push the new value, sort the whole array, and read off the kth largest by index.",
+        explanation: "Keep all numbers in an array. On each add(), push the value, sort the array, and read the kth largest by index.",
         code: `class KthLargest {
   constructor(k, nums) {
     this.k = k;
@@ -72,7 +64,7 @@ answer.
       },
       {
         approach: "Optimal - Min-Heap of Size k",
-        explanation: "Maintain a min-heap that only ever holds the k largest values seen so far. Its top is always the smallest of those k values - which is exactly the kth largest overall.",
+        explanation: "Keep a min-heap of only the k largest values so far. Its top, the smallest of those k, is the kth largest overall.",
         code: `class MinHeap {
   constructor() {
     this.data = [];
@@ -137,8 +129,8 @@ class KthLargest {
         spaceComplexity: "O(k) - the heap never grows past size k",
         walkthrough: [
           { code: "this.heap.push(val);", explanation: "Adds the new value to the running top-k collection." },
-          { code: "if (this.heap.size() > this.k) this.heap.pop();", explanation: "If the heap now holds more than k values, the smallest one no longer belongs in the top k, so it's discarded." },
-          { code: "return this.heap.peek();", explanation: "The smallest value among the current top k is, by definition, the kth largest value overall." },
+          { code: "if (this.heap.size() > this.k) this.heap.pop();", explanation: "If the heap holds more than k values, the smallest is no longer in the top k, so discard it." },
+          { code: "return this.heap.peek();", explanation: "The smallest of the top k is the kth largest overall." },
         ],
       },
     ],
@@ -151,14 +143,13 @@ class KthLargest {
     difficulty: "Easy",
     category: "heap",
     description: `
-You have a collection of stones, each with a positive weight. Repeat the
-following process until at most one stone remains:
+You have stones, each with a positive weight. Repeat until at most one
+stone remains:
 
 - Pick up the two *heaviest* stones (call their weights \`x\` and \`y\`, with \`x <= y\`).
-- Smash them together. If they're equal weight, both stones are destroyed. Otherwise, the lighter stone is destroyed and the heavier one loses \`x\` from its weight, leaving a new stone of weight \`y - x\`.
+- Smash them together. If they weigh the same, both are destroyed. Otherwise, the lighter one is destroyed and the heavier one becomes weight \`y - x\`.
 
-Return the weight of the single stone left at the end, or \`0\` if every
-stone was destroyed.
+Return the weight of the last stone, or \`0\` if none are left.
     `.trim(),
     examples: [
       {
@@ -174,23 +165,22 @@ stone was destroyed.
     ],
     constraints: ["1 <= stones.length <= 30", "1 <= stones[i] <= 1000"],
     hints: [
-      "At every step you only care about the two heaviest stones - everything else is irrelevant until its turn comes.",
-      "Repeatedly finding the two largest values in an array by scanning is wasteful. What structure gives you fast access to the current largest value?",
-      "A max-heap lets you pop the two heaviest stones, combine them, and push the result back in, all in logarithmic time.",
+      "At each step you only care about the two heaviest stones.",
+      "Scanning for the two largest values every time is wasteful. What structure gives fast access to the current largest value?",
+      "A max-heap lets you pop the two heaviest stones and push the result back, all in logarithmic time.",
     ],
     approachOverview: `
-The process only ever touches the two *heaviest* stones at each step, so
-you need repeated fast access to "what's currently the largest value in
-this collection" - which is exactly what a **max-heap** provides.
+Each step only uses the two *heaviest* stones, so you need fast access
+to the current largest value. A **max-heap** gives you that.
 
-Push every stone's weight onto a max-heap. Then repeatedly pop the two
-largest values, and if they aren't equal, push the difference back onto
-the heap. Stop when the heap has one or zero stones left.
+Push every weight onto a max-heap. Repeatedly pop the two largest, and
+if they differ, push the difference back. Stop when one or zero stones
+are left.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Re-sort Each Round",
-        explanation: "Sort the stones every time, smash the two largest, put the result back, and repeat until at most one stone remains.",
+        explanation: "Sort the stones each round, smash the two largest, put the result back, and repeat until at most one remains.",
         code: `function lastStoneWeight(stones) {
   const arr = [...stones];
 
@@ -268,8 +258,8 @@ function lastStoneWeight(stones) {
         spaceComplexity: "O(n)",
         walkthrough: [
           { code: "const y = heap.pop();\n    const x = heap.pop();", explanation: "Pops the two currently-heaviest stones in one O(log n) step each." },
-          { code: "if (y !== x) heap.push(y - x);", explanation: "If the stones weren't equal, the leftover weight goes back into the heap to be smashed again later." },
-          { code: "return heap.size() > 0 ? heap.pop() : 0;", explanation: "Once at most one stone remains, that's the answer (or 0 if everything was destroyed)." },
+          { code: "if (y !== x) heap.push(y - x);", explanation: "If the stones weren't equal, the leftover weight goes back into the heap." },
+          { code: "return heap.size() > 0 ? heap.pop() : 0;", explanation: "The last stone is the answer, or 0 if none are left." },
         ],
       },
     ],
@@ -282,12 +272,11 @@ function lastStoneWeight(stones) {
     difficulty: "Medium",
     category: "heap",
     description: `
-You're given a list of points on a 2-D plane, each written as \`[x, y]\`,
-and a number \`k\`. Find the \`k\` points that are closest to the origin
-\`(0, 0)\`, using ordinary straight-line (Euclidean) distance.
+Given a list of 2-D points, each written as \`[x, y]\`, and a number
+\`k\`, return the \`k\` points closest to the origin \`(0, 0)\` by
+straight-line (Euclidean) distance.
 
-Return those k points in any order - as long as the set of points is
-correct, the order doesn't matter.
+Return them in any order.
     `.trim(),
     examples: [
       {
@@ -303,26 +292,24 @@ correct, the order doesn't matter.
     ],
     constraints: ["1 <= k <= points.length <= 10^4", "-10^4 <= x[i], y[i] <= 10^4"],
     hints: [
-      "You don't actually need the real distance - comparing squared distances gives the same ordering and skips the square root.",
-      "Sorting every point by distance and taking the first k works, but you're paying to fully order points you don't even need ranked past position k.",
-      "A max-heap of size k lets you keep only the k closest points seen so far, discarding the current farthest one whenever a closer point shows up.",
+      "You don't need the real distance. Squared distances give the same order without a square root.",
+      "Sorting all points and taking the first k works, but you pay to rank points you don't need.",
+      "A max-heap of size k keeps only the k closest points so far, dropping the farthest when a closer one shows up.",
     ],
     approachOverview: `
-Since you only need the k *closest* points, not a full ranking of every
-point, sorting everything is more work than necessary. Comparing squared
-distances (skipping the square root, which doesn't change the ordering)
-already saves some work either way.
+You only need the k *closest* points, not a full ranking, so sorting
+everything is more work than needed. Either way, compare squared
+distances: skipping the square root doesn't change the order.
 
 The efficient approach keeps a **max-heap of size k**, ordered by
-distance. For each point, add it to the heap; once the heap grows past
-size k, remove the point with the *largest* distance - it's now
-guaranteed not to be among the k closest. Whatever remains in the heap
-at the end is the answer.
+distance. Add each point. When the heap grows past k, remove the point
+with the *largest* distance, since it can't be among the k closest. The
+heap holds the answer at the end.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort All Points",
-        explanation: "Compute every point's squared distance from the origin, sort all points by that distance, and take the first k.",
+        explanation: "Sort all points by squared distance from the origin and take the first k.",
         code: `function kClosest(points, k) {
   const sorted = [...points].sort((a, b) => {
     const distA = a[0] * a[0] + a[1] * a[1];
@@ -336,7 +323,7 @@ at the end is the answer.
       },
       {
         approach: "Optimal - Max-Heap of Size k",
-        explanation: "Keep a max-heap (ordered by distance) that never grows past size k. Adding a new point that makes the heap too big evicts the currently-farthest point.",
+        explanation: "Keep a max-heap, ordered by distance, of at most k points. When a new point makes it too big, evict the farthest point.",
         code: `class MaxHeap {
   constructor(compare) {
     this.data = [];
@@ -397,9 +384,9 @@ function kClosest(points, k) {
         timeComplexity: "O(n log k) - each of the n points does an O(log k) heap operation",
         spaceComplexity: "O(k) - the heap never holds more than k points",
         walkthrough: [
-          { code: "const dist = point[0] * point[0] + point[1] * point[1];", explanation: "Uses squared distance, which ranks points the same way as true distance but avoids computing a square root." },
+          { code: "const dist = point[0] * point[0] + point[1] * point[1];", explanation: "Squared distance ranks points the same as true distance, without a square root." },
           { code: "heap.push({ point, dist });", explanation: "Adds the point to the running top-k-closest collection." },
-          { code: "if (heap.size() > k) heap.pop();", explanation: "If the heap now holds more than k points, the currently-farthest one is evicted - it can't be among the k closest." },
+          { code: "if (heap.size() > k) heap.pop();", explanation: "If the heap holds more than k points, evict the farthest. It can't be among the k closest." },
         ],
       },
     ],
@@ -412,10 +399,9 @@ function kClosest(points, k) {
     difficulty: "Medium",
     category: "heap",
     description: `
-You're given an unsorted list of numbers and an integer \`k\`. Find the
-\`k\`th largest value in the list - that's the value that would land in
-position \`k\` if the list were sorted from largest to smallest (counting
-duplicates as separate entries, not just distinct values).
+Given an unsorted list of numbers and an integer \`k\`, find the \`k\`th
+largest value: the value at position \`k\` if the list were sorted from
+largest to smallest. Duplicates count as separate entries.
     `.trim(),
     examples: [
       {
@@ -431,29 +417,27 @@ duplicates as separate entries, not just distinct values).
     ],
     constraints: ["1 <= k <= nums.length <= 10^4", "-10^4 <= nums[i] <= 10^4"],
     hints: [
-      "Fully sorting the array works, but does more work than needed - you only care about one position in the sorted order, not the whole ordering.",
-      "A min-heap that only ever holds the k largest values seen so far will have the answer sitting right on top once every number's been processed.",
-      "There's an even faster average-case trick: the partitioning step from quicksort can be used to zero in on the kth position directly, without ever fully sorting.",
+      "Sorting works, but does more than needed. You only care about one position in the sorted order.",
+      "A min-heap holding only the k largest values so far has the answer on top after every number is processed.",
+      "Faster on average: quicksort's partition step can zero in on the kth position without fully sorting.",
     ],
     approachOverview: `
-Fully sorting the array (O(n log n)) is more work than the question
-asks for, since you only need one specific position in that sorted
-order, not the whole thing.
+Fully sorting (O(n log n)) is more than needed, since you only want one
+position in the sorted order.
 
-A **min-heap of size k** narrows this down: keep only the k largest
-values seen so far, and the top of the heap (the smallest among them) is
-the kth largest overall - the same idea used to track the kth largest
-element in a live stream.
+A **min-heap of size k** keeps only the k largest values so far. Its top
+(the smallest of them) is the kth largest overall. This is the same idea
+used to track the kth largest element in a stream.
 
-Going further, **quickselect** (built on quicksort's partition step) can
-find the answer in average O(n) time: partition the array around a
-pivot so everything larger ends up on one side, and recurse into only
-the side that must contain the kth largest position - never both sides.
+**Quickselect**, built on quicksort's partition step, finds the answer in
+average O(n) time. Partition around a pivot so larger values end up on
+one side, then recurse only into the side that holds the kth largest
+position, never both.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort",
-        explanation: "Sort the array from largest to smallest, and read off the value at index k - 1.",
+        explanation: "Sort from largest to smallest and read the value at index k - 1.",
         code: `function findKthLargest(nums, k) {
   const sorted = [...nums].sort((a, b) => b - a);
   return sorted[k - 1];
@@ -463,7 +447,7 @@ the side that must contain the kth largest position - never both sides.
       },
       {
         approach: "Min-Heap of Size k",
-        explanation: "Push every number onto a min-heap, popping the smallest whenever the heap grows past size k. What's left on top at the end is the kth largest.",
+        explanation: "Push each number onto a min-heap, popping the smallest whenever it grows past size k. The top at the end is the kth largest.",
         code: `class MinHeap {
   constructor() {
     this.data = [];
@@ -524,7 +508,7 @@ function findKthLargest(nums, k) {
       },
       {
         approach: "Optimal (Average Case) - Quickselect",
-        explanation: "Reuse quicksort's partition step, but only recurse into the one side that must contain the target position - never both. On average this finds the answer in linear time.",
+        explanation: "Reuse quicksort's partition step, but recurse only into the side that contains the target position, never both. On average this takes linear time.",
         code: `function findKthLargest(nums, k) {
   const n = nums.length;
   const targetIndex = n - k; // index the answer would sit at if nums were sorted ascending
@@ -559,10 +543,10 @@ function findKthLargest(nums, k) {
         timeComplexity: "O(n) average case, O(n^2) worst case (mitigated in practice by the random pivot)",
         spaceComplexity: "O(1) extra (partitions in place), O(log n) average recursion depth",
         walkthrough: [
-          { code: "const targetIndex = n - k;", explanation: "Converts 'kth largest' into 'what index would this land at in ascending sorted order' - the kth largest is the (n-k)th smallest." },
-          { code: "const finalPivotIndex = partition(left, right, pivotIndex);", explanation: "Rearranges the segment so everything smaller than the pivot ends up to its left, everything larger to its right, and returns the pivot's final resting index." },
-          { code: "if (finalPivotIndex === targetIndex) return nums[finalPivotIndex];", explanation: "If the pivot landed exactly on the target index, its value is the answer - no more work needed." },
-          { code: "if (finalPivotIndex < targetIndex) return quickselect(finalPivotIndex + 1, right); ...", explanation: "Otherwise, only the half of the array that could still contain the target index is searched further - the other half is discarded entirely, unlike a full sort." },
+          { code: "const targetIndex = n - k;", explanation: "Converts 'kth largest' to an index in ascending order: the kth largest is the (n-k)th smallest." },
+          { code: "const finalPivotIndex = partition(left, right, pivotIndex);", explanation: "Moves smaller values left of the pivot and larger values right, then returns the pivot's final index." },
+          { code: "if (finalPivotIndex === targetIndex) return nums[finalPivotIndex];", explanation: "If the pivot landed on the target index, its value is the answer." },
+          { code: "if (finalPivotIndex < targetIndex) return quickselect(finalPivotIndex + 1, right); ...", explanation: "Otherwise, search only the side that can contain the target index. Unlike a full sort, the other side is dropped." },
         ],
       },
     ],
@@ -575,15 +559,14 @@ function findKthLargest(nums, k) {
     difficulty: "Medium",
     category: "heap",
     description: `
-You're given a list of tasks, each labeled with an uppercase letter (the
-same letter can appear multiple times, meaning that task needs to run
-that many times total), and a cooldown number \`n\`.
+You're given a list of tasks, each labeled with an uppercase letter, and
+a cooldown \`n\`. A letter that appears several times must run that many
+times.
 
-The CPU can run one task per time unit, in any order you choose, but the
-*same* task letter can't run again until at least \`n\` other time units
-have passed since its last run - the CPU can sit idle during that wait
-if there's nothing else eligible to run. Find the minimum total number
-of time units needed to finish every task.
+The CPU runs one task per time unit, in any order. The *same* letter
+can't run again until at least \`n\` other time units have passed. The
+CPU can sit idle if nothing else can run. Return the minimum number of
+time units to finish every task.
     `.trim(),
     examples: [
       {
@@ -599,33 +582,31 @@ of time units needed to finish every task.
     ],
     constraints: ["1 <= tasks.length <= 10^4", "tasks[i] is an uppercase English letter", "0 <= n <= 100"],
     hints: [
-      "The task letter that appears the *most* is the one that ends up dictating the overall schedule's shape, since it needs the most cooldown gaps.",
-      "Try scheduling greedily: at every time unit, run whichever eligible task currently has the most occurrences left. A max-heap tracks that efficiently.",
-      "There's also a shortcut: the most frequent task creates a fixed number of 'slots' between its repeats, and you can compute directly whether other tasks (and idle time) fill those slots or overflow past them.",
+      "The task that appears the *most* shapes the schedule, since it needs the most cooldown gaps.",
+      "Try greedy scheduling: each time unit, run the eligible task with the most occurrences left. A max-heap tracks this efficiently.",
+      "Shortcut: the most frequent task creates a fixed number of 'slots' between its repeats. You can compute directly whether other tasks (and idle time) fill those slots or overflow them.",
     ],
     approachOverview: `
-The task that occurs most often is the bottleneck: it forces gaps of at
-least \`n\` between its own repeats, and everything else has to fit around
-those gaps (or the schedule idles if nothing fits).
+The most frequent task is the bottleneck. It forces gaps of at least
+\`n\` between its repeats, and everything else must fit in those gaps (or
+the CPU idles).
 
-One way to build a valid schedule is a **greedy simulation with a
-max-heap**: at each time unit, run whichever eligible task (one that
-isn't still cooling down) currently has the most instances left, tracking
-tasks in cooldown in a separate queue until they become eligible again.
+One option is a **greedy simulation with a max-heap**. Each time unit,
+run the eligible task (not cooling down) with the most instances left.
+Tasks in cooldown wait in a separate queue until they're eligible again.
 
-A faster **counting argument** skips the simulation entirely. Let
-\`maxFreq\` be the highest count any single task has, and \`numMax\` be how
-many different tasks share that highest count. Picture the most frequent
-task's repeats as dividers, each followed by an \`n\`-wide gap: that
-creates \`(maxFreq - 1) * (n + 1) + numMax\` "slots" that must be filled by
-other tasks or idle time. The answer is whichever is larger: that slot
-count, or simply the total number of tasks (since you can never finish
-faster than one time unit per task).
+A faster **counting argument** skips the simulation. Let \`maxFreq\` be
+the highest count of any task, and \`numMax\` the number of tasks with
+that count. Picture the most frequent task's repeats as dividers, each
+followed by an \`n\`-wide gap. That creates
+\`(maxFreq - 1) * (n + 1) + numMax\` "slots" to fill with other tasks or
+idle time. The answer is the larger of that slot count and the total
+number of tasks, since you can't go faster than one time unit per task.
     `.trim(),
     solutions: [
       {
         approach: "Greedy Simulation - Max-Heap + Cooldown Queue",
-        explanation: "Count how many times each task letter appears. At every time tick, run the most frequent eligible task (tracked in a max-heap), and put it in a cooldown queue until n more ticks have passed, at which point it becomes eligible again.",
+        explanation: "Count each task letter. Each tick, run the most frequent eligible task (from a max-heap), then put it in a cooldown queue until n more ticks pass.",
         code: `class MaxHeap {
   constructor() {
     this.data = [];
@@ -697,14 +678,14 @@ function leastInterval(tasks, n) {
         timeComplexity: "O(n) - at most 26 task types, so heap operations are O(log 26) = O(1); the number of ticks simulated is bounded by the final answer",
         spaceComplexity: "O(1) - at most 26 entries across the heap and cooldown queue",
         walkthrough: [
-          { code: "const remaining = heap.pop() - 1;", explanation: "Runs the currently-most-frequent eligible task for this time tick, using up one of its occurrences." },
-          { code: "if (remaining > 0) cooldownQueue.push([remaining, time + n]);", explanation: "If that task still has occurrences left, it goes on cooldown, becoming eligible again n ticks later." },
-          { code: "if (cooldownQueue.length > 0 && cooldownQueue[0][1] === time) {\n      heap.push(cooldownQueue.shift()[0]);\n    }", explanation: "Once a task's cooldown has fully elapsed, it re-enters the pool of eligible tasks." },
+          { code: "const remaining = heap.pop() - 1;", explanation: "Runs the most frequent eligible task this tick, using up one occurrence." },
+          { code: "if (remaining > 0) cooldownQueue.push([remaining, time + n]);", explanation: "If the task has occurrences left, it goes on cooldown for n ticks." },
+          { code: "if (cooldownQueue.length > 0 && cooldownQueue[0][1] === time) {\n      heap.push(cooldownQueue.shift()[0]);\n    }", explanation: "When a task's cooldown ends, it becomes eligible again." },
         ],
       },
       {
         approach: "Optimal - Counting Formula",
-        explanation: "Find the task with the highest frequency and how many tasks tie for that frequency. That determines the minimum number of slots needed around the most frequent task's repeats; compare that to simply running every task back-to-back.",
+        explanation: "Find the highest task frequency and how many tasks share it. That gives the minimum slots needed around the most frequent task's repeats. Compare it to running every task back-to-back.",
         code: `function leastInterval(tasks, n) {
   const counts = new Array(26).fill(0);
   for (const t of tasks) counts[t.charCodeAt(0) - 65]++;
@@ -718,10 +699,10 @@ function leastInterval(tasks, n) {
         timeComplexity: "O(n) - one pass to count task frequencies (26 letters is treated as constant)",
         spaceComplexity: "O(1) - a fixed 26-entry count array",
         walkthrough: [
-          { code: "const maxFreq = Math.max(...counts);", explanation: "The most frequent task determines the schedule's minimum shape, since it needs the most cooldown gaps." },
-          { code: "const numMax = counts.filter((c) => c === maxFreq).length;", explanation: "Counts how many different tasks tie for that highest frequency - they can share the last round of slots evenly." },
-          { code: "const slots = (maxFreq - 1) * (n + 1) + numMax;", explanation: "Pictures (maxFreq - 1) full cycles of 'one run + n cooldown slots', plus one final run for each tied-for-max task." },
-          { code: "return Math.max(tasks.length, slots);", explanation: "If there are enough other tasks to fill every gap with no idling, the true answer is just the total task count instead." },
+          { code: "const maxFreq = Math.max(...counts);", explanation: "The most frequent task sets the schedule's minimum shape, since it needs the most cooldown gaps." },
+          { code: "const numMax = counts.filter((c) => c === maxFreq).length;", explanation: "Counts how many tasks tie for the highest frequency. They share the last round of slots." },
+          { code: "const slots = (maxFreq - 1) * (n + 1) + numMax;", explanation: "(maxFreq - 1) full cycles of 'one run + n cooldown slots', plus one final run per tied-for-max task." },
+          { code: "return Math.max(tasks.length, slots);", explanation: "If other tasks fill every gap with no idling, the answer is just the total task count." },
         ],
       },
     ],
@@ -765,29 +746,25 @@ Design a simplified version of Twitter with these operations:
       "At most 3 * 10^4 calls total across all four operations",
     ],
     hints: [
-      "Give every tweet a timestamp (just an ever-increasing counter works) so tweets from different users can be compared for recency.",
-      "You only ever need the top 10 most recent tweets - you don't need every followed user's tweets fully sorted together.",
-      "This is a lot like merging several already-sorted lists (each user's own tweets are naturally in time order) and taking the front 10 - a job a heap is built for.",
+      "Give every tweet a timestamp (an increasing counter works) so tweets from different users can be compared.",
+      "You only need the 10 most recent tweets, not every followed user's tweets fully sorted.",
+      "This is like merging several sorted lists (each user's tweets are already in time order) and taking the first 10. A heap is built for that.",
     ],
     approachOverview: `
-Give every posted tweet a timestamp using a simple ever-increasing
-counter, so any two tweets can be compared for recency regardless of who
-posted them. Store each user's tweets in their own list, in the order
-they were posted (which is automatically time-sorted).
+Give each tweet a timestamp from an increasing counter, so any two
+tweets can be compared. Store each user's tweets in their own list in
+posting order, which is already time-sorted.
 
-Building a full news feed is then a **merge of several sorted lists**
-(the user's own list, plus one list per followee) - keeping only the
-top 10. Rather than combining every tweet from every relevant user, a
-**max-heap** only needs to hold one "frontier" tweet per relevant user at
-a time: pop the most recent tweet overall, then push that same user's
-next-most-recent tweet to take its place, repeating 10 times. This finds
-the top 10 without ever looking at more than a small number of tweets
-from any one list.
+A news feed is then a **merge of several sorted lists** (the user's own
+plus one per followee), keeping only the top 10. Instead of combining
+every tweet, a **max-heap** holds one "frontier" tweet per user. Pop the
+most recent tweet, then push that user's next-most-recent tweet in its
+place. Repeat 10 times. This only looks at a few tweets from each list.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Collect All and Sort",
-        explanation: "Gather every tweet from the user and everyone they follow into one array, sort all of it by timestamp, and take the 10 most recent.",
+        explanation: "Gather every tweet from the user and their followees into one array, sort by timestamp, and take the 10 most recent.",
         code: `class Twitter {
   constructor() {
     this.timestamp = 0;
@@ -828,7 +805,7 @@ from any one list.
       },
       {
         approach: "Optimal - Heap Merge of Per-User Tweet Lists",
-        explanation: "Each user's tweets are already stored in time order. Instead of combining every tweet, keep just one 'current' tweet per relevant user in a max-heap, always pulling in that same user's next tweet after popping their most recent one - stopping once 10 tweets are collected.",
+        explanation: "Each user's tweets are already in time order. Keep one 'current' tweet per relevant user in a max-heap. After popping a user's tweet, push their next one. Stop at 10 tweets.",
         code: `class MaxHeap {
   constructor(compare) {
     this.data = [];
@@ -927,9 +904,9 @@ class Twitter {
         timeComplexity: "O(1) for postTweet/follow/unfollow; O((F + 10) log F) for getNewsFeed, where F is how many users are followed",
         spaceComplexity: "O(T) total tweets stored, plus O(F) per getNewsFeed call for the heap",
         walkthrough: [
-          { code: "heap.push({ time: list[idx][0], tweetId: list[idx][1], uid, idx });", explanation: "Seeds the heap with just each relevant user's single most recent tweet - not their whole history." },
-          { code: "const top = heap.pop();\n      result.push(top.tweetId);", explanation: "The heap's top is always the most recent tweet among all the 'frontier' tweets currently being tracked." },
-          { code: "if (top.idx > 0) { ... heap.push({ ... newIdx }); }", explanation: "Once a user's tweet is consumed, their next-most-recent tweet takes its place in the heap, keeping that user's list represented." },
+          { code: "heap.push({ time: list[idx][0], tweetId: list[idx][1], uid, idx });", explanation: "Seeds the heap with each relevant user's most recent tweet, not their whole history." },
+          { code: "const top = heap.pop();\n      result.push(top.tweetId);", explanation: "The top is always the most recent of the tracked 'frontier' tweets." },
+          { code: "if (top.idx > 0) { ... heap.push({ ... newIdx }); }", explanation: "That user's next-most-recent tweet takes the popped tweet's place in the heap." },
         ],
       },
     ],
@@ -942,17 +919,15 @@ class Twitter {
     difficulty: "Hard",
     category: "heap",
     description: `
-Design a class that processes a stream of numbers arriving one at a
-time, and can report the *median* of all numbers seen so far at any
-point.
+Design a class that takes numbers one at a time and can report the
+*median* of all numbers so far.
 
-The median is the middle value of a sorted list - if there's an odd
-number of values, it's the single middle one; if there's an even number,
-it's the average of the two middle ones.
+The median is the middle value of a sorted list. With an odd count, it's
+the middle value. With an even count, it's the average of the two middle
+values.
 
-The class supports two operations: \`addNum(num)\`, which adds a number to
-the stream, and \`findMedian()\`, which returns the median of every number
-added so far.
+\`addNum(num)\` adds a number, and \`findMedian()\` returns the median of
+every number added so far.
     `.trim(),
     examples: [
       {
@@ -968,31 +943,30 @@ added so far.
     ],
     constraints: ["-10^5 <= num <= 10^5", "At most 5 * 10^4 calls total to addNum and findMedian"],
     hints: [
-      "Keeping the stream in a sorted array works, but inserting a new number into the middle of a sorted array means shifting a lot of elements.",
-      "You don't need the whole stream fully sorted - you only ever ask about the middle. What if you only kept the smaller half and the larger half separately?",
-      "A max-heap for the smaller half and a min-heap for the larger half each expose exactly the value nearest the middle from their side - keep the two halves the same size (or off by one) as numbers arrive.",
+      "A sorted array works, but inserting into its middle means shifting many elements.",
+      "You only ask about the middle, not the full order. What if you kept the smaller half and the larger half separately?",
+      "A max-heap for the smaller half and a min-heap for the larger half each expose the value nearest the middle. Keep them the same size (or off by one) as numbers arrive.",
     ],
     approachOverview: `
-Keeping every number in a fully sorted array works, but inserting into
-the middle of a sorted array requires shifting elements - and you never
-actually need the whole array sorted, just always know what's *near
+A sorted array works, but inserting into the middle means shifting
+elements. And you never need the whole array sorted, only what's *near
 the middle*.
 
-The trick is to split the stream into two halves: a **max-heap** holding
-the smaller half of the numbers (so its top is the largest of the small
-half - the number just below the middle), and a **min-heap** holding the
-larger half (so its top is the smallest of the large half - the number
-just above the middle). Keeping the two heaps balanced in size (equal, or
-the max-heap one larger) means the median is always readable directly
-from their tops, with no need to look at anything else.
+Split the stream into two halves:
 
-Every new number goes into whichever half it belongs to, and then the
-heaps are rebalanced by size if needed.
+- A **max-heap** holds the smaller half. Its top is the number just below the middle.
+- A **min-heap** holds the larger half. Its top is the number just above the middle.
+
+Keep the heaps balanced in size (equal, or the max-heap one larger), and
+the median can always be read from their tops.
+
+Each new number goes into the half it belongs to, then the heaps are
+rebalanced if needed.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sorted Array with Insertion",
-        explanation: "Keep all numbers in a sorted array. Each addNum finds the correct insertion point and splices the number in; findMedian just reads the middle position(s) directly.",
+        explanation: "Keep all numbers in a sorted array. addNum finds the insertion point and splices the number in. findMedian reads the middle position(s).",
         code: `class MedianFinder {
   constructor() {
     this.sorted = [];
@@ -1021,7 +995,7 @@ heaps are rebalanced by size if needed.
       },
       {
         approach: "Optimal - Two Heaps",
-        explanation: "Split the stream across a max-heap (the smaller half) and a min-heap (the larger half), always kept balanced in size. The median is then read straight off their tops.",
+        explanation: "Split the stream across a max-heap (smaller half) and a min-heap (larger half), kept balanced in size. Read the median from their tops.",
         code: `class Heap {
   constructor(compare) {
     this.data = [];
@@ -1101,10 +1075,10 @@ class MedianFinder {
         timeComplexity: "O(log n) per addNum; O(1) per findMedian",
         spaceComplexity: "O(n) total across both heaps",
         walkthrough: [
-          { code: "if (this.lowerHalf.size() === 0 || num <= this.lowerHalf.peek()) { this.lowerHalf.push(num); } else { this.upperHalf.push(num); }", explanation: "Routes the new number to whichever half it logically belongs in - the small half if it's not bigger than that half's current largest value." },
-          { code: "if (this.lowerHalf.size() > this.upperHalf.size() + 1) { this.upperHalf.push(this.lowerHalf.pop()); }", explanation: "If the small half grew too large, its biggest value is handed over to the large half to restore balance." },
-          { code: "else if (this.upperHalf.size() > this.lowerHalf.size()) { this.lowerHalf.push(this.upperHalf.pop()); }", explanation: "Symmetrically, if the large half ever outgrows the small half, its smallest value moves over instead." },
-          { code: "if (this.lowerHalf.size() === this.upperHalf.size()) { return (this.lowerHalf.peek() + this.upperHalf.peek()) / 2; }\n    return this.lowerHalf.peek();", explanation: "Equal-size halves average their two middle values; otherwise the (deliberately larger) lower half's top is the single middle value." },
+          { code: "if (this.lowerHalf.size() === 0 || num <= this.lowerHalf.peek()) { this.lowerHalf.push(num); } else { this.upperHalf.push(num); }", explanation: "Puts the number in the small half if it's not bigger than that half's largest value, otherwise in the large half." },
+          { code: "if (this.lowerHalf.size() > this.upperHalf.size() + 1) { this.upperHalf.push(this.lowerHalf.pop()); }", explanation: "If the small half grew too large, its biggest value moves to the large half." },
+          { code: "else if (this.upperHalf.size() > this.lowerHalf.size()) { this.lowerHalf.push(this.upperHalf.pop()); }", explanation: "If the large half outgrows the small half, its smallest value moves over." },
+          { code: "if (this.lowerHalf.size() === this.upperHalf.size()) { return (this.lowerHalf.peek() + this.upperHalf.peek()) / 2; }\n    return this.lowerHalf.peek();", explanation: "Equal halves: average the two tops. Otherwise the lower half (kept one larger) has the middle value on top." },
         ],
       },
     ],

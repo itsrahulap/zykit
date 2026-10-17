@@ -9,14 +9,14 @@ const docs: ToolDocs = {
     'Convert, then download single images or all of them as a ZIP.',
   ],
   howItWorks:
-    'The PDF is opened with pdf.js, Mozilla’s PDF renderer, loaded only when you use this tool. Each selected page is drawn onto a canvas at your chosen resolution (DPI ÷ 72 is the scale, since PDF units are 1/72 inch) and saved with the browser’s own image encoder. JPG pages get a white background because JPG has no transparency.',
+    'The PDF is opened with pdf.js, Mozilla’s PDF renderer, which loads only when you use this tool. Each selected page is drawn onto a canvas at your chosen resolution and saved with the browser’s own image encoder. The scale is DPI ÷ 72, since PDF units are 1/72 inch.\n\nJPG pages get a white background because JPG has no transparency.',
   limits: [
     'PDFs up to 200 MB. Very large pages are rendered at a lower resolution so one image stays under 40 megapixels.',
-    'Images inside the PDF that use JPEG 2000 or JBIG2 compression may not render, because the decoders that need WebAssembly are turned off for security.',
+    'Images in the PDF that use JPEG 2000 or JBIG2 compression may not render, because their WebAssembly decoders are turned off for security.',
     'Fonts that aren’t embedded in the PDF are drawn with a similar system font, so text can look slightly different.',
     'Pages render one at a time on this page, so long PDFs at high DPI take a while.',
   ],
-  privacy: 'The PDF and the images never leave your device: everything is rendered in your browser and nothing is uploaded or stored. A password you enter is only used to open the file.',
+  privacy: 'The PDF and images never leave your device: everything is rendered in your browser, and nothing is uploaded or stored. A password you enter is only used to open the file.',
   faqs: [
     {
       question: 'Which resolution should I pick?',

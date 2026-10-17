@@ -8,9 +8,15 @@ const docs: ToolDocs = {
     'Copy the result with **Copy all** or pass it on with **Send to…**. **What was removed** lists, for each link, the parameters that were stripped and the redirects that were unwrapped.',
   ],
   howItWorks:
-    'Each link must be an absolute `http` or `https` URL. If unwrapping is on, known redirect wrappers are opened up first, up to five levels deep: Google `/url`, Facebook and Messenger `l.php`, `l.instagram.com`, `out.reddit.com`, YouTube `/redirect`, LinkedIn `/redir/`, `slack-redir.net`, Steam `linkfilter`, VK `away.php` and `href.li`. The destination is read from the wrapper’s own query parameter, so nothing is requested.\n\n' +
-    'The query string is then split into its `name=value` pairs, and each name is compared, ignoring case, against the enabled groups: **UTM campaign tags** (every `utm_*`), **Ad click IDs** (such as `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `yclid`, `twclid`, `ttclid`, `li_fat_id`), **Analytics & cross-domain** (such as `_ga`, `_gl`, `s_cid`, `spm`, `trk`), **Email marketing** (such as `mc_eid`, `mc_cid`, `_hsenc`, `_hsmi`, `mkt_tok`, `oly_*`, `vero_*`), **Social share IDs** and **Shop referral junk**. Ambiguous names are only removed on the sites that use them: `si` on YouTube and Spotify, `s` and `t` on X/Twitter, `ref` and `qid` on Amazon, and so on. **Always keep** wins over everything, then **Also remove**, then the groups.\n\n' +
-    'Pairs that are kept are copied exactly as written, in their original order, and the fragment (`#…`) is left alone. If nothing remains, the `?` is dropped too. In text mode, links are found by their `http://` or `https://` prefix, and trailing punctuation such as a full stop or an unmatched closing bracket is left outside the link.',
+    'Each link must be an absolute `http` or `https` URL. With unwrapping on, known redirect wrappers are opened first, up to five levels deep: Google `/url`, Facebook and Messenger `l.php`, `l.instagram.com`, `out.reddit.com`, YouTube `/redirect`, LinkedIn `/redir/`, `slack-redir.net`, Steam `linkfilter`, VK `away.php` and `href.li`. The destination is read from the wrapper’s own query parameter, so nothing is requested.\n\n' +
+    'The query string is split into `name=value` pairs. Each name is matched, ignoring case, against the enabled groups:\n\n' +
+    '- **UTM campaign tags**: every `utm_*`\n' +
+    '- **Ad click IDs**: such as `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `yclid`, `twclid`, `ttclid`, `li_fat_id`\n' +
+    '- **Analytics & cross-domain**: such as `_ga`, `_gl`, `s_cid`, `spm`, `trk`\n' +
+    '- **Email marketing**: such as `mc_eid`, `mc_cid`, `_hsenc`, `_hsmi`, `mkt_tok`, `oly_*`, `vero_*`\n' +
+    '- **Social share IDs** and **Shop referral junk**\n\n' +
+    'Ambiguous names are only removed on the sites that use them: `si` on YouTube and Spotify, `s` and `t` on X/Twitter, `ref` and `qid` on Amazon, and so on. **Always keep** wins over everything, then **Also remove**, then the groups.\n\n' +
+    'Kept pairs are copied exactly as written, in their original order, and the fragment (`#…`) is left alone. If nothing remains, the `?` is dropped too. In text mode, links are found by their `http://` or `https://` prefix. Trailing punctuation, such as a full stop or an unmatched closing bracket, stays outside the link.',
   limits: [
     'Shortened links such as `t.co`, `bit.ly`, `lnkd.in`, `tinyurl.com` or `amzn.to` can’t be expanded: only the shortener’s server knows the destination, and the site can’t make requests to other servers. These links get a note instead.',
     'Only parameters in the built-in lists, or ones you add, are removed. Tracking IDs placed in the path (such as Amazon’s `/ref=…`) or under unknown names are not detected.',
@@ -19,7 +25,7 @@ const docs: ToolDocs = {
     'The **What was removed** list shows the first 500 links; **Copy all** always includes every link.',
   ],
   privacy:
-    'Links are cleaned entirely in your browser and are never opened or requested, and the site’s Content Security Policy blocks requests to other servers. Nothing is stored, and there is no share link. If you use **Send to…**, the result is handed over through this tab’s session storage and removed as soon as the receiving tool reads it.',
+    'Links are cleaned in your browser and never opened or requested; the site’s Content Security Policy blocks requests to other servers. Nothing is stored, and there is no share link. **Send to…** passes the result through this tab’s session storage, removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Will removing these parameters break the link?',

@@ -7,11 +7,12 @@ export const stackProblems: Problem[] = [
     difficulty: "Easy",
     category: "stack",
     description: `
-You're given a string made up only of the bracket characters
-\`(\`, \`)\`, \`[\`, \`]\`, \`{\`, and \`}\`. Figure out whether the brackets
-are "balanced" — every opening bracket has a matching closing bracket of
-the same type, and they close in the right order (the most recently
-opened bracket must be the next one to close).
+You're given a string of the bracket characters \`(\`, \`)\`, \`[\`, \`]\`,
+\`{\`, and \`}\`. Return whether the brackets are balanced.
+
+Balanced means every opening bracket has a closing bracket of the same
+type, and they close in the right order: the most recently opened bracket
+must close first.
     `.trim(),
     examples: [
       {
@@ -32,28 +33,27 @@ opened bracket must be the next one to close).
     ],
     constraints: ["1 <= s.length <= 10^4", "s consists only of the characters '(', ')', '[', ']', '{', and '}'."],
     hints: [
-      "At any point while reading the string, which bracket needs to be closed next — always the one opened most recently, or could it be an older one?",
-      "A stack is built exactly for 'the most recent thing that isn't finished yet' — push every opening bracket, and check closing brackets against whatever is on top.",
-      "Don't forget the ending condition: if there are leftover unclosed brackets when you reach the end of the string, it isn't valid either — the stack must end up completely empty.",
+      "While reading the string, which bracket must close next: the one opened most recently, or an older one?",
+      "A stack holds 'the most recent unfinished thing'. Push every opening bracket, and check each closing bracket against the top.",
+      "Check the end too: if unclosed brackets are left over, the string isn't valid. The stack must end up empty.",
     ],
     approachOverview: `
-Because a closing bracket always has to match the *most recently opened*
-bracket that hasn't been closed yet, this is naturally a last-in,
-first-out problem — which is exactly what a stack is for.
+A closing bracket must match the *most recently opened* bracket that is
+still open. That's last-in, first-out, which is what a stack is for.
 
-Walk through the string one character at a time. Every time you see an
-opening bracket, push it onto the stack. Every time you see a closing
-bracket, check it against whatever is on top of the stack: if it matches
-the type of bracket, pop it off and keep going; if it doesn't match (or
-the stack is empty when you needed something to match), the string is
-invalid. At the very end, the string is only valid if the stack is
-completely empty — otherwise something opened but never closed.
+Walk through the string:
+
+- Opening bracket: push it.
+- Closing bracket: pop the top. If it's the wrong type, or the stack is empty, the string is invalid.
+
+At the end, the string is valid only if the stack is empty. Anything left
+was opened but never closed.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Repeatedly Remove Matched Pairs",
         explanation:
-          "Repeatedly find and remove any immediately-adjacent matched pair like \"()\", \"[]\", or \"{}\" from the string. If the string collapses all the way down to empty, it was valid. This mimics collapsing the innermost matched pairs one at a time, but it re-scans the string over and over.",
+          "Keep removing adjacent matched pairs like \"()\", \"[]\", or \"{}\" from the string. If it shrinks to empty, it was valid. This works, but it re-scans the string over and over.",
         code: `function isValid(s) {
   let previous;
   do {
@@ -69,7 +69,7 @@ completely empty — otherwise something opened but never closed.
       {
         approach: "Optimal — Stack",
         explanation:
-          "Push opening brackets onto a stack. When a closing bracket appears, pop the stack and check that it's the matching opening bracket. If it isn't (or there's nothing to pop), the string is invalid right away.",
+          "Push opening brackets onto a stack. For each closing bracket, pop the stack and check it's the matching opening bracket. If it isn't, or the stack is empty, the string is invalid.",
         code: `function isValid(s) {
   const stack = [];
   const pairs = { ")": "(", "]": "[", "}": "{" };
@@ -90,9 +90,9 @@ completely empty — otherwise something opened but never closed.
         spaceComplexity: "O(n)",
         walkthrough: [
           { code: "const pairs = { ')': '(', ']': '[', '}': '{' };", explanation: "Maps each closing bracket to the opening bracket it should match." },
-          { code: "if (char === '(' || char === '[' || char === '{') { stack.push(char); }", explanation: "Opening brackets are pushed, waiting to be matched later." },
-          { code: "if (stack.pop() !== pairs[char]) { return false; }", explanation: "A closing bracket must match whatever was most recently opened — the top of the stack." },
-          { code: "return stack.length === 0;", explanation: "Anything still left on the stack means an opening bracket was never closed." },
+          { code: "if (char === '(' || char === '[' || char === '{') { stack.push(char); }", explanation: "Pushes opening brackets so they can be matched later." },
+          { code: "if (stack.pop() !== pairs[char]) { return false; }", explanation: "A closing bracket must match the most recently opened one: the top of the stack." },
+          { code: "return stack.length === 0;", explanation: "Anything left on the stack is an opening bracket that never closed." },
         ],
       },
     ],
@@ -105,10 +105,9 @@ completely empty — otherwise something opened but never closed.
     difficulty: "Medium",
     category: "stack",
     description: `
-Design a stack data structure that, in addition to the usual push, pop,
-and "look at the top" operations, can also tell you the smallest value
-currently in the stack — and all four of these operations need to run in
-constant time, no matter how big the stack gets.
+Design a stack that supports push, pop, top, and getMin (the smallest
+value in the stack). All four operations must run in constant time, no
+matter how big the stack gets.
     `.trim(),
     examples: [
       {
@@ -128,29 +127,24 @@ constant time, no matter how big the stack gets.
       "At most 3 * 10^4 calls total will be made to push/pop/top/getMin.",
     ],
     hints: [
-      "Tracking the overall minimum in one single variable falls apart the moment you pop that exact value off — what would you replace it with?",
-      "What if, every time you pushed a value, you also remembered what the minimum of the stack was at that exact moment?",
-      "Keep a second stack that tracks 'the minimum so far', growing and shrinking in lockstep with the main stack, so popping the main stack automatically 'restores' the previous minimum.",
+      "A single minimum variable breaks when you pop that exact value. What would you replace it with?",
+      "What if each push also remembered the stack's minimum at that moment?",
+      "Keep a second stack of 'minimum so far' that grows and shrinks with the main stack. Popping both restores the previous minimum automatically.",
     ],
     approachOverview: `
-The tricky part isn't tracking the minimum while pushing — that's easy,
-just compare against a running minimum. The hard part is popping: if you
-pop the element that happens to be the current minimum, you need to know
-what the minimum was *before* that element was pushed, and a single
-variable can't tell you that.
+Tracking the minimum on push is easy: compare against a running minimum.
+Popping is the hard part. If you pop the current minimum, you need the
+minimum from *before* it was pushed, and a single variable can't tell you.
 
-The fix is to keep a second, parallel stack — call it the min-stack —
-where each entry records "what was the minimum value in the stack at the
-moment this element was pushed". Every push adds one entry to both
-stacks, and every pop removes one entry from both. That way, the top of
-the min-stack is always the correct current minimum, automatically kept
-in sync with whatever's actually left in the main stack.
+Keep a second stack, the min-stack. Each entry records the minimum at the
+moment that element was pushed. Every push and pop touches both stacks,
+so the top of the min-stack is always the current minimum.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Scan for the Minimum",
         explanation:
-          "Keep a single plain array as the stack. push, pop, and top are trivial O(1) array operations, but getMin() has to scan the entire stack every single time it's called.",
+          "Use a plain array as the stack. push, pop, and top are O(1), but getMin() scans the whole stack on every call.",
         code: `class MinStack {
   constructor() {
     this.stack = [];
@@ -178,7 +172,7 @@ in sync with whatever's actually left in the main stack.
       {
         approach: "Optimal — Auxiliary Min Stack",
         explanation:
-          "Maintain a second stack alongside the main one, where each entry is 'the minimum value in the stack right after this push'. Popping either stack always leaves the correct minimum on top of the min-stack.",
+          "Keep a second stack where each entry is the minimum right after that push. Popping both stacks together leaves the correct minimum on top of the min-stack.",
         code: `class MinStack {
   constructor() {
     this.stack = [];
@@ -210,10 +204,10 @@ in sync with whatever's actually left in the main stack.
         timeComplexity: "O(1) for push, pop, top, and getMin",
         spaceComplexity: "O(n), for the extra min-tracking stack",
         walkthrough: [
-          { code: "const currentMin = this.minStack.length === 0 ? val : Math.min(val, this.minStack[this.minStack.length - 1]);", explanation: "Works out the minimum including the value being pushed right now." },
-          { code: "this.minStack.push(currentMin);", explanation: "Records that minimum alongside the pushed value, one entry per push." },
-          { code: "pop() { this.stack.pop(); this.minStack.pop(); }", explanation: "Popping removes from both stacks together, so the min-stack's new top is automatically the correct minimum for what's left." },
-          { code: "getMin() { return this.minStack[this.minStack.length - 1]; }", explanation: "The current minimum is always sitting right on top — no scanning needed." },
+          { code: "const currentMin = this.minStack.length === 0 ? val : Math.min(val, this.minStack[this.minStack.length - 1]);", explanation: "Works out the minimum, including the value being pushed." },
+          { code: "this.minStack.push(currentMin);", explanation: "Records that minimum, one entry per push." },
+          { code: "pop() { this.stack.pop(); this.minStack.pop(); }", explanation: "Pops both stacks together, so the min-stack's new top is the minimum of what's left." },
+          { code: "getMin() { return this.minStack[this.minStack.length - 1]; }", explanation: "The current minimum is always on top. No scanning needed." },
         ],
       },
     ],
@@ -226,15 +220,14 @@ in sync with whatever's actually left in the main stack.
     difficulty: "Medium",
     category: "stack",
     description: `
-You're given an arithmetic expression written in *postfix* notation
-(also called Reverse Polish Notation), as a list of tokens. In postfix
-notation, each operator comes right after the two numbers it applies to,
-instead of sitting between them — so \`3 4 +\` means "3 plus 4", and
-there's never any need for parentheses.
+You're given an arithmetic expression in *postfix* notation (also called
+Reverse Polish Notation), as a list of tokens. Each operator comes right
+after the two numbers it applies to, so \`3 4 +\` means "3 plus 4". No
+parentheses are ever needed.
 
-Evaluate the expression and return its value. The only operators you'll
-see are \`+\`, \`-\`, \`*\`, and \`/\`, and division should truncate toward
-zero (so \`13 / 5\` is \`2\`, not \`2.6\` or \`3\`).
+Evaluate the expression and return its value. The operators are \`+\`,
+\`-\`, \`*\`, and \`/\`. Division truncates toward zero (\`13 / 5\` is \`2\`,
+not \`2.6\` or \`3\`).
     `.trim(),
     examples: [
       {
@@ -258,27 +251,26 @@ zero (so \`13 / 5\` is \`2\`, not \`2.6\` or \`3\`).
       "Division always truncates toward zero, and the input never divides by zero.",
     ],
     hints: [
-      "Every time you hit an operator, which two numbers does it apply to — the two numbers you saw right before it, or something further back in the expression?",
-      "A stack naturally holds 'the numbers I haven't used yet, most recent on top' — which happens to be exactly the two operands an operator needs.",
-      "When you see an operator, pop the top two numbers off the stack, apply the operation (watch the order for `-` and `/`, since they're not symmetric), and push the result back on.",
+      "When you hit an operator, which two numbers does it apply to: the two right before it, or something further back?",
+      "A stack holds 'unused numbers, most recent on top', which is exactly the two operands an operator needs.",
+      "On an operator, pop the top two numbers, apply it (watch the order for `-` and `/`), and push the result back.",
     ],
     approachOverview: `
-Postfix notation exists precisely because it can be evaluated with a
-single left-to-right pass and a stack, with no need to think about
-operator precedence or parentheses at all.
+Postfix notation can be evaluated in one left-to-right pass with a stack.
+You never need to think about operator precedence or parentheses.
 
-Walk through the tokens one at a time. Whenever you see a number, push
-it onto the stack. Whenever you see an operator, pop the top two numbers
-off — the second-to-last one popped is the left-hand operand, the last
-one popped is the right-hand operand — apply the operator, and push the
-result back onto the stack. By the time you reach the end of the tokens,
-exactly one number is left on the stack: the answer.
+Walk through the tokens:
+
+- Number: push it.
+- Operator: pop two numbers. The first one popped is the right-hand operand, the second is the left-hand operand. Apply the operator and push the result.
+
+At the end, exactly one number is left on the stack: the answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Repeatedly Collapse the First Operator Found",
         explanation:
-          "Simulate the evaluation directly on a copy of the token list: repeatedly scan for the first operator, apply it to the two numbers right before it, splice the result back into the list, and repeat until only one token remains.",
+          "Work on a copy of the tokens. Find the first operator, apply it to the two numbers before it, and splice the result back in. Repeat until one token remains.",
         code: `function evalRPN(tokens) {
   const ops = new Set(["+", "-", "*", "/"]);
   const arr = [...tokens];
@@ -305,7 +297,7 @@ exactly one number is left on the stack: the answer.
       {
         approach: "Optimal — Stack",
         explanation:
-          "Push numbers onto a stack as they appear. When an operator appears, pop the top two numbers (in the right order), apply the operator, and push the result. One pass through the tokens, and no re-scanning.",
+          "Push numbers onto a stack. On an operator, pop the top two numbers (in the right order), apply it, and push the result. One pass, no re-scanning.",
         code: `function evalRPN(tokens) {
   const stack = [];
 
@@ -331,11 +323,11 @@ exactly one number is left on the stack: the answer.
         timeComplexity: "O(n)",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "if (token === '+' || ... ) {", explanation: "Checks whether the current token is an operator or a plain number." },
-          { code: "const b = stack.pop(); const a = stack.pop();", explanation: "The two most recently pushed numbers are exactly this operator's operands — `b` is the right-hand one, popped first." },
-          { code: "case '-': result = a - b; break;", explanation: "Order matters here: it's `a - b`, not `b - a`, since `a` was pushed (and appears in the expression) first." },
-          { code: "stack.push(result);", explanation: "The computed result goes back on the stack, ready to be used by a later operator." },
-          { code: "return stack.pop();", explanation: "After processing every token, exactly one value remains — the final answer." },
+          { code: "if (token === '+' || ... ) {", explanation: "Checks whether the token is an operator or a number." },
+          { code: "const b = stack.pop(); const a = stack.pop();", explanation: "The two most recent numbers are this operator's operands. `b`, popped first, is the right-hand one." },
+          { code: "case '-': result = a - b; break;", explanation: "Order matters: it's `a - b`, not `b - a`, because `a` came first in the expression." },
+          { code: "stack.push(result);", explanation: "Pushes the result so a later operator can use it." },
+          { code: "return stack.pop();", explanation: "After the last token, one value remains: the answer." },
         ],
       },
     ],
@@ -348,10 +340,9 @@ exactly one number is left on the stack: the answer.
     difficulty: "Medium",
     category: "stack",
     description: `
-Given a number \`n\`, generate every distinct way to arrange \`n\` pairs of
-parentheses so that the result is validly matched and nested — meaning
-every opening bracket has a corresponding closing bracket, and they
-never close in the wrong order.
+Given a number \`n\`, generate every distinct arrangement of \`n\` pairs of
+parentheses that is validly matched: every opening bracket has a closing
+bracket, and they never close in the wrong order.
     `.trim(),
     examples: [
       {
@@ -364,30 +355,27 @@ never close in the wrong order.
     ],
     constraints: ["1 <= n <= 8"],
     hints: [
-      "At every step while building a string, you're choosing to add either an opening or a closing bracket — but not every choice keeps things on track toward a valid result.",
-      "You can add an opening bracket as long as you haven't already used all `n` of them.",
-      "You can only add a closing bracket if, so far, you've placed more opening brackets than closing ones — build the string up one character at a time, backing out of choices (backtracking) that can't lead anywhere valid.",
+      "At each step you add an opening or a closing bracket, but not every choice can lead to a valid result.",
+      "You can add an opening bracket as long as you haven't used all `n` of them.",
+      "You can add a closing bracket only if you've placed more opening brackets than closing ones so far. Build one character at a time, backing out of choices that can't work (backtracking).",
     ],
     approachOverview: `
-One way to solve this is to generate every possible sequence of \`2n\`
-opening and closing brackets, and then filter down to the ones that
-happen to be valid. This works, but the vast majority of sequences it
-builds turn out to be invalid, so a lot of the work is wasted.
+You could generate every sequence of \`2n\` brackets and keep the valid
+ones. But most sequences are invalid, so most of the work is wasted.
 
-A much better way is to only ever build sequences that *could* still
-turn out valid, using backtracking. At each step, track how many opening
-brackets and how many closing brackets have been placed so far. You're
-allowed to add another opening bracket as long as you haven't used all
-\`n\` yet, and you're only allowed to add a closing bracket if there are
-currently more opening brackets placed than closing ones (otherwise
-you'd be closing something that was never opened). Once the string
-reaches length \`2n\`, it's guaranteed to be one of the valid results.
+Instead, use backtracking to build only sequences that *could* still be
+valid. Track how many opening and closing brackets you've placed:
+
+- Add an opening bracket if you've used fewer than \`n\`.
+- Add a closing bracket only if there are more opening brackets than closing ones. Otherwise you'd close something never opened.
+
+Once the string reaches length \`2n\`, it's guaranteed to be valid.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Generate All, Then Filter",
         explanation:
-          "Build every possible sequence of length 2n using just '(' and ')', and check each one for validity afterward, keeping only the valid ones.",
+          "Build every sequence of length 2n from '(' and ')', then keep only the valid ones.",
         code: `function generateParenthesis(n) {
   const result = [];
   const total = 2 * n;
@@ -419,7 +407,7 @@ reaches length \`2n\`, it's guaranteed to be one of the valid results.
       {
         approach: "Optimal — Backtracking (Only Build Valid Prefixes)",
         explanation:
-          "Build the string one character at a time, but only add an opening bracket if fewer than n have been used, and only add a closing bracket if it wouldn't outnumber the opening brackets placed so far. Every complete string this produces is automatically valid.",
+          "Build the string one character at a time. Add an opening bracket only if fewer than n are used, and a closing bracket only if it won't outnumber the opening ones. Every complete string is valid.",
         code: `function generateParenthesis(n) {
   const result = [];
 
@@ -442,9 +430,9 @@ reaches length \`2n\`, it's guaranteed to be one of the valid results.
         timeComplexity: "O(4^n / sqrt(n)) — the number of valid combinations (the nth Catalan number), each built in O(n)",
         spaceComplexity: "O(n) recursion depth, plus the space to store the output",
         walkthrough: [
-          { code: "if (current.length === 2 * n) { result.push(current); return; }", explanation: "Once the string reaches its full length, it's a complete, valid combination." },
-          { code: "if (openCount < n) { backtrack(current + '(', openCount + 1, closeCount); }", explanation: "Only adds an opening bracket if there are still unused ones left." },
-          { code: "if (closeCount < openCount) { backtrack(current + ')', openCount, closeCount + 1); }", explanation: "Only adds a closing bracket if doing so wouldn't outnumber the opening brackets placed so far, keeping the string always validly balanced as it grows." },
+          { code: "if (current.length === 2 * n) { result.push(current); return; }", explanation: "At full length, the string is a complete, valid combination." },
+          { code: "if (openCount < n) { backtrack(current + '(', openCount + 1, closeCount); }", explanation: "Adds an opening bracket only if some are still unused." },
+          { code: "if (closeCount < openCount) { backtrack(current + ')', openCount, closeCount + 1); }", explanation: "Adds a closing bracket only if it won't outnumber the opening ones, so the string stays balanced as it grows." },
         ],
       },
     ],
@@ -457,9 +445,8 @@ reaches length \`2n\`, it's guaranteed to be one of the valid results.
     difficulty: "Medium",
     category: "stack",
     description: `
-You're given a list of daily temperatures. For each day, figure out how
-many days you'd have to wait to see a warmer temperature. If no future
-day is ever warmer, put 0 for that day instead.
+You're given a list of daily temperatures. For each day, return how many
+days you'd wait for a warmer temperature. If no later day is warmer, use 0.
     `.trim(),
     examples: [
       {
@@ -477,28 +464,27 @@ day is ever warmer, put 0 for that day instead.
     ],
     constraints: ["1 <= temperatures.length <= 10^5", "30 <= temperatures[i] <= 100"],
     hints: [
-      "The obvious approach checks, for each day, every day after it until a warmer one shows up — but that repeats a lot of scanning.",
-      "Think about which days are still 'waiting' to find a warmer day — could you keep track of just those, instead of re-scanning from scratch each time?",
-      "Keep a stack of day-indexes that haven't found their warmer day yet. Whenever today's temperature beats the temperature at the top of the stack, that day's wait is now known — pop it and record the gap.",
+      "The obvious approach checks every later day until a warmer one shows up, which repeats a lot of scanning.",
+      "Which days are still 'waiting' for a warmer day? Could you track just those instead of re-scanning?",
+      "Keep a stack of day indexes still waiting. When today beats the temperature at the top of the stack, that day's wait is known: pop it and record the gap.",
     ],
     approachOverview: `
-The direct approach checks, for every day, each day that follows it until
-finding one that's warmer — correct, but it means re-scanning forward
-from every single day.
+The direct approach scans forward from every day until it finds a warmer
+one. It's correct, but it re-scans the same days many times.
 
-A better approach keeps a stack of day-indexes whose warmer day hasn't
-been found yet. Walk through the temperatures once. Whenever the current
-day's temperature is higher than the temperature at the index sitting on
-top of the stack, that top day has just found its answer: pop it and
-record how many days it waited. Keep doing that as long as the top of
-the stack is beatable, then push today's index — it's now waiting for
-its own warmer day. Every index is pushed once and popped at most once,
-so this finishes in a single pass.
+Instead, keep a stack of day indexes still waiting for a warmer day, and
+walk the temperatures once:
+
+- While today is warmer than the day on top of the stack, pop that day and record how long it waited.
+- Then push today's index. It now waits for its own warmer day.
+
+Each index is pushed once and popped at most once, so this is a single
+pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Scan Forward From Every Day",
-        explanation: "For each day, look forward day by day until a warmer temperature shows up, and record the gap.",
+        explanation: "For each day, look ahead until a warmer day shows up, and record the gap.",
         code: `function dailyTemperatures(temperatures) {
   const n = temperatures.length;
   const answer = new Array(n).fill(0);
@@ -520,7 +506,7 @@ so this finishes in a single pass.
       {
         approach: "Optimal — Monotonic Stack",
         explanation:
-          "Keep a stack of day-indexes that are still waiting for a warmer day. Whenever the current temperature beats the temperature at the index on top of the stack, that day's wait is now resolved.",
+          "Keep a stack of day indexes still waiting for a warmer day. When the current temperature beats the day on top of the stack, that day's wait is resolved.",
         code: `function dailyTemperatures(temperatures) {
   const n = temperatures.length;
   const answer = new Array(n).fill(0);
@@ -539,13 +525,13 @@ so this finishes in a single pass.
         timeComplexity: "O(n), since each index is pushed and popped at most once",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "const stack = [];", explanation: "Holds indexes of days that haven't yet seen a warmer day." },
+          { code: "const stack = [];", explanation: "Holds indexes of days that haven't seen a warmer day yet." },
           {
             code: "while (stack.length > 0 && temperatures[i] > temperatures[stack[stack.length - 1]]) {",
-            explanation: "Keeps resolving days from the stack as long as today is warmer than what they were waiting on.",
+            explanation: "Resolves days from the stack while today is warmer than they are.",
           },
-          { code: "const dayIndex = stack.pop(); answer[dayIndex] = i - dayIndex;", explanation: "That day's wait is now known — it's exactly the gap between the two indexes." },
-          { code: "stack.push(i);", explanation: "Today's index goes on the stack, now waiting for its own future warmer day." },
+          { code: "const dayIndex = stack.pop(); answer[dayIndex] = i - dayIndex;", explanation: "That day's wait is the gap between the two indexes." },
+          { code: "stack.push(i);", explanation: "Today's index now waits for its own warmer day." },
         ],
       },
     ],
@@ -558,15 +544,12 @@ so this finishes in a single pass.
     difficulty: "Medium",
     category: "stack",
     description: `
-A group of cars is driving toward the same destination along a single
-lane, all heading the same direction, and none of them can ever pass the
-car in front of them. You're given each car's starting position and its
-speed.
+Cars drive in one lane toward the same destination, and no car can pass
+the car in front. You're given each car's starting position and speed.
 
-If a car catches up to the car ahead of it before reaching the
-destination, it has to slow down and match that car's speed — from then
-on, they travel together as one "fleet". Given the destination, figure
-out how many separate fleets will eventually arrive.
+If a car catches up to the car ahead before the destination, it slows to
+match that car's speed, and they travel on as one "fleet". Given the
+destination, return how many separate fleets arrive.
     `.trim(),
     examples: [
       {
@@ -596,34 +579,30 @@ out how many separate fleets will eventually arrive.
       "0 < speed[i] <= 10^6",
     ],
     hints: [
-      "A faster car can never actually pass the car ahead of it — it can only catch up and then match that car's speed, joining its fleet.",
-      "For each car, work out how long it would take to reach the destination completely on its own, as if no one else were on the road — that number tells you a lot about who ends up catching whom.",
-      "Process the cars starting from whichever is closest to the destination and moving backward. Keep track of the arrival time of the most recently formed fleet — any car behind it that would arrive at or before that time is guaranteed to catch up and merge into it.",
+      "A faster car can't pass the car ahead. It can only catch up, match its speed, and join its fleet.",
+      "For each car, work out how long it would take to reach the destination alone. That time tells you who catches whom.",
+      "Process cars from closest to the destination backward. Track the arrival time of the latest fleet. Any car behind that would arrive at or before that time catches up and merges into it.",
     ],
     approachOverview: `
-Since cars can never pass each other, a car either reaches the
-destination entirely on its own, or it catches up to the car (or group of
-cars) ahead of it and permanently joins that fleet, slowing to match its
-pace. The key insight is that this only ever depends on the car
-*directly* ahead by position — if a car doesn't catch that one, it can't
-possibly catch anything further ahead either, since the car in front of
-it is equally blocked.
+Cars can't pass, so each car either arrives alone or catches the car (or
+group) ahead and joins that fleet. This depends only on the car
+*directly* ahead: if a car can't catch that one, it can't catch anything
+further ahead either.
 
-So: compute, for every car, how long it would take to reach the
-destination if it were driving completely alone. Then process the cars
-in order from closest to the destination to farthest. Keep track of the
-arrival time of the fleet formed most recently. If the next car (further
-back) would arrive at or before that time on its own, it's guaranteed to
-catch up and merge into that fleet — it doesn't start a new one. If it
-would arrive later, it can never catch up, so it becomes the leader of a
-brand new fleet. The final count of fleets formed this way is the
-answer.
+So:
+
+- Compute each car's solo arrival time: how long it would take driving alone.
+- Process cars from closest to the destination to farthest, tracking the arrival time of the latest fleet.
+- If a car would arrive at or before that time, it catches up and merges into that fleet.
+- If it would arrive later, it can never catch up, so it leads a new fleet.
+
+The number of fleets formed is the answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Repeatedly Merge Adjacent Cars",
         explanation:
-          "Sort cars by position. Repeatedly scan through them and merge any adjacent pair where the car behind would arrive at or before the car ahead of it (meaning it's caught up), replacing the pair with a single merged group that behaves like the front car from then on. Keep re-scanning until a full pass produces no more merges.",
+          "Sort cars by position. Scan and merge any adjacent pair where the rear car would arrive at or before the car ahead (it caught up). The merged group behaves like the front car. Repeat until a full pass makes no merges.",
         code: `function carFleet(target, position, speed) {
   let groups = position.map((p, i) => ({ pos: p, time: (target - p) / speed[i] }));
   groups.sort((a, b) => a.pos - b.pos); // farthest from target (rear-most) first
@@ -655,7 +634,7 @@ answer.
       {
         approach: "Optimal — Sort + Monotonic Stack",
         explanation:
-          "Compute each car's solo arrival time, then process cars from closest to the destination to farthest, keeping a stack of fleet arrival times. A car merges into the fleet ahead if its own time is less than or equal to the time on top of the stack; otherwise it leads a brand new fleet.",
+          "Compute each car's solo arrival time. Process cars from closest to the destination to farthest, keeping a stack of fleet arrival times. A car merges into the fleet ahead if its time is less than or equal to the top of the stack; otherwise it leads a new fleet.",
         code: `function carFleet(target, position, speed) {
   const cars = position
     .map((p, i) => [p, speed[i]])
@@ -676,14 +655,14 @@ answer.
         timeComplexity: "O(n log n), dominated by the sort",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "cars.sort((a, b) => b[0] - a[0]);", explanation: "Processes cars starting from whichever is closest to the destination." },
-          { code: "const time = (target - pos) / spd;", explanation: "Computes how long this car would take to reach the destination if driving alone." },
+          { code: "cars.sort((a, b) => b[0] - a[0]);", explanation: "Processes cars starting from the one closest to the destination." },
+          { code: "const time = (target - pos) / spd;", explanation: "How long this car would take to arrive driving alone." },
           {
             code: "if (stack.length === 0 || time > stack[stack.length - 1]) { stack.push(time); }",
-            explanation: "If this car would arrive later than the most recently formed fleet ahead of it, it can never catch up — it becomes a new fleet leader.",
+            explanation: "If this car would arrive later than the latest fleet ahead, it can never catch up, so it leads a new fleet.",
           },
-          { code: "// otherwise ... it merges instead of forming a new fleet", explanation: "If its solo time is at or before that, it's guaranteed to catch up and join that fleet instead." },
-          { code: "return stack.length;", explanation: "Each entry left on the stack represents one distinct fleet that formed." },
+          { code: "// otherwise ... it merges instead of forming a new fleet", explanation: "If its solo time is at or before that, it catches up and joins that fleet." },
+          { code: "return stack.length;", explanation: "Each entry on the stack is one fleet." },
         ],
       },
     ],
@@ -696,10 +675,9 @@ answer.
     difficulty: "Hard",
     category: "stack",
     description: `
-You're given the heights of a row of bars in a histogram, where each bar
-has width 1 and they all stand right next to each other with no gaps.
-Find the area of the single largest rectangle that can be drawn using
-only the space inside this histogram's outline.
+You're given the heights of the bars in a histogram. Each bar has width 1,
+and the bars stand side by side with no gaps. Return the area of the
+largest rectangle that fits inside the histogram's outline.
     `.trim(),
     examples: [
       {
@@ -720,32 +698,31 @@ only the space inside this histogram's outline.
     ],
     constraints: ["1 <= heights.length <= 10^5", "0 <= heights[i] <= 10^4"],
     hints: [
-      "For any one bar, if you assume it's the *shortest* bar used in the rectangle, how far left and how far right could that rectangle stretch before hitting something even shorter?",
-      "Checking, for every bar, how far it can stretch in both directions works, but it means a lot of re-scanning — could you track 'bars that haven't found their right boundary yet' as you go instead?",
-      "Keep a stack of bar indexes with increasing heights (bottom to top). When you hit a bar shorter than the one on top of the stack, that top bar has just found its right boundary — pop it and compute the rectangle it could form.",
+      "If a bar is the *shortest* one in the rectangle, how far left and right can the rectangle stretch before hitting something shorter?",
+      "Checking both directions for every bar works but re-scans a lot. Could you track 'bars that haven't found their right boundary yet' as you go?",
+      "Keep a stack of bar indexes with increasing heights (bottom to top). When a bar is shorter than the top of the stack, the top bar has found its right boundary: pop it and compute its rectangle.",
     ],
     approachOverview: `
-For any bar, treating it as the shortest bar in some rectangle, that
-rectangle can stretch left and right until it hits a bar that's shorter.
-A direct approach checks this by expanding outward from every single bar
-until it hits something shorter on each side — correct, but slow, since
-it re-scans a lot of the same ground repeatedly.
+If a bar is the shortest in a rectangle, that rectangle stretches left
+and right until it hits a shorter bar. Expanding outward from every bar
+is correct but slow, because it re-scans the same bars repeatedly.
 
-A better approach keeps a stack of bar indexes with strictly increasing
-heights as you scan left to right. Whenever the current bar is shorter
-than the bar on top of the stack, that means the bar on top has just
-found its right boundary (the current position), and whatever is now
-below it on the stack — the next bar down — is its left boundary. Pop it,
-compute the rectangle it forms, and repeat until the stack's top is
-shorter than (or equal to) the current bar, then push the current bar's
-index. Adding one final "zero-height" bar at the very end forces
-anything left on the stack to be resolved too.
+Instead, scan left to right with a stack of bar indexes whose heights
+strictly increase. When the current bar is shorter than the top of the
+stack:
+
+- The top bar's right boundary is the current position.
+- Its left boundary is the bar now below it on the stack.
+- Pop it, compute its rectangle, and repeat while the top is taller than the current bar.
+
+Then push the current index. A final zero-height bar at the end forces
+every remaining bar on the stack to be resolved.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Expand Outward From Every Bar",
         explanation:
-          "For each bar, treat it as the shortest bar in the rectangle, and expand left and right as far as possible while every bar in that range is at least as tall.",
+          "Treat each bar as the shortest in the rectangle, and expand left and right while the neighbors are at least as tall.",
         code: `function largestRectangleArea(heights) {
   let best = 0;
   const n = heights.length;
@@ -769,7 +746,7 @@ anything left on the stack to be resolved too.
       {
         approach: "Optimal — Monotonic Increasing Stack",
         explanation:
-          "Scan left to right, keeping a stack of bar indexes with strictly increasing heights. When the current bar is shorter than the bar on top of the stack, that top bar's rectangle is now fully determined — pop it and compute its area, using the current index as the right boundary and the new stack top as the left boundary.",
+          "Scan left to right with a stack of bar indexes whose heights strictly increase. When the current bar is shorter than the top bar, the top bar's rectangle is fully known. Pop it and compute its area: the current index is the right boundary, and the new stack top is the left boundary.",
         code: `function largestRectangleArea(heights) {
   const stack = []; // indexes with strictly increasing heights, bottom to top
   let best = 0;
@@ -792,17 +769,17 @@ anything left on the stack to be resolved too.
         timeComplexity: "O(n), since each index is pushed and popped at most once",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "const currentHeight = i === n ? 0 : heights[i];", explanation: "A fake zero-height bar past the end forces every remaining bar on the stack to be resolved." },
+          { code: "const currentHeight = i === n ? 0 : heights[i];", explanation: "A fake zero-height bar past the end forces every remaining bar to be resolved." },
           {
             code: "while (stack.length > 0 && heights[stack[stack.length - 1]] > currentHeight) {",
-            explanation: "As long as the current bar is shorter than the one on top of the stack, that top bar's rectangle can't grow any further right.",
+            explanation: "While the current bar is shorter than the top bar, the top bar's rectangle can't grow further right.",
           },
-          { code: "const height = heights[stack.pop()];", explanation: "Pops the bar whose rectangle just got fully determined." },
+          { code: "const height = heights[stack.pop()];", explanation: "Pops the bar whose rectangle is now fully known." },
           {
             code: "const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;",
-            explanation: "The rectangle spans from just after the new stack top (its left boundary) to just before the current index (its right boundary).",
+            explanation: "The rectangle spans from just after the new stack top (left boundary) to just before the current index (right boundary).",
           },
-          { code: "stack.push(i);", explanation: "The current bar still needs to be resolved later, so it goes on the stack." },
+          { code: "stack.push(i);", explanation: "The current bar is resolved later, so it goes on the stack." },
         ],
       },
     ],

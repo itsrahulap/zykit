@@ -5,7 +5,7 @@ const svgOptimizer: ToolDefinition = {
   name: 'SVG Optimizer',
   tagline: 'Minify and sanitize SVG files',
   description:
-    'Strip editor metadata, comments and default attributes, round path numbers and remove scripts and event handlers from SVGs. Preview safely and compare sizes.',
+    'Optimize SVGs: strip editor metadata, comments and default attributes, round numbers, and remove scripts and event handlers. Preview safely and compare sizes.',
   category: 'Images',
   icon: 'sparkle',
   tags: ['SVG', 'Minify', 'Sanitize', 'Inkscape', 'Illustrator', 'Figma'],

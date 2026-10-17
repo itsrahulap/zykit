@@ -8,8 +8,10 @@ const docs: ToolDocs = {
     'Use **Copy values** for a JSON array of the matched values, **Copy paths** for one path per line, **Download .json**, or **Send to…** another tool.',
   ],
   howItWorks:
-    'Queries follow RFC 9535, the standard JSONPath syntax: `$` for the root, `.name` and `[\'name\']` for members, `*` for all children, `..` for all descendants, `[0]` and `[-1]` for indexes, `[start:end:step]` for slices, several selectors in one bracket such as `[0,2]`, and filters such as `[?@.price < 10 && @.category == \'fiction\']`. Filters support `==`, `!=`, `<`, `<=`, `>`, `>=`, `&&`, `||`, `!`, parentheses, existence tests like `[?@.isbn]`, and the standard functions `length()`, `count()`, `match()`, `search()` and `value()`.\n\n' +
-    'The query is parsed and type-checked first, so mistakes are reported with their column before anything runs. Filters are interpreted from the parsed query and never executed as code. The JSON is checked with the same strict parser as the JSON Formatter, so syntax errors show their line and column.\n\n' +
+    'Queries follow RFC 9535, the standard JSONPath syntax:\n\n' +
+    '- `$` for the root\n- `.name` and `[\'name\']` for members\n- `*` for all children, `..` for all descendants\n- `[0]` and `[-1]` for indexes, `[start:end:step]` for slices\n- several selectors in one bracket, such as `[0,2]`\n- filters such as `[?@.price < 10 && @.category == \'fiction\']`\n\n' +
+    'Filters support `==`, `!=`, `<`, `<=`, `>`, `>=`, `&&`, `||`, `!`, parentheses, existence tests like `[?@.isbn]`, and the standard functions `length()`, `count()`, `match()`, `search()` and `value()`.\n\n' +
+    'The query is parsed and type-checked first, so mistakes are reported with their column before anything runs. Filters are interpreted from the parsed query and never executed as code. The JSON is checked with the JSON Formatter’s strict parser, so syntax errors show their line and column.\n\n' +
     'Evaluation runs in a Web Worker in your browser, shortly after you stop typing, and is stopped if it takes longer than 3 seconds.',
   limits: [
     'Only RFC 9535 syntax is supported. Non-standard extensions found in other JSONPath libraries, such as script expressions `(...)`, `@.length` for an array’s length or extra operators like `in` and `=~`, aren’t; use `length(@)` or `match()` instead.',

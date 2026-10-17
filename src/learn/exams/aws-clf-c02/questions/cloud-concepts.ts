@@ -14,7 +14,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Go global in minutes** means you can deploy workloads in AWS Regions around the world with a few clicks, putting applications close to end users. Economies of scale is about lower prices, trading fixed for variable expense is about paying only for what you use, and stop guessing capacity is about matching capacity to demand.',
+      '**Go global in minutes** means you can deploy in AWS Regions around the world in a few clicks, close to your users. Economies of scale is about lower prices, trading fixed for variable expense is about paying only for what you use, and stop guessing capacity is about matching capacity to demand.',
   },
   {
     id: 'cc-002',
@@ -29,7 +29,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'Instead of investing heavily in data centers and servers before knowing how they will be used, you **trade fixed (upfront) expense for variable expense** and pay only when you consume resources. Speed and agility is about how fast resources can be provisioned, going global is about deploying in many Regions, and high availability is about resilience, not the spending model.',
+      'You **trade fixed (upfront) expense for variable expense**: no big investment in data centers and servers up front, and you pay only for what you use. Speed and agility is about how fast you can provision, going global is about deploying in many Regions, and high availability is about resilience, not how you pay.',
   },
   {
     id: 'cc-003',
@@ -44,7 +44,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'AWS describes this as **benefit from massive economies of scale**: aggregated usage across many customers lets AWS operate more efficiently and pass the savings on as lower prices. Elasticity is about scaling resources with demand, agility is about speed of provisioning and experimentation, and stop guessing capacity is about avoiding over- or under-provisioning.',
+      'This is **benefit from massive economies of scale**: usage from many customers lets AWS run more efficiently and pass the savings on as lower prices. Elasticity is scaling with demand, agility is speed of provisioning and experimenting, and stop guessing capacity is avoiding over- or under-provisioning.',
   },
   {
     id: 'cc-004',
@@ -59,7 +59,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'With **stop guessing capacity**, you can scale up for the peak and scale back down afterwards, instead of buying for the peak and leaving hardware idle. Going global is about geographic reach, economies of scale is about lower unit prices, and the cloud does not remove the need to spend on application development.',
+      'With **stop guessing capacity**, you scale up for the peak and back down afterwards, instead of buying for the peak and leaving hardware idle. Going global is about reach, economies of scale is about lower unit prices, and the cloud doesn’t remove the need to spend on application development.',
   },
   {
     id: 'cc-005',
@@ -73,7 +73,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**Elasticity** means automatically or quickly adding resources as demand rises and releasing them as demand falls, so you pay only for what you need. Multi-Region deployment is global reach, surviving an AZ failure is high availability, and lower unit prices with volume relate to economies of scale or tiered pricing.',
+      '**Elasticity** means adding resources as demand rises and releasing them as it falls, so you pay only for what you need. Multi-Region deployment is global reach, surviving an AZ failure is high availability, and lower unit prices at volume relate to economies of scale or tiered pricing.',
   },
   {
     id: 'cc-006',
@@ -88,7 +88,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'In the cloud, new IT resources are only a click away, which reduces the time to make them available to developers from weeks to minutes. This is **increased speed and agility**. Economies of scale relates to price, while high availability and fault tolerance relate to keeping workloads running during failures.',
+      'New resources are a click away, so the wait drops from weeks to minutes. That is **increased speed and agility**. Economies of scale is about price, and high availability and fault tolerance are about staying up during failures.',
   },
   {
     id: 'cc-007',
@@ -103,7 +103,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0, 3],
     explanation:
-      '**Trade fixed expense for variable expense** and **stop spending money running and maintaining data centers** are two of the advantages of cloud computing that AWS lists. Under the shared responsibility model customers still secure their applications and data, AWS does not guarantee zero downtime for every workload, and pay-as-you-go pricing is the opposite of a fixed annual price.',
+      '**Trade fixed expense for variable expense** and **stop spending money running and maintaining data centers** are both on AWS’s list of cloud advantages. Under the shared responsibility model customers still secure their applications and data, AWS doesn’t guarantee zero downtime for every workload, and pay-as-you-go is the opposite of a fixed annual price.',
   },
   {
     id: 'cc-008',
@@ -118,7 +118,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'Availability Zones are physically separate, isolated locations in a Region, so running the application in **multiple AZs** keeps it available if one data center or AZ fails. A larger instance in one AZ is still a single point of failure, backups in the same AZ share its failure, and detailed monitoring only gives more frequent metrics.',
+      'Availability Zones are physically separate, isolated locations in a Region, so running in **multiple AZs** keeps the app up if one data center or AZ fails. A larger instance in one AZ is still a single point of failure, backups in the same AZ fail with it, and detailed monitoring only gives more frequent metrics.',
   },
   {
     id: 'cc-009',
@@ -132,7 +132,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'An **Availability Zone** is one or more discrete data centers with redundant power, networking, and connectivity inside a Region. A Region contains multiple AZs (not the reverse), CloudFront caches content at edge locations, and AWS hardware in a customer data center is AWS Outposts.',
+      'An **Availability Zone** is one or more discrete data centers with redundant power, networking, and connectivity inside a Region. A Region contains multiple AZs (not the reverse), CloudFront caches at edge locations, and AWS hardware in a customer data center is AWS Outposts.',
   },
   {
     id: 'cc-010',
@@ -147,7 +147,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Stop spending money running and maintaining data centers** lets teams focus on projects that differentiate the business instead of the heavy lifting of racking, stacking, and powering servers. Going global and economies of scale are different benefits, and the cloud trades fixed expense for variable expense, not the other way round.',
+      '**Stop spending money running and maintaining data centers** lets teams work on what sets the business apart instead of racking, stacking, and powering servers. Going global and economies of scale are other benefits, and the cloud trades fixed expense for variable expense, not the other way round.',
   },
   {
     id: 'cc-011',
@@ -171,7 +171,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 4],
     explanation:
-      '**Operational excellence** and **performance efficiency** are two of the six pillars (with security, reliability, cost optimization, and sustainability). Availability is addressed within the reliability pillar, compliance within the security pillar, and scalability within reliability and performance efficiency, but none of them is a pillar itself.',
+      '**Operational excellence** and **performance efficiency** are two of the six pillars (with security, reliability, cost optimization, and sustainability). Availability is covered in reliability, compliance in security, and scalability in reliability and performance efficiency, but none is a pillar itself.',
   },
   {
     id: 'cc-013',
@@ -181,7 +181,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Reliability', 'Performance efficiency', 'Operational excellence', 'Security'],
     answer: [0],
     explanation:
-      'The **reliability** pillar covers the ability of a workload to perform its intended function correctly and consistently, including recovering from failure. Performance efficiency is about using resources efficiently, operational excellence is about running and improving operations, and security is about protecting data and systems.',
+      'The **reliability** pillar covers a workload doing its job correctly and consistently, including recovering from failure. Performance efficiency is efficient resource use, operational excellence is running and improving operations, and security is protecting data and systems.',
   },
   {
     id: 'cc-014',
@@ -191,7 +191,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Reliability', 'Cost optimization', 'Sustainability', 'Performance efficiency'],
     answer: [3],
     explanation:
-      'That is the definition of the **performance efficiency** pillar. Reliability is about functioning correctly and recovering from failure, cost optimization is about avoiding unnecessary cost, and sustainability is about minimizing environmental impact.',
+      'That is the **performance efficiency** pillar. Reliability is working correctly and recovering from failure, cost optimization is avoiding unnecessary cost, and sustainability is reducing environmental impact.',
   },
   {
     id: 'cc-015',
@@ -201,7 +201,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Security', 'Reliability', 'Operational excellence', 'Cost optimization'],
     answer: [2],
     explanation:
-      '**Make frequent, small, reversible changes** is an operational excellence design principle: small changes are easier to deploy and roll back, and reduce the impact of failures. Security, reliability, and cost optimization each have their own design principles, such as applying security at all layers, automatically recovering from failure, and adopting a consumption model.',
+      '**Make frequent, small, reversible changes** is an operational excellence principle: small changes are easier to deploy and roll back, and limit the impact of failures. The other pillars have their own principles, such as applying security at all layers, automatically recovering from failure, and adopting a consumption model.',
   },
   {
     id: 'cc-016',
@@ -221,7 +221,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Reliability', 'Performance efficiency', 'Security', 'Cost optimization'],
     answer: [0],
     explanation:
-      'Both are **reliability** pillar design principles, along with scaling horizontally, stopping guessing capacity, and managing change through automation. Performance efficiency, security, and cost optimization focus on efficient resource use, protection, and cost respectively.',
+      'Both are **reliability** principles, along with scaling horizontally, stopping guessing capacity, and managing change through automation. Performance efficiency, security, and cost optimization focus on efficient resource use, protection, and cost.',
   },
   {
     id: 'cc-018',
@@ -231,7 +231,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Operational excellence', 'Reliability', 'Cost optimization', 'Performance efficiency'],
     answer: [3],
     explanation:
-      'These are **performance efficiency** design principles, together with going global in minutes, experimenting more often, and considering mechanical sympathy. They are not listed under operational excellence, reliability, or cost optimization.',
+      'These are **performance efficiency** principles, along with going global in minutes, experimenting more often, and considering mechanical sympathy. They aren’t listed under operational excellence, reliability, or cost optimization.',
   },
   {
     id: 'cc-019',
@@ -241,7 +241,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Performance efficiency', 'Operational excellence', 'Cost optimization', 'Sustainability'],
     answer: [2],
     explanation:
-      'Both are **cost optimization** design principles: build cloud financial management capability, and pay only for the resources you consume. Performance efficiency, operational excellence, and sustainability have different design principles.',
+      'Both are **cost optimization** principles: build cloud financial management capability, and pay only for what you consume. The other pillars have different principles.',
   },
   {
     id: 'cc-020',
@@ -255,7 +255,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'The **sustainability** pillar focuses on minimizing the environmental impacts of running cloud workloads, for example by maximizing utilization and reducing the resources required. Reducing the bill is cost optimization, recovering from disruptions is reliability, and running and monitoring systems is operational excellence.',
+      'The **sustainability** pillar is about reducing the environmental impact of cloud workloads, for example by maximizing utilization and using fewer resources. Reducing the bill is cost optimization, recovering from disruptions is reliability, and running and monitoring systems is operational excellence.',
   },
   {
     id: 'cc-021',
@@ -265,7 +265,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Well-Architected Tool', 'AWS Artifact', 'Amazon Inspector', 'AWS Pricing Calculator'],
     answer: [0],
     explanation:
-      'The **AWS Well-Architected Tool** is available in the console at no charge and reviews workloads against the Well-Architected Framework, highlighting risks and improvement plans. AWS Artifact provides compliance reports, Amazon Inspector scans for software vulnerabilities, and the Pricing Calculator estimates costs.',
+      'The **AWS Well-Architected Tool** is free in the console. It reviews workloads against the Well-Architected Framework and highlights risks and improvement plans. AWS Artifact provides compliance reports, Amazon Inspector scans for software vulnerabilities, and the Pricing Calculator estimates costs.',
   },
   {
     id: 'cc-022',
@@ -280,7 +280,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'AWS is responsible for sustainability **of** the cloud (efficient data centers, hardware, and energy procurement), and customers are responsible for sustainability **in** the cloud, meaning how they design and use their workloads. Data center cooling, renewable energy procurement, and server hardware design are AWS responsibilities.',
+      'AWS is responsible for sustainability **of** the cloud (efficient data centers, hardware, and energy procurement). Customers are responsible for sustainability **in** the cloud: how they design and use their workloads. Cooling, renewable energy, and server hardware design are all AWS’s job.',
   },
   {
     id: 'cc-023',
@@ -296,7 +296,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      '**Apply security at all layers** and **maintain traceability** (monitor, alert, and audit actions and changes in real time) are security design principles. Frequent small reversible changes is operational excellence, scaling horizontally is reliability, and experimenting more often is performance efficiency.',
+      '**Apply security at all layers** and **maintain traceability** (monitor, alert, and audit actions and changes in real time) are security principles. Frequent small reversible changes is operational excellence, scaling horizontally is reliability, and experimenting more often is performance efficiency.',
   },
   {
     id: 'cc-024',
@@ -327,7 +327,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Refine operations procedures frequently** is an operational excellence principle: as the workload evolves, procedures should be updated and validated, for example through regular reviews and game days. Serverless architectures is performance efficiency, keeping people away from data is security, and adopting a consumption model is cost optimization.',
+      '**Refine operations procedures frequently** is an operational excellence principle: as the workload changes, update and validate procedures, for example through regular reviews and game days. Serverless is performance efficiency, keeping people away from data is security, and a consumption model is cost optimization.',
   },
   {
     id: 'cc-026',
@@ -342,7 +342,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Keep people away from data** means using mechanisms and tools to reduce or eliminate direct access to and manual processing of data. Applying security at all layers is defense in depth, preparing for security events is about incident response, and a strong identity foundation is about least privilege and centralized identity.',
+      '**Keep people away from data** means using tools and automation to reduce or remove direct access to, and manual handling of, data. Security at all layers is defense in depth, preparing for security events is incident response, and a strong identity foundation is least privilege and centralized identity.',
   },
   {
     id: 'cc-027',
@@ -357,7 +357,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**Stop spending money on undifferentiated heavy lifting** encourages letting AWS do work that does not differentiate your business, such as managing database infrastructure, so you can focus on customers. Measuring efficiency, attributing expenditure, and cloud financial management are other cost principles that do not describe this choice.',
+      '**Stop spending money on undifferentiated heavy lifting** means letting AWS handle work that doesn’t set your business apart, such as managing database infrastructure, so you can focus on customers. Measuring efficiency, attributing expenditure, and cloud financial management are other cost principles that don’t describe this choice.',
   },
   {
     id: 'cc-028',
@@ -372,7 +372,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Analyze and attribute expenditure** is about identifying the cost and usage of workloads and attributing IT costs to revenue streams and owners, often using cost allocation tags. Adopting a consumption model is about paying only for what you use, measuring efficiency is about business output per cost, and a strong identity foundation is a security principle.',
+      '**Analyze and attribute expenditure** means finding the cost and usage of workloads and attributing it to revenue streams and owners, often with cost allocation tags. A consumption model is paying only for what you use, measuring efficiency is business output per cost, and a strong identity foundation is a security principle.',
   },
   {
     id: 'cc-029',
@@ -387,7 +387,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Experiment more often** reflects that virtual, automatable resources make comparative testing quick and cheap. Mechanical sympathy is about choosing technology that fits how it will be used, democratizing advanced technologies is about consuming complex technology as a service, and serverless removes the need to manage servers.',
+      '**Experiment more often**: virtual, automatable resources make comparative testing quick and cheap. Mechanical sympathy is choosing technology that fits how it’s used, democratizing advanced technologies is consuming complex tech as a service, and serverless removes server management.',
   },
   {
     id: 'cc-030',
@@ -402,7 +402,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Consider mechanical sympathy** means using the technology approach that aligns best with your goals, for example considering data access patterns when selecting database or storage. Experimenting more often and going global in minutes are other performance efficiency principles, and measuring overall efficiency is a cost optimization principle.',
+      '**Consider mechanical sympathy** means using the technology that best fits your goals, for example matching database or storage to data access patterns. Experimenting more often and going global in minutes are other performance efficiency principles, and measuring overall efficiency is a cost optimization principle.',
   },
   {
     id: 'cc-031',
@@ -417,7 +417,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**Maximize utilization** means right-sizing and consolidating workloads so resources run at high utilization, because idle capacity still consumes energy. Managed services, adopting more efficient offerings, and understanding your impact are other sustainability principles that this example does not describe.',
+      '**Maximize utilization** means right-sizing and consolidating so resources run busy, because idle capacity still uses energy. Managed services, adopting more efficient offerings, and understanding your impact are other sustainability principles that this example doesn’t describe.',
   },
   {
     id: 'cc-032',
@@ -432,7 +432,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Anticipate and adopt new, more efficient hardware and software offerings** encourages designing for flexibility so you can quickly adopt more efficient technologies. Maximizing utilization is about consolidating idle capacity, reducing downstream impact is about the energy and resources your customers need to use your service, and establishing goals is about setting targets.',
+      '**Anticipate and adopt new, more efficient hardware and software offerings** means designing for flexibility so you can switch to more efficient technology quickly. Maximizing utilization is consolidating idle capacity, reducing downstream impact is about the energy and resources your customers need to use your service, and establishing goals is setting targets.',
   },
   {
     id: 'cc-033',
@@ -447,7 +447,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Improve through game days** means regularly simulating events in production to test architecture and processes and find areas to improve. Testing at production scale is about creating a production-scale test environment on demand, driving architectures using data is about fact-based decisions, and evolutionary architectures is about allowing designs to change over time.',
+      '**Improve through game days** means regularly simulating events in production to test architecture and processes and find what to improve. Testing at production scale is creating a production-scale test environment on demand, data-driven architecture is fact-based decisions, and evolutionary architecture lets designs change over time.',
   },
   {
     id: 'cc-034',
@@ -462,7 +462,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Prepare for security events** means having incident management processes, running simulations, and using tools and automation to speed up detection, investigation, and recovery. Traceability is about logging and auditing, applying security at all layers is defense in depth, and protecting data is about encryption and access controls.',
+      '**Prepare for security events** means having incident management processes, running simulations, and using tools and automation to speed up detection, investigation, and recovery. Traceability is logging and auditing, security at all layers is defense in depth, and protecting data is encryption and access control.',
   },
   {
     id: 'cc-035',
@@ -488,7 +488,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Sustainability', 'Performance efficiency', 'Reliability', 'Cost optimization'],
     answer: [3],
     explanation:
-      'The **cost optimization** pillar is about running systems to deliver business value at the lowest price point and avoiding unnecessary costs. Sustainability focuses on environmental impact, performance efficiency on efficient use of resources to meet requirements, and reliability on correct, consistent operation and recovery.',
+      'The **cost optimization** pillar is about delivering business value at the lowest price point and avoiding unnecessary costs. Sustainability is environmental impact, performance efficiency is using resources efficiently to meet requirements, and reliability is correct, consistent operation and recovery.',
   },
   {
     id: 'cc-037',
@@ -514,7 +514,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Governance', 'Platform', 'Business', 'People'],
     answer: [2],
     explanation:
-      'The **Business** perspective focuses on making sure cloud investments accelerate digital transformation and business outcomes, with capabilities such as strategy management and portfolio management. Governance focuses on orchestrating initiatives and managing risk, Platform on the technical cloud platform, and People on culture and skills.',
+      'The **Business** perspective makes sure cloud investments speed up digital transformation and business outcomes, with capabilities such as strategy and portfolio management. Governance is orchestrating initiatives and managing risk, Platform is the technical cloud platform, and People is culture and skills.',
   },
   {
     id: 'cc-039',
@@ -524,7 +524,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['People', 'Business', 'Operations', 'Governance'],
     answer: [0],
     explanation:
-      'The **People** perspective bridges technology and business and covers capabilities such as culture evolution, transformational leadership, cloud fluency, and organization design. Business focuses on business outcomes, Operations on delivering cloud services that meet business needs, and Governance on orchestrating initiatives while managing risk.',
+      'The **People** perspective bridges technology and business, with capabilities such as culture evolution, transformational leadership, cloud fluency, and organization design. Business focuses on outcomes, Operations on delivering services that meet business needs, and Governance on orchestrating initiatives while managing risk.',
   },
   {
     id: 'cc-040',
@@ -534,7 +534,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Business', 'Governance', 'Security', 'Operations'],
     answer: [1],
     explanation:
-      'The **Governance** perspective includes capabilities such as program and project management, benefits management, risk management, and cloud financial management. Business focuses on outcomes and strategy, Security on confidentiality, integrity, and availability, and Operations on running cloud services.',
+      'The **Governance** perspective includes program and project management, benefits management, risk management, and cloud financial management. Business focuses on outcomes and strategy, Security on confidentiality, integrity, and availability, and Operations on running cloud services.',
   },
   {
     id: 'cc-041',
@@ -544,7 +544,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Operations', 'Security', 'Governance', 'Platform'],
     answer: [3],
     explanation:
-      'The **Platform** perspective helps build an enterprise-grade, scalable, hybrid cloud platform and includes capabilities such as platform architecture, modern application development, and CI/CD. Operations focuses on running services, Security on protecting data and workloads, and Governance on managing initiatives and risk.',
+      'The **Platform** perspective helps build an enterprise-grade, scalable, hybrid cloud platform, with capabilities such as platform architecture, modern application development, and CI/CD. Operations runs services, Security protects data and workloads, and Governance manages initiatives and risk.',
   },
   {
     id: 'cc-042',
@@ -554,7 +554,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Platform', 'Governance', 'Operations', 'Security'],
     answer: [2],
     explanation:
-      'The **Operations** perspective ensures cloud services are delivered at an agreed level and includes observability, event management, incident and problem management, and change and release management. Platform focuses on building the cloud platform, Governance on risk and benefits, and Security on protecting workloads.',
+      'The **Operations** perspective makes sure cloud services are delivered at an agreed level. It includes observability, event management, incident and problem management, and change and release management. Platform builds the cloud platform, Governance handles risk and benefits, and Security protects workloads.',
   },
   {
     id: 'cc-043',
@@ -564,7 +564,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Security', 'Operations', 'Governance', 'Platform'],
     answer: [0],
     explanation:
-      'The **Security** perspective helps achieve the confidentiality, integrity, and availability of data and cloud workloads, with capabilities such as identity and access management, threat detection, vulnerability management, and incident response. Operations, Governance, and Platform cover service delivery, risk and benefits, and platform engineering.',
+      'The **Security** perspective protects the confidentiality, integrity, and availability of data and workloads, with capabilities such as identity and access management, threat detection, vulnerability management, and incident response. Operations, Governance, and Platform cover service delivery, risk and benefits, and platform engineering.',
   },
   {
     id: 'cc-044',
@@ -582,7 +582,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Business', 'Governance', 'Operations', 'Platform'],
     answer: [1],
     explanation:
-      '**Cloud financial management** is a capability of the **Governance** perspective, alongside program and project management, benefits management, and risk management. Business covers strategy and portfolio, Operations covers running services, and Platform covers the technical cloud platform.',
+      '**Cloud financial management** is a **Governance** capability, alongside program and project management, benefits management, and risk management. Business covers strategy and portfolio, Operations covers running services, and Platform covers the technical cloud platform.',
   },
   {
     id: 'cc-046',
@@ -592,7 +592,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Business', 'Governance', 'Platform', 'People'],
     answer: [3],
     explanation:
-      'The **People** perspective covers capabilities such as cloud fluency, workforce transformation, change acceleration, and culture evolution, which address skills gaps and resistance to change. Business, Governance, and Platform address business outcomes, risk and benefits, and technical platform capabilities.',
+      'The **People** perspective covers cloud fluency, workforce transformation, change acceleration, and culture evolution, which tackle skills gaps and resistance to change. Business, Governance, and Platform cover business outcomes, risk and benefits, and the technical platform.',
   },
   {
     id: 'cc-047',
@@ -602,7 +602,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Envision', 'Align', 'Launch', 'Scale'],
     answer: [2],
     explanation:
-      'The four phases are Envision, Align, Launch, and Scale. **Launch** delivers pilot initiatives in production and demonstrates incremental business value. Envision shows how the cloud will accelerate outcomes, Align identifies capability gaps and dependencies, and Scale expands pilots to the desired scale.',
+      'The four phases are Envision, Align, Launch, and Scale. **Launch** delivers pilots in production and shows incremental business value. Envision shows how the cloud will speed up outcomes, Align finds capability gaps and dependencies, and Scale grows pilots to the size you need.',
   },
   {
     id: 'cc-048',
@@ -618,7 +618,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      'AWS CAF lists **reduced business risk**, improved environmental, social, and governance (ESG) performance, increased revenue, and **increased operational efficiency** as business outcomes. The cloud reduces rather than increases capital expenditure, compliance obligations remain, and hardware refresh cycles are no longer a customer concern.',
+      'AWS CAF lists **reduced business risk**, improved environmental, social, and governance (ESG) performance, increased revenue, and **increased operational efficiency** as outcomes. The cloud reduces capital expenditure rather than increasing it, compliance obligations remain, and hardware refresh cycles are no longer the customer’s concern.',
   },
   {
     id: 'cc-049',
@@ -633,7 +633,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS Application Migration Service** is the primary AWS service for rehosting (lift and shift) servers to AWS. AWS DMS migrates databases, AWS DataSync transfers files and objects online, and the Snow Family moves data offline on physical devices; none of them rehosts whole servers.',
+      '**AWS Application Migration Service** is the main AWS service for rehosting (lift and shift) servers. AWS DMS migrates databases, DataSync transfers files and objects online, and the Snow Family moves data offline on physical devices; none of them rehosts whole servers.',
   },
   {
     id: 'cc-050',
@@ -643,7 +643,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Replatform', 'Rehost', 'Relocate', 'Retain'],
     answer: [0],
     explanation:
-      '**Replatform** ("lift, tinker, and shift") makes a few cloud optimizations, such as moving to a managed database, without changing the core architecture. Rehost moves the application as is, relocate moves servers at the hypervisor level to a cloud version of the same platform, and retain keeps the application on premises.',
+      '**Replatform** ("lift, tinker, and shift") makes a few cloud optimizations, such as moving to a managed database, without changing the core architecture. Rehost moves the app as is, relocate moves servers at the hypervisor level to a cloud version of the same platform, and retain keeps it on premises.',
   },
   {
     id: 'cc-051',
@@ -653,7 +653,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Rehost', 'Refactor', 'Retire', 'Repurchase'],
     answer: [3],
     explanation:
-      '**Repurchase** ("drop and shop") means moving to a different product, typically a SaaS offering. Rehost moves the existing application unchanged, refactor re-architects it, and retire decommissions an application that is no longer needed.',
+      '**Repurchase** ("drop and shop") means switching to a different product, usually SaaS. Rehost moves the existing app unchanged, refactor re-architects it, and retire decommissions an app that’s no longer needed.',
   },
   {
     id: 'cc-052',
@@ -663,7 +663,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Replatform', 'Relocate', 'Refactor', 'Rehost'],
     answer: [2],
     explanation:
-      '**Refactor** (re-architect) changes how the application is architected and developed, usually to adopt cloud-native features. Replatform makes only a few optimizations, while relocate and rehost move workloads without changing the application.',
+      '**Refactor** (re-architect) changes how the app is built, usually to use cloud-native features. Replatform makes only a few optimizations, and relocate and rehost move workloads without changing the app.',
   },
   {
     id: 'cc-053',
@@ -673,7 +673,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Retain', 'Retire', 'Repurchase', 'Relocate'],
     answer: [1],
     explanation:
-      '**Retire** means decommissioning or archiving applications that are no longer needed, which reduces the migration scope and cost. Retain keeps an application where it is for now, repurchase moves to a different product, and relocate moves servers to a cloud version of the same platform.',
+      '**Retire** means decommissioning or archiving apps that are no longer needed, which cuts migration scope and cost. Retain keeps an app where it is for now, repurchase switches products, and relocate moves servers to a cloud version of the same platform.',
   },
   {
     id: 'cc-054',
@@ -683,7 +683,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Retain', 'Retire', 'Rehost', 'Relocate'],
     answer: [0],
     explanation:
-      '**Retain** (revisit) keeps applications in the source environment, for example because of recent upgrades, dependencies, or compliance needs. Retire decommissions the application, and rehost and relocate move it to AWS.',
+      '**Retain** (revisit) keeps apps in the source environment, for example because of recent upgrades, dependencies, or compliance needs. Retire decommissions the app, and rehost and relocate move it to AWS.',
   },
   {
     id: 'cc-055',
@@ -693,7 +693,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Rehost', 'Replatform', 'Repurchase', 'Relocate'],
     answer: [3],
     explanation:
-      '**Relocate** (hypervisor-level lift and shift) transfers many servers from an on-premises platform to a cloud version of the same platform, such as moving VMware workloads to a VMware-based cloud offering. Rehost moves servers onto Amazon EC2, replatform adds optimizations, and repurchase switches to a different product.',
+      '**Relocate** (hypervisor-level lift and shift) moves many servers from an on-premises platform to a cloud version of the same platform, such as VMware workloads to a VMware-based cloud offering. Rehost moves servers onto Amazon EC2, replatform adds optimizations, and repurchase switches products.',
   },
   {
     id: 'cc-056',
@@ -703,7 +703,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Rehost', 'Relocate', 'Retire', 'Replatform', 'Retain'],
     answer: [2, 4],
     explanation:
-      '**Retire** decommissions the application and **retain** keeps it in the source environment, so neither moves it to AWS. Rehost, relocate, and replatform all move the application to AWS, with different levels of change.',
+      '**Retire** decommissions the app and **retain** keeps it where it is, so neither moves it to AWS. Rehost, relocate, and replatform all move it to AWS, with different amounts of change.',
   },
   {
     id: 'cc-057',
@@ -713,7 +713,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Rehost', 'Relocate', 'Refactor', 'Retain'],
     answer: [2],
     explanation:
-      '**Refactor** re-architects the application, which is the most effort but unlocks cloud-native benefits such as serverless, microservices, and better scalability. Rehost and relocate are fast because the application is not changed, and retain does not migrate the application at all.',
+      '**Refactor** re-architects the app: the most effort, but it unlocks cloud-native benefits such as serverless, microservices, and better scalability. Rehost and relocate are fast because the app doesn’t change, and retain doesn’t migrate at all.',
   },
   {
     id: 'cc-058',
@@ -723,7 +723,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['Rehost', 'Refactor', 'Repurchase', 'Retain'],
     answer: [0],
     explanation:
-      '**Rehost** (lift and shift) moves applications without changes, which makes it the fastest way to migrate at scale under a deadline; they can be optimized after the move. Refactoring takes much longer, repurchasing means selecting and adopting new products, and retain keeps applications in the data center that is closing.',
+      '**Rehost** (lift and shift) moves apps unchanged, so it’s the fastest way to migrate at scale under a deadline; you can optimize after the move. Refactoring takes much longer, repurchasing means choosing and adopting new products, and retain leaves apps in the data center that’s closing.',
   },
   {
     id: 'cc-059',
@@ -738,7 +738,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'The **AWS Snow Family** provides physical devices that are shipped to the customer, loaded with data, and returned to AWS, which avoids slow or limited networks for very large transfers. S3 Transfer Acceleration and Site-to-Site VPN still depend on the limited internet connection, and AWS DMS migrates databases over the network. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
+      '**AWS Snow Family** devices are shipped to you, loaded with data, and sent back to AWS, avoiding a slow network for very large transfers. S3 Transfer Acceleration and Site-to-Site VPN still use the limited internet connection, and AWS DMS migrates databases over the network.\n\nNote: AWS Snowball Edge has been closed to new customers since November 2025. AWS now points new customers to AWS DataSync (online) or AWS Data Transfer Terminal (physical). The exam guide still lists the Snow Family, so know what it’s for.',
   },
   {
     id: 'cc-060',
@@ -748,7 +748,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Outposts', 'AWS Local Zones', 'AWS Snow Family', 'Amazon CloudFront'],
     answer: [2],
     explanation:
-      '**AWS Snow Family** devices provide storage and compute for edge locations with little or no connectivity, and the data can be shipped to AWS later. AWS Outposts needs a connection to its AWS Region, Local Zones are AWS-operated locations in metro areas, and CloudFront is a content delivery network. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
+      '**AWS Snow Family** devices provide storage and compute at edge locations with little or no connectivity, and the data can be shipped to AWS later. AWS Outposts needs a connection to its AWS Region, Local Zones are AWS-operated locations in metro areas, and CloudFront is a content delivery network.\n\nNote: AWS Snowball Edge has been closed to new customers since November 2025. AWS now points new customers to AWS DataSync (online) or AWS Data Transfer Terminal (physical). The exam guide still lists the Snow Family, so know what it’s for.',
   },
   {
     id: 'cc-061',
@@ -763,7 +763,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS DMS** migrates databases to AWS while the source database remains fully operational, which minimizes downtime, and it can keep the target in sync through ongoing replication. DataSync transfers files and objects, the Snow Family moves data offline, and AWS Backup centralizes backups rather than migrating databases.',
+      '**AWS DMS** migrates databases while the source stays fully operational, minimizing downtime, and can keep the target in sync with ongoing replication. DataSync transfers files and objects, the Snow Family moves data offline, and AWS Backup centralizes backups rather than migrating databases.',
   },
   {
     id: 'cc-062',
@@ -777,7 +777,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'AWS DMS supports both **homogeneous** migrations (for example, MySQL to MySQL) and **heterogeneous** migrations (for example, Oracle to Amazon Aurora PostgreSQL), with schema conversion tools for the latter. The source stays operational during migration, and shipping physical devices describes the Snow Family.',
+      'AWS DMS supports **homogeneous** migrations (for example, MySQL to MySQL) and **heterogeneous** ones (for example, Oracle to Amazon Aurora PostgreSQL), with schema conversion tools for the latter. The source stays operational during migration, and shipping physical devices is the Snow Family.',
   },
   {
     id: 'cc-063',
@@ -792,7 +792,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0, 4],
     explanation:
-      'Migrating to AWS lets companies **provision infrastructure in minutes** and **scale resources with demand**. Customers remain responsible for managing IAM permissions, costs depend on how workloads are designed and operated, and migration does not refactor applications automatically.',
+      'On AWS you can **provision infrastructure in minutes** and **scale resources with demand**. Customers still manage IAM permissions, cost depends on how workloads are designed and run, and migration doesn’t refactor apps automatically.',
   },
   {
     id: 'cc-064',
@@ -807,7 +807,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'On premises, companies make large upfront **capital expenditure (CapEx)** on hardware and facilities; in AWS, they mostly pay as they go, which is **operational expenditure (OpEx)**. The other options describe the reverse of what happens.',
+      'On premises, companies make large upfront **capital expenditure (CapEx)** on hardware and facilities. In AWS they mostly pay as they go, which is **operational expenditure (OpEx)**. The other options describe the reverse.',
   },
   {
     id: 'cc-065',
@@ -823,7 +823,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'A fair TCO comparison includes indirect on-premises costs such as **power and cooling** and **staff time for hardware maintenance**, not just server purchase prices. EC2 On-Demand charges, AWS Support fees, and Lambda request charges are AWS costs, not on-premises costs.',
+      'A fair TCO comparison includes indirect on-premises costs such as **power and cooling** and **staff time for hardware maintenance**, not just server prices. EC2 On-Demand charges, AWS Support fees, and Lambda request charges are AWS costs, not on-premises ones.',
   },
   {
     id: 'cc-066',
@@ -838,7 +838,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'With **bring your own license (BYOL)**, a customer uses licenses it already owns on AWS, subject to the vendor license terms. License included means the license cost is part of the AWS price, while Savings Plans and Spot Instances are compute pricing options, not licensing models.',
+      'With **bring your own license (BYOL)**, you use licenses you already own on AWS, subject to the vendor’s license terms. License included means the license cost is in the AWS price, and Savings Plans and Spot Instances are compute pricing options, not licensing models.',
   },
   {
     id: 'cc-067',
@@ -853,7 +853,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'With **license-included** instances, the software license cost is part of the instance price, so the company does not need to buy or track licenses. BYOL options, including Dedicated Hosts with BYOL, require licenses the company already owns, and buying perpetual licenses up front is the opposite of what the company wants.',
+      'With **license-included** instances, the license cost is part of the instance price, so the company doesn’t need to buy or track licenses. BYOL options, including Dedicated Hosts with BYOL, need licenses the company already owns, and buying perpetual licenses up front is the opposite of what it wants.',
   },
   {
     id: 'cc-068',
@@ -868,7 +868,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Dedicated Hosts** are physical servers dedicated to one customer and provide visibility into sockets and physical cores, which supports BYOL for server-bound licenses. Spot and On-Demand Instances on shared tenancy do not expose the physical server, and Savings Plans is a pricing commitment rather than a placement option.',
+      '**Dedicated Hosts** are physical servers dedicated to you, with visibility into sockets and physical cores, which supports BYOL for server-bound licenses. Spot and On-Demand Instances on shared tenancy don’t expose the physical server, and Savings Plans is a pricing commitment, not a placement option.',
   },
   {
     id: 'cc-069',
@@ -882,7 +882,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Rightsizing** is matching instance types and sizes to the actual performance and capacity requirements of a workload at the lowest cost, often by downsizing or switching underused resources. Choosing a Region close to users is about latency, buying Reserved Instances is a pricing decision, and deleting old snapshots is a separate cleanup task.',
+      '**Rightsizing** is matching instance types and sizes to a workload’s real performance and capacity needs at the lowest cost, often by downsizing or switching underused resources. Choosing a nearby Region is about latency, buying Reserved Instances is a pricing decision, and deleting old snapshots is separate cleanup.',
   },
   {
     id: 'cc-070',
@@ -892,7 +892,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Compute Optimizer', 'AWS Artifact', 'Amazon Inspector', 'AWS Config'],
     answer: [0],
     explanation:
-      '**AWS Compute Optimizer** uses utilization metrics to make rightsizing recommendations for resources such as EC2 instances, Auto Scaling groups, EBS volumes, and Lambda functions. AWS Artifact provides compliance reports, Amazon Inspector finds vulnerabilities, and AWS Config tracks resource configurations.',
+      '**AWS Compute Optimizer** uses utilization metrics to recommend right sizes for EC2 instances, Auto Scaling groups, EBS volumes, and Lambda functions. AWS Artifact provides compliance reports, Amazon Inspector finds vulnerabilities, and AWS Config tracks resource configurations.',
   },
   {
     id: 'cc-071',
@@ -908,7 +908,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'Amazon RDS reduces operational overhead by handling tasks such as **hardware provisioning** and **automated backups**, along with database setup and patching. The customer still designs schemas and indexes, controls who can access the data, and writes efficient queries.',
+      'Amazon RDS handles **hardware provisioning** and **automated backups**, along with database setup and patching. You still design schemas and indexes, control who can access the data, and write efficient queries.',
   },
   {
     id: 'cc-072',
@@ -923,7 +923,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Automation** with infrastructure as code reduces manual work and configuration errors, and makes it easy to create environments on demand and delete them when they are no longer needed. You still pay for the resources CloudFormation creates, it does not buy Reserved Instances, and monitoring is still required.',
+      'Infrastructure as code **automates** environment creation, which cuts manual work and configuration errors and makes it easy to create environments on demand and delete them when not needed. You still pay for the resources CloudFormation creates, it doesn’t buy Reserved Instances, and you still need monitoring.',
   },
   {
     id: 'cc-073',
@@ -939,7 +939,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'AWS takes on the costs of **data center facilities and power** and **hardware refreshes**, which become part of the pay-as-you-go price. Third-party software may still need licenses, application architecture still needs designing, and companies still need developers for their business applications.',
+      'AWS takes on **data center facilities and power** and **hardware refreshes**, which become part of the pay-as-you-go price. Third-party software may still need licenses, someone still designs the architecture, and you still need developers for your business apps.',
   },
   {
     id: 'cc-074',
@@ -954,7 +954,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      '**EC2 On-Demand** charges and **S3 storage** charges vary with how much you use, which makes them variable costs. Buying servers, building a data center, and signing a multi-year colocation lease are fixed, upfront commitments typical of on-premises infrastructure.',
+      '**EC2 On-Demand** and **S3 storage** charges vary with usage, so they’re variable costs. Buying servers, building a data center, and signing a multi-year colocation lease are fixed, upfront commitments typical of on-premises infrastructure.',
   },
   {
     id: 'cc-075',
@@ -969,7 +969,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**On-Demand** pay-as-you-go pricing needs no long-term commitment, so the company pays only for what it uses while it learns its demand. Three-year Reserved Instances and reserved Dedicated Hosts are long-term commitments, and buying servers for the peak is guessing capacity.',
+      '**On-Demand** pay-as-you-go pricing has no long-term commitment, so the company pays only for what it uses while it learns its demand. Three-year Reserved Instances and reserved Dedicated Hosts are long-term commitments, and buying servers for the peak is guessing capacity.',
   },
   {
     id: 'cc-076',
@@ -984,7 +984,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'The **AWS Pricing Calculator** creates cost estimates for planned AWS solutions before anything is deployed. Cost Explorer analyzes and forecasts based on past usage, AWS Budgets alerts on actual or forecasted spend, and the Cost and Usage Reports contain detailed data about existing usage.',
+      'The **AWS Pricing Calculator** estimates the cost of planned solutions before anything is deployed. Cost Explorer analyzes and forecasts from past usage, AWS Budgets alerts on actual or forecasted spend, and the Cost and Usage Reports hold detailed data about existing usage.',
   },
   {
     id: 'cc-077',
@@ -999,7 +999,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Undifferentiated heavy lifting** is work that every company must do but that does not set it apart, such as racking servers and replacing failed hardware, which AWS takes over. Unique product features, business strategy, and market choices are what differentiate a company.',
+      '**Undifferentiated heavy lifting** is work every company must do but that doesn’t set it apart, such as racking servers and replacing failed hardware. AWS takes this over. Unique product features, business strategy, and market choices are what make a company different.',
   },
   {
     id: 'cc-078',
@@ -1014,7 +1014,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'A **hybrid** deployment connects cloud-based resources with infrastructure that is not in the cloud, such as an on-premises data center. All-in cloud runs everything in the cloud, on-premises keeps everything in the company data center, and multi-Region describes an architecture within the cloud rather than a deployment model.',
+      'A **hybrid** deployment connects cloud resources with infrastructure outside the cloud, such as an on-premises data center. All-in cloud runs everything in the cloud, on-premises keeps everything in the company’s data center, and multi-Region is an architecture inside the cloud, not a deployment model.',
   },
   {
     id: 'cc-079',
@@ -1029,7 +1029,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      'In a **cloud** deployment, all parts of the application run in the cloud, either built there or migrated there. Hybrid combines cloud and on-premises resources, and on-premises (also called private cloud) deployment runs resources in a data center that the company operates itself.',
+      'In a **cloud** deployment, every part of the application runs in the cloud, built there or migrated there. Hybrid mixes cloud and on-premises resources, and on-premises (also called private cloud) runs in a data center the company operates itself.',
   },
   {
     id: 'cc-080',
@@ -1044,7 +1044,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'An **on-premises** deployment, also called a private cloud, uses virtualization and resource management tools in the company data center. Hybrid combines on-premises with the cloud, all-in cloud runs everything in the cloud, and SaaS is a service model rather than a deployment model.',
+      'An **on-premises** deployment, also called a private cloud, uses virtualization and resource management tools in the company’s own data center. Hybrid mixes on-premises with the cloud, all-in cloud runs everything in the cloud, and SaaS is a service model, not a deployment model.',
   },
   {
     id: 'cc-081',
@@ -1054,7 +1054,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Snow Family', 'Amazon CloudFront', 'AWS Local Zones', 'AWS Outposts'],
     answer: [3],
     explanation:
-      '**AWS Outposts** brings AWS infrastructure, services, APIs, and tools to a customer data center or on-premises facility, which supports hybrid deployments. The Snow Family is mainly for data transfer and disconnected edge computing, CloudFront delivers content, and Local Zones are AWS-operated locations rather than customer facilities.',
+      '**AWS Outposts** brings AWS infrastructure, services, APIs, and tools into a customer data center or on-premises facility, supporting hybrid deployments. The Snow Family is mainly for data transfer and disconnected edge computing, CloudFront delivers content, and Local Zones are AWS-operated, not customer facilities.',
   },
   {
     id: 'cc-082',
@@ -1069,7 +1069,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      'Hybrid deployments are often used to **keep some data or systems on premises** for regulatory reasons, or to **migrate gradually** while legacy applications stay on premises. A hybrid model uses AWS services, requires connectivity between environments, and does not guarantee the lowest cost.',
+      'Hybrid is often chosen to **keep some data or systems on premises** for regulatory reasons, or to **migrate gradually** while legacy apps stay on premises. A hybrid model does use AWS services, needs connectivity between environments, and doesn’t guarantee the lowest cost.',
   },
   {
     id: 'cc-083',
@@ -1084,7 +1084,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**IaaS** provides access to networking, virtual servers, and storage, and gives the most flexibility and control, including over the operating system. PaaS removes the need to manage the underlying infrastructure, SaaS provides a complete application, and DaaS delivers virtual desktops.',
+      '**IaaS** gives you networking, virtual servers, and storage, with the most flexibility and control, including over the operating system. PaaS removes the need to manage the underlying infrastructure, SaaS is a complete application, and DaaS delivers virtual desktops.',
   },
   {
     id: 'cc-084',
@@ -1099,7 +1099,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'With **PaaS**, such as AWS Elastic Beanstalk, you focus on deploying and managing your application while the provider manages the underlying infrastructure. IaaS requires managing the operating system, SaaS provides a finished application rather than a place to run your code, and on-premises is a deployment model.',
+      'With **PaaS**, such as AWS Elastic Beanstalk, you deploy and manage your app while the provider manages the infrastructure underneath. IaaS means managing the operating system, SaaS is a finished app rather than a place to run your code, and on-premises is a deployment model.',
   },
   {
     id: 'cc-085',
@@ -1114,7 +1114,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**SaaS** provides a complete product that the service provider runs and manages, such as web-based email, so the customer only thinks about how to use it. PaaS and IaaS require the customer to deploy or manage applications, and hybrid is a deployment model.',
+      '**SaaS** is a complete product that the provider runs and manages, such as web-based email; you just use it. PaaS and IaaS require you to deploy or manage applications, and hybrid is a deployment model.',
   },
   {
     id: 'cc-086',
@@ -1129,7 +1129,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [1, 4],
     explanation:
-      'With **IaaS**, such as Amazon EC2, the customer manages the guest operating system and applications, and with **SaaS** the provider runs and manages the entire application. SaaS customers do not patch servers, PaaS customers do not manage physical servers, and AWS does not patch the guest OS of EC2 instances for the customer.',
+      'With **IaaS**, such as Amazon EC2, you manage the guest operating system and applications. With **SaaS**, the provider runs and manages the whole application. SaaS customers don’t patch servers, PaaS customers don’t manage physical servers, and AWS doesn’t patch the guest OS of EC2 instances for you.',
   },
   {
     id: 'cc-087',
@@ -1144,7 +1144,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      'Moving from IaaS to PaaS to SaaS, the provider takes on more of the stack (infrastructure, then platform, then the application), so **the customer manages less**. That also means the customer has less control over the operating system, not more, and the other options describe the reverse.',
+      'Going from IaaS to PaaS to SaaS, the provider takes on more of the stack (infrastructure, then platform, then the application), so **the customer manages less**. That also means less control over the operating system, not more; the other options describe the reverse.',
   },
   {
     id: 'cc-088',
@@ -1160,7 +1160,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [2, 3],
     explanation:
-      'The general design principles include **test systems at production scale** and **drive architectures using data**, along with stop guessing capacity, automate to make experimentation easier, allow for evolutionary architectures, and improve through game days. A single AZ is a single point of failure, provisioning for peak is guessing capacity, and freezing the design contradicts evolutionary architectures.',
+      'The general design principles include **test systems at production scale** and **drive architectures using data**, plus stop guessing capacity, automate to make experimentation easier, allow for evolutionary architectures, and improve through game days. A single AZ is a single point of failure, provisioning for peak is guessing capacity, and freezing the design contradicts evolutionary architectures.',
   },
   {
     id: 'cc-089',
@@ -1170,7 +1170,7 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     options: ['AWS Outposts', 'Amazon CloudFront', 'AWS Direct Connect', 'AWS Snow Family'],
     answer: [1],
     explanation:
-      '**Amazon CloudFront** is a content delivery network that caches content at edge locations around the world to reduce latency for users. Outposts runs AWS infrastructure on premises, Direct Connect is a private network connection to AWS, and the Snow Family moves data on physical devices.',
+      '**Amazon CloudFront** is a content delivery network that caches content at edge locations worldwide to cut latency. Outposts runs AWS infrastructure on premises, Direct Connect is a private network connection to AWS, and the Snow Family moves data on physical devices.',
   },
   {
     id: 'cc-090',
@@ -1185,6 +1185,6 @@ export const cloudConceptsQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      'In the cloud, **new IT resources are only a click away**, and because you can release resources when you are done, **the cost and time of experimentation drop**. The cloud removes hardware procurement cycles and the need for long capacity forecasts, and it does not refactor workloads automatically.',
+      'In the cloud, **new IT resources are only a click away**, and because you can release resources when done, **experiments cost less time and money**. The cloud removes hardware procurement cycles and long capacity forecasts, and it doesn’t refactor workloads automatically.',
   },
 ];

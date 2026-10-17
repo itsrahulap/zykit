@@ -10,8 +10,8 @@ const docs: ToolDocs = {
   ],
   howItWorks:
     'Version 4 UUIDs are 122 random bits with the version and variant bits set as in RFC 9562. They come from the browser’s `crypto.randomUUID()` where available, or from `crypto.getRandomValues` otherwise.\n\n' +
-    'Version 7 UUIDs start with the current Unix time in milliseconds (48 bits), so they sort in creation order. The next 12 bits are a counter, seeded randomly each millisecond and incremented for every UUID made in the same millisecond, so a batch is strictly increasing (RFC 9562 section 6.2, method 1). If the counter runs out, or the clock goes backwards, the timestamp is moved forward by one millisecond instead. The remaining 62 bits are random from `crypto.getRandomValues`.\n\n' +
-    'The inspector reads the version from the 13th hex digit and the variant from the 17th. For v7 it decodes the millisecond timestamp; for v1 and v6 it converts the 60-bit count of 100-nanosecond intervals since 15 October 1582 to a date. The nil UUID (all zeros) and max UUID (all `f`) are recognised by name.',
+    'Version 7 UUIDs start with the current Unix time in milliseconds (48 bits), so they sort in creation order. The next 12 bits are a counter, seeded randomly each millisecond and incremented for each UUID in that millisecond, so a batch strictly increases (RFC 9562 section 6.2, method 1). If the counter runs out or the clock goes backwards, the timestamp moves forward one millisecond instead. The last 62 bits are random from `crypto.getRandomValues`.\n\n' +
+    'The inspector reads the version from the 13th hex digit and the variant from the 17th. For v7 it decodes the millisecond timestamp. For v1 and v6 it turns the 60-bit count of 100-nanosecond intervals since 15 October 1582 into a date. The nil UUID (all zeros) and max UUID (all `f`) are recognised by name.',
   limits: [
     'Only versions 4 and 7 can be generated; v1, v3, v5, v6 and v8 can be inspected but not created.',
     'Up to 1,000 UUIDs per batch. Values outside 1 to 1,000 are clamped, with a note.',
@@ -19,7 +19,7 @@ const docs: ToolDocs = {
     'Creation times are only shown for v1, v6 and v7, and are only as accurate as the clock of the machine that made the UUID.',
   ],
   privacy:
-    'UUIDs are generated and inspected in your browser; nothing is uploaded or stored, and this tool doesn’t create share links. **Send to…** passes the list to the other tool through this tab’s session storage, where it is removed as soon as that tool reads it.',
+    'UUIDs are generated and inspected in your browser. Nothing is uploaded or stored, and there are no share links. **Send to…** passes the list through this tab’s session storage, removed as soon as the other tool reads it.',
   faqs: [
     {
       question: 'Should I use v4 or v7?',

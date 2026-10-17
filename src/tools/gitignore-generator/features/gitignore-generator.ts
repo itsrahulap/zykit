@@ -10,6 +10,15 @@ export type { Template } from './templates';
 const byId = new Map(TEMPLATES.map((t) => [t.id, t]));
 export const templateById = (id: string): Template | undefined => byId.get(id);
 
+/** One-click template combinations for common projects. */
+export const STARTERS: { name: string; ids: string[] }[] = [
+  { name: 'React + Node + VS Code + macOS', ids: ['node', 'react', 'vite', 'vscode', 'macos', 'env'] },
+  { name: 'Next.js', ids: ['node', 'nextjs', 'vscode', 'macos', 'env'] },
+  { name: 'Python + Django', ids: ['python', 'django', 'jupyter', 'vscode', 'env'] },
+  { name: 'Java + Spring', ids: ['java', 'maven', 'gradle', 'spring', 'jetbrains'] },
+  { name: 'Go service + Docker', ids: ['go', 'docker', 'env', 'vscode'] },
+];
+
 export const MAX_RULE_LINES = 20_000;
 export const MAX_PATHS = 2_000;
 

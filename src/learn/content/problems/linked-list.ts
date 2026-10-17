@@ -7,13 +7,11 @@ export const linkedListProblems: Problem[] = [
     difficulty: "Easy",
     category: "linked-list",
     description: `
-You're given the head of a singly linked list, where every node points
-only to the node after it. Flip the direction of the whole list so that
-the last node becomes the first, and the first becomes the last, then
-return the new head.
+Given the head of a singly linked list (each node points only to the next
+one), reverse the list and return the new head.
 
-You can't just relabel the values — you actually need to rewire each
-node's pointer to point at the node that used to come before it.
+Don't just relabel the values — rewire each node's pointer to point at the
+node that came before it.
     `.trim(),
     examples: [
       { input: "head = [1, 2, 3, 4, 5]", output: "[5, 4, 3, 2, 1]" },
@@ -22,39 +20,35 @@ node's pointer to point at the node that used to come before it.
     ],
     constraints: ["The number of nodes is between 0 and 5000.", "-5000 <= Node.val <= 5000"],
     hints: [
-      "Picture standing at one node with a piece of string tied to the node before it. If you move forward before tying the string, you lose the node behind you forever — so save 'next' before you overwrite it.",
-      "You only ever need to remember two things as you walk the list: the node you just finished rewiring, and the node you're currently rewiring.",
-      "The very last node to be visited becomes the new head, since it's the only one that never gets a forward pointer reassigned to it from a later node.",
+      "Once you overwrite a node's next pointer, you lose the rest of the list — so save 'next' first.",
+      "As you walk the list, you only need two things: the node you just rewired and the node you're rewiring now.",
+      "The last node you visit becomes the new head.",
     ],
     approachOverview: `
-Walking through the list and flipping one pointer at a time works, but
-you have to be careful about order: once you overwrite a node's next
-pointer, you can't get to what used to come after it unless you saved
-that reference first.
+Flip one pointer at a time as you walk the list. Order matters: once you
+overwrite a node's next pointer, you can't reach the rest of the list
+unless you saved that reference first.
 
-The clean way is to carry three references as you walk: the node before
-the current one (initially nothing), the current node, and (temporarily)
-the node after it. At each step you point the current node backward,
-then shift all three references one step forward. The same idea can also
-be expressed recursively, reversing the rest of the list first and then
-fixing up the one link at the very front.
+Carry three references: the previous node (initially null), the current
+node, and (briefly) the next node. At each step, point the current node
+backward, then move all three one step forward.
+
+You can also do it recursively: reverse the rest of the list first, then
+fix the one link at the front.
     `.trim(),
     solutions: [
       {
         approach: "Recursive Reversal",
         explanation: `
-Trust that reversing everything after the current node already works
-(that's the recursive leap of faith), and just fix up the link between
-the current node and the rest.
+Trust that the recursive call reverses everything after the current node,
+then fix the link between the current node and the rest.
 
-Once the rest of the list is reversed, the node right after the current
-one is now the *last* node of that reversed piece. So you make that
-node point back at the current node, and cut the current node's own
-forward pointer.
+After the rest is reversed, the node right after the current one is the
+*last* node of that reversed piece. Point it back at the current node, and
+clear the current node's forward pointer.
 
-This is elegant to read, but each recursive call sits on the call stack
-until the whole list has been walked, so it uses memory proportional to
-the length of the list.
+It reads nicely, but every call stays on the stack until the end of the
+list, so it uses memory proportional to the list's length.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -83,13 +77,12 @@ function reverseList(head) {
       {
         approach: "Optimal — Iterative Pointer Rewiring",
         explanation: `
-Walk the list exactly once, keeping a running "previous" pointer that
-starts at null. At each node, save its next pointer before touching
-anything, then point the current node back at "previous", then slide
-both "previous" and "current" one step forward.
+Walk the list once with a "previous" pointer that starts at null. At each
+node, save its next pointer, point the node back at "previous", then move
+"previous" and "current" one step forward.
 
-When "current" finally runs off the end of the list, "previous" is
-sitting on the old last node — which is exactly the new head.
+When "current" runs off the end, "previous" is on the old last node — the
+new head.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -114,11 +107,11 @@ function reverseList(head) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "let prev = null;", explanation: "Nothing comes before the first node once it's reversed, so it will eventually point at null." },
-          { code: "const next = curr.next;", explanation: "Grabs a copy of what comes next before that link gets overwritten." },
-          { code: "curr.next = prev;", explanation: "Flips the current node's pointer to point backward instead of forward." },
-          { code: "prev = curr; curr = next;", explanation: "Slides the whole window one step forward using the saved reference." },
-          { code: "return prev;", explanation: "Once curr falls off the list, prev is resting on the last node visited — the new head." },
+          { code: "let prev = null;", explanation: "The first node becomes the last, so it ends up pointing at null." },
+          { code: "const next = curr.next;", explanation: "Saves the next node before that link is overwritten." },
+          { code: "curr.next = prev;", explanation: "Points the current node backward instead of forward." },
+          { code: "prev = curr; curr = next;", explanation: "Moves both pointers one step forward using the saved reference." },
+          { code: "return prev;", explanation: "When curr falls off the list, prev is on the last node visited — the new head." },
         ],
       },
     ],
@@ -131,13 +124,11 @@ function reverseList(head) {
     difficulty: "Easy",
     category: "linked-list",
     description: `
-You're given the heads of two linked lists, and each one is already
-sorted in increasing order. Combine them into a single sorted linked
-list and return its head.
+Given the heads of two linked lists, each sorted in increasing order,
+merge them into one sorted list and return its head.
 
-You should reuse the existing nodes from both lists rather than
-creating brand-new ones — you're just re-threading the pointers so the
-values come out in order.
+Reuse the existing nodes instead of creating new ones — just re-link the
+pointers so the values come out in order.
     `.trim(),
     examples: [
       { input: "list1 = [1, 2, 4], list2 = [1, 3, 4]", output: "[1, 1, 2, 3, 4, 4]" },
@@ -146,31 +137,27 @@ values come out in order.
     ],
     constraints: ["The number of nodes in each list is between 0 and 50.", "-100 <= Node.val <= 100", "Both lists are sorted in non-decreasing order."],
     hints: [
-      "Since both lists are already sorted, at any moment the smallest value left anywhere has to be sitting at the front of one of the two lists.",
-      "A throwaway 'dummy' node before the real head lets you build the result without special-casing what happens on the very first comparison.",
-      "Once one list runs out, whatever is left of the other list is already sorted — you can attach it wholesale instead of comparing node by node.",
+      "Both lists are sorted, so the smallest remaining value is always at the front of one of them.",
+      "A throwaway 'dummy' node before the real head means the first comparison needs no special case.",
+      "When one list runs out, the rest of the other is already sorted — attach it all at once.",
     ],
     approachOverview: `
-One way to think about this: dump every value from both lists into one
-big collection, sort that collection, then rebuild a list from it. That
-works, but it throws away the fact that the lists were already sorted —
-you're paying for a full sort you don't actually need.
+You could put every value in one collection, sort it, and rebuild a list.
+That works, but it ignores that the lists are already sorted, so you pay
+for a sort you don't need.
 
-Since both lists arrive pre-sorted, you can instead walk them side by
-side with two pointers. At each step, whichever list currently has the
-smaller front value gets attached next to the result, and only that
-pointer advances. Repeating this until one list is exhausted, then
-tacking on the remainder of the other list, produces the merged list in
-a single pass.
+Instead, walk both lists side by side with two pointers. At each step,
+attach the smaller front node to the result and advance only that
+pointer. When one list runs out, attach the rest of the other. This merges
+the lists in one pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Collect, Sort, Rebuild",
         explanation: `
-Read every value out of both lists into a plain array, sort that array,
-and build a fresh list from the sorted values. This ignores the fact
-that each input list was already sorted, so it does more comparison
-work than necessary.
+Copy every value from both lists into an array, sort it, and build a new
+list from it. This ignores that the inputs are already sorted, so it does
+more comparisons than needed.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -210,12 +197,12 @@ function mergeTwoLists(list1, list2) {
       {
         approach: "Optimal — Two-Pointer Merge",
         explanation: `
-Keep one pointer on each list. Compare their front values, splice the
-smaller node onto the end of the result, and advance only the pointer
-that lost the comparison. A dummy node at the front of the result gives
-you a stable place to hang the very first real node without any special
-casing. When one list runs dry, the remainder of the other list is
-already sorted, so it can be attached in one step.
+Keep one pointer on each list. Compare the front values, attach the
+smaller node to the result, and advance only that pointer.
+
+A dummy node at the front gives the first real node somewhere to attach
+without a special case. When one list runs out, the rest of the other is
+already sorted, so attach it in one step.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -247,10 +234,10 @@ function mergeTwoLists(list1, list2) {
         timeComplexity: "O(n + m)",
         spaceComplexity: "O(1) — reuses existing nodes",
         walkthrough: [
-          { code: "const dummy = new ListNode(0);", explanation: "A throwaway node so the real result never needs special-case handling for its first element." },
-          { code: "if (list1.val <= list2.val) { ... } else { ... }", explanation: "Picks whichever list currently has the smaller front value." },
-          { code: "curr.next = list1; list1 = list1.next;", explanation: "Attaches the winning node to the result and advances only that list's pointer." },
-          { code: "curr.next = list1 !== null ? list1 : list2;", explanation: "Once one list is empty, the other is already sorted, so the rest attaches in a single step." },
+          { code: "const dummy = new ListNode(0);", explanation: "A throwaway node so the first real node needs no special case." },
+          { code: "if (list1.val <= list2.val) { ... } else { ... }", explanation: "Picks the list with the smaller front value." },
+          { code: "curr.next = list1; list1 = list1.next;", explanation: "Attaches that node to the result and advances only its list." },
+          { code: "curr.next = list1 !== null ? list1 : list2;", explanation: "Once one list is empty, the rest of the other is already sorted, so it attaches in one step." },
         ],
       },
     ],
@@ -263,13 +250,12 @@ function mergeTwoLists(list1, list2) {
     difficulty: "Easy",
     category: "linked-list",
     description: `
-You're given the head of a linked list. Somewhere in the list, a later
-node's pointer might loop back around to an earlier node instead of
-eventually reaching null — creating a cycle. Determine whether the list
-has a cycle anywhere in it.
+Given the head of a linked list, decide whether it has a cycle: a node
+whose pointer loops back to an earlier node instead of eventually
+reaching null.
 
-You just need a yes/no answer; you don't need to say where the cycle
-starts or how long it is.
+Return only true or false — you don't need to find where the cycle starts
+or how long it is.
     `.trim(),
     examples: [
       { input: "head = [3, 2, 0, -4], the last node connects back to the node with value 2", output: "true" },
@@ -278,32 +264,28 @@ starts or how long it is.
     ],
     constraints: ["The number of nodes is between 0 and 10^4.", "-10^5 <= Node.val <= 10^5"],
     hints: [
-      "If you keep a record of every node you've already visited, revisiting one tells you there's a cycle — but that record costs extra memory.",
-      "Imagine two runners on the same track, one moving twice as fast as the other. If the track is a loop, the faster runner eventually laps the slower one.",
-      "If the faster pointer ever reaches the end of the list (hits null), there was no loop to run around in the first place.",
+      "Recording every visited node works — revisiting one means a cycle — but costs extra memory.",
+      "Picture two runners, one twice as fast. On a loop track, the faster one eventually laps the slower one.",
+      "If the fast pointer reaches the end of the list (null), there's no loop.",
     ],
     approachOverview: `
-The straightforward approach is to remember every node you've visited
-in a set. If you ever land on a node that's already in the set, you've
-looped back around, so there's a cycle. If you instead run off the end
-of the list (reach null), there wasn't one. This works, but it spends
-extra memory tracking every node.
+The simple approach stores every visited node in a set. Landing on a node
+already in the set means there's a cycle; reaching null means there isn't.
+This costs extra memory for every node.
 
-A cleverer approach uses two pointers moving at different speeds — a
-slow one that moves one node at a time, and a fast one that moves two
-nodes at a time. If there's no cycle, the fast pointer simply reaches
-the end first. If there is a cycle, the fast pointer eventually enters
-the loop and, lap by lap, closes the gap on the slow pointer until they
-land on the same node. This needs no extra memory at all.
+A better approach uses two pointers: a slow one that moves one node at a
+time and a fast one that moves two. With no cycle, the fast pointer reaches
+the end. With a cycle, the fast pointer enters the loop and closes the gap
+on the slow one until they meet on the same node. This needs no extra
+memory.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Track Visited Nodes",
         explanation: `
-Walk the list one node at a time, remembering every node reference
-you've seen in a set. If the current node is already in the set,
-you've come back around to it, so there's a cycle. If you reach null
-before that happens, there's no cycle.
+Walk the list and store every node you see in a set. If the current node
+is already in the set, there's a cycle. If you reach null first, there
+isn't.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -330,12 +312,10 @@ function hasCycle(head) {
       {
         approach: "Optimal — Floyd's Tortoise and Hare",
         explanation: `
-Use two pointers starting at the head: a slow one that advances one
-node per step, and a fast one that advances two nodes per step. If the
-fast pointer (or its next node) ever hits null, the list ends cleanly
-and there's no cycle. If instead the two pointers ever land on the
-exact same node, the fast one has lapped the slow one inside a loop,
-which can only happen if a cycle exists.
+Start two pointers at the head: slow moves one node per step, fast moves
+two. If fast (or its next node) hits null, the list ends and there's no
+cycle. If the two pointers land on the same node, fast has lapped slow
+inside a loop, which only happens when a cycle exists.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -360,9 +340,9 @@ function hasCycle(head) {
         spaceComplexity: "O(1)",
         walkthrough: [
           { code: "let slow = head; let fast = head;", explanation: "Both runners start at the same place." },
-          { code: "while (fast !== null && fast.next !== null)", explanation: "Stops safely the moment the fast runner would fall off the end — meaning no cycle." },
-          { code: "slow = slow.next; fast = fast.next.next;", explanation: "The fast runner covers ground twice as quickly as the slow one." },
-          { code: "if (slow === fast) return true;", explanation: "If a loop exists, the fast runner eventually catches back up to the slow one from behind." },
+          { code: "while (fast !== null && fast.next !== null)", explanation: "Stops as soon as the fast runner would fall off the end — meaning no cycle." },
+          { code: "slow = slow.next; fast = fast.next.next;", explanation: "The fast runner moves twice as fast as the slow one." },
+          { code: "if (slow === fast) return true;", explanation: "If there's a loop, the fast runner eventually catches the slow one from behind." },
         ],
       },
     ],
@@ -375,14 +355,11 @@ function hasCycle(head) {
     difficulty: "Medium",
     category: "linked-list",
     description: `
-You're given the head of a singly linked list with nodes, in order,
-holding values L0, L1, L2, ..., Ln. Rearrange the nodes in place (without
-just copying the values into a new structure) so the list instead reads
-L0, Ln, L1, Ln-1, L2, Ln-2, and so on — alternating one node from the
-front of the original order with one from the back, working inward.
+Given the head of a singly linked list L0, L1, L2, ..., Ln, rearrange it
+in place to read L0, Ln, L1, Ln-1, L2, Ln-2, and so on — alternating one
+node from the front and one from the back, working inward.
 
-You're changing the pointers between the existing nodes, not swapping
-the values stored inside them.
+Change the pointers between existing nodes; don't copy or swap the values.
     `.trim(),
     examples: [
       { input: "head = [1, 2, 3, 4]", output: "[1, 4, 2, 3]" },
@@ -391,31 +368,28 @@ the values stored inside them.
     ],
     constraints: ["The number of nodes is between 1 and 5 * 10^4.", "1 <= Node.val <= 1000"],
     hints: [
-      "If you had random access to every node (say, in an array), you could just read off the pattern with one pointer starting at the front and one at the back.",
-      "To do it without extra memory, notice that the second half of the list, reversed, is exactly the sequence of nodes you need to interleave with the first half.",
-      "Splitting the list at its middle is itself a fast/slow pointer problem — the same trick used to find a list's midpoint.",
+      "With every node in an array, you could read off the pattern with one pointer at the front and one at the back.",
+      "Without extra memory: the second half, reversed, is exactly the sequence you need to interleave with the first half.",
+      "Finding the middle to split the list is a fast/slow pointer problem.",
     ],
     approachOverview: `
-A direct approach: drop every node reference into an array (this gives
-you random access), then use two indices, one starting at the front and
-one at the back, stitching the list back together by alternating
-between them.
+The direct approach puts every node in an array for random access, then
+uses one index from the front and one from the back, re-linking the list
+by alternating between them.
 
-The more memory-efficient approach avoids the array entirely. First,
-find the middle of the list using a fast/slow pointer. Then reverse the
-second half in place, so its nodes now come out in exactly the
-back-to-front order you need. Finally, zipper the first half and the
-reversed second half together one node at a time, which produces the
-required order without ever needing random access.
+The memory-efficient approach skips the array:
+
+- Find the middle with fast/slow pointers.
+- Reverse the second half in place, so its nodes come out back to front.
+- Zip the first half and the reversed second half together, one node at a time.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Random Access via Array",
         explanation: `
-Collect every node reference into an array, in order. Then use two
-indices — one starting at the front, one at the back — and rewire each
-node's next pointer to alternate between them, moving the indices
-toward each other until they meet.
+Put every node in an array, in order. With one index at the front and one
+at the back, rewire next pointers to alternate between them, moving the
+indices inward until they meet.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -453,17 +427,14 @@ function reorderList(head) {
       {
         approach: "Optimal — Split, Reverse Second Half, Merge",
         explanation: `
-First, locate the middle of the list with a slow pointer (one step at a
-time) and a fast pointer (two steps at a time) — when the fast pointer
-runs out of room, the slow pointer sits at the middle. Cut the list
-there into two halves.
+Find the middle with a slow pointer (one step) and a fast pointer (two
+steps): when fast runs out of room, slow is at the middle. Cut the list
+there.
 
-Reverse the second half in place, so walking it front to back now
-yields the original list's values back to front.
+Reverse the second half in place, so it now runs back to front.
 
-Finally, weave the first half and the reversed second half together:
-take one node from the first half, then one from the reversed second
-half, and repeat, re-pointing next as you go.
+Then weave the halves together: one node from the first half, one from the
+reversed second half, and repeat, updating next as you go.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -509,10 +480,10 @@ function reorderList(head) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "while (fast.next && fast.next.next) { slow = slow.next; fast = fast.next.next; }", explanation: "The classic fast/slow scan — when fast runs out of room, slow is resting on the middle node." },
-          { code: "let second = slow.next; slow.next = null;", explanation: "Physically splits the list into a front half and a back half." },
-          { code: "second.next = prev; ...", explanation: "Reverses the back half in place, so it now reads in the exact back-to-front order needed." },
-          { code: "first.next = second; second.next = firstNext;", explanation: "Zippers one node from the front half with one from the reversed back half, alternating until the shorter half runs out." },
+          { code: "while (fast.next && fast.next.next) { slow = slow.next; fast = fast.next.next; }", explanation: "Fast/slow scan — when fast runs out of room, slow is on the middle node." },
+          { code: "let second = slow.next; slow.next = null;", explanation: "Splits the list into a front half and a back half." },
+          { code: "second.next = prev; ...", explanation: "Reverses the back half in place, so it runs back to front." },
+          { code: "first.next = second; second.next = firstNext;", explanation: "Alternates one node from each half until the shorter half runs out." },
         ],
       },
     ],
@@ -525,11 +496,10 @@ function reorderList(head) {
     difficulty: "Medium",
     category: "linked-list",
     description: `
-You're given the head of a linked list and a number n. Remove the node
-that sits n positions from the *end* of the list (so n = 1 means remove
-the very last node), then return the head of the resulting list.
+Given the head of a linked list and a number n, remove the nth node from
+the *end* (n = 1 means the last node) and return the head.
 
-Try to do it by walking the list only once.
+Try to do it in one pass.
     `.trim(),
     examples: [
       { input: "head = [1, 2, 3, 4, 5], n = 2", output: "[1, 2, 3, 5]", explanation: "The 2nd node from the end is the one with value 4." },
@@ -538,32 +508,27 @@ Try to do it by walking the list only once.
     ],
     constraints: ["The number of nodes is between 1 and 30.", "0 <= Node.val <= 100", "1 <= n <= number of nodes in the list"],
     hints: [
-      "If you knew the total length of the list up front, 'the nth node from the end' converts directly into a fixed position counted from the front.",
-      "You don't actually need to know the length beforehand — you can discover it implicitly by starting one pointer n steps ahead of the other.",
-      "To remove a node cleanly, you need a hold on the node just *before* it, not the node itself. A dummy node in front of the head helps handle removing the very first real node.",
+      "If you knew the list's length, 'nth from the end' would become a fixed position from the front.",
+      "You don't need the length up front — start one pointer n steps ahead of the other.",
+      "To remove a node, you need the node just *before* it. A dummy node in front of the head handles removing the first real node.",
     ],
     approachOverview: `
-If you first walk the whole list once just to count its length, then
-"n from the end" becomes a plain, fixed position counted from the
-front — you can walk to just before that position and unlink the node
-after it. That's correct, but it takes two full passes.
+If you first count the list's length, "n from the end" becomes a fixed
+position from the front: walk to just before it and unlink the next node.
+That works, but takes two passes.
 
-You can fold both passes into one: start two pointers together, but
-advance one of them (the "fast" pointer) n steps ahead before moving
-the other pointer at all. From then on, move both pointers one step at
-a time. When the fast pointer reaches the end of the list, the gap
-you built in means the slow pointer is sitting exactly one node before
-the one that needs to be removed.
+To do it in one pass, move a "fast" pointer n steps ahead, then move both
+pointers one step at a time. When fast reaches the end, the gap leaves
+the slow pointer exactly one node before the one to remove.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Two Passes (Count, Then Remove)",
         explanation: `
-Walk the list once just to count how many nodes it has. That count
-tells you exactly how many steps in from the front the target node
-sits. Walk the list a second time to that position and unlink the
-node there. A dummy node placed before the head makes removing the
-very first node no different from removing any other.
+Walk the list once to count its nodes, which tells you how far from the
+front the target is. Walk again to that position and unlink the node. A
+dummy node before the head means removing the first node needs no special
+case.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -595,13 +560,10 @@ function removeNthFromEnd(head, n) {
       {
         approach: "Optimal — One Pass with a Gap",
         explanation: `
-Attach a dummy node in front of the head so removing the real head node
-needs no special case. Advance a "fast" pointer n steps ahead of a
-"slow" pointer, both starting at the dummy node. Then move both
-pointers forward together, one step at a time, until fast reaches the
-last node. Because of the n-node gap you built in, slow is now sitting
-exactly one node before the one to remove, so you can unlink it
-directly.
+Put a dummy node in front of the head so removing the head needs no
+special case. Start "fast" and "slow" at the dummy, and move fast n steps
+ahead. Then move both together until fast reaches the last node. Thanks to
+the n-node gap, slow is now one node before the target, so unlink it.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -630,10 +592,10 @@ function removeNthFromEnd(head, n) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "const dummy = new ListNode(0, head);", explanation: "Gives slow a valid starting point even when the node to remove is the original head." },
-          { code: "for (let i = 0; i < n; i++) { fast = fast.next; }", explanation: "Builds a fixed n-node gap between fast and slow before either one really starts walking." },
-          { code: "while (fast.next) { fast = fast.next; slow = slow.next; }", explanation: "Both pointers move together, preserving the gap, until fast is on the last real node." },
-          { code: "slow.next = slow.next.next;", explanation: "Slow is now sitting one node before the target, so this single line skips over and removes it." },
+          { code: "const dummy = new ListNode(0, head);", explanation: "Gives slow a valid start even when the node to remove is the head." },
+          { code: "for (let i = 0; i < n; i++) { fast = fast.next; }", explanation: "Creates an n-node gap between fast and slow." },
+          { code: "while (fast.next) { fast = fast.next; slow = slow.next; }", explanation: "Moves both together, keeping the gap, until fast is on the last node." },
+          { code: "slow.next = slow.next.next;", explanation: "Slow is one node before the target, so this skips over and removes it." },
         ],
       },
     ],
@@ -646,15 +608,13 @@ function removeNthFromEnd(head, n) {
     difficulty: "Medium",
     category: "linked-list",
     description: `
-You're given a linked list where every node has two pointers: the usual
-"next" pointer to the following node, and an extra "random" pointer
-that can point to *any* node in the list (including itself), or to
-nothing at all.
+Each node in this linked list has two pointers: the usual "next", and a
+"random" pointer that can point to *any* node in the list (including
+itself) or to null.
 
-Produce a completely independent deep copy of this list: same values in
-the same order, with each copied node's "random" pointer aimed at the
-*corresponding copy*, not at a node from the original list. None of the
-new nodes should be shared with the original list.
+Make a fully independent deep copy: same values in the same order, with
+each copy's "random" pointer aimed at the *matching copy*, not the
+original node. The copy must not share any nodes with the original.
     `.trim(),
     examples: [
       {
@@ -670,34 +630,28 @@ new nodes should be shared with the original list.
     ],
     constraints: ["The number of nodes is between 0 and 1000.", "-10^4 <= Node.val <= 10^4", "random is null or points at a node in the same list."],
     hints: [
-      "If you make a copy of each node before wiring up any random pointers, you'll need some way to translate 'this original node' into 'its matching copy' — a hash map from original node to copy node does exactly that.",
-      "You can avoid the hash map's extra memory by splicing each copy directly into the original list, right after the node it's copying — that turns 'find the copy of X' into 'just look at X.next'.",
-      "Once every random pointer is wired up using that trick, you still need one more pass to separate the interleaved original and copied nodes back into two independent lists.",
+      "If you copy every node before wiring random pointers, you need to map each original to its copy — a hash map does that.",
+      "To skip the hash map, splice each copy into the original list right after its original. Then 'the copy of X' is just X.next.",
+      "After wiring the random pointers, one more pass separates the interleaved nodes into two independent lists.",
     ],
     approachOverview: `
-The direct approach is to first create a plain copy of every node (with
-no pointers set yet), and use a hash map to remember which copy
-corresponds to which original node. Then, in a second pass, use that
-map to wire up every copy's "next" and "random" pointers by looking up
-the copies of the original's neighbors. This is simple and correct, but
-the hash map costs memory proportional to the list's length.
+The direct approach copies every node (no pointers yet) and uses a hash
+map from each original to its copy. A second pass uses the map to set
+each copy's "next" and "random" pointers. It's simple, but the map uses
+memory proportional to the list's length.
 
-The more elegant approach skips the hash map by temporarily interleaving
-the copied nodes directly into the original list — each original node
-gets its copy inserted immediately after it. With that arrangement,
-"the copy of node X" is always just X.next, so random pointers can be
-wired up without any lookup structure at all. A final pass then splits
-the doubled-up list back into the original list and the standalone copy.
+The neater approach skips the map by inserting each copy right after its
+original in the list. Then "the copy of X" is always X.next, so random
+pointers can be wired with no lookup. A final pass splits the list back
+into the original and the copy.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Hash Map from Original to Copy",
         explanation: `
-First pass: walk the original list and create a bare copy of each node
-(value only), storing "original node -> copy node" in a map. Second
-pass: walk the original list again, and for each original node, use the
-map to set its copy's next and random pointers to the copies of the
-original's own next and random targets.
+First pass: copy each node's value and store "original -> copy" in a map.
+Second pass: for each original, use the map to point its copy's next and
+random at the copies of the original's next and random targets.
         `.trim(),
         code: `class Node {
   constructor(val, next = null, random = null) {
@@ -734,18 +688,14 @@ function copyRandomList(head) {
       {
         approach: "Optimal — Interleave Copies In Place",
         explanation: `
-Step 1: for every original node, create its copy and splice it in
-immediately afterward, so the list temporarily reads
-original1 -> copy1 -> original2 -> copy2 -> ...
+Step 1: create each node's copy and splice it in right after the
+original, so the list reads original1 -> copy1 -> original2 -> copy2 -> ...
 
-Step 2: now that "the copy of any node X" is always just X.next, walk
-the interleaved list and set each copy's random pointer to
-(original's random node).next — which is exactly that random node's
-copy.
+Step 2: "the copy of X" is now X.next, so set each copy's random pointer
+to (original's random node).next — that random node's copy.
 
-Step 3: walk the interleaved list once more, unhooking the copy nodes
-from the originals to restore the original list and produce the
-standalone copied list.
+Step 3: walk the list again and unhook the copies, restoring the original
+list and producing the standalone copy.
         `.trim(),
         code: `class Node {
   constructor(val, next = null, random = null) {
@@ -792,9 +742,9 @@ function copyRandomList(head) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(1) extra — aside from the copied nodes themselves",
         walkthrough: [
-          { code: "const copy = new Node(curr.val, curr.next); curr.next = copy;", explanation: "Splices a fresh copy right after its original, so original.next now always leads to that original's own copy." },
-          { code: "curr.next.random = curr.random.next;", explanation: "curr.random is some original node, and that node's own copy is just one step past it — no lookup needed." },
-          { code: "curr.next = copy.next; copyCurr.next = copy;", explanation: "Peels the copy back out of the interleaved chain, restoring the original list while building the standalone copy in parallel." },
+          { code: "const copy = new Node(curr.val, curr.next); curr.next = copy;", explanation: "Splices a new copy right after its original, so original.next is always its copy." },
+          { code: "curr.next.random = curr.random.next;", explanation: "curr.random is an original node, and its copy is one step past it — no lookup needed." },
+          { code: "curr.next = copy.next; copyCurr.next = copy;", explanation: "Unhooks the copy, restoring the original list while building the standalone copy." },
         ],
       },
     ],
@@ -807,14 +757,12 @@ function copyRandomList(head) {
     difficulty: "Medium",
     category: "linked-list",
     description: `
-Two non-negative integers are stored as linked lists, one digit per
-node, with the *least significant digit first* (so the list
-[2, 4, 3] represents the number 342). Add the two numbers together and
-return the sum, also as a linked list of digits in the same
-least-significant-first order.
+Two non-negative integers are stored as linked lists, one digit per node,
+*least significant digit first* (so [2, 4, 3] is 342). Add them and return
+the sum as a linked list in the same order.
 
-Neither input list has leading zero digits, except that the number 0
-itself is represented as a single node holding 0.
+Neither list has leading zeros, except the number 0 itself, which is a
+single node holding 0.
     `.trim(),
     examples: [
       { input: "l1 = [2, 4, 3], l2 = [5, 6, 4]", output: "[7, 0, 8]", explanation: "342 + 465 = 807, and 807 written least-significant-digit-first is [7, 0, 8]." },
@@ -823,33 +771,26 @@ itself is represented as a single node holding 0.
     ],
     constraints: ["Each list has between 1 and 100 nodes.", "0 <= Node.val <= 9", "Neither list has a leading zero, except the number 0 itself."],
     hints: [
-      "Because digits are stored least-significant first, this lines up perfectly with how you'd add numbers by hand starting from the ones place — no reversing needed.",
-      "At each position, add the two digits (if both lists still have one) plus whatever carry came from the previous position; the new digit is that sum mod 10, and the new carry is that sum divided by 10.",
-      "Don't stop as soon as one list runs out — the shorter list contributes 0 at each remaining position, and a leftover carry after both lists end still needs one more digit.",
+      "Digits are stored least-significant first, just like adding by hand from the ones place — no reversing needed.",
+      "At each position, add the available digits plus the carry. The new digit is sum mod 10; the new carry is sum divided by 10.",
+      "Don't stop when one list runs out — it counts as 0 from then on. A leftover carry at the end needs one more digit.",
     ],
     approachOverview: `
-Since each list already represents its number with the smallest digit
-first, one option is to convert each list into an actual (possibly very
-large) number, add the two numbers normally, and then turn the result
-back into a list of digits. This works, but it means building up large
-number representations and converting between formats, which is more
-work than the problem actually requires.
+You could convert each list into a (possibly very large) number, add them,
+and turn the result back into a list. That works, but the conversions are
+more work than needed.
 
-The direct approach mirrors how you add numbers by hand: walk both
-lists at the same time, one digit position at a time, adding the two
-digits plus any carry left over from the previous position, and writing
-down the ones digit of that sum while carrying the rest forward. Once
-both lists are exhausted, if there's still a carry left, it becomes one
-final extra digit.
+The direct approach adds the way you do by hand. Walk both lists together,
+one digit at a time. Add the two digits plus the carry, write down the
+ones digit, and carry the rest. If a carry is left after both lists end,
+it becomes one final digit.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Convert to Numbers and Back",
         explanation: `
-Read each list into a big integer (using an arbitrary-precision type so
-very long lists don't lose precision), add the two integers directly,
-then split the sum's digits back out into a new list, remembering to
-lay them down least-significant-digit first again.
+Read each list into a BigInt (so long lists don't lose precision), add
+them, then split the sum into a new list, least significant digit first.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -886,12 +827,10 @@ function addTwoNumbers(l1, l2) {
       {
         approach: "Optimal — Digit-by-Digit Simulation",
         explanation: `
-Walk both lists at once, one node per position. At each step, add
-whatever digits are available (treating a list that's already run out
-as contributing 0) plus the carry from the previous step. The new
-node's value is that sum modulo 10, and the carry going forward is that
-sum divided by 10 (rounded down). Keep going as long as either list
-still has nodes, or there's a leftover carry to place.
+Walk both lists together. At each step, add the available digits (a
+finished list counts as 0) plus the carry. The new node's value is sum
+mod 10, and the new carry is sum divided by 10, rounded down. Continue
+while either list has nodes or a carry is left.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -924,10 +863,10 @@ function addTwoNumbers(l1, l2) {
         timeComplexity: "O(max(n, m))",
         spaceComplexity: "O(1) extra, not counting the output list",
         walkthrough: [
-          { code: "while (l1 !== null || l2 !== null || carry !== 0)", explanation: "Keeps going as long as either list has digits left, or there's still a carry to write down." },
-          { code: "const digit1 = l1 ? l1.val : 0;", explanation: "A list that's already ended simply contributes 0 at this position, same as adding by hand with a shorter number." },
-          { code: "carry = Math.floor(sum / 10);", explanation: "Anything past the ones place rolls forward into the next position's addition." },
-          { code: "curr.next = new ListNode(sum % 10);", explanation: "Only the ones digit of this position's sum becomes part of the answer." },
+          { code: "while (l1 !== null || l2 !== null || carry !== 0)", explanation: "Continues while either list has digits or a carry is left." },
+          { code: "const digit1 = l1 ? l1.val : 0;", explanation: "A finished list counts as 0, like adding a shorter number by hand." },
+          { code: "carry = Math.floor(sum / 10);", explanation: "Anything past the ones place carries into the next position." },
+          { code: "curr.next = new ListNode(sum % 10);", explanation: "Only the ones digit goes into the answer." },
         ],
       },
     ],
@@ -940,15 +879,12 @@ function addTwoNumbers(l1, l2) {
     difficulty: "Medium",
     category: "linked-list",
     description: `
-You're given an array of n + 1 integers, where every value is between 1
-and n (inclusive). Exactly one value appears more than once — it might
-appear two times or more — while every other value appears exactly
-once. Find that repeated value.
+Given an array of n + 1 integers, each between 1 and n (inclusive),
+exactly one value repeats (two or more times). Find it.
 
-You're not allowed to modify the array, and you should use only a
-constant amount of extra memory (so sorting a copy or using a
-hash set doesn't count as satisfying the full challenge, even though
-either would give you a correct answer).
+Don't modify the array, and use only constant extra memory. Sorting a copy
+or using a hash set gives a correct answer but doesn't meet the full
+challenge.
     `.trim(),
     examples: [
       { input: "nums = [1, 3, 4, 2, 2]", output: "2" },
@@ -957,37 +893,31 @@ either would give you a correct answer).
     ],
     constraints: ["1 <= n <= 10^5", "nums.length == n + 1", "1 <= nums[i] <= n", "Exactly one value in nums repeats (one or more extra times)."],
     hints: [
-      "Values only range from 1 to n but there are n + 1 of them, so by the pigeonhole principle at least one value has to repeat — you can't avoid it.",
-      "Binary search doesn't need to search the array's positions — it can search over the range of *possible values* instead, using a count of 'how many numbers are <= this candidate' to decide which half holds the duplicate.",
-      "If you treat each array value as an arrow pointing from its index to the index it names (index i points at index nums[i]), the fact that two different indices point at the same value creates a loop — which is exactly the shape a cycle-detection algorithm is built to find.",
+      "There are n + 1 values from 1 to n, so by the pigeonhole principle at least one must repeat.",
+      "Binary search can run over the range of *possible values* instead of positions: count how many numbers are <= the candidate to decide which half holds the duplicate.",
+      "Treat each value as an arrow from its index to the index it names (i points at nums[i]). Two indices pointing at the same value create a loop — exactly what cycle detection finds.",
     ],
     approachOverview: `
-The most direct approach doesn't worry about the space limit at all:
-remember every value you've seen in a set as you scan the array, and
-the first value you encounter a second time is the answer.
+The simplest approach ignores the space limit: store each value in a set
+as you scan, and the first value seen twice is the answer.
 
-A better approach uses binary search over the *range of possible
-values* rather than over the array's positions. For a candidate
-midpoint value m, count how many entries in the array are less than or
-equal to m. If that count exceeds m, the duplicate must be somewhere in
-the lower half of the range; otherwise it's in the upper half.
+A better approach binary searches the *range of possible values*. For a
+midpoint m, count the entries <= m. If the count exceeds m, the duplicate
+is in the lower half; otherwise it's in the upper half.
 
-The approach that satisfies every constraint at once treats the array
-as if it encoded a linked list: think of position i as a node whose
-"next" pointer is nums[i]. Because two different positions inevitably
-point at the same value, this structure always contains a cycle, and
-the entry point of that cycle is exactly the duplicated value — which
-Floyd's tortoise-and-hare cycle detection can find using no extra
-memory and without changing the array.
+The approach that meets every constraint treats the array as a linked
+list: position i is a node whose "next" is nums[i]. Two positions always
+point at the same value, so there's always a cycle, and its entry point
+is the duplicate. Floyd's tortoise-and-hare finds it with no extra memory
+and without changing the array.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Track Seen Values",
         explanation: `
-Scan the array once, remembering every value already seen in a set. The
-first value that turns up a second time is the duplicate. Simple and
-fast, but it uses memory proportional to the array's size, which the
-strict version of this problem doesn't allow.
+Scan the array, storing each value in a set. The first value seen twice
+is the duplicate. Simple and fast, but it uses memory proportional to the
+array's size, which the strict version doesn't allow.
         `.trim(),
         code: `function findDuplicate(nums) {
   const seen = new Set();
@@ -1005,12 +935,10 @@ strict version of this problem doesn't allow.
       {
         approach: "Binary Search on the Value Range",
         explanation: `
-Search over candidate values from 1 to n rather than over array
-positions. For a midpoint value m, count how many numbers in the whole
-array are <= m. If more than m numbers satisfy that, the duplicate has
-to be one of the values from 1 to m (there are "too many" small
-values for that to be a coincidence); otherwise it's above m. Narrowing
-this range in half repeatedly homes in on the exact duplicate.
+Search the values 1 to n instead of array positions. For a midpoint m,
+count the numbers <= m. If there are more than m, there are "too many"
+small values, so the duplicate is between 1 and m; otherwise it's above m.
+Halving the range repeatedly finds the duplicate.
         `.trim(),
         code: `function findDuplicate(nums) {
   let low = 1;
@@ -1039,19 +967,15 @@ this range in half repeatedly homes in on the exact duplicate.
       {
         approach: "Optimal — Cycle Detection (Floyd's Tortoise and Hare)",
         explanation: `
-Treat the array as a linked list where the "next" node after position i
-is position nums[i]. Because there are n + 1 positions but only n
-possible values to point at, at least two positions must point at the
-same value — which means this implicit list always loops back on
-itself, forming a cycle, and the value where the cycle begins is
-exactly the duplicated number.
+Treat the array as a linked list where the node after position i is
+position nums[i]. There are n + 1 positions but only n values, so at
+least two positions point at the same value. That makes the list loop
+back on itself, and the value where the cycle starts is the duplicate.
 
-First, run slow/fast pointers (slow moves one step, fast moves two)
-starting from index 0 until they meet somewhere inside the cycle. Then
-reset one pointer back to the start while leaving the other where it
-met, and advance both one step at a time — the node where they meet
-this second time is the entry point of the cycle, which is the
-duplicate value.
+First, run slow/fast pointers (one step and two steps) from index 0 until
+they meet inside the cycle. Then reset one pointer to the start and move
+both one step at a time. Where they meet again is the cycle's entry
+point — the duplicate.
         `.trim(),
         code: `function findDuplicate(nums) {
   // Phase 1: find a meeting point inside the cycle.
@@ -1075,10 +999,10 @@ duplicate value.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "slow = nums[slow]; fast = nums[nums[fast]];", explanation: "Treats each array value as a pointer to the next position, so slow takes one hop and fast takes two, exactly like cycle detection in a real linked list." },
-          { code: "} while (slow !== fast);", explanation: "Because a duplicate value forces two positions to point the same way, this implicit list is guaranteed to loop, so the two pointers must eventually meet." },
-          { code: "slow = nums[0];", explanation: "Resets one pointer to the start while keeping the other at the meeting point — a property of cycle detection guarantees they'll now meet again exactly at the cycle's entrance." },
-          { code: "while (slow !== fast) { slow = nums[slow]; fast = nums[fast]; }", explanation: "Advancing both one step at a time from here, the meeting point is the duplicated value." },
+          { code: "slow = nums[slow]; fast = nums[nums[fast]];", explanation: "Each value is a pointer to the next position: slow takes one hop, fast takes two, as in a real linked list." },
+          { code: "} while (slow !== fast);", explanation: "The duplicate makes two positions point the same way, so the list must loop and the pointers must meet." },
+          { code: "slow = nums[0];", explanation: "Resets one pointer to the start, leaving the other at the meeting point. Cycle detection guarantees they next meet at the cycle's entrance." },
+          { code: "while (slow !== fast) { slow = nums[slow]; fast = nums[fast]; }", explanation: "Moving both one step at a time, they meet at the duplicate." },
         ],
       },
     ],
@@ -1091,19 +1015,17 @@ duplicate value.
     difficulty: "Medium",
     category: "linked-list",
     description: `
-Design a small cache that holds a fixed number of key-value pairs. It
-needs two operations:
+Design a cache that holds a fixed number of key-value pairs, with two
+operations:
 
-- `.trim() + "`get(key)`" + `: return the value stored for that key, or -1 if
-the key isn't in the cache. This should also mark the key as
-"recently used."
-- `.trim() + "`put(key, value)`" + `: insert or update the value for that key,
-also marking it as "recently used." If adding a new key would push
-the cache past its capacity, first evict whichever key was used
-*least* recently.
+- `.trim() + "`get(key)`" + `: return the key's value, or -1 if it isn't
+cached. This marks the key as "recently used."
+- `.trim() + "`put(key, value)`" + `: insert or update the key's value and
+mark it as "recently used." If a new key would exceed the capacity,
+first evict the *least* recently used key.
 
-Both operations need to run in constant time on average, no matter how
-many items the cache is holding.
+Both operations must run in constant average time, however many items
+are cached.
     `.trim(),
     examples: [
       {
@@ -1119,36 +1041,34 @@ many items the cache is holding.
     ],
     constraints: ["1 <= capacity <= 3000", "0 <= key, value <= 10^4", "At most 2 * 10^5 total calls to get and put."],
     hints: [
-      "A plain array or object gets you correctness immediately, but finding 'the least recently used key' or reordering entries in one tends to cost time proportional to how many entries are stored.",
-      "A hash map alone gives you fast lookups by key, but it doesn't naturally track *usage order* — you need a second structure just for that ordering.",
-      "A doubly linked list lets you remove any node and reinsert it at one end in O(1) time (as long as you already have a direct reference to that node) — pair that with a hash map from key to that exact node reference.",
+      "A plain array or object works, but finding the least recently used key or reordering entries costs time proportional to the number of entries.",
+      "A hash map gives fast lookups by key but doesn't track *usage order* — you need a second structure for that.",
+      "A doubly linked list can remove any node and reinsert it at one end in O(1), if you already hold a reference to it. Pair it with a hash map from key to node.",
     ],
     approachOverview: `
-A simple first attempt: keep the cache as a plain list of key-value
-pairs. On get, scan the list for the key (moving it to the "most
-recent" end if found); on put, scan the list similarly, and if the
-cache is full, drop the entry at the "least recent" end. This is
-correct, but scanning and reordering the list costs time proportional
-to how many entries are currently cached.
+A simple first attempt keeps a plain list of key-value pairs. On get,
+scan for the key and move it to the "most recent" end. On put, scan the
+same way, and if the cache is full, drop the entry at the "least recent"
+end. It's correct, but scanning and reordering costs time proportional to
+the number of cached entries.
 
-The constant-time version pairs two structures: a hash map from key to
-a node, and a doubly linked list threading all the nodes together in
-usage order (most recently used at one end, least recently used at the
-other). The hash map gives instant access to any node by key; the
-doubly linked list lets you unlink that exact node and reinsert it at
-the "most recent" end in O(1), since removing or inserting next to a
-node you already hold a reference to never requires scanning anything.
-Eviction is then just "remove whatever sits at the least-recent end."
+The constant-time version pairs two structures:
+
+- A hash map from key to node, for instant lookup.
+- A doubly linked list of the nodes in usage order (most recent at one end, least recent at the other).
+
+With a direct node reference, you can unlink it and reinsert it at the
+"most recent" end in O(1), with no scanning. Eviction just removes the
+node at the least-recent end.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Array of Pairs",
         explanation: `
-Keep the cache as an array of {key, value} pairs, ordered from least
-recently used (front) to most recently used (back). Both get and put
-search the array for the key linearly; a hit is spliced out and pushed
-onto the back to mark it as freshly used. When capacity is exceeded,
-the pair at the front (the least recently used one) is dropped.
+Keep an array of {key, value} pairs, ordered from least recently used
+(front) to most recently used (back). get and put search the array
+linearly; a hit is moved to the back. When capacity is exceeded, the
+front pair (least recently used) is dropped.
         `.trim(),
         code: `class LRUCache {
   constructor(capacity) {
@@ -1181,25 +1101,20 @@ the pair at the front (the least recently used one) is dropped.
       {
         approach: "Optimal — Doubly Linked List + Hash Map",
         explanation: `
-Maintain a doubly linked list of nodes ordered by recency, with a
-permanent dummy head (the most-recently-used side) and a permanent
-dummy tail (the least-recently-used side), plus a hash map from key to
-its node in that list.
+Keep a doubly linked list ordered by recency, with a dummy head (most
+recently used side) and a dummy tail (least recently used side), plus a
+hash map from key to node.
 
-get: look the node up directly in the map. If found, unlink it from
-wherever it currently sits and reinsert it right after the dummy head
-(marking it freshly used), then return its value.
+get: look the node up in the map. If found, move it right after the dummy
+head and return its value.
 
-put: if the key already has a node, update its value and move it to
-the front the same way. Otherwise, if the cache is full, remove the
-node right before the dummy tail (the true least-recently-used entry)
-and delete it from the map; then create a new node for the key and
-insert it at the front.
+put: if the key exists, update its value and move it to the front.
+Otherwise, if the cache is full, remove the node before the dummy tail
+(the least recently used) and delete it from the map. Then add a new node
+at the front.
 
-Every step here — lookup, unlink, and insert-at-front — takes constant
-time, because the map gives a direct node reference and the doubly
-linked list never needs to scan to remove or insert next to a node it
-already holds.
+Lookup, unlink and insert-at-front are all constant time: the map gives a
+direct node reference, and the list never needs to scan.
         `.trim(),
         code: `class Node {
   constructor(key, value) {
@@ -1266,10 +1181,10 @@ class LRUCache {
         timeComplexity: "O(1) for both get and put",
         spaceComplexity: "O(capacity)",
         walkthrough: [
-          { code: "this.head.next = this.tail; this.tail.prev = this.head;", explanation: "Two permanent sentinel nodes remove every edge case around inserting into or removing from an empty list." },
-          { code: "const node = this.map.get(key);", explanation: "The hash map turns 'find this key' from a scan into a single direct lookup." },
-          { code: "this._remove(node); this._insertAtFront(node);", explanation: "Unlinking and reinserting a node you already hold a reference to costs a fixed handful of pointer updates, never a scan." },
-          { code: "const leastRecentlyUsed = this.tail.prev;", explanation: "The node just before the tail sentinel is, by construction, always the least recently used entry — no searching required." },
+          { code: "this.head.next = this.tail; this.tail.prev = this.head;", explanation: "Two permanent sentinel nodes remove the edge cases of an empty list." },
+          { code: "const node = this.map.get(key);", explanation: "The hash map finds the key in one lookup instead of a scan." },
+          { code: "this._remove(node); this._insertAtFront(node);", explanation: "Moving a node you already hold takes a few pointer updates, never a scan." },
+          { code: "const leastRecentlyUsed = this.tail.prev;", explanation: "The node before the tail sentinel is always the least recently used — no searching." },
         ],
       },
     ],
@@ -1282,9 +1197,8 @@ class LRUCache {
     difficulty: "Hard",
     category: "linked-list",
     description: `
-You're given an array containing the heads of k linked lists, and each
-one of those lists is already sorted in increasing order. Merge all of
-them into a single sorted linked list and return its head.
+Given an array of k linked list heads, each list sorted in increasing
+order, merge them into one sorted list and return its head.
     `.trim(),
     examples: [
       { input: "lists = [[1, 4, 5], [1, 3, 4], [2, 6]]", output: "[1, 1, 2, 3, 4, 4, 5, 6]" },
@@ -1293,39 +1207,31 @@ them into a single sorted linked list and return its head.
     ],
     constraints: ["0 <= k <= 10^4", "0 <= length of each list <= 500", "The total number of nodes across all lists is at most 10^4.", "Each individual list is sorted in non-decreasing order."],
     hints: [
-      "You already know how to merge two sorted lists in one pass — the question is how to extend that to k lists without redoing too much work.",
-      "Merging the lists one at a time into a running result works, but each merge has to re-scan an ever-growing result list, so the total work adds up faster than you'd like.",
-      "Instead of merging sequentially, merge lists in pairs: combine list 1 with list 2, list 3 with list 4, and so on, then repeat that pairing process on the (half as many) results. This finishes in far fewer rounds.",
+      "You can merge two sorted lists in one pass — how do you extend that to k lists without redoing work?",
+      "Merging lists one at a time into a running result works, but each merge re-scans a growing result, so the work adds up.",
+      "Merge in pairs instead: list 1 with list 2, list 3 with list 4, and so on, then repeat on the half as many results. This takes far fewer rounds.",
     ],
     approachOverview: `
-The most direct approach ignores that the lists are already sorted:
-dump every value from every list into one array, sort that array, then
-rebuild a single list from it.
+The most direct approach ignores that the lists are sorted: put every
+value in one array, sort it, and rebuild a list.
 
-A better approach reuses the two-list merge you'd use for merging just
-two sorted lists: merge the first list with the second, merge that
-result with the third, then with the fourth, and so on. This is simple
-and avoids a full sort, but the growing "result so far" list gets
-re-scanned by every subsequent merge, so the total work scales with
-both the number of lists and the total number of nodes.
+A better approach reuses the two-list merge: merge the first list with
+the second, then that result with the third, and so on. It avoids a full
+sort, but every merge re-scans the growing result, so the work scales
+with both the number of lists and the total number of nodes.
 
-The efficient approach merges the lists in pairs instead of one at a
-time: round 1 merges list 1 with list 2, list 3 with list 4, and so on,
-roughly halving the number of lists. Repeating this pairwise merging
-process on the results, round after round, brings the number of lists
-down to one in only about log2(k) rounds, and every node is only ever
-part of a two-list merge at each round, rather than being re-scanned by
-every single merge along the way.
+The efficient approach merges in pairs: round 1 merges list 1 with list
+2, list 3 with list 4, and so on, roughly halving the number of lists.
+Repeating this takes only about log2(k) rounds, and each node is part of
+one two-list merge per round instead of being re-scanned by every merge.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Collect All Values, Sort, Rebuild",
         explanation: `
-Walk every list, pushing every value into one flat array. Sort that
-array, then build a brand-new list from the sorted values. This works
-regardless of how the input lists were ordered, but it pays for a full
-sort even though most of the ordering information was already there
-for free.
+Push every value from every list into one array, sort it, and build a new
+list. This works for any input order, but pays for a full sort even
+though the lists were already sorted.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -1362,10 +1268,8 @@ function mergeKLists(lists) {
       {
         approach: "Sequential Merge — Fold Lists One at a Time",
         explanation: `
-Reuse a standard two-list merge as a building block. Start with an
-empty running result, then merge in each list one after another: merge
-the result with list 1, then merge that with list 2, then with list 3,
-and so on until every list has been folded in.
+Use the two-list merge as a building block. Start with an empty result
+and merge in each list one after another until all are folded in.
         `.trim(),
         code: `class ListNode {
   constructor(val, next = null) {
@@ -1406,15 +1310,12 @@ function mergeKLists(lists) {
       {
         approach: "Optimal — Pairwise (Divide and Conquer) Merge",
         explanation: `
-Reuse the same two-list merge, but instead of folding lists in one at a
-time, merge them in pairs each round: list 1 with list 2, list 3 with
-list 4, and so on, producing roughly half as many lists as before.
-Repeat this pairing process on the new, smaller collection of lists,
-again and again, until only one list remains.
+Use the same two-list merge, but merge in pairs each round: list 1 with
+list 2, list 3 with list 4, and so on, leaving about half as many lists.
+Repeat until one list remains.
 
-Because the number of lists roughly halves every round, it only takes
-about log2(k) rounds to finish, and each round does a total of O(N)
-work across all its merges (every node is touched exactly once per
+The number of lists halves each round, so it takes about log2(k) rounds.
+Each round does O(N) work in total (every node is touched once per
 round), giving O(N log k) overall instead of O(N * k).
         `.trim(),
         code: `class ListNode {
@@ -1464,10 +1365,10 @@ function mergeKLists(lists) {
         timeComplexity: "O(N log k), where N is the total number of nodes and k is the number of lists",
         spaceComplexity: "O(k) for the array of intermediate list heads (O(1) beyond that, reusing existing nodes)",
         walkthrough: [
-          { code: "while (remaining.length > 1)", explanation: "Keeps pairing off lists, round after round, until only a single merged list is left." },
-          { code: "for (let i = 0; i < remaining.length; i += 2)", explanation: "Walks the current round's lists two at a time, so every list is paired with its neighbor." },
-          { code: "merged.push(mergeTwoLists(first, second));", explanation: "Merges each pair using the familiar two-list merge, roughly halving the number of lists still left to combine." },
-          { code: "remaining = merged;", explanation: "The smaller collection of merged lists becomes the input to the next round, until just one list remains." },
+          { code: "while (remaining.length > 1)", explanation: "Keeps pairing lists, round after round, until one list is left." },
+          { code: "for (let i = 0; i < remaining.length; i += 2)", explanation: "Walks this round's lists two at a time, pairing each with its neighbor." },
+          { code: "merged.push(mergeTwoLists(first, second));", explanation: "Merges each pair with the two-list merge, roughly halving the number of lists." },
+          { code: "remaining = merged;", explanation: "The merged lists become the next round's input." },
         ],
       },
     ],

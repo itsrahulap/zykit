@@ -9,9 +9,9 @@ const docs: ToolDocs = {
     'Copy or download the result, or press **Swap** to turn the output into the new input and convert it back.',
   ],
   howItWorks:
-    'Both directions use the open-source `yaml` library, loaded the first time you convert. YAML is read with YAML 1.2 rules (the core schema), so `yes`, `no` and `on` stay strings, dates stay strings, and `0o17` and `0x1F` are numbers. Anchors and aliases (`&name`, `*name`) and merge keys (`<<`) are resolved, and duplicate keys are reported as errors. Errors show their line and column, and **Jump to error in input** moves the cursor there.\n\n' +
-    'Some YAML has no JSON equivalent, and a notice says what was changed. Non-string keys such as `200` or `true` become string keys, and map or list keys are turned into strings. Custom tags like `!custom` are ignored and the plain value is kept. `.inf` and `.nan` become `null`. Comments are dropped. Several documents become one JSON array with **All documents as an array**; otherwise only the first is converted.\n\n' +
-    'JSON → YAML parses the JSON with the browser’s standard parser and writes YAML with 1.1 quoting rules, so strings like `"yes"`, `"on"` or `"null"` are quoted and older YAML readers won’t turn them into booleans or null. Repeated objects are written out in full rather than as anchors. Conversion runs in the page as you type.',
+    'Both directions use the open-source `yaml` library, loaded on your first conversion. YAML is read with YAML 1.2 rules (the core schema): `yes`, `no`, `on` and dates stay strings, and `0o17` and `0x1F` are numbers. Anchors and aliases (`&name`, `*name`) and merge keys (`<<`) are resolved, and duplicate keys are errors. Errors show their line and column; **Jump to error in input** moves the cursor there.\n\n' +
+    'Some YAML has no JSON equivalent, and a notice says what changed. Non-string keys such as `200` or `true`, and map or list keys, become strings. Custom tags like `!custom` are ignored and the plain value kept. `.inf` and `.nan` become `null`. Comments are dropped. With **All documents as an array**, several documents become one JSON array; otherwise only the first is converted.\n\n' +
+    'JSON → YAML parses the JSON with the browser’s standard parser and writes YAML with 1.1 quoting rules. So strings like `"yes"`, `"on"` or `"null"` are quoted, and older YAML readers won’t turn them into booleans or null. Repeated objects are written in full, not as anchors. Conversion runs in the page as you type.',
   limits: [
     'Input is limited to about 20 MB (20 million characters); opened or dropped files to 10 MB.',
     'Alias expansion is limited (an alias count of 100, as measured by the YAML library) to stop “billion laughs” documents; one that goes over is reported as an error.',
@@ -20,7 +20,7 @@ const docs: ToolDocs = {
     'Output longer than 1 million characters is only partly shown on screen; copy or download to get all of it.',
   ],
   privacy:
-    'Conversion happens entirely in your browser and files are read locally; nothing is uploaded or stored. The YAML library is part of this site and is loaded from it. **Share** copies a link with your input and options in the URL’s `#` fragment, which browsers don’t send to servers, though anyone with the link can read it. If you use **Send to…** to open the result in another tool, it is handed over through this tab’s session storage and removed as soon as that tool reads it.',
+    'Conversion runs in your browser and files are read locally; nothing is uploaded or stored. The YAML library is part of this site and loaded from it. **Share** copies a link with your input and options in the URL’s `#` fragment; browsers don’t send that to servers, but anyone with the link can read it. **Send to…** passes the result through this tab’s session storage, removed as soon as the other tool reads it.',
   faqs: [
     {
       question: 'Why did `yes` stay a string instead of becoming `true`?',
