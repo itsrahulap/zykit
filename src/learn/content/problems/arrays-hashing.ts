@@ -717,14 +717,12 @@ cell to one of the nine boxes, numbered left-to-right, top-to-bottom.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given an unsorted list of integers. Find the length of the
-longest run of *consecutive* integers that all appear somewhere in the
-list - the numbers don't need to sit next to each other in the list
-itself, only be consecutive in value (like 3, 4, 5, 6).
+Given an unsorted list of integers, find the length of the longest run
+of *consecutive* values (like 3, 4, 5, 6) that all appear in the list.
+They don't need to sit next to each other in the list.
 
-Your solution needs to run in O(n) time, so sorting the list (which
-takes longer than that) is a reasonable first attempt, but not the
-intended final answer.
+Your solution must run in O(n) time. Sorting takes longer, so it's a
+fair first attempt but not the intended answer.
     `.trim(),
     examples: [
       { input: "nums = [100, 4, 200, 1, 3, 2]", output: "4", explanation: "The numbers 1, 2, 3, 4 are all present and form a run of consecutive values - the longest one available." },
@@ -733,28 +731,25 @@ intended final answer.
     ],
     constraints: ["0 <= nums.length <= 10^5", "-10^9 <= nums[i] <= 10^9"],
     hints: [
-      "Sorting first makes it easy to spot consecutive runs, but sorting alone already costs more time than the problem is really asking for.",
-      "For a given number to be the *start* of a run, what would have to be true about the number just below it?",
-      "Put every number in a hash set first. Then only start counting a run from numbers where 'one less' isn't in the set - that guarantees you never recount the same run twice, keeping the whole thing to one real pass.",
+      "Sorting makes consecutive runs easy to spot, but sorting alone takes more time than allowed.",
+      "For a number to be the *start* of a run, what must be true about the number just below it?",
+      "Put every number in a hash set. Only start counting a run from numbers where 'one less' isn't in the set. That way no run is counted twice, so it stays one real pass.",
     ],
     approachOverview: `
-A reasonable first idea is to sort the list - once sorted, consecutive
-values sit right next to each other, so a single pass counting streaks
-gives you the answer. It's correct, but sorting itself already costs
-more than the O(n) the problem is really asking for.
+A first idea is to sort the list. Consecutive values then sit next to
+each other, so one pass counting streaks gives the answer. It's correct,
+but sorting costs more than the required O(n).
 
-The key insight for a faster solution: put every number into a hash set
-for instant lookups, then only start counting a sequence from numbers
-that are the *start* of one - meaning "number minus 1" is not in the
-set. Every other number gets picked up later as part of some run
-starting from its true beginning, so across the whole algorithm, each
-number only ever gets counted once, even though there's a loop nested
-inside the main loop.
+The faster solution puts every number in a hash set for instant lookups.
+Then it only counts a sequence from numbers that *start* one, meaning
+"number minus 1" isn't in the set. Every other number is counted as part
+of a run from its true start. So each number is counted only once, even
+though there's a loop inside the main loop.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort and Scan",
-        explanation: "Remove duplicates and sort what's left. Then walk through once, tracking how long the current streak of consecutive values is, and remembering the longest streak seen.",
+        explanation: "Remove duplicates and sort. Then walk through once, tracking the current streak of consecutive values and the longest streak seen.",
         code: `function longestConsecutive(nums) {
   if (nums.length === 0) return 0;
 
@@ -779,7 +774,7 @@ inside the main loop.
       },
       {
         approach: "Optimal - Hash Set, Start From Sequence Beginnings",
-        explanation: "Put every number into a hash set. Then, for each number that's the start of a sequence (meaning one less than it is not in the set), count forward - checking if the next value, and the one after that, and so on, are in the set - to find that sequence's length.",
+        explanation: "Put every number in a hash set. For each number that starts a sequence (one less isn't in the set), count forward while the next value is in the set to get that sequence's length.",
         code: `function longestConsecutive(nums) {
   const numSet = new Set(nums);
   let longest = 0;
@@ -801,8 +796,8 @@ inside the main loop.
         spaceComplexity: "O(n)",
         walkthrough: [
           { code: "const numSet = new Set(nums);", explanation: "Lets us check 'is this value present?' in a single step, for any number." },
-          { code: "if (!numSet.has(num - 1)) {", explanation: "Skips numbers that are in the middle or end of a run - only the true start of a sequence (where one less doesn't exist) is worth counting from." },
-          { code: "while (numSet.has(num + length)) { length++; }", explanation: "Walks forward from the sequence's start, extending the count for as long as the next consecutive value keeps showing up." },
+          { code: "if (!numSet.has(num - 1)) {", explanation: "Skips numbers in the middle or end of a run. Only count from the true start of a sequence, where one less doesn't exist." },
+          { code: "while (numSet.has(num + length)) { length++; }", explanation: "Walks forward from the start, extending the count while the next consecutive value exists." },
           { code: "longest = Math.max(longest, length);", explanation: "Keeps track of the longest run found across every sequence start." },
         ],
       },
@@ -816,11 +811,11 @@ inside the main loop.
     difficulty: "Easy",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers where one particular value shows up more
-than half the time (strictly more than n/2 times, where n is the
-length of the list). Find and return that value.
+You're given a list where one value appears more than half the time
+(strictly more than n/2 times, where n is the list's length). Return
+that value.
 
-You can assume such a value always exists in the input.
+Such a value always exists.
     `.trim(),
     examples: [
       { input: "nums = [3, 2, 3]", output: "3", explanation: "3 appears twice out of three elements - more than half." },
@@ -829,28 +824,27 @@ You can assume such a value always exists in the input.
     ],
     constraints: ["1 <= nums.length <= 5 * 10^4", "A majority element (appearing more than n/2 times) always exists."],
     hints: [
-      "Counting how often each value appears with a hash map, and checking as you go whether any count has crossed n/2, will get you the answer.",
-      "Because the majority element appears *more than half* the time, think of it like a tug-of-war: every time you see it, pull one way, and every time you see anything else, pull the other way.",
-      "Keep a running 'candidate' value and a counter. If the counter ever hits zero, throw away the current candidate and start fresh with whatever number comes next - the true majority element can never fully get cancelled out this way.",
+      "Count each value with a hash map and check as you go whether any count passes n/2.",
+      "The majority element appears *more than half* the time. Think of a tug-of-war: pull one way when you see it, and the other way for anything else.",
+      "Keep a 'candidate' and a counter. When the counter hits zero, take the next number as the new candidate. The true majority element can never be fully cancelled out.",
     ],
     approachOverview: `
-The straightforward approach is to count how often each number appears
-using a hash map, and return the one whose count passes n/2.
+The simple approach counts each number with a hash map and returns the
+one whose count passes n/2.
 
-There's a cleverer approach, known as the Boyer-Moore voting idea, that
-needs no extra memory at all. Think of it as a tug-of-war: keep a
-"candidate" and a counter starting at zero. Walk through the list - if
-the counter is zero, adopt the current number as the new candidate.
-Then add 1 to the counter if the current number matches the candidate,
-or subtract 1 if it doesn't. Because the true majority element
-outnumbers everything else put together, it can never be fully
-cancelled out by the time you reach the end, so whatever candidate
-remains is the answer.
+Boyer-Moore voting needs no extra memory. Keep a "candidate" and a
+counter starting at zero. Walk the list:
+
+- If the counter is zero, make the current number the candidate.
+- Add 1 if the number matches the candidate, or subtract 1 if not.
+
+The majority element outnumbers everything else combined, so it can't be
+fully cancelled out. The candidate left at the end is the answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Count With a Hash Map",
-        explanation: "Count how many times each number appears using a hash map. As soon as any number's count passes n/2, return it.",
+        explanation: "Count each number with a hash map. As soon as a count passes n/2, return that number.",
         code: `function majorityElement(nums) {
   const counts = new Map();
   const majorityThreshold = Math.floor(nums.length / 2);
@@ -867,7 +861,7 @@ remains is the answer.
       },
       {
         approach: "Optimal - Boyer-Moore Voting",
-        explanation: "Keep a running candidate and a counter, both starting empty. For each number: if the counter is zero, make this number the new candidate. Then increase the counter if the number matches the candidate, or decrease it otherwise. The majority element, by definition, can never be fully cancelled out, so it's guaranteed to be the candidate left standing at the end.",
+        explanation: "Keep a candidate and a counter, both starting empty. For each number, if the counter is zero, make it the candidate. Then increase the counter if the number matches the candidate, or decrease it otherwise. The majority element can't be fully cancelled out, so it's the candidate left at the end.",
         code: `function majorityElement(nums) {
   let candidate = null;
   let count = 0;
@@ -885,9 +879,9 @@ remains is the answer.
         spaceComplexity: "O(1)",
         walkthrough: [
           { code: "let candidate = null; let count = 0;", explanation: "Starts with no candidate and an empty counter." },
-          { code: "if (count === 0) { candidate = num; }", explanation: "Whenever the counter drops to zero (including at the very start), the current number becomes the new candidate to track." },
-          { code: "count += num === candidate ? 1 : -1;", explanation: "Strengthens the count if this number agrees with the candidate, or weakens it if it doesn't - like votes for and against." },
-          { code: "return candidate;", explanation: "Because the majority element outnumbers all other values combined, it always survives as the final candidate, even though it might get swapped out temporarily along the way." },
+          { code: "if (count === 0) { candidate = num; }", explanation: "Whenever the counter is zero (including at the start), the current number becomes the new candidate." },
+          { code: "count += num === candidate ? 1 : -1;", explanation: "Adds a vote if this number matches the candidate, or removes one if it doesn't." },
+          { code: "return candidate;", explanation: "The majority element outnumbers all others combined, so it always ends as the candidate, even if swapped out for a while." },
         ],
       },
     ],
@@ -900,13 +894,11 @@ remains is the answer.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers (which can include negatives) and a
-target number k. Count how many *contiguous* stretches of the list
-(subarrays) add up exactly to k.
+Given a list of numbers (which can include negatives) and a target k,
+count how many *contiguous* subarrays add up to exactly k.
 
-A subarray has to be made of elements that sit next to each other in
-the original list - you can't skip around and pick elements from
-scattered positions.
+A subarray's elements must sit next to each other in the list. You can't
+pick elements from scattered positions.
     `.trim(),
     examples: [
       { input: "nums = [1, 1, 1], k = 2", output: "2", explanation: "The subarray made of the first two elements, and the subarray made of the last two elements, both sum to 2." },
@@ -915,28 +907,24 @@ scattered positions.
     ],
     constraints: ["1 <= nums.length <= 2 * 10^4", "-1000 <= nums[i] <= 1000", "-10^7 <= k <= 10^7"],
     hints: [
-      "Checking every possible subarray and adding up its elements works, but recomputing each subarray's sum from scratch is wasteful.",
-      "If you track the running total from the start of the list up to each position (a 'prefix sum'), the sum of any subarray is just one prefix sum minus another, earlier one.",
-      "For each position, you want to know how many earlier positions had a running total equal to 'current running total minus k'. A hash map that counts how many times each running total has occurred lets you answer that instantly.",
+      "Summing every subarray works, but recomputing each sum from scratch is wasteful.",
+      "Track the running total up to each position (a 'prefix sum'). Any subarray's sum is one prefix sum minus an earlier one.",
+      "At each position, count earlier positions whose running total equals 'current total minus k'. A hash map counting each running total answers this instantly.",
     ],
     approachOverview: `
-The brute-force way is to check every possible subarray directly,
-adding up its elements and comparing the sum to k. It works, but it
-recomputes a lot of the same sums over and over as the window slides.
+Brute force sums every subarray and compares it to k. It works, but
+recomputes the same sums many times.
 
-The faster approach relies on prefix sums: the sum of any subarray
-between two positions is just the running total up to the later
-position minus the running total up to the earlier one. So, while
-scanning the list and keeping a running total, you can ask at every
-step: "has the running total minus k shown up as a running total
-before?" A hash map counting how many times each running total has
-occurred answers that in one step, turning the whole problem into a
-single pass through the list.
+The faster approach uses prefix sums. A subarray's sum is the running
+total at its end minus the running total just before its start. So while
+scanning with a running total, ask at each step: "has (running total
+minus k) appeared as a running total before?" A hash map counting each
+running total answers this in one step, so one pass is enough.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Check Every Subarray",
-        explanation: "For every starting position, extend the subarray one element at a time, keeping a running sum, and count it whenever that running sum equals k.",
+        explanation: "From each starting position, extend the subarray one element at a time with a running sum. Count it whenever the sum equals k.",
         code: `function subarraySum(nums, k) {
   let count = 0;
 
@@ -957,7 +945,7 @@ single pass through the list.
       },
       {
         approach: "Optimal - Prefix Sum + Hash Map",
-        explanation: "Keep a running total as you scan the list, and a hash map counting how many times each running total value has occurred so far (starting with a running total of 0 having occurred once, to correctly handle subarrays starting at index 0). At each step, the number of subarrays ending here that sum to k equals how many times (current running total minus k) has appeared before.",
+        explanation: "Keep a running total and a hash map counting how often each running total has occurred. Seed it with 0 occurring once, so subarrays starting at index 0 are counted. At each step, the number of subarrays ending here that sum to k is how often (running total minus k) has appeared before.",
         code: `function subarraySum(nums, k) {
   const prefixCounts = new Map();
   prefixCounts.set(0, 1); // an empty prefix sums to 0
@@ -981,11 +969,11 @@ single pass through the list.
         timeComplexity: "O(n)",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "prefixCounts.set(0, 1);", explanation: "Seeds the map with 'a running total of 0 has occurred once' - this represents the empty prefix before the list even starts, and lets subarrays beginning at index 0 be counted correctly." },
-          { code: "sum += num;", explanation: "Keeps a running total of everything seen so far, updated as each number is visited." },
-          { code: "const needed = sum - k;", explanation: "Figures out what an earlier running total would have needed to be for the subarray between that point and here to sum to exactly k." },
-          { code: "if (prefixCounts.has(needed)) { count += prefixCounts.get(needed); }", explanation: "Adds in however many earlier positions had exactly that running total - each one marks a valid subarray ending at the current position." },
-          { code: "prefixCounts.set(sum, (prefixCounts.get(sum) || 0) + 1);", explanation: "Records the current running total, so later positions can find it if they need it." },
+          { code: "prefixCounts.set(0, 1);", explanation: "Seeds the map with 'a running total of 0 occurred once'. This is the empty prefix before the list starts, so subarrays beginning at index 0 are counted." },
+          { code: "sum += num;", explanation: "Updates the running total of everything seen so far." },
+          { code: "const needed = sum - k;", explanation: "The earlier running total that would make the subarray from there to here sum to exactly k." },
+          { code: "if (prefixCounts.has(needed)) { count += prefixCounts.get(needed); }", explanation: "Adds how many earlier positions had that running total. Each marks a valid subarray ending here." },
+          { code: "prefixCounts.set(sum, (prefixCounts.get(sum) || 0) + 1);", explanation: "Records the current running total for later positions." },
         ],
       },
     ],
