@@ -5,7 +5,7 @@ const postgresQueryBuilder: ToolDefinition = {
   name: 'PostgreSQL Query Builder',
   tagline: 'Design tables and build PostgreSQL queries visually',
   description:
-    'Draw tables and relationships, build SELECT queries with joins, filters and grouping without writing SQL, and generate CREATE TABLE statements for PostgreSQL.',
+    'Draw tables and relationships, build SELECT queries with joins, filters and grouping without writing SQL, and generate PostgreSQL CREATE TABLE statements.',
   category: 'Data',
   icon: 'database',
   tags: ['PostgreSQL', 'SQL', 'Query builder', 'Schema', 'ERD'],

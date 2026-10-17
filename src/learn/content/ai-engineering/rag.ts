@@ -8,18 +8,18 @@ export const aiRagTopics: Topic[] = [
     level: "intermediate",
     description: "Turning PDFs, HTML, Markdown, tables and scanned pages into clean text plus metadata - the first and most underrated step of every RAG pipeline.",
     explanation: md(
-      "A RAG system can only retrieve what it has ingested, and it can only ingest what it can read. **Document loading** (also called *parsing* or *extraction*) is the step that turns your raw files - PDFs, web pages, Word documents, Markdown, wiki exports, spreadsheets - into plain **text** plus **metadata** that the rest of the pipeline can chunk, embed and search.",
-      "It sounds boring, and that is exactly why it is the most common hidden cause of bad RAG answers. If a PDF's two columns get interleaved line by line, if a table becomes a soup of numbers, or if every page starts with the same header and footer, the chunks you embed are garbage, and no clever retrieval later can fix that. The rule of thumb: **garbage in, garbage retrieved**.",
+      "A RAG system can only retrieve what it ingested, and it can only ingest what it can read. **Document loading** (also called *parsing* or *extraction*) turns raw files (PDFs, web pages, Word documents, Markdown, wiki exports, spreadsheets) into plain **text** plus **metadata** that the rest of the pipeline can chunk, embed and search.",
+      "It sounds boring, which is why it's the most common hidden cause of bad RAG answers. If a PDF's two columns get interleaved, a table turns into a soup of numbers, or every page starts with the same header and footer, your chunks are garbage. No clever retrieval can fix that later: **garbage in, garbage retrieved**.",
       "**What each format gives you:**",
-      "- **Plain text and Markdown** - easiest. The text is already there; Markdown also gives you *structure* (headings `#`, lists, code blocks) that you can keep for smarter chunking later.\n- **HTML** - the text is mixed with tags, menus, cookie banners, scripts and footers. You must extract the main content and drop the *boilerplate* (repeated navigation and chrome that appears on every page).\n- **PDF** - a PDF is a description of where to *draw* characters on a page, not a document with paragraphs. A text extractor (such as the Python library `pypdf`) reassembles the characters into lines, but reading order, columns, hyphenation and tables can come out scrambled.\n- **Scanned PDFs and images** - contain no text at all, only pictures of text. You need **OCR** (optical character recognition: software that recognises letters in an image) to get text out. If a PDF extractor returns an empty string for a page, it is probably scanned.\n- **Office files (DOCX, PPTX, XLSX)** - structured XML underneath; dedicated libraries read them reliably.",
-      "**Metadata** is data *about* each piece of text: which file it came from, the page number, the section heading, the author, the date, the URL, the department that owns it, who is allowed to read it. You attach it at load time and carry it all the way through the pipeline. Metadata is what lets you later **cite sources** ('handbook.pdf, page 12'), **filter** searches ('only 2025 policies'), **enforce permissions** ('only documents the HR team may see') and **re-index** a single file when it changes.",
-      "**Cleaning** is the step right after extraction. Typical cleaning operations:",
-      "- Normalise whitespace (collapse runs of spaces, at most one blank line between paragraphs).\n- Re-join words hyphenated across line breaks (`retriev-\\nal` becomes `retrieval`).\n- Remove repeated headers, footers and page numbers that appear on every page.\n- Remove boilerplate such as navigation menus, 'Accept cookies' text and share buttons from HTML.\n- Fix encoding problems (odd characters such as `â€™` where an apostrophe should be) and remove invisible characters such as soft hyphens.\n- Drop near-empty pages and exact duplicate documents.",
-      "**Tables** need special care. A table flattened into one line ('Plan Price Seats Basic 10 1 Pro 30 5') loses the link between a header and its value. A better approach is to convert each row into a self-describing sentence or Markdown row: 'Plan: Pro; Price: 30; Seats: 5'. Then any chunk containing that row still makes sense on its own.",
-      "The output of this step is a list of **documents** (or *pages* / *sections*), each with `text` and `metadata`. That list is the input to chunking.",
+      "- **Plain text and Markdown**: easiest. The text is already there, and Markdown adds *structure* (headings `#`, lists, code blocks) you can keep for smarter chunking.\n- **HTML**: text mixed with tags, menus, cookie banners, scripts and footers. Extract the main content and drop the *boilerplate* (navigation and chrome repeated on every page).\n- **PDF**: a description of where to *draw* characters on a page, not a document with paragraphs. An extractor (such as the Python library `pypdf`) reassembles characters into lines, but reading order, columns, hyphenation and tables can come out scrambled.\n- **Scanned PDFs and images**: no text at all, only pictures of text. You need **OCR** (optical character recognition: software that recognises letters in an image). If a PDF extractor returns an empty string for a page, it's probably scanned.\n- **Office files (DOCX, PPTX, XLSX)**: structured XML underneath; dedicated libraries read them reliably.",
+      "**Metadata** is data *about* each piece of text: source file, page number, section heading, author, date, URL, owning department, and who may read it. Attach it at load time and carry it through the whole pipeline. It lets you later **cite sources** ('handbook.pdf, page 12'), **filter** searches ('only 2025 policies'), **enforce permissions** ('only documents the HR team may see') and **re-index** a single file when it changes.",
+      "**Cleaning** comes right after extraction. Typical steps:",
+      "- Normalise whitespace (collapse runs of spaces, at most one blank line between paragraphs).\n- Re-join words hyphenated across line breaks (`retriev-\\nal` becomes `retrieval`).\n- Remove headers, footers and page numbers repeated on every page.\n- Remove HTML boilerplate such as navigation menus, 'Accept cookies' text and share buttons.\n- Fix encoding problems (odd characters like `â€™` where an apostrophe should be) and remove invisible characters such as soft hyphens.\n- Drop near-empty pages and exact duplicate documents.",
+      "**Tables** need care. Flattened into one line ('Plan Price Seats Basic 10 1 Pro 30 5'), a table loses the link between header and value. Instead, turn each row into a self-describing sentence or Markdown row: 'Plan: Pro; Price: 30; Seats: 5'. Any chunk containing that row then makes sense on its own.",
+      "The output is a list of **documents** (or *pages* / *sections*), each with `text` and `metadata`. That list is the input to chunking.",
     ),
     analogy:
-      "Document loading is like a librarian receiving a delivery of books, photocopies, printed web pages and faxes. Before anything can be shelved, they must be unpacked, the coffee-stained cover pages thrown away, the faxes typed up (OCR), and a catalogue card written for each item: title, author, date, which shelf, who may borrow it. A library with no catalogue cards (metadata) and smudged pages (bad extraction) is useless, however clever the librarian is at finding things later.",
+      "Picture a librarian receiving a delivery of books, photocopies, printed web pages and faxes. Before shelving, they unpack everything, throw away the coffee-stained cover pages, type up the faxes (OCR), and write a catalogue card for each item: title, author, date, shelf, who may borrow it. A library with no catalogue cards (metadata) and smudged pages (bad extraction) is useless, however good the librarian is at finding things.",
     examples: [
       {
         title: "Clean extracted text: whitespace, hyphenation, repeated headers",
@@ -59,12 +59,12 @@ pages.forEach((p, i) => {
   console.log("--- page " + (i + 1) + " ---");
   console.log(clean(p, headers));
 });`,
-        explanation: "Real extractors produce exactly these problems. Detecting repeated lines across pages is a simple, effective way to drop headers and footers. Note how the hyphenated word 'car-ried' is restored, so a search for 'carried' can now match.",
+        explanation: "Real extractors produce exactly these problems. Detecting lines repeated across pages is a simple, effective way to drop headers and footers. The hyphenated 'car-ried' is restored, so a search for 'carried' now matches.",
         walkthrough: [
-          { code: "findRepeatedFirstLines(pages)", explanation: "Looks at the first line of every page, replaces digits with # so 'Page 1' and 'Page 2' look the same, and keeps lines that repeat on at least half the pages." },
-          { code: ".replace(/(\\w)-\\n(\\w)/g, \"$1$2\")", explanation: "Joins a word that the PDF split across two lines with a hyphen." },
-          { code: ".replace(/([^\\n])\\n([^\\n])/g, \"$1 $2\")", explanation: "PDFs break lines at the page edge, not at sentence ends. Inside a paragraph we turn those line breaks back into spaces." },
-          { code: ".replace(/\\n{3,}/g, \"\\n\\n\")", explanation: "Keeps paragraph breaks (one blank line) because chunkers use them as natural split points." },
+          { code: "findRepeatedFirstLines(pages)", explanation: "Takes each page's first line, replaces digits with # so 'Page 1' and 'Page 2' look the same, and keeps lines that repeat on at least half the pages." },
+          { code: ".replace(/(\\w)-\\n(\\w)/g, \"$1$2\")", explanation: "Re-joins a word the PDF split across two lines with a hyphen." },
+          { code: ".replace(/([^\\n])\\n([^\\n])/g, \"$1 $2\")", explanation: "PDFs break lines at the page edge, not at sentence ends. Inside a paragraph, we turn those breaks back into spaces." },
+          { code: ".replace(/\\n{3,}/g, \"\\n\\n\")", explanation: "Keeps paragraph breaks (one blank line), since chunkers use them as natural split points." },
         ],
       },
       {
@@ -107,7 +107,7 @@ const [header, ...rows] = table;
 for (const row of rows) {
   console.log(header.map((h, i) => h + ": " + row[i]).join("; "));
 }`,
-        explanation: "Regex HTML stripping is fine for a demo; in production use a real HTML parser (BeautifulSoup in Python) or a main-content extractor. The important ideas are: remove boilerplate, keep structure (headings) as metadata, and turn tables into rows that make sense on their own.",
+        explanation: "Regex HTML stripping is fine for a demo; in production use a real HTML parser (BeautifulSoup in Python) or a main-content extractor. The key ideas: remove boilerplate, keep structure (headings) as metadata, and turn tables into rows that make sense on their own.",
       },
       {
         title: "Real loaders in Python: PDF pages with pypdf, HTML with BeautifulSoup",
@@ -151,15 +151,16 @@ if __name__ == "__main__":
     docs = list(load_folder("docs"))
     print(len(docs), "documents/pages loaded")
     print(docs[0]["metadata"], docs[0]["text"][:200])`,
-        explanation: "One loader per file type, each producing the same shape: {text, metadata}. Loading PDFs page by page means you keep the page number for citations. Pages with no text are reported instead of silently ignored, because they usually need OCR (for example with the Tesseract OCR engine) or a document-parsing service.",
+        explanation: "One loader per file type, all producing the same shape: {text, metadata}. Loading PDFs page by page keeps the page number for citations. Pages with no text are reported, not silently skipped, because they usually need OCR (for example the Tesseract OCR engine) or a document-parsing service.",
       },
     ],
     howItWorks: md(
-      "A loading pipeline has four stages: **discover** (list files from a folder, bucket, wiki or database), **extract** (format-specific parser turns bytes into text), **clean** (normalise and remove noise) and **annotate** (attach metadata).",
-      "**PDF extraction** works by reading the drawing instructions in the file ('put glyph *A* at x=72, y=700') and grouping characters into words and lines by their positions. Simple extractors follow the order in the file, which is usually but not always the reading order. Multi-column layouts, sidebars and footnotes are where it goes wrong. Layout-aware parsers (and some vision-model-based parsers) look at positions on the page to recover columns and tables; they are slower but much more accurate on complex documents.",
-      "**OCR** runs a recognition model over an image of the page and outputs text, often with a confidence score per word. Low-confidence pages are worth flagging for human review. Some modern LLMs can also read page images directly, which is useful for diagrams and messy scans, but it costs more per page than plain extraction.",
-      "**Deduplication** is usually done with a **hash**: a short fingerprint computed from the text (for example SHA-256). Two documents with the same hash are identical, so you keep one. Storing the hash in metadata also lets you skip unchanged files when you re-ingest (see rag-in-production).",
-      "Whatever the source, normalise everything into one shape - `{ text, metadata }` - so that chunking, embedding and storage code never needs to know whether something came from a PDF or a web page.",
+      "A loading pipeline has four stages:",
+      "- **Discover**: list files from a folder, bucket, wiki or database.\n- **Extract**: a format-specific parser turns bytes into text.\n- **Clean**: normalise and remove noise.\n- **Annotate**: attach metadata.",
+      "**PDF extraction** reads the file's drawing instructions ('put glyph *A* at x=72, y=700') and groups characters into words and lines by position. Simple extractors follow the order in the file, which is usually, but not always, the reading order. Multi-column layouts, sidebars and footnotes are where it breaks. Layout-aware parsers (and some vision-model-based ones) use page positions to recover columns and tables; they're slower but much more accurate on complex documents.",
+      "**OCR** runs a recognition model over an image of the page and outputs text, often with a confidence score per word. Flag low-confidence pages for human review. Some modern LLMs can read page images directly, which helps with diagrams and messy scans, but costs more per page than plain extraction.",
+      "**Deduplication** usually uses a **hash**: a short fingerprint of the text (for example SHA-256). Two documents with the same hash are identical, so keep one. Storing the hash in metadata also lets you skip unchanged files when re-ingesting (see rag-in-production).",
+      "Whatever the source, normalise everything into one shape, `{ text, metadata }`, so chunking, embedding and storage code never needs to know whether it came from a PDF or a web page.",
     ),
     diagram: `  files / URLs / wiki / DB
             |
@@ -182,13 +183,13 @@ if __name__ == "__main__":
             v
    [{ text, metadata }, ...]  --> chunking`,
     whyItExists: md(
-      "Your knowledge does not live in neat strings: it lives in PDFs, wikis, tickets and web pages built for human eyes. An LLM and an embedding model need clean text. Loading exists to bridge that gap, and metadata exists because answers are only trustworthy when you can say where they came from and who is allowed to see them.",
+      "Your knowledge doesn't live in neat strings. It lives in PDFs, wikis, tickets and web pages built for human eyes, while LLMs and embedding models need clean text. Loading bridges that gap. Metadata matters because answers are only trustworthy when you can say where they came from and who may see them.",
     ),
     whenToUse: md(
-      "Every RAG pipeline needs this step. Invest in it heavily when your corpus has PDFs with columns or tables, scanned documents, or HTML pages with lots of navigation. Always look at a sample of extracted text by eye before building anything else - it is the cheapest debugging you will ever do.",
+      "Every RAG pipeline needs this step. Invest heavily when your corpus has PDFs with columns or tables, scanned documents, or HTML pages full of navigation. Always eyeball a sample of extracted text before building anything else; it's the cheapest debugging you'll ever do.",
     ),
     whenNotToUse: md(
-      "If your data is already structured (rows in a database, JSON from an API), do not flatten it into a document and parse it back: query it directly with SQL or a tool call (see tool-use). If the whole corpus is small and stable, you may be able to paste it into the prompt and skip retrieval entirely (see what-is-rag).",
+      "If your data is already structured (database rows, JSON from an API), don't flatten it into a document and parse it back. Query it directly with SQL or a tool call (see tool-use). If the whole corpus is small and stable, you may be able to paste it into the prompt and skip retrieval (see what-is-rag).",
     ),
     commonMistakes: [
       "Never looking at the extracted text, then blaming the embedding model for bad answers.",
@@ -225,17 +226,18 @@ if __name__ == "__main__":
     level: "intermediate",
     description: "Splitting documents into retrievable pieces: fixed-size, overlap, recursive, structure-aware and semantic chunking, and how to choose a chunk size.",
     explanation: md(
-      "After loading, you have documents that may be dozens or hundreds of pages long. You cannot embed a whole book as one vector and expect search to work, and you do not want to paste a whole book into every prompt. **Chunking** splits each document into smaller pieces called **chunks**; each chunk is embedded, stored and retrieved on its own.",
-      "Why not embed whole documents? An embedding is a single vector that summarises the meaning of its text (see embeddings). A vector for a 50-page handbook is a blurry average of holidays, expenses, security and parking. A question about parking matches it weakly, and even if it is retrieved you would have to send all 50 pages to the model. Smaller chunks give **sharper vectors** and **less irrelevant text** in the prompt.",
-      "Why not tiny chunks, then? A single sentence like 'It is limited to 5 days.' has lost its context: *what* is limited? Chunks that are too small match queries but do not contain enough information to answer them. Chunk size is a trade-off between **precision** (small, focused chunks match the query sharply) and **context** (large chunks carry enough surrounding information to be understood).",
+      "After loading, documents may be dozens or hundreds of pages long. You can't embed a whole book as one vector and expect search to work, and you don't want a whole book in every prompt. **Chunking** splits each document into smaller pieces called **chunks**, each embedded, stored and retrieved on its own.",
+      "Why not embed whole documents? An embedding is one vector summarising the meaning of its text (see embeddings). A vector for a 50-page handbook is a blurry average of holidays, expenses, security and parking. A parking question matches it weakly, and even if it's retrieved you'd have to send all 50 pages to the model. Smaller chunks give **sharper vectors** and **less irrelevant text** in the prompt.",
+      "Why not tiny chunks? A sentence like 'It is limited to 5 days.' has lost its context: *what* is limited? Chunks that are too small match queries but can't answer them. Chunk size trades **precision** (small, focused chunks match sharply) against **context** (large chunks carry enough surrounding information to be understood).",
       "**The main strategies:**",
-      "- **Fixed-size chunking** - cut every N characters, words or tokens. Simple and predictable, but it cuts through sentences and ideas.\n- **Overlap** - each chunk repeats the last part of the previous one (for example 800 characters with 150 overlap). A fact that straddles a boundary then appears whole in at least one chunk. Overlap costs extra storage and embedding, and can produce near-duplicate results.\n- **Recursive chunking** - try to split on the biggest natural boundary first (blank lines between paragraphs), and only if a piece is still too big, split it on smaller boundaries (single newlines, then sentences, then words). This keeps paragraphs and sentences intact whenever possible and is a strong default.\n- **Structure-aware chunking** - use the document's own structure: Markdown headings, HTML sections, PDF pages, code functions, FAQ question-answer pairs. Each section becomes a chunk (split further if too long), and the **heading path** ('Handbook > Leave > Carry-over') is stored as metadata and often prepended to the chunk text so the chunk is self-explanatory.\n- **Semantic chunking** - embed each sentence and start a new chunk where the meaning shifts (where similarity between neighbouring sentences drops). It follows topics instead of lengths, at the cost of an embedding call per sentence during ingestion.",
-      "**Sizing rules of thumb.** Sizes are usually measured in **tokens** (see tokens-and-context-windows); for English text one token is roughly four characters. Common starting points are a few hundred tokens per chunk (roughly 200-800) with 10-20% overlap. Q&A over policies and FAQs favours smaller chunks; summarising or reasoning over long arguments favours bigger ones. Embedding models also have a maximum input length; text beyond it is silently truncated, so chunks must stay under that limit (small local models such as all-MiniLM-L6-v2 were trained on short passages, so keep chunks for them short).",
-      "**Every chunk carries metadata**: the source document's metadata plus its own position (chunk index, page, section, character offsets). That is how you cite, filter, deduplicate and re-index later.",
-      "There is no universally best chunk size. Pick a sensible default (recursive, ~500 tokens, ~15% overlap, headings prepended), then measure retrieval quality on real questions and adjust (see evaluating-rag).",
+      "- **Fixed-size chunking**: cut every N characters, words or tokens. Simple and predictable, but it cuts through sentences and ideas.\n- **Overlap**: each chunk repeats the end of the previous one (for example 800 characters with 150 overlap), so a fact straddling a boundary appears whole in at least one chunk. It costs extra storage and embedding, and can produce near-duplicate results.\n- **Recursive chunking**: split on the biggest natural boundary first (blank lines between paragraphs). Only if a piece is still too big, split on smaller ones (single newlines, then sentences, then words). This keeps paragraphs and sentences intact where possible and is a strong default.\n- **Structure-aware chunking**: use the document's own structure: Markdown headings, HTML sections, PDF pages, code functions, FAQ question-answer pairs. Each section becomes a chunk (split further if too long). The **heading path** ('Handbook > Leave > Carry-over') is stored as metadata and often prepended to the chunk text so it explains itself.\n- **Semantic chunking**: embed each sentence and start a new chunk where the meaning shifts (where similarity between neighbouring sentences drops). It follows topics instead of lengths, at the cost of an embedding call per sentence during ingestion.",
+      "**Sizing rules of thumb.** Sizes are usually measured in **tokens** (see tokens-and-context-windows); in English, one token is roughly four characters. Common starting points: a few hundred tokens per chunk (roughly 200-800) with 10-20% overlap. Q&A over policies and FAQs favours smaller chunks; summarising or reasoning over long arguments favours bigger ones.",
+      "Embedding models have a maximum input length, and text beyond it is silently truncated, so chunks must stay under it. Small local models such as all-MiniLM-L6-v2 were trained on short passages, so keep their chunks short.",
+      "**Every chunk carries metadata**: the source document's metadata plus its own position (chunk index, page, section, character offsets). That's how you cite, filter, deduplicate and re-index later.",
+      "There's no universally best chunk size. Pick a sensible default (recursive, ~500 tokens, ~15% overlap, headings prepended), then measure retrieval quality on real questions and adjust (see evaluating-rag).",
     ),
     analogy:
-      "Chunking is like cutting a long film into scenes for a highlights search. Cut into single frames and nobody can tell what is happening in any of them. Keep the whole film as one clip and every search returns two hours of footage. Cutting at scene changes (structure-aware or semantic) works best, and letting each clip start a few seconds before the previous one ends (overlap) means no line of dialogue is lost at a cut.",
+      "Chunking is like cutting a long film into scenes for a highlights search. Cut into single frames and nobody can tell what's happening. Keep the whole film as one clip and every search returns two hours of footage. Cutting at scene changes (structure-aware or semantic) works best, and starting each clip a few seconds before the previous one ends (overlap) means no line of dialogue is lost at a cut.",
     examples: [
       {
         title: "Fixed-size chunks with and without overlap",
@@ -262,12 +264,12 @@ for (const overlap of [0, 4]) {
   const whole = chunks.some((c) => c.text.includes(fact));
   console.log("  fact '" + fact + "' intact in some chunk? " + whole + "\\n");
 }`,
-        explanation: "Without overlap the key fact is cut in half at a chunk boundary, so no single chunk contains '30 days of purchase' together with 'refund within'. With a 4-word overlap the fact survives intact in one chunk. Real systems measure in tokens or characters, but the mechanism is the same.",
+        explanation: "Without overlap, the key fact is cut in half at a chunk boundary, so no single chunk has '30 days of purchase' together with 'refund within'. With a 4-word overlap, the fact survives intact in one chunk. Real systems measure in tokens or characters, but the mechanism is the same.",
         walkthrough: [
           { code: "start += size - overlap", explanation: "The window moves forward by size minus overlap, so consecutive chunks share 'overlap' words." },
-          { code: "if (overlap >= size) throw ...", explanation: "Guard: if overlap were as big as the chunk, the window would never move forward - an infinite loop." },
-          { code: "if (start + size >= words.length) break;", explanation: "Stop once a window has reached the end, otherwise the overlap would create tiny useless trailing chunks." },
-          { code: "chunks.some((c) => c.text.includes(fact))", explanation: "A quick test of what overlap is for: is the boundary-crossing fact fully present anywhere?" },
+          { code: "if (overlap >= size) throw ...", explanation: "Guard: if overlap were as big as the chunk, the window would never move, causing an infinite loop." },
+          { code: "if (start + size >= words.length) break;", explanation: "Stop once a window reaches the end; otherwise overlap creates tiny useless trailing chunks." },
+          { code: "chunks.some((c) => c.text.includes(fact))", explanation: "Tests what overlap is for: is the boundary-crossing fact fully present anywhere?" },
         ],
       },
       {
@@ -303,7 +305,7 @@ const doc = "Leave policy\\n\\nEmployees get 25 days of annual leave. Up to 5 un
   "Remote work\\n\\nYou may work remotely up to 3 days a week with approval.";
 
 recursiveSplit(doc, 90).forEach((c, i) => console.log(i, "(" + c.length + " chars)", JSON.stringify(c)));`,
-        explanation: "Short paragraphs are packed together until the limit; a paragraph that is too long is split at sentence boundaries instead of mid-word. This is the idea behind the popular 'recursive character text splitter' found in many RAG libraries. Look closely at the output for two flaws real splitters handle: the '. ' separator is consumed, so a chunk can lose its final full stop (production splitters keep separators attached), and the heading 'Remote work' is packed at the end of the previous chunk, separated from its own text. The next example fixes the heading problem by chunking on structure.",
+        explanation: "Short paragraphs are packed together up to the limit; a too-long paragraph is split at sentence boundaries instead of mid-word. This is the idea behind the popular 'recursive character text splitter' in many RAG libraries. The output shows two flaws real splitters handle. First, the '. ' separator is consumed, so a chunk can lose its final full stop (production splitters keep separators attached). Second, the heading 'Remote work' lands at the end of the previous chunk, apart from its own text. The next example fixes the heading problem by chunking on structure.",
       },
       {
         title: "Structure-aware chunks with the heading path prepended",
@@ -343,7 +345,7 @@ for (const c of chunkByHeadings(markdown, "handbook.md")) {
   console.log(JSON.stringify(c.metadata));
   console.log("  " + c.text.replace("\\n", " | "));
 }`,
-        explanation: "The chunk 'Up to 5 unused days carry over' is ambiguous alone; with 'Employee Handbook > Leave > Carry-over' prepended, both the embedding and the LLM know it is about annual leave. Long sections would additionally be passed through the recursive splitter, each piece keeping the same heading prefix.",
+        explanation: "Alone, 'Up to 5 unused days carry over' is ambiguous. With 'Employee Handbook > Leave > Carry-over' prepended, both the embedding and the LLM know it's about annual leave. Long sections would also go through the recursive splitter, each piece keeping the same heading prefix.",
       },
       {
         title: "Semantic chunking with sentence-transformers (Python)",
@@ -375,16 +377,16 @@ text = ("Annual leave is 25 days. Unused leave can carry over up to 5 days. "
         "The office kitchen is cleaned every Friday. Please label your food in the fridge.")
 for c in semantic_chunks(text):
     print("-", c)`,
-        explanation: "Adjacent sentences about the same topic have similar embeddings; a drop in similarity marks a topic change and starts a new chunk. The threshold must be tuned per corpus and embedding model, and a max size still applies so a long single-topic section does not become one giant chunk.",
+        explanation: "Neighbouring sentences on the same topic have similar embeddings; a drop in similarity marks a topic change and starts a new chunk. Tune the threshold per corpus and embedding model. A max size still applies, so a long single-topic section doesn't become one giant chunk.",
       },
     ],
     howItWorks: md(
-      "All chunkers share a loop: walk through the text, accumulate units (characters, tokens, words, sentences or sections) until a size limit or a boundary is reached, emit a chunk with metadata, then step back by the overlap and continue.",
-      "**Measuring size.** Character counts are fast and predictable; token counts match what the embedding model and LLM actually see. A practical approach is to chunk by characters with a conservative limit, or use the embedding model's own tokenizer to count tokens exactly.",
-      "**Recursive splitting** is a divide-and-conquer algorithm: split by the coarsest separator, greedily pack consecutive pieces up to the limit, and recurse with finer separators only on pieces that are still too big. The result respects natural boundaries whenever it can.",
-      "**Overlap** is applied when moving to the next chunk: the new chunk starts `overlap` units before the previous one ended. With chunk size S and overlap O, a document of length L produces roughly (L - O) / (S - O) chunks, so 20% overlap means about 25% more chunks to embed and store.",
-      "**Contextual enrichment.** Because chunks are retrieved in isolation, it helps to make each one self-contained: prepend the document title and heading path, or (a more advanced technique) have an LLM write a one-sentence context for each chunk before embedding it (see advanced-rag-techniques).",
-      "**Parent-child chunking** separates what you *search* from what you *send*: you embed small chunks for precise matching, but when one matches you send its larger parent section to the LLM (also covered in advanced-rag-techniques).",
+      "All chunkers share a loop: walk the text, collect units (characters, tokens, words, sentences or sections) until a size limit or boundary, emit a chunk with metadata, step back by the overlap, and continue.",
+      "**Measuring size.** Character counts are fast and predictable; token counts match what the embedding model and LLM actually see. In practice, chunk by characters with a conservative limit, or count tokens exactly with the embedding model's own tokenizer.",
+      "**Recursive splitting** is divide-and-conquer: split by the coarsest separator, greedily pack consecutive pieces up to the limit, and recurse with finer separators only on pieces still too big. It respects natural boundaries whenever it can.",
+      "**Overlap** applies when moving to the next chunk: the new chunk starts `overlap` units before the previous one ended. With chunk size S and overlap O, a document of length L gives roughly (L - O) / (S - O) chunks, so 20% overlap means about 25% more chunks to embed and store.",
+      "**Contextual enrichment.** Chunks are retrieved in isolation, so make each self-contained: prepend the document title and heading path, or (more advanced) have an LLM write a one-sentence context for each chunk before embedding (see advanced-rag-techniques).",
+      "**Parent-child chunking** separates what you *search* from what you *send*: embed small chunks for precise matching, but when one matches, send its larger parent section to the LLM (also in advanced-rag-techniques).",
     ),
     diagram: `document (8 pages)
 |====================================================|
@@ -404,13 +406,13 @@ structure-aware:
    c0         c1          c2              c3
  + heading path stored in metadata / prepended`,
     whyItExists: md(
-      "Embedding models produce one vector per input and work best on focused passages; LLM prompts have a finite context window and every token costs money and attention. Chunking is the compromise that makes large document collections searchable at a useful granularity: small enough to match precisely, big enough to be understood.",
+      "Embedding models produce one vector per input and work best on focused passages. LLM prompts have a finite context window, and every token costs money and attention. Chunking is the compromise that makes large collections searchable at a useful size: small enough to match precisely, big enough to be understood.",
     ),
     whenToUse: md(
-      "Whenever documents are longer than a few paragraphs. Start with recursive chunking plus heading prefixes for prose, structure-aware chunking for Markdown, HTML, FAQs and code, and consider semantic chunking for long unstructured text where topics drift. Tune size and overlap with a retrieval evaluation set, not by intuition.",
+      "Whenever documents are longer than a few paragraphs. Start with recursive chunking plus heading prefixes for prose, and structure-aware chunking for Markdown, HTML, FAQs and code. Consider semantic chunking for long unstructured text where topics drift. Tune size and overlap with a retrieval evaluation set, not by gut feel.",
     ),
     whenNotToUse: md(
-      "Do not chunk items that are already small and self-contained: a product description, a support ticket, an FAQ entry, a single row - index each as one unit. Do not split code in the middle of a function or a table in the middle of a row. If the entire corpus fits comfortably in the prompt, you may not need chunking (or retrieval) at all.",
+      "Don't chunk items that are already small and self-contained (a product description, a support ticket, an FAQ entry, a single row); index each as one unit. Don't split code mid-function or a table mid-row. If the whole corpus fits comfortably in the prompt, you may not need chunking (or retrieval) at all.",
     ),
     commonMistakes: [
       "Using one huge chunk per document, which produces blurry embeddings and stuffs the prompt with irrelevant text.",
@@ -448,19 +450,21 @@ structure-aware:
     level: "intermediate",
     description: "Where embeddings live: exact (flat) search vs approximate nearest neighbour indexes (HNSW, IVF), Chroma and pgvector, and filtering by metadata.",
     explanation: md(
-      "Once every chunk has an embedding, retrieval is a **nearest neighbour search**: given the query's vector, find the k stored vectors most similar to it (the **top-k**). A **vector database** (or *vector store*) is a system that stores vectors together with their text and metadata and answers that question quickly.",
-      "**The naive way: flat (brute-force) search.** Compare the query with every stored vector, compute cosine similarity (see embeddings), sort, return the best k. This is *exact* - it always finds the true nearest neighbours - and for up to tens of thousands of chunks it is perfectly fast. Its cost grows linearly: ten times more chunks means ten times more work per query. At millions of chunks with hundreds of dimensions each, scanning everything on every query becomes too slow.",
-      "**Approximate nearest neighbour (ANN) indexes** trade a tiny bit of accuracy for a huge speed-up. Instead of checking every vector, they use a data structure that leads them to the right neighbourhood and only check candidates there. They *usually* return the true top-k, but can occasionally miss one. The fraction of true neighbours an ANN search finds is called its **recall**; well-tuned indexes reach high recall while examining a small fraction of the data.",
-      "**The two index families you will meet everywhere:**",
-      "- **HNSW (Hierarchical Navigable Small World)** - a multi-layer graph where each vector is linked to some of its near neighbours. A search starts at an entry point in the sparse top layer, greedily hops towards the query, then drops to denser layers to refine. Fast, high recall, supports inserts without rebuilding; uses extra memory for the links. The default choice in most vector databases.\n- **IVF (Inverted File index)** - cluster all vectors into `nlist` groups with k-means, each represented by a centre point (*centroid*). A query is compared with the centroids first, and then only the vectors in the closest `nprobe` clusters are scanned. Cheaper to build and lighter on memory; recall depends on how many clusters you probe, and clusters should be rebuilt when the data changes a lot.",
+      "Once every chunk has an embedding, retrieval is a **nearest neighbour search**: given the query's vector, find the k most similar stored vectors (the **top-k**). A **vector database** (or *vector store*) stores vectors with their text and metadata and answers that question quickly.",
+      "**The naive way: flat (brute-force) search.** Compare the query with every stored vector using cosine similarity (see embeddings), sort, and return the best k. It's *exact* (always finds the true nearest neighbours) and perfectly fast up to tens of thousands of chunks. But cost grows linearly: ten times more chunks, ten times more work per query. At millions of chunks with hundreds of dimensions, scanning everything per query is too slow.",
+      "**Approximate nearest neighbour (ANN) indexes** trade a tiny bit of accuracy for a huge speed-up. A data structure leads them to the right neighbourhood, and they only check candidates there. They *usually* return the true top-k but can occasionally miss one. The fraction of true neighbours found is the **recall**; well-tuned indexes reach high recall while examining a small fraction of the data.",
+      "**The two index families you'll meet everywhere:**",
+      "- **HNSW (Hierarchical Navigable Small World)**: a multi-layer graph where each vector links to some near neighbours. Search starts at an entry point in the sparse top layer, greedily hops towards the query, then drops to denser layers to refine. Fast, high recall, supports inserts without rebuilding, but uses extra memory for the links. The default in most vector databases.\n- **IVF (Inverted File index)**: k-means clusters all vectors into `nlist` groups, each with a centre point (*centroid*). A query is compared with the centroids first, then only vectors in the closest `nprobe` clusters are scanned. Cheaper to build and lighter on memory. Recall depends on how many clusters you probe, and clusters should be rebuilt when the data changes a lot.",
       "Large-scale systems also **compress** vectors (for example *product quantization*, which stores a short code instead of full floating-point numbers) to fit more in memory, at some accuracy cost.",
-      "**Metadata filtering** restricts a search to chunks whose metadata matches a condition: `dept = 'hr'`, `year >= 2024`, `source in (...)`, or 'user is allowed to see this'. It is essential for multi-tenant apps and permissions (see rag-in-production). There are two basic approaches: **pre-filtering** (filter first, then find nearest neighbours among the survivors - always returns k results if they exist) and **post-filtering** (find the top-k nearest, then drop non-matching ones - may return fewer than k, or nothing). Good vector databases integrate filtering into the index search.",
+      "**Metadata filtering** limits a search to chunks whose metadata matches a condition: `dept = 'hr'`, `year >= 2024`, `source in (...)`, or 'user is allowed to see this'. It's essential for multi-tenant apps and permissions (see rag-in-production). Two basic approaches:",
+      "- **Pre-filtering**: filter first, then find nearest neighbours among the survivors. Always returns k results if they exist.\n- **Post-filtering**: find the top-k nearest, then drop non-matching ones. May return fewer than k, or nothing.",
+      "Good vector databases integrate filtering into the index search.",
       "**Choosing a store:**",
-      "- **Chroma** - an open-source embedded vector database you can `pip install`; stores vectors, documents and metadata on local disk. Great for learning, prototypes and small apps. Used throughout this subject.\n- **pgvector** - an extension that adds a `vector` column type and HNSW/IVFFlat indexes to PostgreSQL. If you already run Postgres, you get vector search *plus* SQL filters, joins, transactions, backups and permissions in one place.\n- **Dedicated vector databases and search engines** (many managed services exist, and general search engines have added vector support) - for very large scale, high query volume, or built-in hybrid search. Pick based on scale, operations and the features you need, not hype.",
-      "Whatever the store, you keep three things together per chunk: the **id**, the **embedding**, and the **document text + metadata**. And you must always use **the same embedding model** for stored chunks and queries - vectors from different models live in different spaces and cannot be compared.",
+      "- **Chroma**: an open-source embedded vector database you can `pip install`. It stores vectors, documents and metadata on local disk. Great for learning, prototypes and small apps, and used throughout this subject.\n- **pgvector**: a PostgreSQL extension adding a `vector` column type and HNSW/IVFFlat indexes. If you already run Postgres, you get vector search *plus* SQL filters, joins, transactions, backups and permissions in one place.\n- **Dedicated vector databases and search engines** (many managed services exist, and general search engines have added vector support): for very large scale, high query volume, or built-in hybrid search. Choose by scale, operations and needed features, not hype.",
+      "Whatever the store, keep three things together per chunk: the **id**, the **embedding**, and the **document text + metadata**. Always use **the same embedding model** for stored chunks and queries; vectors from different models live in different spaces and can't be compared.",
     ),
     analogy:
-      "Flat search is finding the closest café by measuring the distance to every café in the country. An IVF index is first asking 'which city is closest?', then only checking cafés in that city (and maybe the next-closest city too, that is nprobe). HNSW is asking a well-connected local: they point you to someone in the right region, who points you to someone in the right street, who points you to the café - a few hops instead of a national survey. Metadata filtering is saying 'only cafés open on Sunday'.",
+      "Flat search is finding the closest café by measuring the distance to every café in the country. An IVF index first asks 'which city is closest?', then checks only cafés there (and maybe the next-closest city too; that's nprobe). HNSW is asking a well-connected local, who points you to someone in the right region, who points you to the right street, then the café: a few hops instead of a national survey. Metadata filtering is saying 'only cafés open on Sunday'.",
     examples: [
       {
         title: "Brute-force vs bucketed (IVF-style) approximate search: speed vs recall",
@@ -518,13 +522,13 @@ for (const nprobe of [1, 2, 4, 30]) {
   console.log("nprobe=" + nprobe + "  recall@10=" + (recall / queries.length).toFixed(2) +
     "  vectors compared per query=" + Math.round(compared / queries.length) + " (brute force: " + N + ")");
 }`,
-        explanation: "Probing only the closest bucket compares a small fraction of the vectors but can miss true neighbours that landed in a neighbouring bucket. Probing more buckets raises recall towards 1.0 at the cost of more comparisons; probing all of them is just brute force plus overhead. HNSW makes the same speed/recall trade-off with a graph instead of buckets, tuned by ef_search.",
+        explanation: "Probing only the closest bucket compares a small fraction of the vectors but can miss true neighbours that landed in a neighbouring bucket. Probing more buckets pushes recall towards 1.0 at the cost of more comparisons; probing all of them is just brute force plus overhead. HNSW makes the same speed/recall trade-off with a graph instead of buckets, tuned by ef_search.",
         walkthrough: [
-          { code: "function rng(seed) { ... }", explanation: "A tiny seeded pseudo-random generator, so every run produces the same data and the same numbers." },
+          { code: "function rng(seed) { ... }", explanation: "A tiny seeded pseudo-random generator, so every run gives the same data and numbers." },
           { code: "const data = ... noisyNear(topics[i % 12])", explanation: "3,000 normalised 8-dimensional vectors grouped around 12 'topics', like embeddings of chunks about 12 subjects." },
           { code: "for (let iter = 0; iter < 6; iter++) { ... }", explanation: "k-means: assign each vector to its most similar centroid, move each centroid to the mean of its members, repeat. This is the IVF build step." },
-          { code: "ivfSearch(q, nprobe)", explanation: "Compare the query with the 30 centroids, then scan only the vectors in the nprobe best buckets." },
-          { code: "recall += ... / K", explanation: "Recall@10: what fraction of the true top-10 (from brute force) the approximate search found." },
+          { code: "ivfSearch(q, nprobe)", explanation: "Compare the query with the 30 centroids, then scan only vectors in the nprobe best buckets." },
+          { code: "recall += ... / K", explanation: "Recall@10: the fraction of the true top-10 (from brute force) that the approximate search found." },
         ],
       },
       {
@@ -547,7 +551,7 @@ const post = top(chunks, 3).filter((h) => isHr2025(chunks.find((c) => c.id === h
 const pre = top(chunks.filter(isHr2025), 3);
 console.log("post-filter (search top-3, then filter):", post);
 console.log("pre-filter (filter, then search top-3):", pre);`,
-        explanation: "Post-filtering threw away all three nearest hits because they belonged to other departments, returning nothing even though a perfect HR answer exists. Pre-filtering (or a database that filters during the index search) returns the right chunk. When you post-filter, over-fetch (for example top-50) to reduce this risk.",
+        explanation: "Post-filtering threw away all three nearest hits because they belonged to other departments, returning nothing though a perfect HR answer exists. Pre-filtering (or a database that filters during the index search) returns the right chunk. If you post-filter, over-fetch (for example top-50) to reduce this risk.",
       },
       {
         title: "Chroma: store with metadata, query with filters (Python)",
@@ -591,7 +595,7 @@ print("HR or eng, 2025+:");      show(col.query(query_embeddings=q, n_results=3,
                                      where={"$and": [{"dept": {"$in": ["hr", "eng"]}}, {"year": {"$gte": 2025}}]}))
 print("text must contain 'carry':"); show(col.query(query_embeddings=q, n_results=3,
                                      where_document={"$contains": "carry"}))`,
-        explanation: "Chroma keeps ids, embeddings, documents and metadata together and indexes vectors with HNSW. 'distances' are lower-is-better. Chroma's default distance is L2; because we normalise the embeddings, L2 distance ranks results in exactly the same order as cosine similarity (squared L2 = 2 - 2 x cosine). 'where' filters on metadata with operators such as $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $and and $or; 'where_document' filters on the text itself.",
+        explanation: "Chroma keeps ids, embeddings, documents and metadata together and indexes vectors with HNSW. Lower 'distances' are better. Chroma's default distance is L2; since we normalise the embeddings, L2 ranks results in exactly the same order as cosine similarity (squared L2 = 2 - 2 x cosine). 'where' filters on metadata with operators such as $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $and and $or; 'where_document' filters on the text itself.",
       },
       {
         title: "pgvector: a vector column, an HNSW index and a filtered top-k query (SQL)",
@@ -628,15 +632,16 @@ LIMIT 5;
 -- Alternative: IVFFlat (build AFTER loading data; lists = number of clusters)
 -- CREATE INDEX ON chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 -- SET ivfflat.probes = 10;`,
-        explanation: "The operator <=> is cosine distance (<-> is L2 distance, <#> is negative inner product), and the index operator class must match the operator you sort by or the index is not used. With an approximate index, a WHERE filter is applied to the candidates the index returns, so a very selective filter can yield fewer than LIMIT rows; raise ef_search, add a regular index on the filter column, or use the iterative index scans available in newer pgvector versions. From Python, the pgvector package's register_vector(conn) lets you pass NumPy arrays directly as query parameters.",
+        explanation: "The operator <=> is cosine distance (<-> is L2 distance, <#> is negative inner product). The index operator class must match the operator you sort by, or the index isn't used. With an approximate index, WHERE filters the candidates the index returns, so a very selective filter can yield fewer than LIMIT rows. Fix it by raising ef_search, adding a regular index on the filter column, or using the iterative index scans in newer pgvector versions. From Python, the pgvector package's register_vector(conn) lets you pass NumPy arrays directly as query parameters.",
       },
     ],
     howItWorks: md(
-      "**Flat index.** Store vectors in an array; for a query compute all N similarities and keep the k best (with a small heap). Cost is proportional to N x dimensions per query. Exact, simple, no build time. Libraries make this very fast with vectorised maths, so it is a good choice up to a surprisingly large N.",
-      "**IVF.** Build: run k-means to get `nlist` centroids, assign every vector to its nearest centroid (an *inverted list* per centroid). Search: rank the centroids by similarity to the query, scan the vectors in the top `nprobe` lists. Work per query is roughly nlist + N x nprobe / nlist comparisons. Increasing nprobe raises recall and latency.",
-      "**HNSW.** Each vector is a node in a graph and is linked to up to `M` close neighbours. Nodes are also randomly promoted to higher layers, each sparser than the one below, like an express lane. Search starts at the top layer, greedily moves to whichever neighbour is closest to the query until no neighbour is closer, then descends a layer and repeats. On the bottom layer it keeps a candidate list of size `ef_search` and returns the best k. Bigger `M` and `ef_construction` build a better graph (more memory, slower build); bigger `ef_search` explores more at query time (higher recall, slower).",
-      "**Distance metrics.** Cosine distance (1 - cosine similarity), dot product and L2 (Euclidean) distance. For normalised vectors all three give the same ranking, which is why normalising embeddings is a good habit. Use the metric your embedding model was trained for, and make the index metric match the query operator.",
-      "**Updates and deletes.** HNSW supports inserts incrementally; deletes are often handled by marking entries as deleted and cleaning up later. IVF centroids drift as data changes, so large changes call for a rebuild. Any change of embedding model means re-embedding everything into a new index.",
+      "**Flat index.** Store vectors in an array. For a query, compute all N similarities and keep the k best (with a small heap). Cost per query is proportional to N x dimensions. Exact, simple, no build time. Libraries make it very fast with vectorised maths, so it works up to a surprisingly large N.",
+      "**IVF.** Build: run k-means to get `nlist` centroids and assign every vector to its nearest one (an *inverted list* per centroid). Search: rank centroids by similarity to the query and scan the vectors in the top `nprobe` lists. Work per query is roughly nlist + N x nprobe / nlist comparisons. Raising nprobe raises recall and latency.",
+      "**HNSW.** Each vector is a graph node linked to up to `M` close neighbours. Nodes are also randomly promoted to higher layers, each sparser than the one below, like an express lane. Search starts at the top layer and greedily moves to whichever neighbour is closest to the query until none is closer, then descends a layer and repeats. On the bottom layer it keeps a candidate list of size `ef_search` and returns the best k.",
+      "Bigger `M` and `ef_construction` build a better graph (more memory, slower build). Bigger `ef_search` explores more at query time (higher recall, slower).",
+      "**Distance metrics.** Cosine distance (1 - cosine similarity), dot product, and L2 (Euclidean) distance. For normalised vectors all three give the same ranking, which is why normalising embeddings is a good habit. Use the metric your embedding model was trained for, and make the index metric match the query operator.",
+      "**Updates and deletes.** HNSW supports incremental inserts; deletes are often handled by marking entries deleted and cleaning up later. IVF centroids drift as data changes, so large changes call for a rebuild. Changing the embedding model means re-embedding everything into a new index.",
     ),
     diagram: `Flat: compare with ALL vectors        O(N)
  q -> [v1][v2][v3][v4] ... [vN]
@@ -653,10 +658,10 @@ HNSW: greedy hops, layer by layer
                        |
  L0:  o-o-o-o-o-o-o-o-[o]-o-o   -> top-k`,
     whyItExists: md(
-      "Semantic search needs 'find the most similar vectors' to be fast at scale and combined with ordinary filters, persistence and updates. Traditional databases were built for exact matches and ranges, not for nearest neighbours in hundreds of dimensions. Vector indexes and databases fill that gap, and extensions like pgvector bring the capability into databases teams already run.",
+      "Semantic search needs 'find the most similar vectors' to be fast at scale, alongside ordinary filters, persistence and updates. Traditional databases were built for exact matches and ranges, not nearest neighbours in hundreds of dimensions. Vector indexes and databases fill that gap, and extensions like pgvector bring it into databases teams already run.",
     ),
     whenToUse: md(
-      "Use a vector store whenever you do semantic retrieval over more than a handful of chunks. Start with flat search or Chroma for prototypes; use pgvector if you already run Postgres and want SQL filters, joins and one system to operate; consider a dedicated or managed vector search service for very large collections, high query rates or advanced features like built-in hybrid search and multi-tenancy.",
+      "Use a vector store whenever you do semantic retrieval over more than a handful of chunks. Start with flat search or Chroma for prototypes. Use pgvector if you already run Postgres and want SQL filters, joins and one system to operate. Consider a dedicated or managed vector search service for very large collections, high query rates, or features like built-in hybrid search and multi-tenancy.",
     ),
     whenNotToUse: md(
       "For a few hundred or thousand chunks, an in-memory NumPy array with brute-force cosine is simpler and exact. For exact lookups (an order by id, a customer by email) use normal database queries, not vector search. Do not add a separate vector database to your architecture if pgvector in your existing Postgres meets your scale.",
@@ -697,17 +702,18 @@ HNSW: greedy hops, layer by layer
     level: "intermediate",
     description: "How to find the right chunks: dense semantic search, sparse keyword search with BM25, and combining both with reciprocal rank fusion.",
     explanation: md(
-      "**Retrieval** is the R in RAG: given the user's question, return the handful of chunks most likely to contain the answer. If the right chunk is not retrieved, the LLM cannot use it - no prompt can fix a retrieval miss. There are two fundamentally different ways to search, and the best systems use both.",
-      "**Semantic search (dense retrieval)** embeds the query and finds chunks with the most similar embeddings (see embeddings and vector-databases). It is called *dense* because embeddings are dense vectors: every one of the hundreds of numbers is used. Its strength is **meaning**: 'How much holiday do I get?' matches 'Employees receive 25 days of annual leave' even though they share no important words. Its weakness is **exact tokens**: product codes, error codes, names, ticket ids and rare jargon ('ERR_7731', 'Kubernetes 1.29', 'Smith v. Jones') are often blurred, because the embedding captures the gist, not the exact string.",
-      "**Keyword search (sparse retrieval)** matches the actual words. It is called *sparse* because a document is represented as a vector over the entire vocabulary that is almost all zeros. The standard scoring function is **BM25** ('Best Matching 25'), used by search engines for decades. For each query word, BM25 rewards documents that contain it, with three refinements:",
-      "- **Rare words count more** - *inverse document frequency (IDF)*: a word in 2 of 10,000 chunks ('ERR_7731') is far more informative than one in 9,000 ('the', 'policy').\n- **Repetition has diminishing returns** - *term-frequency saturation*, controlled by parameter `k1` (typically about 1.2-2.0): the 2nd mention of a word adds less than the 1st, the 10th adds almost nothing.\n- **Long documents are penalised** - *length normalisation*, controlled by `b` (typically 0.75): a word appearing once in a short chunk is stronger evidence than once in a very long one.",
-      "BM25 is fast, needs no model, is easy to explain, and nails exact matches - but it fails on synonyms and paraphrases ('holiday' vs 'leave') unless you add synonym lists.",
-      "**Hybrid search** runs both and merges the results. The problem: their scores are on different scales (cosine similarity is around 0-1; BM25 scores are unbounded), so you cannot just add them. The simplest robust solution is **reciprocal rank fusion (RRF)**: ignore the raw scores and use only each document's *rank* in each list. Each list contributes `1 / (k + rank)` to a document's fused score, with `k` a constant (60 is the common default) that stops the very first ranks from dominating. Documents that appear high in *both* lists win. An alternative is a weighted sum of normalised scores, which needs tuning.",
+      "**Retrieval** is the R in RAG: given the question, return the few chunks most likely to contain the answer. If the right chunk isn't retrieved, the LLM can't use it; no prompt fixes a retrieval miss. There are two fundamentally different ways to search, and the best systems use both.",
+      "**Semantic search (dense retrieval)** embeds the query and finds chunks with the most similar embeddings (see embeddings and vector-databases). It's *dense* because every one of the embedding's hundreds of numbers is used.",
+      "- **Strength: meaning.** 'How much holiday do I get?' matches 'Employees receive 25 days of annual leave' though they share no important words.\n- **Weakness: exact tokens.** Product codes, error codes, names, ticket ids and rare jargon ('ERR_7731', 'Kubernetes 1.29', 'Smith v. Jones') get blurred, because the embedding captures the gist, not the exact string.",
+      "**Keyword search (sparse retrieval)** matches the actual words. It's *sparse* because a document becomes a vector over the whole vocabulary that's almost all zeros. The standard scoring function is **BM25** ('Best Matching 25'), used by search engines for decades. For each query word, BM25 rewards documents containing it, with three refinements:",
+      "- **Rare words count more**: *inverse document frequency (IDF)*. A word in 2 of 10,000 chunks ('ERR_7731') says far more than one in 9,000 ('the', 'policy').\n- **Repetition has diminishing returns**: *term-frequency saturation*, set by `k1` (typically about 1.2-2.0). The 2nd mention adds less than the 1st; the 10th adds almost nothing.\n- **Long documents are penalised**: *length normalisation*, set by `b` (typically 0.75). One mention in a short chunk is stronger evidence than one in a very long chunk.",
+      "BM25 is fast, needs no model, is easy to explain, and nails exact matches. But it fails on synonyms and paraphrases ('holiday' vs 'leave') unless you add synonym lists.",
+      "**Hybrid search** runs both and merges the results. Their scores are on different scales (cosine similarity is around 0-1; BM25 is unbounded), so you can't just add them. The simplest robust fix is **reciprocal rank fusion (RRF)**: ignore raw scores and use only each document's *rank* in each list. Each list adds `1 / (k + rank)` to a document's fused score, where `k` is a constant (60 is the common default) that stops the top ranks from dominating. Documents high in *both* lists win. The alternative, a weighted sum of normalised scores, needs tuning.",
       "**Other knobs that matter:**",
-      "- **top-k** - how many chunks to retrieve. Too few and you miss the answer; too many and you add noise, cost and latency. Common pattern: retrieve generously (20-50) and narrow down with a reranker (see reranking) to the 3-8 you send to the LLM.\n- **Similarity threshold** - drop results below a minimum score so a question with no good match gets no context (and the model can say 'I don't know').\n- **Metadata filters** - restrict by source, date, product, tenant or permissions (see vector-databases).\n- **Diversity** - top results are often near-duplicates (overlapping chunks, copied paragraphs). *Maximal marginal relevance (MMR)* picks results one by one, penalising similarity to results already chosen.\n- **Query transformation** - rewriting, expanding or splitting the user's question before searching (see conversational-rag and advanced-rag-techniques).",
+      "- **top-k**: how many chunks to retrieve. Too few misses the answer; too many adds noise, cost and latency. A common pattern: retrieve generously (20-50), then narrow with a reranker (see reranking) to the 3-8 you send to the LLM.\n- **Similarity threshold**: drop results below a minimum score so a question with no good match gets no context (and the model can say 'I don't know').\n- **Metadata filters**: restrict by source, date, product, tenant or permissions (see vector-databases).\n- **Diversity**: top results are often near-duplicates (overlapping chunks, copied paragraphs). *Maximal marginal relevance (MMR)* picks results one by one, penalising similarity to those already chosen.\n- **Query transformation**: rewrite, expand or split the question before searching (see conversational-rag and advanced-rag-techniques).",
     ),
     analogy:
-      "Semantic search is a librarian who understands what you mean: ask for 'books about feeling homesick' and they bring novels about missing home, even if the word 'homesick' never appears. Keyword search is the index at the back of a book: perfect if you know the exact term ('ERR_7731'), useless for a paraphrase. Hybrid search asks both and trusts the books both of them recommend.",
+      "Semantic search is a librarian who understands what you mean: ask for 'books about feeling homesick' and you get novels about missing home, even if 'homesick' never appears. Keyword search is the index at the back of a book: perfect for an exact term ('ERR_7731'), useless for a paraphrase. Hybrid search asks both and trusts the books they both recommend.",
     examples: [
       {
         title: "BM25 from scratch",
@@ -743,7 +749,7 @@ for (const q of ["what does ERR_7731 mean", "annual leave days", "how much holid
   console.log("Q:", q);
   for (const r of bm25(q)) console.log("   " + r.score + "  " + docs[r.doc]);
 }`,
-        explanation: "BM25 finds the error code instantly because 'err_7731' is rare (high IDF). 'annual leave days' ranks the two leave chunks first. But 'how much holiday do I get' matches the holiday PARTY chunk, the only one containing 'holiday', and misses the leave policy entirely - the classic keyword-search failure on synonyms.",
+        explanation: "BM25 finds the error code instantly because 'err_7731' is rare (high IDF). 'annual leave days' ranks the two leave chunks first. But 'how much holiday do I get' matches the holiday PARTY chunk, the only one containing 'holiday', and misses the leave policy entirely: the classic keyword-search failure on synonyms.",
         walkthrough: [
           { code: "df[term]", explanation: "Document frequency: how many chunks contain the term. Used to compute IDF." },
           { code: "Math.log((N - df + 0.5) / (df + 0.5) + 1)", explanation: "IDF: large for rare terms, near zero for terms in almost every document." },
@@ -799,7 +805,7 @@ for (const q of ["how many holiday days do I get", "what does ERR_7731 mean"]) {
   console.log("  semantic order:", sem.join(", "), "| keyword order:", kw.join(", "));
   for (const r of rrf([sem, kw]).slice(0, 3)) console.log("   rrf " + r.rrf + "  " + docs[r.doc]);
 }`,
-        explanation: "For the holiday question, keyword search cannot tell the holiday-party chunk from the leave chunks (each shares one word with the query), while the semantic list knows 'holiday' means leave and ranks the party chunk last; for the error code, keyword search pins the exact chunk. RRF rewards documents ranked well by either retriever, and especially by both, so the fused list is good on both questions without any score normalisation.",
+        explanation: "For the holiday question, keyword search can't tell the holiday-party chunk from the leave chunks (each shares one word with the query), while the semantic list knows 'holiday' means leave and ranks the party chunk last. For the error code, keyword search pins the exact chunk. RRF rewards documents ranked well by either retriever, especially both, so the fused list handles both questions with no score normalisation.",
       },
       {
         title: "Hybrid retrieval in Python: rank_bm25 + Chroma + RRF",
@@ -843,7 +849,7 @@ def hybrid_search(query, n=5):
 
 for doc_id, text, meta in hybrid_search("what does ERR_7731 mean?"):
     print(doc_id, meta.get("source"), text[:80])`,
-        explanation: "The BM25 index is built in memory from the chunks already stored in Chroma, so both retrievers return the same ids and RRF can merge them. For large corpora keep a persistent keyword index instead (a search engine, or Postgres full-text search as in the next example). col.get(ids=...) does not guarantee order, hence the by_id lookup.",
+        explanation: "The BM25 index is built in memory from the chunks already in Chroma, so both retrievers return the same ids and RRF can merge them. For large corpora, keep a persistent keyword index instead (a search engine, or Postgres full-text search as in the next example). col.get(ids=...) doesn't guarantee order, hence the by_id lookup.",
       },
       {
         title: "Hybrid search inside Postgres: full-text + pgvector + RRF (SQL)",
@@ -874,15 +880,15 @@ FULL OUTER JOIN keyword k ON k.id = s.id
 JOIN chunks c ON c.id = COALESCE(s.id, k.id)
 ORDER BY rrf_score DESC
 LIMIT 10;`,
-        explanation: "Postgres's built-in ts_rank_cd is not BM25, but it is a solid keyword ranker, and with RRF only the ranks matter. A FULL OUTER JOIN keeps documents found by only one of the two retrievers. One query, one database, hybrid results.",
+        explanation: "Postgres's built-in ts_rank_cd isn't BM25, but it's a solid keyword ranker, and with RRF only the ranks matter. The FULL OUTER JOIN keeps documents found by only one retriever. One query, one database, hybrid results.",
       },
     ],
     howItWorks: md(
-      "**Dense retrieval pipeline:** embed the query with the same model used for chunks, run a nearest-neighbour search (with filters), return ids, texts, metadata and similarity scores. Some embedding models expect a prefix or instruction on queries versus documents (for example 'query:' and 'passage:'); check your model's documentation, since mismatches hurt quality.",
-      "**Sparse retrieval pipeline:** tokenize (lowercase, split, optionally remove stop words and apply *stemming* - reducing 'running' and 'runs' to 'run'), look up each query term in an **inverted index** (a map from each term to the list of chunks containing it), and score only those chunks with BM25. The inverted index makes this fast: you never touch chunks that contain none of the query terms.",
+      "**Dense retrieval pipeline:** embed the query with the same model used for chunks, run a nearest-neighbour search (with filters), and return ids, texts, metadata and similarity scores. Some embedding models expect different prefixes or instructions for queries and documents (for example 'query:' and 'passage:'). Check your model's docs, since mismatches hurt quality.",
+      "**Sparse retrieval pipeline:** tokenize (lowercase, split, optionally remove stop words and apply *stemming*, which reduces 'running' and 'runs' to 'run'). Look up each query term in an **inverted index** (a map from each term to the chunks containing it), and score only those chunks with BM25. The inverted index makes this fast: chunks with none of the query terms are never touched.",
       "**BM25 formula** for query Q and document D: sum over each query term t of `IDF(t) x f(t,D) x (k1 + 1) / (f(t,D) + k1 x (1 - b + b x |D| / avgdl))`, where f is the term count in D, |D| the document length and avgdl the average length. IDF(t) = `ln((N - n(t) + 0.5) / (n(t) + 0.5) + 1)` with N documents and n(t) of them containing t.",
-      "**Reciprocal rank fusion:** for every document d, `RRF(d) = sum over retrievers r of 1 / (k + rank_r(d))`, with rank starting at 1 and documents missing from a list contributing 0. With k = 60, rank 1 gives 1/61 and rank 10 gives 1/70: being in both lists matters more than being first in one. RRF needs no training and no score calibration, which is why it is the default fusion method.",
-      "**Learned sparse retrieval** is a middle ground worth knowing by name: models that output sparse word-weight vectors (expanding queries with related terms) so they work with inverted indexes but understand some synonyms.",
+      "**Reciprocal rank fusion:** for every document d, `RRF(d) = sum over retrievers r of 1 / (k + rank_r(d))`, with rank starting at 1 and documents missing from a list contributing 0. With k = 60, rank 1 gives 1/61 and rank 10 gives 1/70, so being in both lists matters more than being first in one. RRF needs no training or score calibration, which is why it's the default fusion method.",
+      "**Learned sparse retrieval** is a middle ground worth knowing by name: models output sparse word-weight vectors (expanding queries with related terms), so they work with inverted indexes but understand some synonyms.",
     ),
     diagram: `             question
             /        \\
@@ -902,13 +908,13 @@ LIMIT 10;`,
                |
      top 20-50 -> reranker -> top 5`,
     whyItExists: md(
-      "Neither retrieval method is good enough alone. Semantic search understands paraphrases but fumbles exact identifiers; keyword search nails identifiers but misses paraphrases. Real users ask both kinds of questions, often in the same sentence. Hybrid search exists to cover both failure modes cheaply, and RRF exists because merging scores from incompatible scales is otherwise fragile.",
+      "Neither method is good enough alone. Semantic search understands paraphrases but fumbles exact identifiers; keyword search nails identifiers but misses paraphrases. Real users ask both kinds of questions, often in one sentence. Hybrid search covers both failure modes cheaply, and RRF exists because merging scores from incompatible scales is otherwise fragile.",
     ),
     whenToUse: md(
-      "Use semantic search as the baseline for natural-language questions. Add BM25 and fuse with RRF whenever your content has codes, names, version numbers, legal citations, product SKUs or domain jargon - which is most real corpora. Measure each retriever separately and the fused result on a test set to confirm hybrid helps for your data.",
+      "Use semantic search as the baseline for natural-language questions. Add BM25 and fuse with RRF whenever your content has codes, names, version numbers, legal citations, product SKUs or jargon, which is most real corpora. Measure each retriever and the fused result on a test set to confirm hybrid helps on your data.",
     ),
     whenNotToUse: md(
-      "If users only ever search by exact identifiers, a plain database or keyword index is enough. If the corpus is tiny, retrieval strategy hardly matters - consider putting everything in the prompt. Do not add hybrid complexity before you have a baseline and an evaluation set showing what it fixes.",
+      "If users only search by exact identifiers, a plain database or keyword index is enough. If the corpus is tiny, retrieval strategy hardly matters; consider putting everything in the prompt. Don't add hybrid complexity before you have a baseline and an evaluation set showing what it fixes.",
     ),
     commonMistakes: [
       "Relying only on embeddings and then being surprised that exact error codes, SKUs or names are not found.",
@@ -945,16 +951,17 @@ LIMIT 10;`,
     level: "intermediate",
     description: "Two-stage retrieval: fetch many candidates cheaply, then reorder them with a slower, smarter cross-encoder or LLM so the best chunks reach the prompt.",
     explanation: md(
-      "First-stage retrieval (vector search, BM25 or hybrid) is built for **speed over millions of chunks**, so it uses shortcuts. Embedding search compresses the query and each chunk into separate vectors *before* they ever meet, then compares the vectors. It never reads the question and the chunk together. That is why its top results are often 'about the right topic' without actually answering the question.",
-      "**Reranking** adds a second stage: take the first stage's top candidates (say 20-50), score each one with a slower but more accurate model that reads the **query and the chunk together**, sort by that score, and keep the best few (say 3-8) for the prompt. This is called **two-stage retrieval** or *retrieve-then-rerank*: a wide, cheap net followed by a careful sort.",
-      "**Bi-encoder vs cross-encoder.** The embedding model used for search is a **bi-encoder**: it encodes query and document *independently* (two separate passes), which is what lets you pre-compute all document vectors once. A **cross-encoder** takes the query and one document *concatenated* as a single input and outputs one relevance score. Because the transformer's attention can compare every query word with every document word, it notices things a bi-encoder misses: whether the passage actually contains the requested number, whether it is about the right product version, whether a 'not' flips the meaning. The cost: nothing can be pre-computed, so you run the model once per (query, candidate) pair at query time. Fine for 50 candidates, impossible for 5 million.",
+      "First-stage retrieval (vector search, BM25 or hybrid) is built for **speed over millions of chunks**, so it takes shortcuts. Embedding search turns the query and each chunk into separate vectors *before* they meet, then compares vectors. It never reads the question and chunk together. That's why its top results are often 'about the right topic' without actually answering the question.",
+      "**Reranking** adds a second stage. Take the first stage's top candidates (say 20-50), score each with a slower, more accurate model that reads the **query and chunk together**, sort, and keep the best few (say 3-8) for the prompt. This is **two-stage retrieval** (*retrieve-then-rerank*): a wide, cheap net, then a careful sort.",
+      "**Bi-encoder vs cross-encoder.** The embedding model used for search is a **bi-encoder**: it encodes query and document *independently* (two separate passes), so you can pre-compute all document vectors once. A **cross-encoder** takes the query and one document *concatenated* as one input and outputs a relevance score.",
+      "Because the transformer's attention compares every query word with every document word, a cross-encoder notices what a bi-encoder misses: whether the passage contains the requested number, covers the right product version, or has a 'not' that flips the meaning. The cost: nothing can be pre-computed, so the model runs once per (query, candidate) pair at query time. Fine for 50 candidates, impossible for 5 million.",
       "**Kinds of rerankers:**",
-      "- **Cross-encoder models** - small open models such as `cross-encoder/ms-marco-MiniLM-L-6-v2` (trained on the MS MARCO web search dataset of real queries and relevant passages) run locally with the `sentence-transformers` library. Hosted reranking APIs also exist from several embedding providers.\n- **LLM rerankers** - ask an LLM to score or order the candidates ('rate each passage 0-10 for how well it answers the question'). Very flexible (you can describe what 'relevant' means in your domain) but slower and more expensive; use for small candidate sets or high-value queries.\n- **Heuristic or business-rule boosts** - add points for recency, authoritative sources, or the user's own team's documents. Often combined with a model score.",
-      "**What reranking buys you.** Better precision in the few chunks you actually send: the prompt gets shorter (cheaper, faster) *and* more relevant (better answers, fewer hallucinations from distracting context). It also gives you a more meaningful score for thresholding ('no candidate scored above X, so say I don't know').",
-      "**What it cannot do:** a reranker only reorders what the first stage found. If the right chunk is not in the candidate set, reranking cannot recover it - so the first stage should be tuned for **recall** (fetch generously) and the reranker for **precision**.",
+      "- **Cross-encoder models**: small open models such as `cross-encoder/ms-marco-MiniLM-L-6-v2` (trained on the MS MARCO web search dataset of real queries and relevant passages) run locally with the `sentence-transformers` library. Several embedding providers also offer hosted reranking APIs.\n- **LLM rerankers**: ask an LLM to score or order the candidates ('rate each passage 0-10 for how well it answers the question'). Very flexible (you can describe what 'relevant' means in your domain) but slower and pricier; use for small candidate sets or high-value queries.\n- **Heuristic or business-rule boosts**: add points for recency, authoritative sources, or the user's own team's documents. Often combined with a model score.",
+      "**What reranking buys you.** Better precision in the few chunks you send: a shorter prompt (cheaper, faster) that's *also* more relevant (better answers, fewer hallucinations from distracting context). It also gives a more meaningful score for thresholding ('no candidate scored above X, so say I don't know').",
+      "**What it can't do:** a reranker only reorders what the first stage found. If the right chunk isn't in the candidates, reranking can't recover it. So tune the first stage for **recall** (fetch generously) and the reranker for **precision**.",
     ),
     analogy:
-      "Hiring for a job: a recruiter skims 2,000 CVs for keywords and similar job titles in a few seconds each and shortlists 30 (first-stage retrieval). Then the hiring manager actually reads those 30 CVs carefully against the job description and picks the best 5 to interview (reranking). The manager would never have time to read all 2,000, and the recruiter's skim alone would put some poor fits in the top 5.",
+      "Think of hiring. A recruiter skims 2,000 CVs for keywords and similar job titles, a few seconds each, and shortlists 30 (first-stage retrieval). The hiring manager then reads those 30 carefully against the job description and picks the best 5 to interview (reranking). The manager could never read all 2,000, and the recruiter's skim alone would put some poor fits in the top 5.",
     examples: [
       {
         title: "Two-stage retrieval: cheap first stage, joint-scoring reranker",

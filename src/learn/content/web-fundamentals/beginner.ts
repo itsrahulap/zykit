@@ -358,24 +358,24 @@ interactive touches like hover effects on its own.
       { difficulty: "Hard", prompt: "Given a small HTML page with conflicting styles, trace the cascade by hand to find the final color of a specific element." },
     ],
     interviewQuestions: [
-      { question: "What problem does CSS solve that HTML alone doesn't?", answer: "HTML describes structure and content, but nothing about appearance. CSS controls how that content looks — color, size, spacing, layout — and keeping it separate means the same content can be restyled, or reused across pages, without touching the markup." },
-      { question: "What is a CSS selector?", answer: "The part of a CSS rule that determines which elements the rule's properties apply to — it can match by tag name, class, id, attribute, or relationship to other elements." },
-      { question: "What is 'the cascade' in CSS?", answer: "The set of tie-breaking rules the browser uses when multiple CSS rules could apply to the same element and property — resolved primarily by specificity, and then by which rule appears later in source order when specificity ties." },
-      { question: "How is specificity calculated, at a high level?", answer: "Roughly in this order of weight: inline styles beat everything, then id selectors, then class/attribute/pseudo-class selectors, then plain tag selectors. A rule with a higher-weighted selector wins regardless of where it appears in the stylesheet." },
-      { question: "Given `p { color: black; } .highlight { color: orange; } #intro { color: red; }` applied to a paragraph with `class=\"highlight\" id=\"intro\"`, what color renders, and why?", answer: "Red. All three selectors match, but id selectors outweigh class selectors, which outweigh tag selectors, regardless of the order the rules were written in — specificity, not position, decides this one." },
-      { question: "If two CSS rules have exactly equal specificity, which one wins?", answer: "Whichever rule appears later in the source — later stylesheets, or later rules within the same stylesheet, override earlier ones when specificity is tied. This is the part of 'the cascade' that depends purely on order." },
-      { question: "How do inline styles, a `<style>` block, and an external stylesheet differ in how they affect the cascade?", answer: "All three can define the same properties, but an inline `style` attribute on an element outweighs any selector-based rule, no matter how specific, because it isn't competing on selector specificity at all — it's tied directly to that one element." },
-      { question: "What does `!important` do, and why is it generally discouraged?", answer: "It forces a declaration to win the cascade regardless of specificity or source order, overriding almost everything else. It's discouraged because once one `!important` is fighting another, there's no normal cascade logic left to reason about — you have to search the whole codebase to know what actually wins." },
-      { question: "What is the CSS box model?", answer: "Every element is rendered as a box made of four layered regions: the content itself, padding around the content, a border around the padding, and margin outside the border — and an element's rendered size is the sum of all four unless `box-sizing` changes how that's calculated." },
-      { question: "What's the difference between `box-sizing: content-box` and `box-sizing: border-box`?", answer: "With `content-box` (the default), a `width` you set applies only to the content area, so padding and border add extra pixels on top of it. With `border-box`, the `width` you set already includes padding and border, so the element's final rendered width matches the value you wrote." },
-      { question: "Why should an `id` selector generally be avoided for general-purpose styling, separate from the fact that it's very specific?", answer: "An `id` is meant to be unique per page, so a rule written against one only ever targets a single element — it can't be reused elsewhere without duplicating the rule, and its high specificity makes it harder to override later if you need to." },
-      { question: "What's the difference between `nav a` and `nav > a` as selectors?", answer: "`nav a` matches any `<a>` nested anywhere inside a `<nav>`, no matter how deeply. `nav > a` only matches an `<a>` that is a *direct* child of `<nav>`, ignoring one nested inside another element in between." },
-      { question: "Do all CSS properties inherit from a parent element to its children?", answer: "No. Text-related properties like `color` and `font-family` inherit by default, so setting them on a container affects text inside it. Box-model properties like `margin`, `padding`, and `border` do not inherit — each element needs them set explicitly, or it renders with none." },
-      { question: "Given `div { color: red; } div p { color: blue; }` and `<div><p>Text</p></div>`, what color does the text render, and why?", answer: "Blue. Both rules match the paragraph — one by matching `div` (and inheriting to its child) and one by directly targeting `p` inside a `div` — but `div p` is a more specific selector (two type selectors vs. one), so it wins the cascade." },
-      { question: "You change a CSS property on an element but nothing visibly happens — what are the likely mechanisms?", answer: "Either a more specific (or later, equally specific) rule elsewhere is overriding it, the property doesn't apply to that element's `display` type (like `vertical-align` on a block element), or the stylesheet change hasn't actually loaded — for example due to caching or a wrong file path." },
-      { question: "What's a pseudo-class, like `:hover` or `:first-child`, and how is it different from a regular selector?", answer: "A regular selector matches based on an element's static properties — its tag, class, or id. A pseudo-class matches based on a state or position that can change or depend on context, like being currently hovered, being the first child of its parent, or being a form field that's currently invalid." },
-      { question: "A `<link rel=\"stylesheet\">` is in the page, but none of its styles seem to apply — what would you check?", answer: "Whether the `href` path actually resolves (a typo or wrong relative path is the most common cause), whether the file is being served with a CSS-compatible response, whether a browser cache is serving a stale/empty version, and whether the rules inside it are simply being overridden by more specific rules loaded elsewhere." },
-      { question: "Why is a shared stylesheet generally better than inline styles for keeping a site's typography consistent?", answer: "A shared stylesheet defines a rule once — say, `p { font-size: 16px; }` — and every paragraph on every page that loads it picks up that value automatically. With inline styles, the same value has to be repeated on every single element, so keeping them consistent means finding and updating every occurrence by hand." },
+      { question: "What problem does CSS solve that HTML alone doesn't?", answer: "HTML describes structure and content but says nothing about appearance. CSS controls how content looks (color, size, spacing, layout). Keeping it separate lets you restyle content, or reuse styles across pages, without touching the markup." },
+      { question: "What is a CSS selector?", answer: "The part of a rule that decides which elements it applies to. It can match by tag name, class, id, attribute, or relationship to other elements." },
+      { question: "What is 'the cascade' in CSS?", answer: "The tie-breaking rules the browser uses when several CSS rules set the same property on the same element. Specificity decides first; if that ties, the rule that comes later in the source wins." },
+      { question: "How is specificity calculated, at a high level?", answer: "From strongest to weakest: inline styles, then id selectors, then class/attribute/pseudo-class selectors, then plain tag selectors. The stronger selector wins no matter where it appears in the stylesheet." },
+      { question: "Given `p { color: black; } .highlight { color: orange; } #intro { color: red; }` applied to a paragraph with `class=\"highlight\" id=\"intro\"`, what color renders, and why?", answer: "Red. All three selectors match, but id beats class and class beats tag, whatever order the rules are written in. Specificity decides here, not position." },
+      { question: "If two CSS rules have exactly equal specificity, which one wins?", answer: "The one that appears later in the source, whether in a later stylesheet or later in the same one. This is the part of the cascade that depends only on order." },
+      { question: "How do inline styles, a `<style>` block, and an external stylesheet differ in how they affect the cascade?", answer: "All three can set the same properties. But an inline `style` attribute beats any selector-based rule, however specific, because it's tied directly to that one element instead of competing on selector specificity." },
+      { question: "What does `!important` do, and why is it generally discouraged?", answer: "It makes a declaration win regardless of specificity or source order. It's discouraged because once two `!important` declarations fight, normal cascade logic no longer helps; you have to search the whole codebase to know what wins." },
+      { question: "What is the CSS box model?", answer: "Every element is a box with four layers: the content, padding around it, a border around the padding, and margin outside the border. The rendered size is the sum of all four unless `box-sizing` changes the calculation." },
+      { question: "What's the difference between `box-sizing: content-box` and `box-sizing: border-box`?", answer: "With `content-box` (the default), `width` covers only the content, so padding and border add pixels on top. With `border-box`, `width` already includes padding and border, so the rendered width matches the value you wrote." },
+      { question: "Why should an `id` selector generally be avoided for general-purpose styling, separate from the fact that it's very specific?", answer: "An `id` is unique per page, so the rule only ever targets one element. You can't reuse it without duplicating the rule, and its high specificity makes it hard to override later." },
+      { question: "What's the difference between `nav a` and `nav > a` as selectors?", answer: "`nav a` matches any `<a>` anywhere inside a `<nav>`, however deep. `nav > a` matches only an `<a>` that is a *direct* child of `<nav>`, not one nested inside another element." },
+      { question: "Do all CSS properties inherit from a parent element to its children?", answer: "No. Text properties like `color` and `font-family` inherit by default, so setting them on a container affects the text inside. Box-model properties like `margin`, `padding`, and `border` don't inherit; each element needs its own, or gets none." },
+      { question: "Given `div { color: red; } div p { color: blue; }` and `<div><p>Text</p></div>`, what color does the text render, and why?", answer: "Blue. `div p` matches the paragraph directly. `div { color: red; }` only matches the `div`; the paragraph would get red only by inheritance, and a rule that matches an element directly always beats an inherited value." },
+      { question: "You change a CSS property on an element but nothing visibly happens — what are the likely mechanisms?", answer: "A more specific (or later, equally specific) rule is overriding it. Or the property doesn't apply to the element's `display` type (like `vertical-align` on a block element). Or the change never loaded, for example because of caching or a wrong file path." },
+      { question: "What's a pseudo-class, like `:hover` or `:first-child`, and how is it different from a regular selector?", answer: "A regular selector matches fixed traits: tag, class, or id. A pseudo-class matches a state or position that can change, like being hovered, being the first child of its parent, or being a form field that's currently invalid." },
+      { question: "A `<link rel=\"stylesheet\">` is in the page, but none of its styles seem to apply — what would you check?", answer: "Check that the `href` path resolves (a typo or wrong relative path is the most common cause), that the file is served as CSS, that the browser cache isn't serving a stale or empty copy, and that its rules aren't being overridden by more specific ones elsewhere." },
+      { question: "Why is a shared stylesheet generally better than inline styles for keeping a site's typography consistent?", answer: "A shared stylesheet defines a rule once, say `p { font-size: 16px; }`, and every paragraph on every page that loads it picks it up. With inline styles, you repeat the value on every element and have to find and update each one by hand." },
     ],
     relatedTopics: ["html-basics", "browser-rendering", "css-layout"],
     keywords: ["css", "styling", "selectors", "properties", "cascade", "specificity"],
@@ -385,30 +385,25 @@ interactive touches like hover effects on its own.
     title: "The DOM",
     level: "beginner",
     description:
-      "The live, in-memory version of a page's structure that a browser builds and that JavaScript can read and change.",
+      "The live, in-memory version of a page that the browser builds and JavaScript can read and change.",
     explanation: `
-The HTML you write is just text in a file — it's the *starting
-instructions* for a page, not the page itself while it's running. The
-moment a browser loads that HTML, it reads through it and builds a
-completely separate, living representation of the page in memory: a tree
-of objects, one for each element, each one knowing its content,
-attributes, and which elements are nested inside which.
+The HTML you write is just text in a file: the *starting instructions*
+for a page, not the running page. When the browser loads it, it builds a
+separate, live version of the page in memory. That version is a tree of
+objects, one per element, each knowing its content, its attributes, and
+what's nested inside it.
 
-That in-memory tree is called the **DOM** — the Document Object Model.
-It's what the browser actually uses to draw the page on screen, and
-crucially, it's what JavaScript reaches into when it wants to change
-something after the page has loaded: add a new item to a list, change a
-heading's text, remove an element entirely.
+This tree is the **DOM** (Document Object Model). The browser draws the
+page from it, and JavaScript changes it after the page loads: adding a
+list item, changing a heading's text, removing an element.
 
-This distinction matters: editing the original HTML file does nothing to
-a page that's already open in a browser. But changing the DOM does —
-because the DOM, not the original file, is the thing currently being
-rendered. Open a browser's developer tools and inspect an element, and
-you're looking at the live DOM, which may no longer match the HTML that
-was first sent down.
+So editing the HTML file does nothing to a page that's already open, but
+changing the DOM does, because the DOM is what's being rendered. When you
+inspect an element in developer tools, you're seeing the live DOM, which
+may no longer match the HTML that was first sent.
   `.trim(),
     analogy:
-      "The original HTML file is like a printed recipe. The DOM is the actual dish being cooked in the kitchen right now — you can still add a pinch of salt or swap an ingredient mid-cook, and none of that touches the printed recipe sitting on the counter.",
+      "The HTML file is a printed recipe. The DOM is the dish being cooked right now: you can add salt or swap an ingredient mid-cook, and the printed recipe on the counter doesn't change.",
     examples: [
       {
         title: "HTML source vs. the live DOM",
@@ -420,11 +415,11 @@ was first sent down.
 // JavaScript, run after the page loads
 document.getElementById("list").innerHTML += "<li>Bananas</li>";`,
         explanation:
-          "The HTML file only ever had one list item. After this script runs, the live DOM has two — but if you viewed the file's raw source again, it would still only show one, because the file itself never changed.",
+          "The HTML file has one list item. After the script runs, the live DOM has two. The file's raw source still shows one, because the file never changed.",
         walkthrough: [
-          { code: '<ul id="list"> <li>Apples</li> </ul>', explanation: "The original HTML — one list with one item, as written in the file." },
-          { code: 'document.getElementById("list")', explanation: "Finds the corresponding live element in the DOM tree, not in the file." },
-          { code: '.innerHTML += "<li>Bananas</li>"', explanation: "Adds a new list item to that live element. This changes what's on screen immediately." },
+          { code: '<ul id="list"> <li>Apples</li> </ul>', explanation: "The original HTML: one list with one item." },
+          { code: 'document.getElementById("list")', explanation: "Finds the live element in the DOM tree, not in the file." },
+          { code: '.innerHTML += "<li>Bananas</li>"', explanation: "Adds a list item to the live element. The screen updates right away." },
         ],
       },
       {
@@ -433,18 +428,18 @@ document.getElementById("list").innerHTML += "<li>Bananas</li>";`,
 console.log(heading.textContent); // reads the current text
 heading.textContent = "New Title"; // changes it live`,
         explanation:
-          "querySelector finds a node in the DOM tree. From there, JavaScript can both read its current state and assign new values, and the visible page updates right away.",
+          "querySelector finds a node in the DOM tree. JavaScript can then read its current state or assign new values, and the page updates right away.",
       },
     ],
     howItWorks: `
-As the browser parses HTML, for every tag it encounters it creates a
-corresponding node object and attaches it to a tree, nested according to
-how the tags were nested in the source. Each node has properties (its
-tag name, attributes, text, children) and methods JavaScript can call to
-read or change them. Because the DOM is just a set of objects in memory,
-any change to it — adding a node, deleting one, changing text — is
-reflected on screen essentially immediately, without needing to reload
-anything.
+As the browser parses HTML, it creates a node object for each tag and
+attaches it to a tree, nested the same way the tags were. Each node has
+properties (tag name, attributes, text, children) and methods JavaScript
+can call to read or change them.
+
+Because the DOM is just objects in memory, any change (adding a node,
+deleting one, changing text) shows on screen almost immediately, with no
+reload.
   `.trim(),
     diagram: `
 HTML source (text)
@@ -458,58 +453,55 @@ HTML source (text)
   Rendered page on screen
   `.trim(),
     whyItExists: `
-The DOM exists because pages needed a way to change *after* they finish
-loading, without the browser having to re-fetch and re-parse the whole
-HTML file from scratch for every small update. Representing the page as
-a tree of live, addressable objects gives JavaScript a structured,
-efficient way to inspect and modify exactly the parts of a page that
-need to change.
+Pages need to change *after* they load, without the browser re-fetching
+and re-parsing the whole HTML file for every small update. A tree of
+live, addressable objects gives JavaScript an efficient way to inspect
+and change exactly the parts that need it.
   `.trim(),
     whenToUse: `
-Any time JavaScript needs to read what's currently on a page or change it
-— show a new element, hide something, update text after fetching data —
-it does so through the DOM, not by editing HTML files.
+Whenever JavaScript reads or changes what's on a page (showing a new
+element, hiding something, updating text after fetching data), it does so
+through the DOM, not by editing HTML files.
   `.trim(),
     whenNotToUse: `
-For content that never needs to change after the page loads, there's no
-need to manipulate the DOM with JavaScript at all — plain HTML and CSS
-are simpler and faster. Heavy, frequent DOM manipulation for large,
-fast-changing interfaces is also often better handled through a framework
-that manages DOM updates efficiently, rather than doing it all by hand.
+If content never changes after the page loads, skip DOM scripting; plain
+HTML and CSS are simpler and faster. For large interfaces that change
+often, a framework that manages DOM updates efficiently is usually better
+than doing it all by hand.
   `.trim(),
     commonMistakes: [
-      "Confusing 'view page source' (the original HTML sent by the server) with the live DOM shown in developer tools inspector — they can differ after scripts run.",
-      "Assuming editing the HTML file will change a page that's already open in a browser tab.",
-      "Repeatedly querying the DOM for the same element inside a loop instead of looking it up once and reusing the reference.",
+      "Confusing 'view page source' (the original HTML from the server) with the live DOM in the developer tools inspector. They can differ after scripts run.",
+      "Assuming that editing the HTML file will change a page already open in a browser tab.",
+      "Querying the DOM for the same element over and over in a loop instead of looking it up once and reusing it.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Use document.querySelector to select an element on a page and log its text content to the console." },
-      { difficulty: "Medium", prompt: "Write a script that adds a new paragraph element to the page after it has already loaded, then explain why 'view page source' wouldn't show it." },
-      { difficulty: "Hard", prompt: "Explain, in your own words, the difference between the DOM and HTML, and describe one situation where confusing the two would cause a debugging mistake." },
+      { difficulty: "Medium", prompt: "Write a script that adds a new paragraph to the page after it loads. Explain why 'view page source' wouldn't show it." },
+      { difficulty: "Hard", prompt: "In your own words, explain the difference between the DOM and HTML. Describe one situation where mixing them up would lead to a debugging mistake." },
     ],
     interviewQuestions: [
-      { question: "What is the DOM?", answer: "The Document Object Model — a live, in-memory tree of objects representing a page's current structure, built by the browser from the HTML and used both for rendering and for JavaScript to read or change the page." },
-      { question: "How is the DOM different from the original HTML source?", answer: "The HTML source is static text describing the page's starting state. The DOM is a live, in-memory representation built from that text, and it can be changed after the page loads through JavaScript without the underlying HTML file itself ever changing." },
-      { question: "Why can JavaScript change what's on screen without reloading the page?", answer: "Because it modifies the live DOM tree directly — adding, removing, or editing node objects in memory — and the browser re-renders based on the current state of that tree, not by re-reading the original HTML file." },
-      { question: "What's the difference between `textContent` and `innerHTML`, and why does it matter for security?", answer: "`textContent` treats whatever you assign to it as plain text, escaping any markup so it displays literally. `innerHTML` parses the assigned string as HTML and creates real elements from it — which means inserting untrusted user input through `innerHTML` can let attacker-supplied `<script>` or event-handler markup run, a class of bug known as XSS." },
-      { question: "What's the difference between `document.getElementById`, `document.querySelector`, and `document.querySelectorAll`?", answer: "`getElementById` looks up a single element by its `id` directly, without evaluating a CSS selector, and is the fastest of the three. `querySelector` accepts any CSS selector and returns the first matching element. `querySelectorAll` also accepts a CSS selector but returns *all* matches, as a NodeList, rather than just the first." },
-      { question: "Is the NodeList returned by `querySelectorAll` live or static? What about `getElementsByClassName`?", answer: "`querySelectorAll` returns a static snapshot — if elements matching that selector are added to the DOM afterward, the NodeList you already have won't include them. `getElementsByClassName` (and `getElementsByTagName`) return a live HTMLCollection that automatically reflects later additions or removals matching the query." },
-      { question: "What's the difference between a DOM 'node' and an 'element'?", answer: "Node is the general category — it includes element nodes, but also text nodes (the actual text between tags) and comment nodes. An element is specifically a node created from an HTML tag, like a `<div>` or `<p>`; not every node in the tree is an element." },
-      { question: "How would you move from a child element to its parent, and to its next sibling, in the DOM?", answer: "`element.parentElement` (or `parentNode`) gives the containing element. `element.nextElementSibling` and `previousElementSibling` move across to adjacent elements at the same level, skipping over any text or comment nodes in between." },
-      { question: "What's the difference between `element.children` and `element.childNodes`?", answer: "`children` returns only the child *elements*, skipping text and comment nodes. `childNodes` returns every child node, including whitespace-only text nodes created by the line breaks and indentation in your source HTML — which is why `childNodes.length` is often surprisingly larger than expected." },
-      { question: "How do you create a brand-new element and add it to the page with JavaScript?", answer: "`document.createElement(\"li\")` creates a detached element that isn't part of the page yet, then `parent.appendChild(newElement)` (or `insertBefore` for a specific position) attaches it into the live DOM tree, at which point the browser renders it." },
-      { question: "What actually happens when you set `element.innerHTML = \"\"`?", answer: "The browser destroys every existing descendant node of that element — including any event listeners attached directly to them — and replaces them with nothing, since an empty string parses to no content at all." },
-      { question: "What is event bubbling?", answer: "When an event fires on an element, it doesn't just run handlers on that exact element — it then propagates upward, triggering matching handlers on each ancestor in turn, all the way up to the document, unless something stops it along the way." },
-      { question: "What is event delegation, and why does bubbling make it possible?", answer: "Instead of attaching a separate click handler to every item in a list, you attach one handler to their shared parent and inspect `event.target` inside it to figure out which item was actually clicked. This works because a click on any descendant bubbles up and also triggers the parent's handler." },
-      { question: "Given `<div id=\"outer\"><button id=\"btn\">Click</button></div>` with click listeners on both `#outer` and `#btn`, and no `stopPropagation` anywhere, what order do the handlers run in when the button is clicked?", answer: "The `#btn` handler runs first, then the `#outer` handler — bubbling-phase handlers fire from the actual target outward to its ancestors, not the other way around." },
-      { question: "What's the difference between `event.stopPropagation()` and `event.preventDefault()`?", answer: "`stopPropagation()` stops the event from continuing to bubble up (or capture down) to other handlers, but doesn't affect the browser's default behavior for that event. `preventDefault()` cancels the browser's default action, like following a link or submitting a form, but doesn't stop the event from still reaching other handlers." },
-      { question: "Why does repeatedly calling `document.querySelector` for the same element inside a loop hurt performance?", answer: "Each call makes the browser search through (part of) the DOM tree again to find a match. If the element doesn't change between iterations, looking it up once outside the loop and reusing that reference avoids paying that search cost on every single iteration." },
-      { question: "What's the difference between `appendChild` and `append`?", answer: "`appendChild` accepts exactly one `Node` and returns that node. `append` (newer) can accept multiple arguments, including plain strings as well as nodes, and returns `undefined` — it's more flexible but not usable everywhere `appendChild`'s return value is needed." },
-      { question: "A `<script>` at the top of `<head>` runs `document.querySelector(\"#footer\")` and gets `null`, even though `<div id=\"footer\">` clearly exists further down in the `<body>`. Why?", answer: "The browser parses HTML top to bottom, building the DOM incrementally, and a script placed in `<head>` executes before the parser has even reached the `<body>` — so the `#footer` element simply doesn't exist in the DOM yet at the moment the script runs." },
-      { question: "How does adding `defer` to a `<script>` tag relate to that problem?", answer: "`defer` tells the browser to keep parsing the HTML and building the DOM without waiting for the script, then run the script only after parsing is complete — so by the time it executes, every element defined in the HTML is already present in the DOM." },
-      { question: "What is a `DocumentFragment`, and why use one before inserting many nodes into the DOM?", answer: "It's a lightweight container that lives outside the visible DOM tree — you can build a batch of nodes inside it first, then append the whole fragment in a single operation. That means the browser only has to update the live page once, instead of once per node." },
-      { question: "You need to render 100 new list items from fetched data — why is calling `list.appendChild(item)` 100 times in a loop, directly on the live list, less efficient than building the items off-DOM first and inserting them all at once?", answer: "Each `appendChild` call on an element that's already part of the rendered page can trigger the browser to recompute layout and repaint, since the visible page just changed. Building the nodes in memory (or in a `DocumentFragment`) first and inserting them in one call means the browser only has to do that layout/paint work once instead of up to 100 times." },
-      { question: "Why is toggling a CSS class with `classList.add`/`classList.remove` often preferred over setting `element.style` properties directly?", answer: "`classList` keeps the actual visual values in CSS, where they belong and can be reused, and lets you flip a whole group of related style changes on or off with one call. Setting `element.style` directly hardcodes specific property values into JavaScript, one at a time, which is harder to keep consistent and mixes styling concerns into your logic." },
+      { question: "What is the DOM?", answer: "The Document Object Model: a live, in-memory tree of objects for the page's current structure. The browser builds it from the HTML, renders from it, and lets JavaScript read and change it." },
+      { question: "How is the DOM different from the original HTML source?", answer: "The HTML source is static text describing the page's starting state. The DOM is a live version built from that text. JavaScript can change it after the page loads, while the HTML file stays the same." },
+      { question: "Why can JavaScript change what's on screen without reloading the page?", answer: "It edits the live DOM tree directly (adding, removing, or changing nodes in memory), and the browser re-renders from the tree's current state, not from the original HTML file." },
+      { question: "What's the difference between `textContent` and `innerHTML`, and why does it matter for security?", answer: "`textContent` treats what you assign as plain text and escapes any markup. `innerHTML` parses the string as HTML and creates real elements. Inserting untrusted user input through `innerHTML` can let attacker-supplied `<script>` or event-handler markup run, a bug class known as XSS." },
+      { question: "What's the difference between `document.getElementById`, `document.querySelector`, and `document.querySelectorAll`?", answer: "`getElementById` finds one element by its `id` without evaluating a CSS selector, and is the fastest. `querySelector` takes any CSS selector and returns the first match. `querySelectorAll` takes a CSS selector and returns *all* matches as a NodeList." },
+      { question: "Is the NodeList returned by `querySelectorAll` live or static? What about `getElementsByClassName`?", answer: "`querySelectorAll` returns a static snapshot: matching elements added later won't appear in it. `getElementsByClassName` (and `getElementsByTagName`) return a live HTMLCollection that updates automatically as matching elements are added or removed." },
+      { question: "What's the difference between a DOM 'node' and an 'element'?", answer: "Node is the general category. It includes element nodes, text nodes (the text between tags), and comment nodes. An element is a node created from an HTML tag, like `<div>` or `<p>`. Not every node is an element." },
+      { question: "How would you move from a child element to its parent, and to its next sibling, in the DOM?", answer: "`element.parentElement` (or `parentNode`) gives the containing element. `element.nextElementSibling` and `previousElementSibling` move to neighboring elements at the same level, skipping text and comment nodes." },
+      { question: "What's the difference between `element.children` and `element.childNodes`?", answer: "`children` returns only child *elements*. `childNodes` returns every child node, including whitespace-only text nodes from the line breaks and indentation in your HTML. That's why `childNodes.length` is often larger than you expect." },
+      { question: "How do you create a brand-new element and add it to the page with JavaScript?", answer: "`document.createElement(\"li\")` creates a detached element that isn't on the page yet. `parent.appendChild(newElement)` (or `insertBefore` for a specific position) attaches it to the live DOM, and the browser renders it." },
+      { question: "What actually happens when you set `element.innerHTML = \"\"`?", answer: "The browser removes every descendant node of that element, including any event listeners attached to them. An empty string parses to no content, so nothing replaces them." },
+      { question: "What is event bubbling?", answer: "When an event fires on an element, it runs that element's handlers and then moves upward, running matching handlers on each ancestor in turn up to the document, unless something stops it." },
+      { question: "What is event delegation, and why does bubbling make it possible?", answer: "Instead of a click handler on every list item, you put one handler on their shared parent and check `event.target` to see which item was clicked. It works because a click on any descendant bubbles up to the parent's handler." },
+      { question: "Given `<div id=\"outer\"><button id=\"btn\">Click</button></div>` with click listeners on both `#outer` and `#btn`, and no `stopPropagation` anywhere, what order do the handlers run in when the button is clicked?", answer: "`#btn` first, then `#outer`. Bubbling-phase handlers fire from the target outward to its ancestors." },
+      { question: "What's the difference between `event.stopPropagation()` and `event.preventDefault()`?", answer: "`stopPropagation()` stops the event from moving on to other handlers (bubbling up or capturing down) but leaves the browser's default behavior alone. `preventDefault()` cancels the default action, like following a link or submitting a form, but the event still reaches other handlers." },
+      { question: "Why does repeatedly calling `document.querySelector` for the same element inside a loop hurt performance?", answer: "Each call searches (part of) the DOM tree again. If the element doesn't change between iterations, look it up once outside the loop and reuse the reference." },
+      { question: "What's the difference between `appendChild` and `append`?", answer: "`appendChild` takes exactly one `Node` and returns it. The newer `append` takes multiple arguments, including plain strings, and returns `undefined`. It's more flexible, but can't be used where you need `appendChild`'s return value." },
+      { question: "A `<script>` at the top of `<head>` runs `document.querySelector(\"#footer\")` and gets `null`, even though `<div id=\"footer\">` clearly exists further down in the `<body>`. Why?", answer: "The browser builds the DOM top to bottom as it parses. A script in `<head>` runs before the parser reaches the `<body>`, so `#footer` doesn't exist in the DOM yet." },
+      { question: "How does adding `defer` to a `<script>` tag relate to that problem?", answer: "`defer` lets the browser keep parsing and building the DOM without waiting for the script, then runs the script after parsing finishes. By then, every element in the HTML is already in the DOM." },
+      { question: "What is a `DocumentFragment`, and why use one before inserting many nodes into the DOM?", answer: "It's a lightweight container outside the visible DOM tree. You build a batch of nodes in it, then append the whole fragment in one operation, so the browser updates the live page once instead of once per node." },
+      { question: "You need to render 100 new list items from fetched data — why is calling `list.appendChild(item)` 100 times in a loop, directly on the live list, less efficient than building the items off-DOM first and inserting them all at once?", answer: "Each `appendChild` on an element that's already rendered can make the browser recompute layout and repaint. Building the nodes in memory (or a `DocumentFragment`) and inserting them in one call means that work happens once instead of up to 100 times." },
+      { question: "Why is toggling a CSS class with `classList.add`/`classList.remove` often preferred over setting `element.style` properties directly?", answer: "`classList` keeps visual values in CSS, where they can be reused, and switches a whole group of styles on or off in one call. Setting `element.style` hardcodes values into JavaScript one at a time, which is harder to keep consistent and mixes styling into your logic." },
     ],
     prerequisites: ["html-basics"],
     relatedTopics: ["html-basics", "browser-rendering"],
@@ -520,34 +512,22 @@ that manages DOM updates efficiently, rather than doing it all by hand.
     title: "Browser Rendering",
     level: "beginner",
     description:
-      "The step-by-step process a browser follows to turn HTML and CSS into the pixels you actually see on screen.",
+      "How a browser turns HTML and CSS into the pixels you see on screen.",
     explanation: `
-Once a browser has an HTML document and its associated CSS, it still
-has real work to do before anything appears on screen. It has to figure
-out what each element is, what it should look like, where exactly it
-belongs, and finally draw all of that in the right place. This whole
-sequence is called **rendering**.
+With the HTML and CSS in hand, the browser still has to work out what
+each element is, how it should look, and where it goes, then draw it.
+This is called **rendering**. It happens in roughly four stages:
 
-It roughly happens in four stages. First, the browser reads through the
-HTML and builds that live tree of elements — the DOM. At the same time,
-it reads through the CSS and figures out which style rules apply to
-which elements. Combining those two produces a tree of exactly which
-elements will actually be visible and what styles apply to each — this
-combined structure is often called the **render tree**.
+- **DOM:** the browser reads the HTML and builds the live tree of elements.
+- **Render tree:** at the same time it works out which CSS rules apply to which elements. Combining the two gives a tree of only the visible elements and their styles.
+- **Layout:** it calculates the exact size and position of every visible element, in pixels.
+- **Paint:** it fills in the pixels (colors, text, images, borders) according to that layout, and the page appears.
 
-Next, the browser works out **layout**: the exact size and position of
-every visible element on the page, in pixels — how wide is this box, how
-tall, where does it sit relative to everything around it. Finally comes
-**paint**: the browser actually fills in pixels — colors, text, images,
-borders — according to the layout it just calculated, and the picture
-appears on screen.
-
-Any time something changes later — new content arrives, CSS is
-modified, the window is resized — the browser may need to redo some or
-all of these steps to keep the screen accurate.
+When something changes later (new content, modified CSS, a resized
+window), the browser may redo some or all of these steps.
   `.trim(),
     analogy:
-      "It's like building a stage set: first you decide which props are actually going to be used (render tree), then you measure exactly where each one goes on the floor (layout), then stagehands actually place and paint everything into position (paint) so the audience sees the finished scene.",
+      "It's like building a stage set. You decide which props will be used (render tree), measure where each one goes (layout), then stagehands place and paint everything (paint) so the audience sees the finished scene.",
     examples: [
       {
         title: "The stages, named",
@@ -555,13 +535,13 @@ all of these steps to keep the screen accurate.
         ├──> Render Tree ──> Layout ──> Paint ──> Pixels on screen
 CSS   ──┘`,
         explanation:
-          "HTML and CSS are combined into a render tree of visible elements and their styles, then the browser computes sizes and positions (layout), then it fills in the actual pixels (paint).",
+          "HTML and CSS combine into a render tree of visible elements and their styles. The browser then computes sizes and positions (layout) and fills in the pixels (paint).",
         walkthrough: [
-          { code: "HTML + CSS", explanation: "The two starting inputs — structure/content and appearance rules." },
-          { code: "Render Tree", explanation: "Only the elements that will actually be visible, combined with the styles that apply to each." },
-          { code: "Layout", explanation: "The browser calculates the exact size and position, in pixels, of every visible element." },
-          { code: "Paint", explanation: "The browser draws colors, text, images, and borders according to that layout." },
-          { code: "Pixels on screen", explanation: "The final, visible result the user actually sees." },
+          { code: "HTML + CSS", explanation: "The two inputs: structure and content, plus appearance rules." },
+          { code: "Render Tree", explanation: "Only the visible elements, each with the styles that apply to it." },
+          { code: "Layout", explanation: "The exact size and position, in pixels, of every visible element." },
+          { code: "Paint", explanation: "Colors, text, images, and borders drawn according to the layout." },
+          { code: "Pixels on screen", explanation: "The final result the user sees." },
         ],
       },
       {
@@ -571,17 +551,17 @@ CSS   ──┘`,
 // then repaint the affected area.
 box.style.width = "400px";`,
         explanation:
-          "Not every change is equally expensive. Changing something that affects size or position (like width) forces the browser to redo layout, while changing something purely visual (like color) can sometimes skip straight to repainting.",
+          "Some changes cost more than others. Changing size or position (like width) makes the browser redo layout. A purely visual change (like color) can sometimes skip straight to repainting.",
       },
     ],
     howItWorks: `
-The browser doesn't wait for the entire HTML file to download before it
-starts working — it begins parsing HTML as it streams in, building the
-DOM incrementally. CSS is parsed similarly, and once enough of both is
-available, the browser can start constructing the render tree and
-calculating layout. Elements that CSS explicitly hides (like
-\`display: none\`) are excluded from the render tree entirely, since they
-never need a layout or paint step at all.
+The browser doesn't wait for the whole HTML file to download. It parses
+HTML as it streams in and builds the DOM bit by bit. CSS is parsed the
+same way, and once enough of both has arrived, the browser starts the
+render tree and layout.
+
+Elements hidden with CSS like \`display: none\` are left out of the render
+tree entirely, since they never need layout or paint.
   `.trim(),
     diagram: `
 Parse HTML  --> DOM tree      \\
@@ -589,57 +569,52 @@ Parse HTML  --> DOM tree      \\
 Parse CSS   --> Style rules   /
   `.trim(),
     whyItExists: `
-Splitting rendering into distinct stages lets the browser be efficient
-about what it redoes when something changes. If only colors change,
-there's no need to recompute every element's size and position; if only
-one element's size changes, there's no need to repaint the entire
-screen. This staged pipeline is what keeps pages feeling responsive
-even as content updates constantly.
+Separate stages let the browser redo only what a change affects. If only
+colors change, it doesn't recompute every element's size and position. If
+one element's size changes, it doesn't repaint the whole screen. That's
+what keeps pages responsive while content keeps updating.
   `.trim(),
     whenToUse: `
-Understanding this pipeline matters once you start caring about *why* a
-page feels slow or janky, especially when animating or updating the page
-frequently — knowing that some changes are cheap (paint-only) and others
-are expensive (trigger layout) shapes how you write both CSS and
-JavaScript for a smooth experience.
+This matters once you care *why* a page feels slow or janky, especially
+when animating or updating it often. Knowing that some changes are cheap
+(paint only) and others are expensive (they trigger layout) shapes how
+you write CSS and JavaScript.
   `.trim(),
     whenNotToUse: `
-For basic page-building — writing HTML and CSS for a mostly static page —
-you don't need to think about the rendering pipeline directly; the
-browser handles it automatically. This mental model earns its keep
-mainly during performance work.
+For a mostly static page of HTML and CSS, the browser handles the
+pipeline for you. This model mainly pays off during performance work.
   `.trim(),
     commonMistakes: [
-      "Assuming every CSS change is equally cheap, when changes affecting size or position force a more expensive layout recalculation.",
-      "Thinking the whole page re-renders from scratch on every small update, rather than the browser recomputing only what actually changed.",
-      "Forgetting that elements hidden with display: none are skipped entirely during rendering, unlike elements merely made invisible in other ways.",
+      "Assuming every CSS change is equally cheap, when changes to size or position force a costlier layout recalculation.",
+      "Thinking the whole page re-renders from scratch on every small update, when the browser recomputes only what changed.",
+      "Forgetting that display: none elements are skipped entirely during rendering, unlike elements made invisible in other ways.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "List the four main stages of the rendering pipeline in order, in your own words." },
-      { difficulty: "Medium", prompt: "Explain why changing an element's color is typically cheaper for the browser than changing its width." },
-      { difficulty: "Hard", prompt: "Using your browser's developer tools performance panel, record a page interaction and identify a 'layout' or 'paint' step in the recorded timeline." },
+      { difficulty: "Easy", prompt: "In your own words, list the four main stages of the rendering pipeline in order." },
+      { difficulty: "Medium", prompt: "Explain why changing an element's color is usually cheaper for the browser than changing its width." },
+      { difficulty: "Hard", prompt: "In your browser's developer tools performance panel, record a page interaction and find a 'layout' or 'paint' step in the timeline." },
     ],
     interviewQuestions: [
-      { question: "What are the main stages of browser rendering?", answer: "Parsing HTML and CSS to build a render tree of the elements that will actually be visible along with their matched styles, computing layout — the exact size and position of each visible element — and then painting the actual pixels for colors, text, images, and borders." },
-      { question: "What is the render tree?", answer: "A tree combining the DOM with the CSS rules that match each node, containing only the elements that will actually be rendered visually — elements excluded from display, like ones set to `display: none`, don't get a node in it at all." },
-      { question: "Why does changing an element's width potentially cost more than changing its color?", answer: "Width affects that element's size, which can shift the position and size of surrounding elements too, so the browser has to redo layout for the affected part of the page before it can repaint. Color only affects how a box is painted, not its geometry, so the browser can often skip layout and jump straight to repainting." },
-      { question: "What's the difference between 'layout' (also called reflow) and 'paint' (also called repaint)?", answer: "Layout is the step where the browser calculates the exact size and position, in pixels, of every visible element. Paint is the separate step after that, where the browser actually fills in pixels — colors, text, borders, images — based on the geometry layout already produced. A change can trigger both, just paint, or in some cases neither." },
-      { question: "What is compositing, and how does it let some changes skip both layout and paint?", answer: "The browser can render certain elements onto separate layers that the GPU can move, scale, or fade independently of the rest of the page. If a change only affects one of these composited layers — like sliding it or changing its transparency — the browser can update it by recombining layers on the GPU, without recalculating layout or repainting pixels at all." },
-      { question: "Why are `transform` and `opacity` recommended for animations over animating `top`/`left` or `width`/`height`?", answer: "`transform` and `opacity` can typically be handled entirely by compositing, skipping layout and paint. Animating `top`/`left` or `width`/`height` changes an element's actual geometry, forcing layout (and usually paint) to rerun on every single animation frame, which is far more expensive and more likely to drop frames." },
-      { question: "What's the difference between `display: none` and `visibility: hidden`, in terms of rendering?", answer: "`display: none` removes the element from the render tree entirely — it has no box, takes up no space, and never reaches layout or paint. `visibility: hidden` keeps the element in the render tree and layout still reserves its space, it's just not painted, so surrounding elements don't shift into the gap it leaves behind." },
-      { question: "How is `opacity: 0` different from `visibility: hidden`, even though both make something invisible?", answer: "Both skip painting the element visibly, but an `opacity: 0` element is still fully present and interactive — it can still be clicked, focused, and tabbed to. A `visibility: hidden` element is also removed from the accessibility tree and cannot be focused or clicked, even though, like `opacity: 0`, it still occupies its layout space." },
-      { question: "What is the Critical Rendering Path, and why does it matter for perceived load speed?", answer: "It's the sequence of steps — parsing HTML into a DOM, parsing CSS into matched styles, building the render tree, running layout, then painting — that has to complete before any pixels appear on screen. Anything that delays an early step in that chain (a slow stylesheet, a blocking script) delays every step after it, directly affecting how long a user stares at a blank screen." },
-      { question: "Why is CSS treated as render-blocking by default?", answer: "The browser can't safely paint elements whose final appearance and layout it doesn't know yet — a stylesheet could change any element's size, position, or visibility. So by default, it holds off building the render tree and painting until it has parsed all the CSS it currently knows about, to avoid painting a page that then has to be redrawn a moment later." },
-      { question: "Why can a `<script>` tag without `defer` or `async` block HTML parsing?", answer: "The browser has to assume a synchronous script might use `document.write` or otherwise depend on or modify the DOM as it exists at that exact point, so it pauses parsing the rest of the HTML, fetches and runs the script fully, and only then resumes building the DOM from where it left off." },
-      { question: "What is 'layout thrashing,' and how does it happen?", answer: "It's when code repeatedly forces the browser to recalculate layout synchronously, over and over, inside a loop — typically by reading a layout-dependent property (like `offsetHeight`) right after writing a style change, which forces the browser to flush pending layout work immediately to give an up-to-date answer, instead of batching it once per frame as usual." },
-      { question: "A loop reads `element.offsetWidth` and then sets `element.style.width` for each of 50 elements — why is this slow, and how would you fix it?", answer: "Reading `offsetWidth` forces the browser to make sure layout is current before answering, and the style write right after it invalidates layout again — so alternating reads and writes across 50 elements can force roughly 50 separate forced layout recalculations. Reading all the needed values first, then writing all the style changes afterward, lets the browser batch it into a single layout pass." },
-      { question: "Does a reflow ever affect elements other than the one that changed?", answer: "Yes. Layout is a tree-wide computation — changing one element's size can push its siblings into new positions, change its parent's size if the parent sizes to its content, or ripple further depending on the layout mode in use (normal flow, flexbox, grid), so the browser may need to recompute layout well beyond just the element that changed." },
-      { question: "After layout recalculates, does the browser have to repaint the entire page?", answer: "No — paint invalidation is generally limited to the regions or layers actually affected by the change, not the whole viewport. Modern browsers track which areas became 'dirty' and only repaint those, which is part of why isolating frequently-changing content to its own composited layer can help performance." },
-      { question: "Is every DOM node represented in the render tree?", answer: "No. Nodes that never produce visible output — like `<head>`, `<script>`, `<meta>` — and any element explicitly set to `display: none` are excluded, since the render tree only needs to contain what will actually need a box on screen." },
-      { question: "Why does the browser start rendering before the entire HTML file has finished downloading?", answer: "The HTML parser is incremental — it builds the DOM as bytes stream in rather than waiting for the whole document, so the browser can start constructing the render tree and painting an initial view of the page as soon as enough content and CSS have arrived, rather than leaving the user staring at a blank screen the whole time." },
-      { question: "Why does splitting rendering into separate stages (render tree, layout, paint) make the browser more efficient at handling later changes?", answer: "Because each stage only has to rerun when something relevant to it changes. A pure color change can skip layout entirely and go straight to paint; a change confined to a composited layer's transform can skip both layout and paint. Collapsing everything into one step would mean every change, however small, forced the full pipeline to rerun." },
-      { question: "A page animates an element's `margin-left` in one place and `transform: translateX()` in another, both moving it the same distance — which is likely to feel smoother, and why?", answer: "The `transform: translateX()` version, because it can typically run entirely on the compositor, skipping layout and paint on every frame. Animating `margin-left` changes the element's actual position in the layout, forcing a layout recalculation (and usually a repaint) on every single frame of the animation." },
-      { question: "What's the more precise, spec-adjacent name for what's often casually called 'reflow,' and what's the equivalent for 'repaint'?", answer: "'Reflow' corresponds to the layout stage — recalculating size and position. 'Repaint' corresponds to the paint stage — filling in pixels based on the layout already computed. The casual and formal names refer to the same two stages; 'reflow'/'repaint' just describe them as things that happen *again* in response to a change, after the initial layout/paint." },
+      { question: "What are the main stages of browser rendering?", answer: "Parse HTML and CSS into a render tree of the visible elements and their matched styles. Compute layout, the exact size and position of each visible element. Then paint the pixels: colors, text, images, and borders." },
+      { question: "What is the render tree?", answer: "The DOM combined with the CSS rules that match each node, containing only elements that will actually be drawn. Elements like those set to `display: none` get no node in it at all." },
+      { question: "Why does changing an element's width potentially cost more than changing its color?", answer: "Width changes the element's size, which can move and resize its neighbors too, so the browser must redo layout for that part of the page before repainting. Color only affects painting, not geometry, so the browser can often skip layout and go straight to repainting." },
+      { question: "What's the difference between 'layout' (also called reflow) and 'paint' (also called repaint)?", answer: "Layout calculates the exact size and position, in pixels, of every visible element. Paint comes after and fills in the pixels (colors, text, borders, images) using that geometry. A change can trigger both, only paint, or sometimes neither." },
+      { question: "What is compositing, and how does it let some changes skip both layout and paint?", answer: "The browser can put some elements on separate layers that the GPU can move, scale, or fade on their own. If a change only affects one of these layers, like sliding it or changing its transparency, the browser just recombines the layers on the GPU, with no layout or repaint." },
+      { question: "Why are `transform` and `opacity` recommended for animations over animating `top`/`left` or `width`/`height`?", answer: "`transform` and `opacity` can usually be handled entirely by compositing, skipping layout and paint. Animating `top`/`left` or `width`/`height` changes the element's geometry, so layout (and usually paint) reruns on every frame. That's far more expensive and more likely to drop frames." },
+      { question: "What's the difference between `display: none` and `visibility: hidden`, in terms of rendering?", answer: "`display: none` removes the element from the render tree: no box, no space, no layout or paint. `visibility: hidden` keeps it in the render tree and layout still reserves its space; it just isn't painted, so neighbors don't shift into the gap." },
+      { question: "How is `opacity: 0` different from `visibility: hidden`, even though both make something invisible?", answer: "Neither is visible, but an `opacity: 0` element is still fully interactive: it can be clicked, focused, and tabbed to. A `visibility: hidden` element is removed from the accessibility tree and can't be focused or clicked. Both still take up their layout space." },
+      { question: "What is the Critical Rendering Path, and why does it matter for perceived load speed?", answer: "It's the steps that must finish before any pixels appear: parse HTML into a DOM, parse CSS into matched styles, build the render tree, run layout, paint. Anything that delays an early step (a slow stylesheet, a blocking script) delays everything after it, so the user stares at a blank screen longer." },
+      { question: "Why is CSS treated as render-blocking by default?", answer: "A stylesheet could change any element's size, position, or visibility, so the browser can't safely paint without it. By default it waits to build the render tree and paint until it has parsed all the CSS it knows about, rather than painting a page it would have to redraw a moment later." },
+      { question: "Why can a `<script>` tag without `defer` or `async` block HTML parsing?", answer: "A synchronous script might use `document.write` or rely on or change the DOM as it is at that point. So the browser pauses parsing, fetches and runs the script, and only then continues building the DOM." },
+      { question: "What is 'layout thrashing,' and how does it happen?", answer: "It's when code forces the browser to recalculate layout synchronously, again and again, in a loop. Usually it's reading a layout property (like `offsetHeight`) right after a style change. That forces the browser to flush pending layout immediately instead of batching it once per frame." },
+      { question: "A loop reads `element.offsetWidth` and then sets `element.style.width` for each of 50 elements — why is this slow, and how would you fix it?", answer: "Reading `offsetWidth` forces layout to be current, and the style write right after invalidates it again. Alternating across 50 elements can force about 50 separate layout recalculations. Fix it by reading all the values first, then doing all the writes, so the browser can batch them into one layout pass." },
+      { question: "Does a reflow ever affect elements other than the one that changed?", answer: "Yes. Layout works across the tree. Changing one element's size can move its siblings, resize a parent that sizes to its content, or ripple further depending on the layout mode (normal flow, flexbox, grid)." },
+      { question: "After layout recalculates, does the browser have to repaint the entire page?", answer: "No. Repainting is usually limited to the regions or layers the change affected. Browsers track which areas are 'dirty' and repaint only those. That's partly why moving often-changing content to its own composited layer can help performance." },
+      { question: "Is every DOM node represented in the render tree?", answer: "No. Nodes that never produce visible output (like `<head>`, `<script>`, `<meta>`) and elements set to `display: none` are left out. The render tree only holds what needs a box on screen." },
+      { question: "Why does the browser start rendering before the entire HTML file has finished downloading?", answer: "The HTML parser builds the DOM as bytes stream in. Once enough content and CSS have arrived, the browser can build the render tree and paint a first view, instead of leaving the user on a blank screen until everything downloads." },
+      { question: "Why does splitting rendering into separate stages (render tree, layout, paint) make the browser more efficient at handling later changes?", answer: "Each stage only reruns when something relevant to it changes. A color change can skip layout and go straight to paint. A transform on a composited layer can skip both layout and paint. With a single step, every change, however small, would rerun the full pipeline." },
+      { question: "A page animates an element's `margin-left` in one place and `transform: translateX()` in another, both moving it the same distance — which is likely to feel smoother, and why?", answer: "The `transform: translateX()` version. It can usually run entirely on the compositor, skipping layout and paint. Animating `margin-left` changes the element's position in the layout, forcing layout (and usually a repaint) on every frame." },
+      { question: "What's the more precise, spec-adjacent name for what's often casually called 'reflow,' and what's the equivalent for 'repaint'?", answer: "'Reflow' is the layout stage: recalculating size and position. 'Repaint' is the paint stage: filling in pixels from the computed layout. They're the same stages; 'reflow' and 'repaint' just mean they're running *again* after a change." },
     ],
     prerequisites: ["html-basics", "css-basics", "the-dom"],
     relatedTopics: ["the-dom", "css-basics", "web-performance-basics"],

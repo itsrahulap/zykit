@@ -6,30 +6,24 @@ export const webFundamentalsIntermediateTopics: Topic[] = [
     title: "CSS Layout (Flexbox & Grid)",
     level: "intermediate",
     description:
-      "Two modern CSS tools for arranging elements on a page without relying on old workarounds like floats.",
+      "Two modern CSS tools for arranging elements on a page, without old workarounds like floats.",
     explanation: `
-Arranging elements side by side, centering something both vertically and
-horizontally, or making a set of boxes evenly sized used to be
-genuinely difficult in CSS. Developers reached for tools that were never
-actually designed for layout — most famously the \`float\` property,
-originally meant for wrapping text around an image — and bent them into
-shapes they weren't built for, with lots of fragile side effects.
+Putting elements side by side, centering something both ways, or making
+boxes evenly sized used to be hard in CSS. Developers bent tools that
+weren't built for layout, most famously \`float\` (meant for wrapping text
+around an image), and got fragile side effects.
 
-CSS eventually got two tools actually designed for arranging elements.
-**Flexbox** handles layout along a single direction — a row or a column
-— and is great for things like navigation bars, toolbars, or centering
-a handful of items. **Grid** handles two-dimensional layout — rows *and*
-columns at once — and is great for things like a page's overall layout,
-image galleries, or dashboards with defined regions.
+CSS now has two tools designed for layout:
 
-Both work the same basic way: you turn on the layout mode on a
-**container** element, and its direct children automatically become
-items that get arranged according to rules you set — how they're
-spaced, aligned, sized, and ordered — instead of you calculating pixel
-positions by hand.
+- **Flexbox** arranges items in one direction, a row or a column. It's great for nav bars, toolbars, or centering a few items.
+- **Grid** arranges items in two dimensions, rows *and* columns at once. It's great for overall page layout, image galleries, or dashboards with defined regions.
+
+Both work the same way. You turn on the layout mode on a **container**,
+and its direct children become items arranged by your rules (spacing,
+alignment, size, order) instead of pixel positions you calculate by hand.
   `.trim(),
     analogy:
-      "Flexbox is like arranging books along a single shelf — you can space them out or squeeze them together, but it's one line at a time. Grid is like arranging books in a bookcase with defined rows and columns, where you can also decide a single book spans multiple slots.",
+      "Flexbox is like arranging books on one shelf: you can spread them out or squeeze them together, one line at a time. Grid is a bookcase with rows and columns, where one book can even span several slots.",
     examples: [
       {
         title: "Flexbox: a simple row layout",
@@ -39,11 +33,11 @@ positions by hand.
   align-items: center;
 }`,
         explanation:
-          "Turning on flex layout makes the toolbar's children line up in a row automatically. justify-content spaces them across the main axis, and align-items centers them on the cross axis, with no manual positioning needed.",
+          "Flex layout lines up the toolbar's children in a row. justify-content spaces them along the main axis, and align-items centers them on the cross axis. No manual positioning needed.",
         walkthrough: [
-          { code: "display: flex;", explanation: "Turns this element into a flex container — its direct children become flex items, arranged in a row by default." },
-          { code: "justify-content: space-between;", explanation: "Spreads the items so the first touches the left edge, the last touches the right edge, and space is distributed evenly between them." },
-          { code: "align-items: center;", explanation: "Centers the items along the opposite axis — vertically, in a row layout — even if they have different heights." },
+          { code: "display: flex;", explanation: "Makes this a flex container. Its direct children become flex items, in a row by default." },
+          { code: "justify-content: space-between;", explanation: "Puts the first item at the left edge and the last at the right, with even space between them." },
+          { code: "align-items: center;", explanation: "Centers the items on the other axis (vertically, in a row), even if their heights differ." },
         ],
       },
       {
@@ -57,82 +51,77 @@ positions by hand.
 .sidebar { grid-column: 1; grid-row: 2; }
 .content { grid-column: 2; grid-row: 2; }`,
         explanation:
-          "This defines a page layout with a fixed-width sidebar column and a flexible content column, plus rows for a header, body, and footer, then places specific elements into specific cells of that grid.",
+          "This sets up a fixed-width sidebar column and a flexible content column, plus rows for header, body, and footer. Then it places specific elements into specific cells.",
       },
     ],
     howItWorks: `
-When you set \`display: flex\` or \`display: grid\` on an element, the
-browser's layout engine switches from the normal block-by-block flow to
-one of these specialized layout algorithms for that element's children.
-Flexbox calculates how much space each item needs along a single axis
-and distributes any remaining or missing space according to your rules.
-Grid instead builds an explicit two-dimensional grid of rows and
-columns first, then places each child into a cell (or a span of cells)
-within it.
+Setting \`display: flex\` or \`display: grid\` switches that element's
+children from normal block-by-block flow to a dedicated layout algorithm.
+
+Flexbox works out how much space each item needs along one axis, then
+shares out any extra or missing space by your rules. Grid first builds an
+explicit grid of rows and columns, then places each child into a cell or
+a span of cells.
   `.trim(),
     whyItExists: `
-Flexbox and Grid exist because older layout tools were never designed
-for arranging general page content — they were repurposed for the job
-and required workarounds (clearing floats, fixed pixel widths,
-absolute positioning tricks) that broke easily as content changed.
-These two systems were purpose-built for layout, making common patterns
-like equal-height columns or centered content something you can express
-directly, instead of hacking around.
+Older layout tools weren't designed for general page content. Using them
+meant workarounds (clearing floats, fixed pixel widths, absolute
+positioning tricks) that broke easily when content changed. Flexbox and
+Grid were built for layout, so patterns like equal-height columns or
+centered content can be written directly.
   `.trim(),
     whenToUse: `
-Reach for Flexbox when arranging items in a single row or column — a
-nav bar, a button group, centering one thing inside another. Reach for
-Grid when you need to control both rows and columns at once — an
-overall page layout, a photo gallery, or any layout where content needs
-to align across both dimensions.
+Use Flexbox for items in one row or column: a nav bar, a button group,
+centering one thing inside another. Use Grid when you need rows and
+columns at once: a page layout, a photo gallery, or anything that must
+line up in both directions.
   `.trim(),
     whenNotToUse: `
-For simple in-line text flow — a paragraph, a sentence with a link in it
-— you don't need either; normal document flow already handles that.
-Overusing Grid for a layout that's really only ever one row or column
-also adds unnecessary complexity where Flexbox would be simpler.
+Simple inline text flow (a paragraph, a sentence with a link) needs
+neither; normal document flow handles it. Using Grid for something that's
+only ever one row or column adds complexity where Flexbox is simpler.
   `.trim(),
     commonMistakes: [
-      "Reaching for float-based layout out of habit instead of Flexbox or Grid for new work.",
-      "Confusing Flexbox's single-axis model with Grid's two-axis model and trying to force complex two-dimensional layouts out of Flexbox alone.",
-      "Forgetting that flex/grid properties (like justify-content) go on the container, while sizing properties for individual items (like flex-grow) go on the children.",
+      "Using float-based layout out of habit for new work instead of Flexbox or Grid.",
+      "Mixing up Flexbox's one-axis model with Grid's two-axis model, and forcing complex two-dimensional layouts out of Flexbox alone.",
+      "Forgetting that container properties (like justify-content) go on the container, while item sizing properties (like flex-grow) go on the children.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Use Flexbox to horizontally center three boxes inside a container, with even spacing between them." },
-      { difficulty: "Medium", prompt: "Build a page layout with a header, a fixed-width sidebar, and a flexible main content area using CSS Grid." },
-      { difficulty: "Hard", prompt: "Recreate a layout that was originally built with floats using Flexbox or Grid instead, and explain what workaround(s) you were able to remove." },
+      { difficulty: "Easy", prompt: "Use Flexbox to center three boxes horizontally in a container, with even spacing between them." },
+      { difficulty: "Medium", prompt: "Use CSS Grid to build a page layout with a header, a fixed-width sidebar, and a flexible main content area." },
+      { difficulty: "Hard", prompt: "Rebuild a float-based layout with Flexbox or Grid, and explain which workarounds you could remove." },
     ],
     interviewQuestions: [
       { question: "What's the core difference between Flexbox and Grid?", answer: "Flexbox arranges items along a single axis (a row or a column). Grid arranges items across two axes (rows and columns) at once." },
-      { question: "What CSS property turns an element into a flex or grid container?", answer: "display: flex for Flexbox, or display: grid for Grid, applied to the parent element whose children should be arranged." },
-      { question: "Why were floats historically used for layout, and what was the problem?", answer: "Floats were originally designed for wrapping text around images, not for full-page layout, so using them for layout required extra workarounds like manually clearing floats to avoid broken, collapsing containers." },
-      { question: "In Flexbox, what are the 'main axis' and 'cross axis', and how do justify-content and align-items relate to them?", answer: "The main axis runs in the direction set by flex-direction (row by default), and the cross axis runs perpendicular to it. justify-content aligns items along the main axis, while align-items aligns them along the cross axis." },
-      { question: "If you switch `flex-direction` from `row` to `column`, what happens to the meaning of `justify-content` and `align-items`?", answer: "The main axis rotates to vertical, so justify-content now controls vertical spacing (top-to-bottom) and align-items now controls horizontal alignment — the two properties swap which physical direction they affect, because they're always defined relative to the main/cross axis, not to 'horizontal'/'vertical' directly." },
-      { question: "What does the shorthand `flex: 1` expand to, and what does each part control?", answer: "It expands to `flex-grow: 1; flex-shrink: 1; flex-basis: 0%`. flex-grow lets the item grow to fill available space, flex-shrink lets it shrink if space is tight, and a flex-basis of 0% means its initial size before growing is treated as zero, so available space is distributed purely by the grow ratio." },
-      { question: "What's the difference between `align-items` and `align-content` in Flexbox?", answer: "align-items aligns individual items along the cross axis within their line. align-content aligns entire lines of items along the cross axis when there's extra space and the container has multiple lines (via flex-wrap: wrap) — it has no visible effect on a single-line flex container." },
-      { question: "Why might `justify-content: center` appear to do nothing on a flex container?", answer: "If the items have flex-grow set to fill all available space (e.g. flex: 1 on every item), there's no leftover space left on the main axis for justify-content to distribute, so it has nothing visible to do." },
-      { question: "What's the difference between the `fr` unit in Grid and using percentages for column widths?", answer: "`fr` distributes the space that remains *after* fixed-size tracks (like px values or content-sized tracks) are subtracted, while percentages are always a fraction of the container's total size regardless of other tracks — which can cause overflow if fixed-size columns and percentages are combined and together exceed 100%." },
-      { question: "Given `grid-template-columns: repeat(3, 1fr);` and one item with `grid-column: span 2`, what happens?", answer: "That item occupies two of the three equal-width columns in whatever row it's placed in, and the remaining items flow into the leftover single-column space, wrapping to new rows as needed via Grid's auto-placement." },
-      { question: "What does `grid-template-areas` do, and why is it useful?", answer: "It lets you name regions of the grid as a visual ASCII-like map of strings, then place children into those named regions with `grid-area`, instead of tracking numeric row/column line numbers — making the overall layout structure much easier to read at a glance." },
-      { question: "What's the difference between `justify-content` and `justify-items`/`justify-self` in Grid?", answer: "justify-content distributes the grid's tracks as a whole within the container (when tracks don't fill the container). justify-items/justify-self instead align an individual item *within its own cell* along the inline (row) axis, independent of how the tracks themselves are distributed." },
-      { question: "How are absolutely positioned children treated inside a flex or grid container?", answer: "An absolutely positioned child is taken out of normal layout flow entirely — it doesn't participate in the flex or grid algorithm, doesn't get placed into a cell or take up main-axis space, and is instead positioned relative to its containing block as usual." },
-      { question: "You set `align-items: center` on an outer flex container, but its content still isn't vertically centered — what's a likely cause?", answer: "align-items centers items *within the height the container actually has*. If the outer container's height is only as tall as its content (no explicit height, and it isn't itself being stretched by a parent), there's no extra vertical space to center within, so centering has no visible effect." },
-      { question: "What is `flex-basis`, and how does it interact with `flex-grow` and `flex-shrink`?", answer: "flex-basis sets an item's initial main-axis size before any growing or shrinking is applied. flex-grow and flex-shrink then distribute any remaining or missing space (compared to that basis) among items according to their grow/shrink factors." },
-      { question: "When would you use `flex-shrink: 0` on a flex item?", answer: "When you want that item to keep its natural size and never shrink even if the container runs out of space — for example, keeping an icon or a fixed-width sidebar from being squeezed as other flexible items compete for room." },
-      { question: "Given `.item1 { flex: 1 }` and `.item2 { flex: 2 }` inside the same flex container, how is extra space divided between them?", answer: "The extra space is split proportionally to the grow factors — item2 receives twice as much of the leftover space as item1, so with equal starting size item2 ends up roughly twice as wide (or tall, in a column layout)." },
-      { question: "Why does adding `min-width: 0` (or `min-height: 0`) to a flex item sometimes fix an overflow or truncation bug?", answer: "Flex items default to `min-width: auto`, which prevents them from shrinking smaller than their content's natural (min-content) size — so long unbroken text or a wide child can force the item to overflow its container even with flex-shrink set. Explicitly setting min-width: 0 removes that floor, letting the item shrink further so text-overflow/ellipsis and wrapping can actually take effect." },
-      { question: "What's the difference between the explicit and implicit grid in CSS Grid?", answer: "The explicit grid is made of the tracks you define with grid-template-columns/grid-template-rows. If items are placed outside that defined area (through auto-placement or explicit line numbers beyond it), the browser creates implicit tracks to hold them, sized by grid-auto-rows/grid-auto-columns (auto by default)." },
-      { question: "What does `grid-auto-flow: dense` change about item placement?", answer: "By default, Grid's auto-placement never backtracks — once it moves past a gap too small for an item, that gap stays empty. `dense` instead allows the algorithm to backfill earlier gaps with later items that fit, packing the grid more tightly at the cost of possibly placing items out of their source order visually." },
-      { question: "When would you use `repeat(auto-fit, minmax(200px, 1fr))` instead of a fixed `repeat(4, 1fr)`?", answer: "auto-fit with minmax lets the number of columns respond to available space automatically — as many 200px-or-wider columns as fit are created and they stretch to fill any leftover space — giving a responsive grid without writing separate media queries for each screen width." },
-      { question: "In a 900px-wide container with `grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));`, how many columns are created?", answer: "Four columns of 225px each. The browser fits as many 200px-minimum tracks as possible (four fit in 900px, since a fifth would need at least 1000px), then stretches them equally with the fr unit to fill the remaining space." },
-      { question: "What does the `order` property do, and what's an important limitation of it?", answer: "It changes the *visual* order in which flex or grid items are painted, independent of their order in the HTML. It does not change the underlying DOM order, so keyboard tab order and screen reader reading order still follow the original markup — meaning `order` can visually reorder content in a way that no longer matches how it's read or tabbed through." },
-      { question: "What's the difference between `gap` and using margins to space out flex or grid items?", answer: "gap applies space only *between* items, not around the outer edges of the container, and it doesn't require any special handling for the first/last item (unlike margins, which need something like :first-child/:last-child overrides to avoid extra space at the container's edges)." },
-      { question: "Why can a flex or grid item respond to `z-index` even without `position: relative` or `position: absolute` set on it?", answer: "Flex and grid items form a stacking context based on their order/z-index even while `position: static`, unlike ordinary block-flow elements, where z-index is ignored entirely unless the element has a position value other than static." },
-      { question: "Why do flex items with different content heights end up the same height inside a row by default?", answer: "align-items defaults to `stretch`, which stretches every item to fill the container's cross-axis size unless the item has its own explicit height or align-self override — giving equal-height columns automatically, something float-based layouts couldn't do without extra hacks." },
-      { question: "What happens to flex items when the container has `flex-wrap: nowrap` (the default) and they don't all fit on one line?", answer: "The items shrink (per their flex-shrink factor) to try to fit on the single line; if they can't shrink enough, they overflow the container rather than wrapping onto a new line, since wrapping is disabled." },
-      { question: "What problem does CSS Grid's `subgrid` value solve?", answer: "Without it, a nested grid defines its own independent tracks, so its rows/columns can't align with the parent grid's tracks. `subgrid` lets a nested grid item adopt its parent's track sizing directly, so content inside it lines up with the outer grid instead of needing manually matched sizes." },
-      { question: "Why can forcing a two-dimensional layout out of Flexbox alone become awkward?", answer: "Flexbox only manages one axis at a time — wrapped items form new lines, but items in different lines don't align with each other across that second axis the way Grid's explicit rows and columns do, so replicating true row/column alignment (like a calendar or dashboard grid) requires extra wrapper elements or fixed widths that Grid handles natively." },
-      { question: "In Grid, what determines which cell an item lands in if you don't set `grid-column`/`grid-row` on it?", answer: "Grid's auto-placement algorithm places it into the next available cell, moving through the grid according to `grid-auto-flow` (row-by-row by default, or column-by-column with `grid-auto-flow: column`), creating implicit tracks if it runs out of explicitly defined ones." },
+      { question: "What CSS property turns an element into a flex or grid container?", answer: "display: flex for Flexbox, or display: grid for Grid, set on the parent whose children should be arranged." },
+      { question: "Why were floats historically used for layout, and what was the problem?", answer: "Floats were designed for wrapping text around images, not page layout. Using them for layout needed workarounds like manually clearing floats so containers didn't collapse." },
+      { question: "In Flexbox, what are the 'main axis' and 'cross axis', and how do justify-content and align-items relate to them?", answer: "The main axis follows flex-direction (row by default); the cross axis is perpendicular to it. justify-content aligns items along the main axis, and align-items along the cross axis." },
+      { question: "If you switch `flex-direction` from `row` to `column`, what happens to the meaning of `justify-content` and `align-items`?", answer: "The main axis becomes vertical, so justify-content now controls vertical spacing and align-items controls horizontal alignment. They're defined relative to the main and cross axes, not to horizontal and vertical." },
+      { question: "What does the shorthand `flex: 1` expand to, and what does each part control?", answer: "`flex-grow: 1; flex-shrink: 1; flex-basis: 0%`. flex-grow lets the item grow into free space, flex-shrink lets it shrink when space is tight, and a flex-basis of 0% treats its starting size as zero, so space is shared purely by the grow ratio." },
+      { question: "What's the difference between `align-items` and `align-content` in Flexbox?", answer: "align-items aligns items along the cross axis within their line. align-content aligns whole lines along the cross axis when there's extra space and multiple lines (via flex-wrap: wrap). It has no visible effect on a single-line container." },
+      { question: "Why might `justify-content: center` appear to do nothing on a flex container?", answer: "If the items grow to fill all the space (e.g. flex: 1 on every item), there's no leftover space on the main axis for justify-content to distribute." },
+      { question: "What's the difference between the `fr` unit in Grid and using percentages for column widths?", answer: "`fr` shares out the space left *after* fixed-size tracks (px values or content-sized tracks) are taken. Percentages are always a fraction of the container's full size, so mixing fixed columns and percentages can overflow if they add up to more than 100%." },
+      { question: "Given `grid-template-columns: repeat(3, 1fr);` and one item with `grid-column: span 2`, what happens?", answer: "That item takes two of the three equal columns in its row. The other items flow into the remaining space, wrapping to new rows as needed through auto-placement." },
+      { question: "What does `grid-template-areas` do, and why is it useful?", answer: "It lets you name grid regions with a visual, ASCII-like map of strings, then place children into them with `grid-area` instead of tracking line numbers. The layout becomes much easier to read at a glance." },
+      { question: "What's the difference between `justify-content` and `justify-items`/`justify-self` in Grid?", answer: "justify-content positions the grid's tracks as a whole within the container (when they don't fill it). justify-items/justify-self align one item *within its own cell* along the inline (row) axis, regardless of how the tracks are positioned." },
+      { question: "How are absolutely positioned children treated inside a flex or grid container?", answer: "They're taken out of normal flow. They don't take part in the flex or grid algorithm, get no cell or main-axis space, and are positioned relative to their containing block as usual." },
+      { question: "You set `align-items: center` on an outer flex container, but its content still isn't vertically centered — what's a likely cause?", answer: "align-items centers within the height the container *actually has*. If the container is only as tall as its content (no explicit height, and no parent stretching it), there's no extra space to center within." },
+      { question: "What is `flex-basis`, and how does it interact with `flex-grow` and `flex-shrink`?", answer: "flex-basis sets an item's starting size along the main axis. flex-grow and flex-shrink then share out any extra or missing space (compared to that basis) by each item's factor." },
+      { question: "When would you use `flex-shrink: 0` on a flex item?", answer: "When the item should keep its natural size even if the container runs out of space, for example so an icon or fixed-width sidebar isn't squeezed by other flexible items." },
+      { question: "Given `.item1 { flex: 1 }` and `.item2 { flex: 2 }` inside the same flex container, how is extra space divided between them?", answer: "In proportion to the grow factors: item2 gets twice as much of the extra space as item1. With equal starting sizes, item2 ends up about twice as wide (or tall, in a column)." },
+      { question: "Why does adding `min-width: 0` (or `min-height: 0`) to a flex item sometimes fix an overflow or truncation bug?", answer: "Flex items default to `min-width: auto`, so they won't shrink below their content's min-content size. Long unbroken text or a wide child can then overflow the container even with flex-shrink set. min-width: 0 removes that floor, so the item can shrink and text-overflow/ellipsis and wrapping can work." },
+      { question: "What's the difference between the explicit and implicit grid in CSS Grid?", answer: "The explicit grid is the tracks you define with grid-template-columns/grid-template-rows. If items land outside it (through auto-placement or line numbers beyond it), the browser creates implicit tracks for them, sized by grid-auto-rows/grid-auto-columns (auto by default)." },
+      { question: "What does `grid-auto-flow: dense` change about item placement?", answer: "By default, auto-placement never goes back: a gap too small for the current item stays empty. `dense` lets later items fill earlier gaps, packing the grid tighter but possibly showing items out of source order." },
+      { question: "When would you use `repeat(auto-fit, minmax(200px, 1fr))` instead of a fixed `repeat(4, 1fr)`?", answer: "When the column count should adapt to the space. It creates as many columns of 200px or wider as fit, then stretches them to fill leftover space, giving a responsive grid with no media queries." },
+      { question: "In a 900px-wide container with `grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));`, how many columns are created?", answer: "Four columns of 225px each. Four 200px tracks fit in 900px (a fifth would need 1000px), and the fr unit stretches them equally to fill the rest." },
+      { question: "What does the `order` property do, and what's an important limitation of it?", answer: "It changes the *visual* order of flex or grid items without changing the HTML. The DOM order stays the same, so tab order and screen reader order still follow the markup and may no longer match what's on screen." },
+      { question: "What's the difference between `gap` and using margins to space out flex or grid items?", answer: "gap adds space only *between* items, not at the container's outer edges. Margins need overrides like :first-child/:last-child to avoid extra space at the edges; gap needs none." },
+      { question: "Why can a flex or grid item respond to `z-index` even without `position: relative` or `position: absolute` set on it?", answer: "Flex and grid items honor z-index (and order) for stacking even with `position: static`. Ordinary block elements ignore z-index unless their position is something other than static." },
+      { question: "Why do flex items with different content heights end up the same height inside a row by default?", answer: "align-items defaults to `stretch`, which stretches each item to the container's cross-axis size unless it has an explicit height or an align-self override. You get equal-height columns for free, which float layouts needed hacks for." },
+      { question: "What happens to flex items when the container has `flex-wrap: nowrap` (the default) and they don't all fit on one line?", answer: "They shrink (by their flex-shrink factor) to fit the one line. If they can't shrink enough, they overflow the container, because wrapping is off." },
+      { question: "What problem does CSS Grid's `subgrid` value solve?", answer: "A nested grid normally has its own tracks, so its rows and columns don't line up with the parent's. `subgrid` lets the nested grid use its parent's track sizes, so its content aligns with the outer grid without manually matching sizes." },
+      { question: "Why can forcing a two-dimensional layout out of Flexbox alone become awkward?", answer: "Flexbox handles one axis at a time. Wrapped items form new lines, but items in different lines don't align with each other the way Grid's rows and columns do. Getting true row/column alignment (a calendar, a dashboard) needs extra wrappers or fixed widths that Grid doesn't." },
+      { question: "In Grid, what determines which cell an item lands in if you don't set `grid-column`/`grid-row` on it?", answer: "Auto-placement puts it in the next free cell, following `grid-auto-flow` (row by row by default, or column by column with `grid-auto-flow: column`). It creates implicit tracks if the defined ones run out." },
     ],
     prerequisites: ["css-basics"],
     relatedTopics: ["css-basics", "responsive-design"],
@@ -143,31 +132,27 @@ also adds unnecessary complexity where Flexbox would be simpler.
     title: "Responsive Design",
     level: "intermediate",
     description:
-      "Designing a single page so it still looks and works well on a huge range of screen sizes, from phones to large monitors.",
+      "Build one page that looks and works well on every screen size, from phones to large monitors.",
     explanation: `
-A page built to look right on a large desktop monitor often looks
-broken on a phone — text too small to read, content overflowing the
-screen, layouts that assume far more horizontal space than actually
-exists. Since the same page can be viewed on a huge range of screen
-sizes, from a small phone to a wide desktop display, it needs a way to
-adapt.
+A page built for a large desktop monitor often breaks on a phone: text
+too small to read, content spilling off the screen, layouts that assume
+far more width than exists. The same page gets viewed on everything from
+small phones to wide displays, so it has to adapt.
 
-**Responsive design** is the practice of building a page so its layout
-and styling adjust based on the size (and other characteristics) of the
-screen viewing it, rather than assuming one fixed size. The main tool
-for this in CSS is the **media query** — a rule that says "only apply
-these styles when the screen matches some condition," most commonly a
+**Responsive design** means building a page whose layout and styling
+adjust to the screen's size (and other traits) instead of assuming one
+fixed size. The main CSS tool is the **media query**: a rule that says
+"only apply these styles when the screen matches a condition," usually a
 minimum or maximum width.
 
-A closely related idea is **mobile-first** design: writing your base
-styles for the smallest, simplest screen first, then using media
-queries to *add* complexity and rearrange things as more screen space
-becomes available — rather than designing for desktop first and
-patching things down for smaller screens as an afterthought. Starting
-small tends to produce simpler, more resilient CSS.
+A related idea is **mobile-first**: write base styles for the smallest
+screen, then use media queries to *add* complexity as more space becomes
+available. The opposite, designing for desktop and patching things down
+for small screens later, tends to produce messier CSS. Starting small
+gives simpler, sturdier CSS.
   `.trim(),
     analogy:
-      "It's like writing a letter that reformats itself depending on the size of paper it's printed on — one column and large text on a small card, multiple columns and smaller text on a full sheet — without changing a single word of the actual content.",
+      "It's like a letter that reformats itself for the paper it's printed on: one column and large text on a small card, several columns and smaller text on a full sheet, with the same words either way.",
     examples: [
       {
         title: "A basic media query",
@@ -182,82 +167,77 @@ small tends to produce simpler, more resilient CSS.
   }
 }`,
         explanation:
-          "By default (small screens), items stack vertically. Once the screen is at least 768px wide, the media query kicks in and switches the layout to a horizontal row.",
+          "On small screens, items stack vertically by default. Once the screen is at least 768px wide, the media query switches the layout to a row.",
         walkthrough: [
-          { code: "flex-direction: column;", explanation: "The default, mobile-first layout: items stack in a single vertical column, which fits a narrow screen." },
-          { code: "@media (min-width: 768px) {", explanation: "This block of styles only applies once the viewport is at least 768 pixels wide." },
-          { code: "flex-direction: row;", explanation: "On wider screens, the same items now arrange in a horizontal row instead, taking advantage of the extra space." },
+          { code: "flex-direction: column;", explanation: "The mobile-first default: items stack in one column, which fits a narrow screen." },
+          { code: "@media (min-width: 768px) {", explanation: "These styles only apply when the viewport is at least 768 pixels wide." },
+          { code: "flex-direction: row;", explanation: "On wider screens, the same items sit in a row to use the extra space." },
         ],
       },
       {
         title: "A responsive viewport setup",
         code: `<meta name="viewport" content="width=device-width, initial-scale=1">`,
         explanation:
-          "Without this tag in the HTML head, mobile browsers often render the page at a wide desktop size and then shrink it to fit, making text tiny. This tag tells the browser to use the device's actual width as the page's width from the start.",
+          "Without this tag in the HTML head, mobile browsers often render the page at desktop width and shrink it to fit, making text tiny. The tag tells the browser to use the device's real width from the start.",
       },
     ],
     howItWorks: `
-The browser continuously knows the current width (and other
-characteristics) of its viewport — the visible area of the page. Media
-queries are evaluated against that viewport, and any CSS rules inside a
-matching media query are applied on top of (or in place of) the base
-styles. As the browser window or device orientation changes, the
-browser re-evaluates these queries and updates the applied styles
-immediately, without a page reload.
+The browser always knows the width (and other traits) of its viewport,
+the visible area of the page. Media queries are checked against it, and
+rules inside a matching query apply on top of, or instead of, the base
+styles.
+
+When the window or device orientation changes, the browser re-checks the
+queries and updates the styles immediately, with no reload.
   `.trim(),
     whyItExists: `
-Responsive design became essential once people started browsing the web
-on a huge variety of devices with wildly different screen sizes, rather
-than mostly one kind of desktop monitor. Building and maintaining
-entirely separate pages for "mobile" and "desktop" was expensive and
-error-prone; a single page that adapts itself via CSS is far easier to
-maintain and keeps content consistent everywhere.
+People browse on devices with wildly different screen sizes, not mostly
+one kind of desktop monitor. Building and maintaining separate "mobile"
+and "desktop" pages was expensive and error-prone. One page that adapts
+through CSS is far easier to maintain and keeps content consistent.
   `.trim(),
     whenToUse: `
-Use responsive techniques for essentially any public-facing page today,
-since you rarely control what device or window size someone will use to
-view it. Mobile-first is especially valuable when a page's content and
-priorities genuinely differ by available space, not just its visual
-size.
+Use responsive techniques for almost any public page, since you rarely
+control the device or window size. Mobile-first helps most when content
+and priorities really change with available space, not just visual size.
   `.trim(),
     whenNotToUse: `
-An internal tool used exclusively on one known, fixed-size screen (like
-a kiosk display) may not need full responsive treatment. Even then,
-it's rarely harmful to have it, so responsive design is close to a
-default best practice for anything reachable from a general web
+An internal tool used only on one known, fixed-size screen (like a kiosk)
+may not need full responsive treatment. Even then it rarely hurts, so
+responsive design is close to a default for anything opened in a regular
 browser.
   `.trim(),
     commonMistakes: [
-      "Forgetting the viewport meta tag, which causes mobile browsers to render the page at a shrunk-down desktop width.",
-      "Designing desktop-first and only reluctantly patching things for mobile, leading to bloated CSS with lots of overrides.",
-      "Testing responsiveness only by resizing a desktop browser window instead of checking on actual or emulated mobile devices too.",
+      "Forgetting the viewport meta tag, so mobile browsers render the page at a shrunk-down desktop width.",
+      "Designing desktop-first and patching for mobile afterward, which bloats the CSS with overrides.",
+      "Testing only by resizing a desktop browser window, without checking real or emulated mobile devices.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Add a media query that changes a page's background color once the screen is narrower than 500px." },
-      { difficulty: "Medium", prompt: "Build a mobile-first navigation bar that stacks links vertically by default and switches to a horizontal row above 768px." },
-      { difficulty: "Hard", prompt: "Take an existing desktop-only layout and convert it to mobile-first responsive CSS, listing each media query you added and why." },
+      { difficulty: "Easy", prompt: "Add a media query that changes a page's background color when the screen is narrower than 500px." },
+      { difficulty: "Medium", prompt: "Build a mobile-first navigation bar that stacks links vertically by default and switches to a row above 768px." },
+      { difficulty: "Hard", prompt: "Convert a desktop-only layout to mobile-first responsive CSS. List each media query you added and why." },
     ],
     interviewQuestions: [
       { question: "What is a media query?", answer: "A CSS rule that applies a block of styles only when the viewport matches some condition, most commonly a minimum or maximum width." },
-      { question: "What does 'mobile-first' mean in responsive design?", answer: "Writing base CSS for the smallest screen first, then using media queries to add complexity and rearrange the layout as more screen space becomes available, rather than starting from a desktop layout and shrinking it down." },
-      { question: "Why is the viewport meta tag important for responsive design?", answer: "Without it, many mobile browsers render the page at a wide, desktop-like width and scale it down, making text and layout appear too small; the tag makes the browser use the device's actual width." },
-      { question: "What's the difference between a `min-width` and a `max-width` media query, and which fits a mobile-first approach?", answer: "A min-width query applies its styles once the viewport is at least that wide, layering enhancements on top of a base style — this fits mobile-first, since the base (unqueried) styles target the smallest screens and min-width queries add complexity as space increases. A max-width query instead applies once the viewport is at most that wide, which is the pattern used in a desktop-first approach that shrinks things down." },
-      { question: "If two media queries both match the current viewport and set different values for the same property, which one wins?", answer: "Ordinary CSS cascade rules apply: with equal specificity, whichever rule appears later in the source order wins, regardless of which media query's condition is 'more specific' about screen size — so query order in the stylesheet matters, not just which range is narrower." },
-      { question: "Why are relative units like `rem`, `em`, `%`, and `vw`/`vh` generally preferred over fixed `px` in responsive design?", answer: "They scale relative to something else — the root font size, a parent's size, or the viewport — so text and spacing adjust automatically as the user's font-size preference or screen size changes, whereas px values stay fixed regardless of context." },
-      { question: "What's the difference between `rem` and `em`, and what's a common gotcha with `em`?", answer: "rem is always relative to the root (`html`) element's font size, so it stays consistent no matter where it's used. em is relative to the *current* element's own font size, which means nested elements using em for font-size can compound — each level multiplying the previous one — leading to unexpectedly large or small text deep in a nested structure." },
-      { question: "What is a 'breakpoint' in responsive design, and how should you choose one?", answer: "It's the viewport width at which a media query changes the layout. Good practice is to base breakpoints on where your own content actually starts to look cramped or awkward, rather than targeting specific popular device widths, since device sizes vary constantly and content-based breakpoints stay relevant regardless." },
-      { question: "What do `max-width: 100%` and `height: auto` do for images in a responsive layout?", answer: "max-width: 100% keeps an image from ever rendering wider than its container, shrinking it down on narrow screens instead of overflowing. height: auto then preserves the image's aspect ratio as its width changes, so it doesn't get stretched or squashed." },
-      { question: "An image has `width: 100%` but still overflows its container on a narrow screen — what's a likely cause?", answer: "The image's parent container itself may not actually be narrow — for example, it could have a fixed min-width, or `box-sizing` isn't set to border-box and padding is pushing its content box wider than intended — so the image is correctly filling 100% of a container that's already too wide." },
-      { question: "What's the practical difference between using `srcset`/`sizes` versus just scaling one large image down with CSS?", answer: "srcset lets the browser choose and download a differently-sized image file suited to the actual display size and device pixel ratio, so a phone downloads a genuinely smaller file. CSS-only scaling still downloads the single full-size image regardless of screen size, wasting bandwidth on smaller devices." },
-      { question: "What's the difference between 'responsive' (fluid) design and 'adaptive' design?", answer: "Responsive design uses fluid, relative-unit layouts and media queries that adjust continuously across a wide range of sizes. Adaptive design instead serves a small number of fixed, discrete layouts targeted at specific known breakpoints, switching between them rather than flowing continuously." },
-      { question: "How does `box-sizing: border-box` help make responsive layouts more predictable?", answer: "By default, padding and border are added *on top of* a specified width, so a `width: 50%` element with padding can end up wider than 50%. border-box makes width/height include padding and border, so percentage-based and fluid widths behave the way they visually appear to." },
-      { question: "If content is hidden at a certain breakpoint with `display: none`, does that mean its resources (like an image) were never downloaded?", answer: "Not necessarily — unless the resource itself is conditionally loaded (e.g. via a `<picture>` element with media conditions, or lazy loading), the browser may still fetch an `<img>` referenced inside a hidden element, since CSS display rules don't stop the HTML parser from requesting resources it finds." },
-      { question: "What's the difference between a media query and a container query?", answer: "A media query responds to the size of the entire viewport. A container query (`@container`, with `container-type` set on an ancestor) responds instead to the size of a specific containing element, letting a component adapt based on the space it's actually given, regardless of overall screen size — useful for components reused in different-width contexts." },
-      { question: "Given `.card-wrapper { container-type: inline-size; }` and a container query targeting it, what does the query actually measure?", answer: "It measures the inline-size (width, in a standard horizontal writing mode) of `.card-wrapper` itself, not the viewport — so a `.card` inside a narrow sidebar and the same `.card` inside a wide main column can render differently even though the browser window size hasn't changed." },
-      { question: "Why can testing responsiveness only by resizing a desktop browser window miss real problems?", answer: "It doesn't reveal issues specific to actual mobile conditions — touch target sizes that are fine for a mouse cursor but too small for a finger, real device pixel ratios affecting image sharpness, slower network conditions, or mobile-specific browser chrome/viewport quirks that a resized desktop window doesn't reproduce." },
-      { question: "What does the CSS `clamp()` function do, and how is it commonly used in responsive typography?", answer: "clamp(min, preferred, max) picks the preferred value but constrains it to never go below min or above max. For type sizing, this is often used like `font-size: clamp(1rem, 2vw + 0.5rem, 2rem)`, letting the size scale fluidly with the viewport while guaranteeing it never becomes unreadably small or excessively large." },
-      { question: "A fixed-position header overlaps the top of the page content differently across screen sizes — how would you handle this responsively?", answer: "Reserve space for the header's actual height with padding or margin on the content below it (often recalculated per breakpoint if the header's height changes responsively), or use `scroll-margin-top` on anchor targets so jumping to an anchor doesn't tuck content underneath the fixed header." },
-      { question: "Even with relative units, media queries, and container queries in place, why is testing on real or emulated mobile devices still worth doing?", answer: "Emulation and relative units address layout sizing, but real devices surface things CSS alone can't simulate reliably — actual touch interaction and target sizes, real network latency, on-screen keyboard behavior, and browser-specific rendering quirks that differ from a desktop dev tools simulation." },
+      { question: "What does 'mobile-first' mean in responsive design?", answer: "Writing base CSS for the smallest screen, then using media queries to add complexity and rearrange the layout as space grows, instead of starting from desktop and shrinking down." },
+      { question: "Why is the viewport meta tag important for responsive design?", answer: "Without it, many mobile browsers render the page at a wide, desktop-like width and scale it down, so text and layout look too small. The tag makes the browser use the device's real width." },
+      { question: "What's the difference between a `min-width` and a `max-width` media query, and which fits a mobile-first approach?", answer: "A min-width query applies once the viewport is at least that wide, layering enhancements on base styles. That fits mobile-first: unqueried styles target the smallest screens and min-width queries add to them. A max-width query applies when the viewport is at most that wide, the usual desktop-first pattern for shrinking things down." },
+      { question: "If two media queries both match the current viewport and set different values for the same property, which one wins?", answer: "Normal cascade rules apply: with equal specificity, the later rule in the source wins. Which query's range is narrower doesn't matter, so the order of queries in the stylesheet does." },
+      { question: "Why are relative units like `rem`, `em`, `%`, and `vw`/`vh` generally preferred over fixed `px` in responsive design?", answer: "They scale with something else (the root font size, a parent's size, or the viewport), so text and spacing adjust when the user's font-size setting or screen size changes. px values stay fixed." },
+      { question: "What's the difference between `rem` and `em`, and what's a common gotcha with `em`?", answer: "rem is relative to the root (`html`) font size, so it's the same everywhere. em is relative to the *current* element's font size, so nested elements using em for font-size compound, each level multiplying the last. Deeply nested text can end up much larger or smaller than expected." },
+      { question: "What is a 'breakpoint' in responsive design, and how should you choose one?", answer: "It's the viewport width where a media query changes the layout. Choose breakpoints where your content starts to look cramped or awkward, not at popular device widths. Device sizes keep changing; content-based breakpoints stay useful." },
+      { question: "What do `max-width: 100%` and `height: auto` do for images in a responsive layout?", answer: "max-width: 100% stops an image from getting wider than its container, so it shrinks on narrow screens instead of overflowing. height: auto keeps the aspect ratio as the width changes, so it isn't stretched or squashed." },
+      { question: "An image has `width: 100%` but still overflows its container on a narrow screen — what's a likely cause?", answer: "The container itself may be too wide, for example because of a fixed min-width, or because `box-sizing` isn't border-box and padding pushes it wider. The image is correctly filling 100% of a container that's already too wide." },
+      { question: "What's the practical difference between using `srcset`/`sizes` versus just scaling one large image down with CSS?", answer: "srcset lets the browser pick and download an image file sized for the actual display size and device pixel ratio, so a phone downloads a smaller file. CSS-only scaling always downloads the full-size image, wasting bandwidth on small devices." },
+      { question: "What's the difference between 'responsive' (fluid) design and 'adaptive' design?", answer: "Responsive design uses fluid, relative-unit layouts and media queries that adjust continuously across sizes. Adaptive design serves a few fixed layouts for specific breakpoints and switches between them." },
+      { question: "How does `box-sizing: border-box` help make responsive layouts more predictable?", answer: "By default, padding and border are added *on top of* the width, so a `width: 50%` element with padding ends up wider than 50%. border-box includes padding and border in width/height, so percentage and fluid widths behave as they look." },
+      { question: "If content is hidden at a certain breakpoint with `display: none`, does that mean its resources (like an image) were never downloaded?", answer: "Not necessarily. CSS display rules don't stop the parser from requesting resources, so an `<img>` inside a hidden element may still be fetched. It's only skipped if loading is conditional, for example a `<picture>` element with media conditions, or lazy loading." },
+      { question: "What's the difference between a media query and a container query?", answer: "A media query responds to the whole viewport's size. A container query (`@container`, with `container-type` set on an ancestor) responds to the size of a specific containing element. A component can then adapt to the space it's given, whatever the screen size, which helps when it's reused in places of different widths." },
+      { question: "Given `.card-wrapper { container-type: inline-size; }` and a container query targeting it, what does the query actually measure?", answer: "The inline size (the width, in a normal horizontal writing mode) of `.card-wrapper` itself, not the viewport. A `.card` in a narrow sidebar and the same `.card` in a wide main column can render differently in the same browser window." },
+      { question: "Why can testing responsiveness only by resizing a desktop browser window miss real problems?", answer: "It misses real mobile conditions: touch targets fine for a mouse but too small for a finger, device pixel ratios that affect image sharpness, slower networks, and mobile browser chrome or viewport quirks." },
+      { question: "What does the CSS `clamp()` function do, and how is it commonly used in responsive typography?", answer: "clamp(min, preferred, max) uses the preferred value but never goes below min or above max. For type, something like `font-size: clamp(1rem, 2vw + 0.5rem, 2rem)` scales with the viewport while never getting unreadably small or too large." },
+      { question: "A fixed-position header overlaps the top of the page content differently across screen sizes — how would you handle this responsively?", answer: "Reserve the header's height with padding or margin on the content below it (adjusted per breakpoint if the header's height changes). Or use `scroll-margin-top` on anchor targets so jumping to an anchor doesn't hide content under the header." },
+      { question: "Even with relative units, media queries, and container queries in place, why is testing on real or emulated mobile devices still worth doing?", answer: "Those tools handle layout sizing, but real devices reveal what CSS can't reliably simulate: real touch interaction and target sizes, real network latency, on-screen keyboard behavior, and browser-specific rendering quirks that differ from a desktop dev tools simulation." },
     ],
     prerequisites: ["css-basics", "css-layout"],
     relatedTopics: ["css-layout", "web-performance-basics"],

@@ -5,7 +5,7 @@ const imageConverter: ToolDefinition = {
   name: 'Image Converter',
   tagline: 'Convert between PNG, JPEG, WebP and AVIF',
   description:
-    'Convert images between PNG, JPEG, WebP and AVIF, with a background colour for transparent areas and a quality setting. Reads any format your browser can open. Batch and ZIP download.',
+    'Convert images to PNG, JPEG, WebP or AVIF from any format your browser can open, with quality and background settings. Batch and ZIP download.',
   category: 'Images',
   icon: 'swap',
   tags: ['PNG', 'JPEG', 'WebP', 'AVIF', 'Convert', 'Batch'],

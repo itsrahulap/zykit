@@ -352,28 +352,28 @@ fits better. Interfaces are for "objects with named properties."
       { difficulty: "Hard", prompt: "Write a function `printSummary(book: Book): string` that returns a formatted string. Add a `readonly` property to `Book` that would cause a compiler error if the function tried to change it." },
     ],
     interviewQuestions: [
-      { question: "What is an interface used for in TypeScript?", answer: "Naming and reusing the description of an object's shape — which properties it must have and what type each one is — so the compiler can check objects against it consistently." },
-      { question: "Does an optional property (`prop?: type`) allow the property to be `undefined`, or does it allow the property to be omitted entirely?", answer: "Both — it can be omitted from the object altogether, or included and explicitly set to `undefined`." },
-      { question: "Do interfaces exist at runtime in the compiled JavaScript?", answer: "No. Interfaces are purely a compile-time construct used for type checking; they produce no runtime code at all." },
-      { question: "What is *structural typing*, and how does it relate to how interfaces are checked?", answer: "TypeScript compares types by their shape (which properties exist and what types they are), not by name or declared intent. An interface is checked structurally: any object with the right properties satisfies it, whether or not that object was ever explicitly annotated with the interface's name." },
-      { question: "Given `interface User { name: string } const obj = { name: \"Kai\", age: 5 }; const u: User = obj;`, does this compile, even though `obj` has an extra `age` property?", answer: "Yes. Because `obj` is assigned through an existing variable rather than written as a fresh object literal at the assignment site, TypeScript only checks that it has at least the properties `User` requires — extra properties on an already-existing object are allowed." },
-      { question: "Why does `const u: User = { name: \"Kai\", age: 5 };` fail to compile, when assigning the equivalent object through a variable (as in the previous question) does not?", answer: "This is TypeScript's excess property check: object literals written directly at the point of assignment are checked more strictly, because an extra property on a fresh literal is very often a typo or a misunderstanding of the target shape. That stricter check doesn't apply once the object has already been assigned to a differently-typed variable first." },
-      { question: "Does marking a property `readonly` on an interface prevent it from ever being changed, even by plain JavaScript or a type assertion?", answer: "No — `readonly` is a compile-time-only check. TypeScript refuses to compile code that reassigns the property directly, but a type assertion or code that isn't type-checked at all can still mutate it at runtime, since the restriction leaves no trace in the compiled JavaScript." },
-      { question: "If `discountCode?: string` is declared on an interface, what is its type inside code that has already confirmed the object has it?", answer: "`string` — TypeScript narrows `string | undefined` down to `string` once you've checked (for example with `if (item.discountCode)`) that the property is actually present, since the optional marker really means \"`string`, or absent/`undefined`.\"" },
-      { question: "Can two objects that were never declared with the same interface name still both satisfy that interface?", answer: "Yes — because interfaces check structure, not declared identity, any object with matching property names and types satisfies the interface regardless of how it was created or what (if anything) it was originally annotated as." },
-      { question: "What happens if you declare `interface User { name: string }` a second time later in the same scope, adding `interface User { age: number }`?", answer: "TypeScript merges the two declarations into a single interface with both `name` and `age` — this is called *declaration merging*, and it's a feature unique to interfaces; a `type` alias with a duplicate name would instead be a compile error." },
-      { question: "How would you make one interface build on another, like an `Admin` that has everything a `User` has plus a `permissions` field?", answer: "With `interface Admin extends User { permissions: string[] }` — `extends` copies in every property from `User`, and any object satisfying `Admin` must then satisfy all of `User`'s requirements plus the new one." },
-      { question: "Can an interface describe a property whose key names aren't known in advance, like an object being used as a dictionary?", answer: "Yes, with an index signature: `interface Scores { [username: string]: number }` describes an object where every key is a string and every value is a number, regardless of how many keys exist or what they're named." },
-      { question: "Can an interface property hold a function, and if so, how is it typed?", answer: "Yes — for example `interface Logger { log: (message: string) => void }` describes a property that must be a function accepting a `string` and returning nothing. TypeScript checks any function assigned to `log` against that exact signature." },
-      { question: "If an interface property's type is itself another interface, like `interface Order { customer: User }`, how deep does TypeScript's checking go?", answer: "All the way down — TypeScript recursively checks nested object shapes, so an `Order` object's `customer` property must itself satisfy every requirement of `User`, not just be present." },
-      { question: "Why does defining the same object shape inline in several different function signatures tend to cause problems over time?", answer: "There's nothing tying the separate inline descriptions together — if the shape needs to change, such as adding a required field, you have to find and update every inline occurrence by hand, and it's easy to miss one or let them silently drift out of sync. Naming the shape once as an interface and reusing it means there's exactly one place to update." },
-      { question: "Is it valid to have a required property listed after an optional one in an interface, like `interface Item { discount?: number; name: string }`?", answer: "Yes — unlike function parameters, interface property order doesn't matter for validity. Properties are matched by name, not position, so optional and required properties can be declared in any order." },
-      { question: "What would happen if you forgot the `?` on a property that's genuinely sometimes absent, like writing `discountCode: string` instead of `discountCode?: string`?", answer: "Every object typed as that interface would be required to include `discountCode`, so any real object that legitimately doesn't have a discount code would fail to satisfy the interface — forcing callers to invent a placeholder value just to satisfy the compiler." },
-      { question: "When would a type alias be a more natural fit than an interface for describing something?", answer: "When the thing you're naming isn't fundamentally \"an object with named properties\" — a union of specific allowed values, a tuple, or a function signature are all things a type alias can express directly that an interface cannot." },
-      { question: "Does an interface itself appear anywhere in the compiled `.js` output?", answer: "No — like all TypeScript-only constructs, an interface is used purely to check code during compilation and is discarded entirely once compilation finishes; there is no runtime object, class, or value corresponding to it." },
-      { question: "If a function parameter is typed with an interface, what happens if you call the function with an object missing one required property?", answer: "TypeScript reports a compile error at the call site, naming the missing property — the function is never actually invoked with the incomplete object, since the mismatch is caught before the code runs." },
-      { question: "Scenario: you want a `Config` interface where `apiUrl` is required but `timeout` should fall back to a sensible number if the caller doesn't provide it. Does the interface itself supply that fallback?", answer: "No — an interface (with `timeout?: number`) only describes that the property may be absent; it doesn't supply a default value. Supplying the fallback, such as `config.timeout ?? 5000`, is separate logic you still have to write in the code that consumes the object." },
-      { question: "Why are interfaces particularly well suited to describing the props a UI component accepts?", answer: "Component props are almost always a plain object with a fixed, named set of fields, some required and some optional — exactly the shape interfaces are designed to describe and enforce, catching a missing or mistyped prop at the call site instead of at render time." },
+      { question: "What is an interface used for in TypeScript?", answer: "Naming and reusing an object's shape (its required properties and their types) so the compiler can check objects against it consistently." },
+      { question: "Does an optional property (`prop?: type`) allow the property to be `undefined`, or does it allow the property to be omitted entirely?", answer: "Both. It can be left out of the object, or included and set to `undefined`." },
+      { question: "Do interfaces exist at runtime in the compiled JavaScript?", answer: "No. Interfaces are compile-time only and produce no runtime code." },
+      { question: "What is *structural typing*, and how does it relate to how interfaces are checked?", answer: "TypeScript compares types by shape (which properties exist and their types), not by name. Any object with the right properties satisfies an interface, whether or not it was ever annotated with that interface's name." },
+      { question: "Given `interface User { name: string } const obj = { name: \"Kai\", age: 5 }; const u: User = obj;`, does this compile, even though `obj` has an extra `age` property?", answer: "Yes. `obj` is an existing variable, not a fresh object literal, so TypeScript only checks that it has at least the properties `User` requires. Extra properties are allowed." },
+      { question: "Why does `const u: User = { name: \"Kai\", age: 5 };` fail to compile, when assigning the equivalent object through a variable (as in the previous question) does not?", answer: "This is the excess property check. Object literals written right at the assignment are checked more strictly, because an extra property there is usually a typo or a misunderstanding of the shape. The check doesn't apply to an object already stored in another variable." },
+      { question: "Does marking a property `readonly` on an interface prevent it from ever being changed, even by plain JavaScript or a type assertion?", answer: "No. `readonly` is compile-time only. TypeScript rejects direct reassignment, but a type assertion or unchecked code can still change it at runtime, since nothing of the restriction remains in the compiled JavaScript." },
+      { question: "If `discountCode?: string` is declared on an interface, what is its type inside code that has already confirmed the object has it?", answer: "`string`. Optional means \"`string`, or absent/`undefined`\", and once you check (for example `if (item.discountCode)`) TypeScript narrows `string | undefined` to `string`." },
+      { question: "Can two objects that were never declared with the same interface name still both satisfy that interface?", answer: "Yes. Interfaces check structure, not identity, so any object with matching property names and types satisfies it, however it was created or annotated." },
+      { question: "What happens if you declare `interface User { name: string }` a second time later in the same scope, adding `interface User { age: number }`?", answer: "TypeScript merges them into one interface with both `name` and `age`. This is *declaration merging*, and only interfaces support it. A duplicate `type` alias name is a compile error." },
+      { question: "How would you make one interface build on another, like an `Admin` that has everything a `User` has plus a `permissions` field?", answer: "`interface Admin extends User { permissions: string[] }`. `extends` copies in every property from `User`, so an `Admin` must satisfy all of `User` plus the new field." },
+      { question: "Can an interface describe a property whose key names aren't known in advance, like an object being used as a dictionary?", answer: "Yes, with an index signature: `interface Scores { [username: string]: number }` describes an object where every key is a string and every value a number, however many keys there are." },
+      { question: "Can an interface property hold a function, and if so, how is it typed?", answer: "Yes. `interface Logger { log: (message: string) => void }` requires `log` to be a function taking a `string` and returning nothing. Any function assigned to `log` is checked against that signature." },
+      { question: "If an interface property's type is itself another interface, like `interface Order { customer: User }`, how deep does TypeScript's checking go?", answer: "All the way down. Nested shapes are checked recursively, so `customer` must satisfy every requirement of `User`, not just be present." },
+      { question: "Why does defining the same object shape inline in several different function signatures tend to cause problems over time?", answer: "Nothing ties the copies together. If the shape changes, say a new required field, you must update every copy by hand, and they easily drift apart. A named interface gives you one place to update." },
+      { question: "Is it valid to have a required property listed after an optional one in an interface, like `interface Item { discount?: number; name: string }`?", answer: "Yes. Unlike function parameters, interface properties are matched by name, not position, so order doesn't matter." },
+      { question: "What would happen if you forgot the `?` on a property that's genuinely sometimes absent, like writing `discountCode: string` instead of `discountCode?: string`?", answer: "Every object would have to include `discountCode`. Objects that legitimately have none would fail, forcing callers to invent placeholder values just to satisfy the compiler." },
+      { question: "When would a type alias be a more natural fit than an interface for describing something?", answer: "When the thing isn't \"an object with named properties\": a union of allowed values, a tuple or a function signature. A type alias can express those directly; an interface can't." },
+      { question: "Does an interface itself appear anywhere in the compiled `.js` output?", answer: "No. It's only used for checking during compilation, then discarded. No runtime object, class or value corresponds to it." },
+      { question: "If a function parameter is typed with an interface, what happens if you call the function with an object missing one required property?", answer: "TypeScript reports a compile error at the call site naming the missing property. The mismatch is caught before the code runs." },
+      { question: "Scenario: you want a `Config` interface where `apiUrl` is required but `timeout` should fall back to a sensible number if the caller doesn't provide it. Does the interface itself supply that fallback?", answer: "No. `timeout?: number` only says the property may be absent. You still write the fallback yourself where the object is used, such as `config.timeout ?? 5000`." },
+      { question: "Why are interfaces particularly well suited to describing the props a UI component accepts?", answer: "Props are almost always a plain object with a fixed set of named fields, some required and some optional. That's exactly what interfaces describe, so a missing or mistyped prop is caught at the call site instead of at render time." },
     ],
     prerequisites: ["basic-types"],
     relatedTopics: ["basic-types", "type-aliases", "functions-with-types"],
@@ -384,22 +384,18 @@ fits better. Interfaces are for "objects with named properties."
     title: "Type Aliases",
     level: "beginner",
     description:
-      "Giving any type — not just object shapes — a reusable name.",
+      "Give any type, not just an object shape, a reusable name.",
     explanation: `
-Interfaces are great for naming object shapes, but not every type you want
-to reuse is an object. Maybe it's a specific set of allowed strings, like
-\`"pending" | "shipped" | "delivered"\`. Maybe it's a function's signature.
-Maybe it's just a shorthand for a long, awkward-to-repeat type. Writing
-that out in full every time it's needed is just as repetitive as repeating
-an object shape.
+Not every type you want to reuse is an object. It might be a set of
+allowed strings like \`"pending" | "shipped" | "delivered"\`, a function
+signature, or just a long type you don't want to repeat.
 
 A **type alias**, written with the \`type\` keyword, gives *any* type a
-name — an object shape, a union of specific values, a tuple, a function
-signature, anything. Once named, you refer to it by that name everywhere
-instead of repeating the full definition.
+name: an object shape, a union of values, a tuple, a function signature.
+Then you use the name everywhere instead of the full definition.
     `.trim(),
     analogy:
-      "A type alias is like giving a nickname to a long phrase you keep repeating. Instead of writing \"the delivery status, which is one of pending, shipped, or delivered\" every single time, you agree to just say \"OrderStatus\" and everyone knows exactly what that means.",
+      "A type alias is a nickname for a phrase you keep repeating. Instead of saying \"the delivery status, which is pending, shipped or delivered\" every time, you just say \"OrderStatus\" and everyone knows what you mean.",
     examples: [
       {
         title: "Naming a union of specific values",
@@ -410,11 +406,11 @@ let status: OrderStatus = "shipped";
 status = "cancelled";
 // Error: Type '"cancelled"' is not assignable to type 'OrderStatus'.`,
         explanation:
-          "`OrderStatus` isn't an object shape at all — it's a fixed set of allowed string values. Type aliases can name this kind of type, which interfaces cannot.",
+          "`OrderStatus` isn't an object shape; it's a fixed set of allowed strings. Type aliases can name this kind of type. Interfaces can't.",
         walkthrough: [
-          { code: 'type OrderStatus = "pending" | "shipped" | "delivered";', explanation: "Names the union of exactly these three string values as OrderStatus." },
-          { code: 'let status: OrderStatus = "shipped";', explanation: "status may only ever hold one of the three named values." },
-          { code: 'status = "cancelled";', explanation: "\"cancelled\" isn't one of the allowed values, so TypeScript rejects the assignment." },
+          { code: 'type OrderStatus = "pending" | "shipped" | "delivered";', explanation: "Names the union of these three strings OrderStatus." },
+          { code: 'let status: OrderStatus = "shipped";', explanation: "status may only hold one of the three values." },
+          { code: 'status = "cancelled";', explanation: "\"cancelled\" isn't allowed, so TypeScript rejects it." },
         ],
       },
       {
@@ -434,66 +430,62 @@ interface PointInterface {
   y: number;
 }`,
         explanation:
-          "For plain object shapes, `type` and `interface` do almost the same job. The practical differences show up in more advanced cases: interfaces can be re-opened later to add more properties (declaration merging), and type aliases can describe unions, tuples, and other non-object types that interfaces can't.",
+          "For plain object shapes, `type` and `interface` do almost the same job. The differences show up in advanced cases: interfaces can be reopened to add properties (declaration merging), and type aliases can describe unions, tuples and other non-object types.",
       },
     ],
     howItWorks: `
-Like an interface, a type alias exists purely at compile time — it's a
-label the compiler substitutes in wherever it's used when checking your
-code, and it leaves no trace in the compiled JavaScript. The difference
-from an interface is what it's allowed to name: an interface can only
-describe object shapes, while a type alias can name literally any type —
-including unions, tuples, function signatures, and primitives — as well
-as object shapes.
+Like an interface, a type alias exists only at compile time. The compiler
+substitutes it wherever it's used, and it leaves no trace in the compiled
+JavaScript.
+
+The difference is what it can name. An interface only describes object
+shapes. A type alias can name any type: unions, tuples, function
+signatures, primitives and object shapes.
     `.trim(),
     whyItExists: `
-Object shapes aren't the only kind of type worth reusing — restricted sets
-of string values, function signatures, and combinations of other types all
-benefit from having a single readable name instead of being repeated or
-inlined everywhere. Type aliases fill that gap for anything an interface
-can't express.
+Object shapes aren't the only types worth reusing. Sets of allowed strings,
+function signatures and combinations of types all benefit from one readable
+name. Type aliases cover everything an interface can't express.
     `.trim(),
     whenToUse: `
-Reach for a type alias when you're naming a union (like a fixed set of
-allowed strings), a tuple, a function signature, or any type that isn't
-strictly "an object with these properties." It's also fine to use for
-plain object shapes if your team's convention prefers **type** over
-**interface** for consistency.
+Use a type alias to name a union (like a fixed set of strings), a tuple, a
+function signature, or anything that isn't strictly "an object with these
+properties." It's also fine for object shapes if your team prefers
+**type** over **interface** for consistency.
     `.trim(),
     whenNotToUse: `
-If you're describing an object shape that might need to be extended later
-by merging in more properties from elsewhere (common in libraries), an
-interface supports that (declaration merging) and a type alias does not.
-For everyday object shapes without that need, either works.
+If an object shape may need more properties merged in from elsewhere later
+(common in libraries), use an interface: it supports declaration merging
+and a type alias doesn't. For everyday object shapes, either works.
     `.trim(),
     commonMistakes: [
-      "Thinking `type` and `interface` are totally interchangeable — type aliases can express unions and other non-object types that interfaces cannot.",
-      "Trying to \"reopen\" a type alias later to add more properties, the way you can with an interface — type aliases can't be merged like that.",
-      "Naming a type alias the same as an existing variable or another type in the same scope, causing a naming collision.",
+      "Thinking `type` and `interface` are fully interchangeable. Type aliases can express unions and other non-object types that interfaces can't.",
+      "Trying to \"reopen\" a type alias to add properties, as you can with an interface. Type aliases can't be merged.",
+      "Giving a type alias the same name as an existing variable or type in the same scope, causing a naming collision.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Create a type alias `Direction` that can only be \"up\", \"down\", \"left\", or \"right\", and declare a variable of that type." },
-      { difficulty: "Medium", prompt: "Create a type alias `Coordinate` for a `[number, number]` tuple, and write a function `move(point: Coordinate, direction: Direction): Coordinate` that returns a new coordinate." },
-      { difficulty: "Hard", prompt: "Write a type alias for a function signature, `Comparator`, that takes two numbers and returns a number, and write a function `sortNumbers(nums: number[], compare: Comparator): number[]` that uses it." },
+      { difficulty: "Easy", prompt: "Create a type alias `Direction` that can only be \"up\", \"down\", \"left\" or \"right\", and declare a variable of that type." },
+      { difficulty: "Medium", prompt: "Create a type alias `Coordinate` for a `[number, number]` tuple. Write a function `move(point: Coordinate, direction: Direction): Coordinate` that returns a new coordinate." },
+      { difficulty: "Hard", prompt: "Write a type alias `Comparator` for a function that takes two numbers and returns a number. Then write `sortNumbers(nums: number[], compare: Comparator): number[]` that uses it." },
     ],
     interviewQuestions: [
-      { question: "What can a type alias describe that an interface cannot?", answer: "A type alias can name unions, tuples, function signatures, and primitive types — anything, not just object shapes, which is all an interface can describe." },
-      { question: "What is declaration merging, and which of `type` or `interface` supports it?", answer: "Declaration merging is the ability to declare the same named shape more than once and have TypeScript combine the declarations into one. Only `interface` supports this; a `type` alias with the same name declared twice is an error." },
-      { question: "For a simple object shape, does it matter whether you use `type` or `interface`?", answer: "In most everyday cases, no — both check objects the same way. The choice mostly comes down to team convention, unless you specifically need a feature only one of them supports." },
-      { question: "Does writing `type ID = string;` create a genuinely new type distinct from `string`?", answer: "No — it just creates an alternate name for the exact same type. Anywhere a `string` is expected, an `ID` works and vice versa; TypeScript treats them as fully interchangeable, unlike some languages' \"branded\" or \"nominal\" type features." },
-      { question: "Given `type ID = string | number; let id: ID = \"abc123\"; id = 42;`, does the second assignment compile?", answer: "Yes — `42` is a `number`, which is one of the two types the union `ID` allows. Assigning `id = true;` would fail, though, since `boolean` isn't part of the union." },
-      { question: "Can a type alias reference itself, like `type Tree = { value: number; children: Tree[] };`?", answer: "Yes, for object shapes — this is a recursive type alias, and TypeScript resolves it lazily rather than trying to expand it infinitely, which is exactly what lets you model nested structures like trees or JSON with a single named type." },
-      { question: "What happens if you declare `type Status = \"active\" | \"inactive\";` twice in the same scope?", answer: "It's a compile error — unlike `interface`, a `type` alias cannot be declared more than once with the same name; there's no merging mechanism for type aliases." },
-      { question: "How would you type a variable that holds a function signature, like a comparator used for sorting?", answer: "With a type alias for the function shape: `type Comparator = (a: number, b: number) => number;`. Any function assigned to a variable of that type is then checked against exactly that parameter and return signature." },
-      { question: "Given `type Status = \"active\" | \"inactive\"; function setStatus(s: Status) {}`, why does `setStatus(\"Active\")` fail to compile?", answer: "The union `Status` only allows the exact literal strings `\"active\"` and `\"inactive\"` — string literal types are case-sensitive, so `\"Active\"` isn't one of the allowed values, even though it looks similar." },
-      { question: "How would you express \"a `User` extended with an extra `permissions` field\" using type aliases instead of `interface extends`?", answer: "With an intersection: `type Admin = User & { permissions: string[] };`. The `&` combines both shapes into one type that requires everything from `User` plus the new field — it's the type-alias equivalent of `extends`, just via a different operator." },
-      { question: "You need to model a value that's always either a `User` object or a `Guest` object, distinguished by a shared `kind` field. Would you reach for `interface` or `type` here, and why?", answer: "A `type` alias, since the overall value is a union (`User | Guest`) — interfaces can't directly express \"one of these two shapes,\" only a single object shape. Each branch of the union could still individually be an interface; only the union itself needs `type`." },
-      { question: "Why can a type alias name \"literally any type,\" while an interface is limited to object shapes?", answer: "A type alias is just a name bound to a type expression, and that expression can be a union, a tuple, a function signature, a primitive, or an object shape — an interface's syntax, by contrast, is specifically built to declare a set of named properties, so it has no way to represent something like a union of strings." },
-      { question: "If you write `type Point = { x: number; y: number };` and separately `interface PointInterface { x: number; y: number }`, are values typed as one assignable to the other?", answer: "Yes — because TypeScript checks structurally, both describe the identical shape, so a `Point` value is assignable wherever a `PointInterface` is expected and vice versa, regardless of which one was used to declare it." },
-      { question: "What's the main practical trade-off a team gives up by adopting \"always use `type`, never `interface`\" as a blanket style rule?", answer: "They lose declaration merging — the ability to reopen an already-declared shape and add more properties to it later, which some patterns, especially in library type definitions, rely on. For most everyday application code that trade-off rarely matters." },
-      { question: "Can a tuple type be given a name with a type alias, and why would you want that?", answer: "Yes — for example `type Coordinate = [number, number];`. Naming it means every function that takes or returns a coordinate pair can refer to `Coordinate` instead of repeating `[number, number]`, and if the shape ever needs to change, there's one definition to update." },
-      { question: "Why can't an interface be used to name a type like `type Direction = \"up\" | \"down\" | \"left\" | \"right\";`?", answer: "An interface's syntax only supports declaring named properties on an object — there's no way to write \"this interface is one of these four exact strings\" using interface syntax, since an interface isn't describing a value directly, it's describing an object's shape." },
-      { question: "Naming a type alias the same as an existing variable in the same scope — is that allowed?", answer: "It's allowed in the sense that types and values live in separate namespaces in TypeScript, so `type User = {...}` and `let User = ...` can technically coexist — but it's confusing in practice and best avoided, and naming collisions between two types with the same name are still errors." },
+      { question: "What can a type alias describe that an interface cannot?", answer: "Unions, tuples, function signatures and primitive types. A type alias can name any type; an interface only describes object shapes." },
+      { question: "What is declaration merging, and which of `type` or `interface` supports it?", answer: "Declaring the same named shape more than once and having TypeScript combine them into one. Only `interface` supports it; declaring a `type` alias name twice is an error." },
+      { question: "For a simple object shape, does it matter whether you use `type` or `interface`?", answer: "Usually not. Both check objects the same way. It comes down to team convention, unless you need a feature only one supports." },
+      { question: "Does writing `type ID = string;` create a genuinely new type distinct from `string`?", answer: "No. It's another name for the same type. An `ID` works anywhere a `string` does and vice versa, unlike \"branded\" or \"nominal\" types in some languages." },
+      { question: "Given `type ID = string | number; let id: ID = \"abc123\"; id = 42;`, does the second assignment compile?", answer: "Yes. `42` is a `number`, which the union allows. `id = true;` would fail, since `boolean` isn't in the union." },
+      { question: "Can a type alias reference itself, like `type Tree = { value: number; children: Tree[] };`?", answer: "Yes, for object shapes. It's a recursive type alias. TypeScript resolves it lazily instead of expanding it forever, which lets you model nested structures like trees or JSON with one named type." },
+      { question: "What happens if you declare `type Status = \"active\" | \"inactive\";` twice in the same scope?", answer: "A compile error. Unlike `interface`, a `type` alias can't be declared twice; there's no merging." },
+      { question: "How would you type a variable that holds a function signature, like a comparator used for sorting?", answer: "With a type alias for the function shape: `type Comparator = (a: number, b: number) => number;`. Any function assigned to a variable of that type is checked against those parameters and return type." },
+      { question: "Given `type Status = \"active\" | \"inactive\"; function setStatus(s: Status) {}`, why does `setStatus(\"Active\")` fail to compile?", answer: "`Status` allows only the exact strings `\"active\"` and `\"inactive\"`. String literal types are case-sensitive, so `\"Active\"` isn't allowed." },
+      { question: "How would you express \"a `User` extended with an extra `permissions` field\" using type aliases instead of `interface extends`?", answer: "With an intersection: `type Admin = User & { permissions: string[] };`. The `&` combines both shapes, requiring everything from `User` plus the new field. It's the type-alias equivalent of `extends`." },
+      { question: "You need to model a value that's always either a `User` object or a `Guest` object, distinguished by a shared `kind` field. Would you reach for `interface` or `type` here, and why?", answer: "A `type` alias, because the value is a union (`User | Guest`). An interface can only describe a single object shape. Each branch can still be an interface; only the union needs `type`." },
+      { question: "Why can a type alias name \"literally any type,\" while an interface is limited to object shapes?", answer: "A type alias is a name bound to any type expression: a union, tuple, function signature, primitive or object shape. Interface syntax only declares named properties, so it can't represent something like a union of strings." },
+      { question: "If you write `type Point = { x: number; y: number };` and separately `interface PointInterface { x: number; y: number }`, are values typed as one assignable to the other?", answer: "Yes. TypeScript checks structurally and both describe the same shape, so each is assignable to the other." },
+      { question: "What's the main practical trade-off a team gives up by adopting \"always use `type`, never `interface`\" as a blanket style rule?", answer: "Declaration merging: reopening a declared shape to add properties later, which some patterns (especially library type definitions) rely on. In most application code it rarely matters." },
+      { question: "Can a tuple type be given a name with a type alias, and why would you want that?", answer: "Yes, for example `type Coordinate = [number, number];`. Every function can then use `Coordinate` instead of repeating `[number, number]`, and there's one definition to change." },
+      { question: "Why can't an interface be used to name a type like `type Direction = \"up\" | \"down\" | \"left\" | \"right\";`?", answer: "Interface syntax only declares named properties on an object. There's no way to say \"one of these four strings\" with it, because an interface describes an object's shape, not a value." },
+      { question: "Naming a type alias the same as an existing variable in the same scope — is that allowed?", answer: "Technically yes: types and values live in separate namespaces, so `type User = {...}` and `let User = ...` can coexist. It's confusing, so avoid it. Two types with the same name are still an error." },
     ],
     prerequisites: ["interfaces"],
     relatedTopics: ["interfaces", "union-intersection-types", "functions-with-types"],
@@ -504,22 +496,20 @@ For everyday object shapes without that need, either works.
     title: "Functions with Types",
     level: "beginner",
     description:
-      "Annotating a function's parameters and return value so TypeScript can check every call against them.",
+      "Annotate a function's parameters and return value so TypeScript can check every call.",
     explanation: `
-A function is really a contract: "give me these inputs, and I'll give you
-this output." In plain JavaScript, that contract only exists in comments
-or in your head — nothing stops a caller from breaking it by passing the
-wrong kind of argument, or too few of them.
+A function is a contract: "give me these inputs and I'll give you this
+output." In plain JavaScript that contract lives only in comments or your
+head. Nothing stops a caller passing the wrong kind of argument, or too
+few.
 
-TypeScript lets you write that contract directly into the function
-signature. Each parameter gets a type annotation, and the function itself
-gets a return type annotation, so both what goes in and what comes out are
-checked. You can also mark a parameter **optional** with a \`?\`, meaning
-callers may leave it out — and if they do, its value inside the function
-is \`undefined\`.
+TypeScript writes the contract into the signature. Each parameter gets a
+type, and so does the return value, so both inputs and output are checked.
+Mark a parameter **optional** with \`?\` and callers may leave it out; if
+they do, its value inside the function is \`undefined\`.
     `.trim(),
     analogy:
-      "A typed function signature is like a vending machine's slot: it's shaped to accept coins of a specific size, and clearly labeled with what it dispenses. Try to push in the wrong shaped object and it simply won't go in — you find out immediately, not after the machine jams.",
+      "A typed function signature is like a vending machine's coin slot: shaped for one coin size and labeled with what it dispenses. The wrong object simply won't go in, so you find out right away, not after the machine jams.",
     examples: [
       {
         title: "Typed parameters and return value",
@@ -531,11 +521,11 @@ calculateTotal(100, 0.07); // 107
 calculateTotal("100", 0.07);
 // Error: Argument of type 'string' is not assignable to parameter of type 'number'.`,
         explanation:
-          "TypeScript checks both the types passed in and the type returned. If the function's body tried to `return \"total\"` instead of a number, that would also be flagged as an error.",
+          "TypeScript checks the types passed in and the type returned. If the body tried to `return \"total\"` instead of a number, that would be an error too.",
         walkthrough: [
-          { code: "function calculateTotal(price: number, taxRate: number): number {", explanation: "Both parameters must be numbers, and the function is promised to return a number." },
-          { code: "return price + price * taxRate;", explanation: "The actual computation — ordinary arithmetic, unaffected by the type annotations." },
-          { code: 'calculateTotal("100", 0.07);', explanation: "Passing a string for price violates the parameter's type, so TypeScript flags this call before it ever runs." },
+          { code: "function calculateTotal(price: number, taxRate: number): number {", explanation: "Both parameters must be numbers, and the function must return a number." },
+          { code: "return price + price * taxRate;", explanation: "Ordinary arithmetic, unaffected by the annotations." },
+          { code: 'calculateTotal("100", 0.07);', explanation: "A string for price breaks the parameter type, so TypeScript flags the call before it runs." },
         ],
       },
       {
@@ -552,68 +542,64 @@ function greetWithDefault(name: string, greeting: string = "Hello"): string {
   return \`\${greeting}, \${name}!\`;
 }`,
         explanation:
-          "The `?` after `greeting` means callers may omit it entirely, in which case it's `undefined` inside the function. Giving a parameter a default value achieves a similar effect, while also supplying a fallback automatically.",
+          "The `?` after `greeting` lets callers omit it, in which case it's `undefined` inside the function. A default value also makes a parameter omittable, and supplies a fallback automatically.",
       },
     ],
     howItWorks: `
-When the compiler checks a function call, it lines up each argument you
-pass against the corresponding parameter's declared type, in order, and
-flags any mismatch — including passing too many required arguments or too
-few. It does the same for the return value: every \`return\` statement
-inside the function body is checked against the declared return type.
-Optional parameters (marked with \`?\`) must come after all required ones,
-since position is how arguments are matched to parameters.
+For each call, the compiler matches each argument to its parameter, in
+order, and flags any type mismatch, including too many or too few
+arguments. It also checks every \`return\` statement against the declared
+return type.
+
+Optional parameters (\`?\`) must come after all required ones, because
+arguments are matched to parameters by position.
     `.trim(),
     whyItExists: `
-Function signatures are one of the most common places bugs sneak in —
-passing arguments in the wrong order, forgetting one, or assuming a
-function returns something it doesn't. By making the contract explicit and
-checkable, TypeScript catches those mistakes at the call site, immediately,
-instead of only when the function actually runs with bad data.
+Function calls are a common source of bugs: arguments in the wrong order,
+a missing argument, or assuming a function returns something it doesn't.
+With an explicit, checkable contract, TypeScript catches these at the call
+site right away instead of when the function runs with bad data.
     `.trim(),
     whenToUse: `
-Annotate parameter types on essentially every function you write,
-especially ones used in more than one place or exposed to other parts of a
-codebase. Return type annotations are optional (TypeScript can usually
-infer them), but adding them explicitly is useful for documenting intent
-and catching a case where the function body accidentally returns the wrong
-type.
+Type the parameters of almost every function, especially ones used in
+several places or by other parts of the codebase. Return types are optional
+(TypeScript can usually infer them), but writing them documents intent and
+catches a body that accidentally returns the wrong type.
     `.trim(),
     whenNotToUse: `
-For a tiny, throwaway inline callback (like the anonymous function passed
-to \`array.map(x => x * 2)\`), TypeScript is usually smart enough to infer
-the parameter type from context, so an explicit annotation would just be
-unnecessary noise.
+For a small inline callback like \`array.map(x => x * 2)\`, TypeScript
+usually infers the parameter type from context, so an annotation is just
+noise.
     `.trim(),
     commonMistakes: [
-      "Placing an optional parameter before a required one, which TypeScript doesn't allow — optional parameters must come last.",
-      "Confusing an optional parameter (`name?: string`) with a parameter that has a default value (`name: string = \"Guest\"`) — the former can be `undefined` inside the function, the latter never is.",
-      "Assuming a return type annotation changes what the function actually returns at runtime — it only adds a compile-time check; the function's logic still determines the real value.",
+      "Putting an optional parameter before a required one. TypeScript doesn't allow it; optional parameters come last.",
+      "Confusing an optional parameter (`name?: string`) with a default value (`name: string = \"Guest\"`). The first can be `undefined` inside the function; the second never is.",
+      "Thinking a return type annotation changes what the function returns at runtime. It's only a compile-time check; the function's logic decides the value.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a function `square(n: number): number` that returns `n` squared, and call it correctly and incorrectly to see the error." },
-      { difficulty: "Medium", prompt: "Write a function `formatName(first: string, last: string, middle?: string): string` that combines the names, handling the case where `middle` is omitted." },
-      { difficulty: "Hard", prompt: "Write a function `createUser(name: string, role: string = \"member\")` that returns an object matching a `User` interface you define, and explain why the `role` parameter doesn't need a `?` even though it's optional to callers." },
+      { difficulty: "Easy", prompt: "Write a function `square(n: number): number` that returns `n` squared. Call it correctly and incorrectly to see the error." },
+      { difficulty: "Medium", prompt: "Write a function `formatName(first: string, last: string, middle?: string): string` that combines the names and handles a missing `middle`." },
+      { difficulty: "Hard", prompt: "Write a function `createUser(name: string, role: string = \"member\")` that returns an object matching a `User` interface you define. Explain why `role` doesn't need a `?` even though callers can omit it." },
     ],
     interviewQuestions: [
-      { question: "What happens if you call a TypeScript function with the wrong number of arguments?", answer: "The compiler reports an error at the call site — too few required arguments, or too many, are both caught before the code runs." },
-      { question: "What's the difference between an optional parameter and one with a default value?", answer: "An optional parameter (`x?: T`) may be omitted, and is `undefined` inside the function if it is. A parameter with a default value (`x: T = val`) may also be omitted, but then automatically takes on the default value instead of being `undefined`." },
-      { question: "Is a function's return type annotation required?", answer: "No — TypeScript can usually infer the return type from the function body. Writing it explicitly is optional but often used for clarity and as an extra safety check." },
-      { question: "Why must optional parameters come after all required ones in a function signature?", answer: "Arguments are matched to parameters by position, not by name. If an optional parameter came first, TypeScript (and JavaScript) would have no way to tell whether a single argument passed in was meant to fill the optional slot or the required one after it." },
-      { question: "Given `function greet(name: string, greeting?: string) { return greeting ?? \"Hi\"; }`, what is the declared type of `greeting` inside the function body?", answer: "`string | undefined` — marking a parameter optional with `?` doesn't just make it omittable, it also adds `undefined` as a possible type for it inside the function, which is exactly why `greeting ?? \"Hi\"` is needed to handle the omitted case." },
-      { question: "Is `function f(a?: number, b: number) {}` valid TypeScript?", answer: "No — it's a compile error. Optional parameters must come after all required parameters, and here `a` is optional while `b`, which comes after it, is required, which TypeScript rejects outright." },
-      { question: "Can a parameter have both a `?` and a default value, like `function f(x?: number = 5) {}`?", answer: "No — this is a compile error. A default value already implies the parameter is optional, since callers can omit it and get the default, so adding `?` on top is redundant and TypeScript disallows combining the two." },
-      { question: "How do you type a function that accepts any number of arguments, like `sum(1, 2, 3, 4)`?", answer: "With a rest parameter: `function sum(...nums: number[]): number`. Every argument passed after the fixed parameters, if any, is collected into `nums` as an array, and each one is checked against the declared element type." },
-      { question: "How would you type a variable meant to hold a function, rather than a function declaration itself — for example, a variable that should only ever be assigned an operation on two numbers?", answer: "With a function type annotation: `let op: (a: number, b: number) => number;`. Any function later assigned to `op` is checked against that exact parameter and return signature, just as if it were a parameter typed the same way." },
-      { question: "Why does TypeScript usually let you skip annotating the parameter type inside a callback like `array.map(x => x * 2)`?", answer: "This is *contextual typing*: TypeScript already knows the array's element type, and infers that `map`'s callback parameter `x` must be that same element type from the surrounding context, so an explicit annotation would just repeat what the compiler already knows." },
-      { question: "If `calculateTotal(price: number, taxRate: number): number` is called as `calculateTotal(100)`, what happens?", answer: "A compile error — TypeScript requires every parameter without a `?` or default value to be supplied. Since `taxRate` isn't optional here, calling with only one argument doesn't satisfy the function's declared signature." },
-      { question: "Given `function createUser(name: string, role: string = \"member\") {}`, does a caller have to know or write anything different from calling a required-parameter function?", answer: "No — from the caller's side, omitting `role` is exactly like an optional parameter, so `createUser(\"Kai\")` is valid. Inside the function, though, `role` is typed as plain `string`, never `undefined`, because the default guarantees it always has a real value by the time the body runs." },
-      { question: "What does annotating a function's return type as `: void` communicate, versus `: undefined`?", answer: "`void` means the function's return value isn't meant to be used at all — it signals that nothing useful comes back, and is the conventional annotation for functions run purely for their side effects. `undefined` as a return type is a narrower, more literal claim that the function returns exactly the value `undefined`, which is rarely what you actually want to express." },
-      { question: "If a function's body has a `return \"done\";` statement but its signature declares `: number`, what happens?", answer: "TypeScript reports a compile error on that `return` statement, since the value returned doesn't match the declared return type — the mismatch is caught by checking the function body against its own signature, the same way call sites are checked against parameter types." },
-      { question: "Does an explicit return type annotation change what value a function actually returns at runtime?", answer: "No — it only adds a compile-time check that the function body's `return` statements match the declared type. The function's logic is what actually determines the real returned value; the annotation can't alter or coerce it." },
-      { question: "You pass an object literal directly into a function parameter typed with an interface, and it has one extra property the interface doesn't list. Does this behave differently than passing a variable holding the same object?", answer: "Yes — passing a fresh object literal directly at the call site triggers TypeScript's excess property check and errors on the extra property, while passing a variable that was assigned the same object earlier does not, because the stricter literal check only applies right where an object literal is written." },
-      { question: "Why is a typed function signature sometimes compared to a vending machine's coin slot?", answer: "The slot, meaning the parameter types, is shaped to accept only specific inputs, and what comes out, the return type, is fixed and known in advance — feeding in the wrong shape of input is rejected immediately, rather than being accepted and causing a jam (a runtime error) later." },
-      { question: "Between annotating every function parameter and every function's return type, which matters more for catching call-site mistakes, and why?", answer: "Annotating parameters matters more day-to-day, since most call-site mistakes, such as a wrong type or wrong argument count, are caught right there when arguments are checked against parameter types. Return type annotations are more optional because TypeScript can usually infer them correctly from the function body anyway, though writing them explicitly still documents intent and catches an accidental wrong-type return." },
+      { question: "What happens if you call a TypeScript function with the wrong number of arguments?", answer: "The compiler reports an error at the call site. Too few required arguments and too many are both caught before the code runs." },
+      { question: "What's the difference between an optional parameter and one with a default value?", answer: "An optional parameter (`x?: T`) can be omitted and is then `undefined` inside the function. A parameter with a default (`x: T = val`) can also be omitted, but then takes the default value instead." },
+      { question: "Is a function's return type annotation required?", answer: "No. TypeScript can usually infer it from the body. Writing it is optional, but adds clarity and an extra safety check." },
+      { question: "Why must optional parameters come after all required ones in a function signature?", answer: "Arguments are matched by position, not name. If an optional parameter came first, there'd be no way to tell whether a single argument was meant for the optional slot or the required one after it." },
+      { question: "Given `function greet(name: string, greeting?: string) { return greeting ?? \"Hi\"; }`, what is the declared type of `greeting` inside the function body?", answer: "`string | undefined`. Marking a parameter `?` also adds `undefined` to its type inside the function, which is why `greeting ?? \"Hi\"` is needed." },
+      { question: "Is `function f(a?: number, b: number) {}` valid TypeScript?", answer: "No, it's a compile error. Optional `a` comes before required `b`, and optional parameters must come after all required ones." },
+      { question: "Can a parameter have both a `?` and a default value, like `function f(x?: number = 5) {}`?", answer: "No, it's a compile error. A default already makes the parameter optional, so TypeScript doesn't allow adding `?` as well." },
+      { question: "How do you type a function that accepts any number of arguments, like `sum(1, 2, 3, 4)`?", answer: "With a rest parameter: `function sum(...nums: number[]): number`. Arguments after any fixed parameters are collected into the `nums` array, and each is checked against the element type." },
+      { question: "How would you type a variable meant to hold a function, rather than a function declaration itself — for example, a variable that should only ever be assigned an operation on two numbers?", answer: "With a function type: `let op: (a: number, b: number) => number;`. Any function assigned to `op` is checked against those parameters and return type." },
+      { question: "Why does TypeScript usually let you skip annotating the parameter type inside a callback like `array.map(x => x * 2)`?", answer: "*Contextual typing*: TypeScript knows the array's element type, so it infers `x` from context. An annotation would just repeat what it already knows." },
+      { question: "If `calculateTotal(price: number, taxRate: number): number` is called as `calculateTotal(100)`, what happens?", answer: "A compile error. Every parameter without `?` or a default must be supplied, and `taxRate` is required." },
+      { question: "Given `function createUser(name: string, role: string = \"member\") {}`, does a caller have to know or write anything different from calling a required-parameter function?", answer: "No. For callers, `role` works like an optional parameter, so `createUser(\"Kai\")` is valid. Inside the function `role` is plain `string`, never `undefined`, because the default always provides a value." },
+      { question: "What does annotating a function's return type as `: void` communicate, versus `: undefined`?", answer: "`void` means the return value isn't meant to be used; it's the usual annotation for functions run for side effects. `undefined` is a narrower claim that the function returns exactly `undefined`, which is rarely what you mean." },
+      { question: "If a function's body has a `return \"done\";` statement but its signature declares `: number`, what happens?", answer: "A compile error on that `return`, because the value doesn't match the declared return type. The body is checked against its own signature, just as calls are checked against parameter types." },
+      { question: "Does an explicit return type annotation change what value a function actually returns at runtime?", answer: "No. It only checks at compile time that the `return` statements match. The function's logic decides the real value; the annotation can't change or coerce it." },
+      { question: "You pass an object literal directly into a function parameter typed with an interface, and it has one extra property the interface doesn't list. Does this behave differently than passing a variable holding the same object?", answer: "Yes. A fresh object literal at the call site triggers the excess property check and errors on the extra property. A variable holding the same object doesn't, because the stricter check only applies where the literal is written." },
+      { question: "Why is a typed function signature sometimes compared to a vending machine's coin slot?", answer: "The slot (parameter types) only accepts specific inputs, and what comes out (the return type) is known in advance. The wrong input is rejected immediately instead of causing a jam (a runtime error) later." },
+      { question: "Between annotating every function parameter and every function's return type, which matters more for catching call-site mistakes, and why?", answer: "Parameters. Most call-site mistakes, like a wrong type or wrong argument count, are caught when arguments are checked against parameter types. Return types can usually be inferred, though writing them still documents intent and catches an accidental wrong-type return." },
     ],
     prerequisites: ["type-aliases"],
     relatedTopics: ["interfaces", "type-aliases", "generics"],

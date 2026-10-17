@@ -291,21 +291,20 @@ protocols fit better there.
     id: "rest-apis",
     title: "REST APIs",
     level: "beginner",
-    description: "A common, predictable way to structure requests so different apps can talk to a server the same way.",
+    description: "A common, predictable way to design APIs so any app can talk to a server the same way.",
     explanation: `
-An API (Application Programming Interface) is simply a way one piece of
-software lets another piece of software ask it to do things. But an API
-could be organized in a thousand different, inconsistent ways — which
-makes it hard to learn and use. **REST** (Representational State Transfer)
-is a popular, widely-agreed-upon style for designing APIs so that they're
-consistent and predictable across countless different services.
+An API (Application Programming Interface) is how one piece of software
+lets another ask it to do things. APIs can be organized in endless
+inconsistent ways, which makes them hard to learn. **REST**
+(Representational State Transfer) is a widely used style that keeps APIs
+consistent and predictable.
 
-The core idea: everything is a "resource" (like a user, a post, a
-product), identified by a URL, and you use standard HTTP methods to act on
-it — GET to read, POST to create, PUT/PATCH to update, DELETE to remove.
+The core idea: everything is a "resource" (a user, a post, a product)
+with its own URL. You act on it with standard HTTP methods: GET to read,
+POST to create, PUT/PATCH to update, DELETE to remove.
     `.trim(),
     analogy:
-      "REST is like a well-labeled filing cabinet where every drawer follows the same layout convention, and every drawer lets you do the same standard set of things — look inside, add a paper, replace its contents, or remove it. Once you understand one drawer, you instantly know how to work with any other drawer in any cabinet built the same way.",
+      "REST is like a filing cabinet where every drawer has the same layout and supports the same actions: look inside, add a paper, replace the contents, or remove it. Learn one drawer and you know how to use any drawer in any cabinet built the same way.",
     examples: [
       {
         title: "REST-style endpoints for a 'posts' resource",
@@ -316,43 +315,40 @@ PUT    /posts/42    // replace post 42 entirely
 PATCH  /posts/42    // partially update post 42
 DELETE /posts/42    // delete post 42`,
         explanation:
-          "Notice the URL identifies *what* you're acting on (a post, or a specific one), and the HTTP method identifies *what action* you're taking.",
+          "The URL says *what* you're acting on (posts, or one post), and the HTTP method says *what action* you're taking.",
         walkthrough: [
           { code: "GET /posts", explanation: "Reads the full list of posts." },
-          { code: "GET /posts/42", explanation: "Reads one specific post, identified by its id in the URL." },
+          { code: "GET /posts/42", explanation: "Reads one post, identified by the id in the URL." },
           { code: "POST /posts", explanation: "Creates a new post." },
-          { code: "PUT /posts/42  /  PATCH /posts/42", explanation: "Replaces post 42 entirely, or partially updates just some of its fields." },
+          { code: "PUT /posts/42  /  PATCH /posts/42", explanation: "Replaces post 42 entirely, or updates only some of its fields." },
           { code: "DELETE /posts/42", explanation: "Removes post 42." },
         ],
       },
     ],
     howItWorks: `
-A REST API exposes resources as URLs and relies on standard HTTP methods
-and status codes rather than inventing custom verbs for every action. This
-consistency means a developer who's used one REST API can usually guess
-how another one works, without reading extensive documentation.
+A REST API exposes resources as URLs and uses standard HTTP methods and
+status codes instead of custom verbs for every action. If you've used one
+REST API, you can usually guess how another works without much reading.
     `.trim(),
     whyItExists: `
-Before conventions like REST became common, every API had its own bespoke
-rules, making integration slow and error-prone. REST gives teams a shared
-set of conventions, which speeds up building and consuming APIs across
-completely different companies and codebases.
+Before conventions like REST, every API had its own rules, so integrating
+was slow and error-prone. REST gives everyone shared conventions, which
+speeds up building and using APIs across companies and codebases.
     `.trim(),
     whenToUse: `
-Reach for REST conventions when you're designing a general-purpose API
-for resources (users, posts, products) that other developers — possibly
-outside your team — will need to learn and use.
+Use REST for a general-purpose API around resources (users, posts,
+products) that other developers, possibly outside your team, need to
+learn and use.
     `.trim(),
     whenNotToUse: `
-For very specific, action-oriented operations that don't map cleanly to
-a resource (like "run this report" or "send this batch job"), forcing a
-REST shape can feel awkward — an RPC-style or GraphQL API sometimes fits
-better.
+For action-style operations that don't map to a resource (like "run this
+report" or "send this batch job"), a REST shape can feel forced. An
+RPC-style or GraphQL API sometimes fits better.
     `.trim(),
     commonMistakes: [
       "Using verbs in URLs (`/getUser`) instead of nouns with proper HTTP methods (`GET /user`).",
-      "Returning 200 OK for every response, even for errors, instead of using proper status codes.",
-      "Designing endpoints that don't map cleanly to a resource, making the API inconsistent and confusing.",
+      "Returning 200 OK for every response, even errors, instead of proper status codes.",
+      "Designing endpoints that don't map to a resource, making the API inconsistent and confusing.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Design REST-style endpoints for a 'comments' resource: list, get one, create, update, delete." },
@@ -360,31 +356,31 @@ better.
       { difficulty: "Hard", prompt: "Design a small REST API (endpoints + methods + expected status codes) for a simple to-do list app." },
     ],
     interviewQuestions: [
-      { question: "What does REST stand for, and what's its core idea?", answer: "Representational State Transfer — the core idea is treating everything as a resource identified by a URL, manipulated using standard HTTP methods." },
-      { question: "What makes an API 'RESTful'?", answer: "Using resource-based URLs, standard HTTP methods for actions, standard status codes for outcomes, and being stateless between requests." },
-      { question: "What's the difference between PUT and PATCH?", answer: "PUT typically replaces an entire resource; PATCH applies a partial update, changing only the specified fields." },
-      { question: "What's the difference between a resource and an endpoint in a REST API?", answer: "A resource is the conceptual thing being represented (e.g. 'a user'); an endpoint is the specific URL through which clients access or act on that resource (e.g. `/users/42`) — one resource can be reachable through more than one endpoint, such as a nested and a top-level route." },
-      { question: "Why should REST URLs use nouns for resources rather than verbs for actions?", answer: "The HTTP method already expresses the action (`GET`, `POST`, `PUT`, `DELETE`); putting a verb in the URL too (like `/deleteUser`) duplicates and can conflict with that, and makes the API inconsistent since every developer might phrase actions differently." },
-      { question: "What status code should a successful POST that creates a new resource return, and what else is commonly included?", answer: "`201 Created`, typically along with a `Location` header pointing to the URL of the newly created resource, so the client knows where to find or reference it afterward." },
-      { question: "What status code fits a successful DELETE that returns no response body?", answer: "`204 No Content` — it confirms success without implying there's any data to read in the response body." },
-      { question: "Why is statelessness considered a defining constraint of REST rather than just a nice-to-have?", answer: "REST requires that each request contain everything needed to process it, with no reliance on server-side session state between requests — this is what lets any server instance handle any request, which is essential for horizontal scaling and simple load balancing." },
-      { question: "What's the difference between a REST-style API and an RPC-style API?", answer: "REST models everything as resources manipulated through a small, standard set of HTTP methods; RPC exposes specific named actions/procedures directly (e.g. `POST /createUser`, `POST /banUser`), which can be more flexible for arbitrary operations but loses REST's uniform, predictable structure." },
-      { question: "What's the difference between REST and GraphQL, and when might GraphQL be a better fit?", answer: "REST exposes fixed endpoints that each return a predetermined shape of data; GraphQL exposes a single endpoint where the client specifies exactly which fields it needs — GraphQL tends to fit better when clients have very different, evolving data needs and over- or under-fetching from REST endpoints becomes a real problem." },
-      { question: "What does HATEOAS mean, and why do most real-world 'REST' APIs skip it?", answer: "Hypermedia As The Engine Of Application State — the idea that a response includes links describing what actions or resources are available next, so clients don't need to hardcode URL structures. Most APIs skip it because it adds real implementation complexity for a benefit (loosely coupled clients) that most consumers don't end up needing in practice." },
-      { question: "Name a couple of common approaches to versioning a REST API.", answer: "Putting the version in the URL path (e.g. `/v1/users`), or in a request header (e.g. `Accept: application/vnd.myapi.v1+json`) — URL versioning is simpler and more visible, while header versioning keeps URLs stable but is less discoverable." },
-      { question: "When is nesting resources in a URL (e.g. /users/1/posts) useful, and when does it become an anti-pattern?", answer: "It's useful when a resource is genuinely scoped to its parent (posts that only make sense in the context of a user); it becomes awkward when nesting goes several levels deep or when the same resource needs to be reached both independently and through a parent, leading to duplicate or inconsistent routes." },
-      { question: "How should a REST API represent pagination for a large collection?", answer: "Typically via query parameters (like `?page=2&limit=20` or a cursor-based `?after=<id>`), with metadata in the response (or headers/links) indicating total count or how to fetch the next page, rather than returning the entire collection in one response." },
-      { question: "What's the difference between filtering, sorting, and pagination as REST query parameters?", answer: "Filtering narrows down which items in a collection are returned (e.g. `?status=active`); sorting controls the order of the returned items (e.g. `?sort=-createdAt`); pagination controls how many items and which subset are returned at once — the three are typically combined but are conceptually independent." },
-      { question: "Why should a REST API generally avoid exposing raw internal database ids or implementation details in its responses?", answer: "It couples clients to internal storage decisions that should be free to change (e.g. switching database or id scheme), and can leak information (like sequential ids revealing record counts) that clients don't need and shouldn't depend on." },
-      { question: "Is a REST API required to return JSON? What does the word \"representational\" in REST actually refer to?", answer: "No — REST is format-agnostic; JSON is just the most common convention today. \"Representational\" refers to the idea that clients interact with a representation of a resource's state (in whatever format, JSON, XML, or otherwise), not the resource itself." },
-      { question: "How should a REST API communicate a validation error to the client?", answer: "With a `4xx` status code (typically `400 Bad Request` or `422 Unprocessable Entity`) and a response body describing which fields failed validation and why, so the client can surface something actionable rather than a generic failure." },
-      { question: "What's an idempotency key, and why might a REST API need one for a POST request?", answer: "A client-generated unique value sent with a request so that if the same request is retried (e.g. after a timeout, without the client knowing whether the first attempt succeeded), the server can recognize the duplicate and avoid performing the action twice — commonly used for things like payments, where POST's natural non-idempotency is dangerous." },
-      { question: "Why is caching often easier to reason about in REST than in RPC-based or GraphQL APIs?", answer: "REST's use of GET on stable resource URLs maps naturally onto standard HTTP caching (by URL); RPC and GraphQL typically funnel varied requests through a single endpoint (often via POST), which doesn't get cached the same way by browsers, proxies, or CDNs without extra custom logic." },
-      { question: "Why does it help for a REST API's error responses to follow one consistent structure across all endpoints?", answer: "A predictable error shape (e.g. always including a code, message, and optional field-level details) lets client code handle errors generically instead of writing custom parsing per endpoint, and makes API documentation and debugging far more consistent." },
-      { question: "Why is over-fetching or under-fetching a common criticism of REST APIs, and how does it come about?", answer: "Because a REST endpoint returns a fixed shape of data, a client that needs only a couple of fields still receives the whole resource (over-fetching), while a client that needs data from multiple resources often has to make several separate requests (under-fetching) — both waste bandwidth or round trips compared to a query that could ask for exactly what's needed." },
-      { question: "What does it mean for a REST API to be \"resource-oriented,\" and how does that shape its URL design?", answer: "It means the API is organized around nouns representing things in the domain (users, orders, posts) rather than around actions — which forces URL design toward `/resource` and `/resource/:id` patterns manipulated by standard HTTP methods, instead of an ever-growing list of custom action endpoints." },
-      { question: "How would you design an endpoint to update just one field of a resource, and which HTTP method fits best?", answer: "`PATCH /resource/:id` with a body containing only the field(s) to change (e.g. `{ status: \"archived\" }`) — PATCH is the right method because it's defined for partial updates, unlike PUT, which implies replacing the whole resource." },
-      { question: "Why is it considered bad practice for an API to always return 200 OK, even for errors?", answer: "It forces every client to parse the response body just to find out whether the request actually succeeded, defeating the purpose of standard status codes, and breaks tooling (like HTTP caches, monitoring, and generic error handling) that relies on the status code reflecting the real outcome." },
+      { question: "What does REST stand for, and what's its core idea?", answer: "Representational State Transfer. Everything is a resource with a URL, and you act on it with standard HTTP methods." },
+      { question: "What makes an API 'RESTful'?", answer: "Resource-based URLs, standard HTTP methods for actions, standard status codes for outcomes, and no state kept between requests." },
+      { question: "What's the difference between PUT and PATCH?", answer: "PUT usually replaces the whole resource; PATCH changes only the fields you send." },
+      { question: "What's the difference between a resource and an endpoint in a REST API?", answer: "A resource is the thing being represented (e.g. 'a user'). An endpoint is the URL clients use to reach it (e.g. `/users/42`). One resource can have more than one endpoint, such as a nested and a top-level route." },
+      { question: "Why should REST URLs use nouns for resources rather than verbs for actions?", answer: "The HTTP method already states the action (`GET`, `POST`, `PUT`, `DELETE`). A verb in the URL (like `/deleteUser`) duplicates or conflicts with it, and makes the API inconsistent since everyone phrases actions differently." },
+      { question: "What status code should a successful POST that creates a new resource return, and what else is commonly included?", answer: "`201 Created`, usually with a `Location` header giving the new resource's URL so the client can find it later." },
+      { question: "What status code fits a successful DELETE that returns no response body?", answer: "`204 No Content`. It confirms success and signals there's no body to read." },
+      { question: "Why is statelessness considered a defining constraint of REST rather than just a nice-to-have?", answer: "Each request must carry everything needed to process it, with no server-side session state between requests. That lets any server instance handle any request, which is key to horizontal scaling and simple load balancing." },
+      { question: "What's the difference between a REST-style API and an RPC-style API?", answer: "REST models everything as resources acted on with a small set of standard HTTP methods. RPC exposes named actions directly (e.g. `POST /createUser`, `POST /banUser`), which is more flexible for arbitrary operations but loses REST's uniform structure." },
+      { question: "What's the difference between REST and GraphQL, and when might GraphQL be a better fit?", answer: "REST has fixed endpoints that each return a set data shape. GraphQL has one endpoint where the client asks for exactly the fields it needs. GraphQL fits better when clients have very different, changing data needs and over- or under-fetching becomes a real problem." },
+      { question: "What does HATEOAS mean, and why do most real-world 'REST' APIs skip it?", answer: "Hypermedia As The Engine Of Application State: responses include links to the next available actions or resources, so clients don't hardcode URLs. Most APIs skip it because it adds real complexity for a benefit (loosely coupled clients) few consumers need." },
+      { question: "Name a couple of common approaches to versioning a REST API.", answer: "In the URL path (e.g. `/v1/users`) or in a request header (e.g. `Accept: application/vnd.myapi.v1+json`). URL versioning is simpler and more visible; header versioning keeps URLs stable but is harder to discover." },
+      { question: "When is nesting resources in a URL (e.g. /users/1/posts) useful, and when does it become an anti-pattern?", answer: "It's useful when a resource truly belongs to its parent (posts that only make sense under a user). It gets awkward when nesting goes several levels deep, or the same resource must be reached both on its own and through a parent, causing duplicate or inconsistent routes." },
+      { question: "How should a REST API represent pagination for a large collection?", answer: "With query parameters (like `?page=2&limit=20` or cursor-based `?after=<id>`), plus metadata in the response (or headers/links) giving the total or how to get the next page. Don't return the whole collection at once." },
+      { question: "What's the difference between filtering, sorting, and pagination as REST query parameters?", answer: "Filtering picks which items are returned (e.g. `?status=active`). Sorting sets their order (e.g. `?sort=-createdAt`). Pagination sets how many and which slice come back. They're often combined but independent." },
+      { question: "Why should a REST API generally avoid exposing raw internal database ids or implementation details in its responses?", answer: "It ties clients to storage choices that should be free to change (like the database or id scheme), and can leak information (sequential ids reveal record counts) clients shouldn't depend on." },
+      { question: "Is a REST API required to return JSON? What does the word \"representational\" in REST actually refer to?", answer: "No. REST doesn't require a format; JSON is just the most common today. \"Representational\" means clients work with a representation of a resource's state (JSON, XML, or anything else), not the resource itself." },
+      { question: "How should a REST API communicate a validation error to the client?", answer: "With a `4xx` status (usually `400 Bad Request` or `422 Unprocessable Entity`) and a body saying which fields failed and why, so the client can show something useful instead of a generic failure." },
+      { question: "What's an idempotency key, and why might a REST API need one for a POST request?", answer: "A unique value the client sends with a request. If the request is retried (e.g. after a timeout, when the client can't tell whether the first try worked), the server spots the duplicate and doesn't do the action twice. It's common for payments, where POST not being idempotent is dangerous." },
+      { question: "Why is caching often easier to reason about in REST than in RPC-based or GraphQL APIs?", answer: "REST uses GET on stable resource URLs, which fits standard HTTP caching by URL. RPC and GraphQL usually send varied requests through one endpoint (often via POST), which browsers, proxies, and CDNs don't cache the same way without custom logic." },
+      { question: "Why does it help for a REST API's error responses to follow one consistent structure across all endpoints?", answer: "A predictable error shape (e.g. always a code, message, and optional field details) lets clients handle errors in one place instead of per endpoint, and makes docs and debugging more consistent." },
+      { question: "Why is over-fetching or under-fetching a common criticism of REST APIs, and how does it come about?", answer: "REST endpoints return a fixed data shape. A client needing two fields still gets the whole resource (over-fetching), and a client needing several resources often makes several requests (under-fetching). Both waste bandwidth or round trips compared to asking for exactly what's needed." },
+      { question: "What does it mean for a REST API to be \"resource-oriented,\" and how does that shape its URL design?", answer: "The API is built around nouns from the domain (users, orders, posts), not actions. URLs follow `/resource` and `/resource/:id`, acted on with standard HTTP methods, instead of a growing list of custom action endpoints." },
+      { question: "How would you design an endpoint to update just one field of a resource, and which HTTP method fits best?", answer: "`PATCH /resource/:id` with a body holding only the fields to change (e.g. `{ status: \"archived\" }`). PATCH is meant for partial updates; PUT implies replacing the whole resource." },
+      { question: "Why is it considered bad practice for an API to always return 200 OK, even for errors?", answer: "Every client must parse the body just to learn whether the request worked, which defeats status codes. It also breaks tools (HTTP caches, monitoring, generic error handling) that rely on the status code matching the real outcome." },
     ],
     prerequisites: ["http"],
     relatedTopics: ["http", "client-and-server", "databases"],
@@ -394,22 +390,18 @@ better.
     id: "proxy-and-reverse-proxy",
     title: "Proxy & Reverse Proxy",
     level: "beginner",
-    description: "A middle server that sits between a client and the real destination, on behalf of one side or the other.",
+    description: "A middle server between a client and the real destination, working for one side or the other.",
     explanation: `
-Sometimes a request doesn't go directly from a client to the server that
-will actually handle it — instead, it passes through a middle server
-first. A **forward proxy** sits in front of clients, forwarding their
-requests out on their behalf (often hiding who the client is, or
-filtering what they can reach). A **reverse proxy** sits in front of
-servers, forwarding incoming requests to whichever backend server should
-actually handle them (often hiding how many servers there are, or what
-they look like).
+Sometimes a request passes through a middle server before reaching the
+server that handles it.
 
-The two solve opposite problems, even though the underlying idea — a
-middle server relaying requests — is the same.
+- A **forward proxy** sits in front of clients and sends their requests out for them, often hiding who the client is or filtering what they can reach.
+- A **reverse proxy** sits in front of servers and passes incoming requests to the right backend, often hiding how many servers there are or what they look like.
+
+Same idea (a middle server relaying requests), opposite problems.
     `.trim(),
     analogy:
-      "A forward proxy is like an assistant who makes calls on your behalf so the person on the other end never sees your number. A reverse proxy is like a company's reception desk — every visitor talks to the same receptionist, who then directs them to whichever employee should actually help, without the visitor ever needing to know who works where.",
+      "A forward proxy is like an assistant who makes calls for you, so the other person never sees your number. A reverse proxy is like a company's reception desk: every visitor talks to the same receptionist, who sends them to the right employee, so visitors never need to know who works where.",
     examples: [
       {
         title: "A reverse proxy routing to different backends",
@@ -424,71 +416,71 @@ routes: {
 // the client only ever talks to one address.`,
         walkthrough: [
           { code: '"/api/*": "backend-server:4000"', explanation: "Any request whose path starts with /api goes to the backend server." },
-          { code: '"/images/*": "image-server:5000"', explanation: "Image requests are routed to a separate server entirely." },
+          { code: '"/images/*": "image-server:5000"', explanation: "Image requests go to a separate server." },
           { code: '"/*": "web-server:3000"', explanation: "Everything else falls through to the default web server." },
-          { code: "the client only ever talks to one address", explanation: "The client has no idea multiple servers exist behind the scenes." },
+          { code: "the client only ever talks to one address", explanation: "The client never knows several servers exist behind it." },
         ],
       },
     ],
     howItWorks: `
-A reverse proxy receives every incoming request first, inspects it
-(usually just the path or domain), and forwards it to whichever backend
-server is responsible for handling that kind of request — then relays
-the response back to the client as if it had come from the proxy itself.
-A forward proxy does the mirror image: it sits in front of clients,
-receiving their outgoing requests and forwarding them onward, often
-changing or hiding details about the original request.
+A reverse proxy receives every incoming request first and looks at it
+(usually just the path or domain). It forwards the request to the backend
+responsible for it, then relays the response back as if it came from the
+proxy.
+
+A forward proxy is the mirror image. It sits in front of clients, takes
+their outgoing requests, and sends them on, often changing or hiding
+details of the original request.
     `.trim(),
     whyItExists: `
-Without a reverse proxy, clients would need to know the exact address of
-every individual backend service, and every one of those services would
-need to be directly exposed to the internet. A reverse proxy gives
-clients one single, stable address to talk to, while everything about how
-many servers exist and what they do stays hidden and free to change.
+Without a reverse proxy, clients would need the exact address of every
+backend service, and each service would be exposed to the internet. A
+reverse proxy gives clients one stable address, while the number and
+role of servers behind it stay hidden and free to change.
     `.trim(),
     whenToUse: `
-Reach for a reverse proxy anytime you have more than one backend service
-(or more than one instance of the same service) and want clients to
-interact with a single, stable entry point — this is also exactly what a
-load balancer is, under the hood: a reverse proxy that distributes
-traffic across many identical servers. Reach for a forward proxy when
-clients need their outgoing requests filtered, cached, or have their
-identity hidden.
+Use a reverse proxy when you have more than one backend service (or more
+than one instance of a service) and want one stable entry point. A load
+balancer is exactly this: a reverse proxy that spreads traffic across
+identical servers.
+
+Use a forward proxy when clients' outgoing requests need filtering,
+caching, or their identity hidden.
     `.trim(),
     whenNotToUse: `
-For a single, simple server with no need to route between multiple
-backends, a reverse proxy adds an extra network hop with no real benefit
-yet — you can always add one later as the system grows.
+For a single simple server with nothing to route between, a reverse
+proxy adds an extra network hop with no real benefit yet. You can add
+one later as the system grows.
     `.trim(),
     commonMistakes: [
-      "Confusing a forward proxy (works on behalf of clients) with a reverse proxy (works on behalf of servers) — they solve different problems.",
-      "Forgetting that a reverse proxy is itself a piece of infrastructure that needs to stay up — if it goes down, so does access to everything behind it.",
-      "Exposing internal backend addresses directly instead of routing everything through the proxy, defeating the purpose of hiding the internal architecture.",
+      "Confusing a forward proxy (works for clients) with a reverse proxy (works for servers). They solve different problems.",
+      "Forgetting the reverse proxy itself must stay up. If it goes down, so does access to everything behind it.",
+      "Exposing backend addresses directly instead of routing everything through the proxy, which defeats hiding the internal architecture.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, the difference between a forward proxy and a reverse proxy." },
+      { difficulty: "Easy", prompt: "Explain in your own words the difference between a forward proxy and a reverse proxy." },
       { difficulty: "Medium", prompt: "Sketch (in words) a reverse proxy config that routes /api requests to one server and everything else to another." },
-      { difficulty: "Hard", prompt: "Explain how a load balancer and a reverse proxy relate to each other — is a load balancer a kind of reverse proxy, or something separate?" },
+      { difficulty: "Hard", prompt: "Explain how a load balancer and a reverse proxy relate. Is a load balancer a kind of reverse proxy, or something separate?" },
     ],
     interviewQuestions: [
-      { question: "What's the difference between a forward proxy and a reverse proxy?", answer: "A forward proxy sits in front of clients and forwards their outgoing requests on their behalf; a reverse proxy sits in front of servers and forwards incoming requests to whichever backend should handle them." },
-      { question: "Why would you put a reverse proxy in front of multiple backend servers?", answer: "So clients only need to know one address, while the proxy handles routing requests to the correct backend — hiding the internal architecture and making it easier to change." },
-      { question: "Is a load balancer a type of reverse proxy?", answer: "Effectively yes — a load balancer is a reverse proxy whose specific job is distributing traffic across multiple identical backend servers." },
-      { question: "What are common reasons an organization deploys a forward proxy for its own employees?", answer: "To filter or block access to certain sites, cache frequently requested content to save bandwidth, log outbound traffic for compliance, and hide the internal network's actual IP addresses from the sites employees visit." },
-      { question: "How does a reverse proxy help with SSL/TLS termination?", answer: "The proxy handles decrypting incoming HTTPS traffic (and encrypting the response) at one central point, so individual backend servers don't each need to manage certificates and TLS handshakes — simplifying certificate management and offloading that CPU cost from the application servers." },
-      { question: "Why might a reverse proxy cache static content before it even reaches the application server?", answer: "Content that rarely changes (images, CSS, JS bundles) can be served directly from the proxy's cache, which is much faster than re-running application logic on the backend for the same unchanged response every time." },
-      { question: "What single point of failure risk does adding a reverse proxy introduce, and how is it usually mitigated?", answer: "If there's only one reverse proxy, its failure takes down access to everything behind it, even if the backend servers are fine — this is mitigated by running multiple redundant proxy instances behind something like DNS round-robin or a floating IP." },
-      { question: "How does a reverse proxy enable zero-downtime deployments?", answer: "New versions of a service can be started alongside the old ones, and the proxy can gradually shift traffic to the new instances (and stop sending traffic to old ones) without ever exposing clients to an interruption, unlike replacing a single directly-exposed server in place." },
-      { question: "What's the difference between a reverse proxy and an API gateway?", answer: "A reverse proxy's core job is routing and forwarding requests to the right backend; an API gateway builds on that with additional API-specific concerns like authentication, rate limiting, request/response transformation, and aggregating multiple backend calls into one client-facing response." },
-      { question: "How does a CDN relate to the concept of a reverse proxy?", answer: "A CDN is essentially a globally distributed reverse proxy — it sits in front of an origin server at many geographic edge locations, caching and serving content from whichever location is closest to the requesting client, rather than routing to a fixed set of local backends." },
-      { question: "Why does a reverse proxy typically add headers like X-Forwarded-For to the requests it forwards?", answer: "Once a proxy sits in the middle, the backend server would otherwise only see the proxy's own IP address as the request's source — `X-Forwarded-For` preserves the original client's IP so the backend can still do things like logging, rate limiting, or geolocation based on the real client." },
-      { question: "What problem does the X-Forwarded-For header solve?", answer: "It solves the loss of the original client's IP address once a request passes through one or more intermediary proxies — without it, the backend would only ever see the last proxy in the chain as the apparent source of every request." },
-      { question: "How can a reverse proxy implement rate limiting across an entire fleet of backend servers?", answer: "Because every request passes through the proxy before reaching any backend, the proxy can track request counts per client (by IP, API key, etc.) centrally and reject or throttle requests once a limit is exceeded — without each backend server needing to separately track and coordinate the same counts." },
-      { question: "Describe a scenario where a system would use both a forward proxy and a reverse proxy at once.", answer: "A company's internal clients might go through a forward proxy to reach the internet (for filtering and logging outbound traffic), while requests coming into the company's own public-facing service pass through a separate reverse proxy that routes them to the correct internal backend — the two proxies serve entirely different directions of traffic." },
-      { question: "Why might a company route its clients' outbound connections through a forward proxy for security reasons?", answer: "It gives the organization a single choke point to inspect, filter, or block risky outbound connections (like requests to known-malicious domains), instead of relying on every individual machine to enforce that policy independently." },
-      { question: "What's a potential downside of routing all traffic through a single reverse proxy layer?", answer: "It adds an extra network hop (and thus a small amount of latency) to every request, and if not scaled or made redundant properly, it can become a bottleneck or outage point for the entire system, even when the backends themselves are healthy." },
-      { question: "How does a reverse proxy decouple clients from changes in backend infrastructure?", answer: "Clients only ever address the proxy's stable, public endpoint; backend servers can be added, removed, resized, or moved without clients needing to know or change anything, since the proxy is the only thing that needs to be updated with the new routing details." },
-      { question: "Why is it important for a reverse proxy itself to be highly available?", answer: "Every request to the system passes through it, so if the proxy goes down, clients lose access to every backend behind it — its availability effectively becomes the ceiling on the availability of the entire system." },
+      { question: "What's the difference between a forward proxy and a reverse proxy?", answer: "A forward proxy sits in front of clients and sends their outgoing requests for them. A reverse proxy sits in front of servers and passes incoming requests to the right backend." },
+      { question: "Why would you put a reverse proxy in front of multiple backend servers?", answer: "Clients need only one address, and the proxy routes each request to the right backend. The internal setup stays hidden and easy to change." },
+      { question: "Is a load balancer a type of reverse proxy?", answer: "Effectively yes: it's a reverse proxy whose job is spreading traffic across identical backend servers." },
+      { question: "What are common reasons an organization deploys a forward proxy for its own employees?", answer: "To block certain sites, cache popular content to save bandwidth, log outbound traffic for compliance, and hide internal IP addresses from the sites employees visit." },
+      { question: "How does a reverse proxy help with SSL/TLS termination?", answer: "The proxy decrypts incoming HTTPS (and encrypts responses) in one place, so backends don't each manage certificates and TLS handshakes. That simplifies certificate management and takes the CPU cost off the app servers." },
+      { question: "Why might a reverse proxy cache static content before it even reaches the application server?", answer: "Rarely changing content (images, CSS, JS bundles) can be served from the proxy's cache, which is much faster than running backend logic for the same response every time." },
+      { question: "What single point of failure risk does adding a reverse proxy introduce, and how is it usually mitigated?", answer: "With only one proxy, its failure cuts off everything behind it even if backends are fine. The fix is several redundant proxies behind something like DNS round-robin or a floating IP." },
+      { question: "How does a reverse proxy enable zero-downtime deployments?", answer: "Start the new version alongside the old one, and have the proxy gradually shift traffic to it and away from the old one. Clients never see an interruption, unlike replacing a single exposed server in place." },
+      { question: "What's the difference between a reverse proxy and an API gateway?", answer: "A reverse proxy routes requests to the right backend. An API gateway adds API concerns on top: authentication, rate limiting, request/response transformation, and combining several backend calls into one response." },
+      { question: "How does a CDN relate to the concept of a reverse proxy?", answer: "A CDN is a globally distributed reverse proxy. It sits in front of an origin server at many edge locations and caches and serves content from the one closest to the client." },
+      { question: "Why does a reverse proxy typically add headers like X-Forwarded-For to the requests it forwards?", answer: "Behind a proxy, the backend sees only the proxy's IP as the source. `X-Forwarded-For` keeps the original client's IP so the backend can still log, rate-limit, or geolocate by the real client." },
+      { question: "What problem does the X-Forwarded-For header solve?", answer: "Losing the original client's IP after a request passes through one or more proxies. Without it, the backend sees only the last proxy in the chain as the source of every request." },
+      { question: "How can a reverse proxy implement rate limiting across an entire fleet of backend servers?", answer: "Every request passes through the proxy first, so it can count requests per client (by IP, API key, etc.) in one place and reject or throttle over the limit. Backends don't need to track and share counts themselves." },
+      { question: "Describe a scenario where a system would use both a forward proxy and a reverse proxy at once.", answer: "A company's staff reach the internet through a forward proxy (filtering and logging outbound traffic), while requests to the company's public service go through a separate reverse proxy to the right internal backend. The two handle opposite directions of traffic." },
+      { question: "Why might a company route its clients' outbound connections through a forward proxy for security reasons?", answer: "It gives one choke point to inspect, filter, or block risky outbound connections (like known-malicious domains), instead of relying on every machine to enforce the policy." },
+      { question: "What's a potential downside of routing all traffic through a single reverse proxy layer?", answer: "Every request gets an extra network hop and a little latency. If it isn't scaled or made redundant, it can become a bottleneck or outage point for the whole system even when backends are healthy." },
+      { question: "How does a reverse proxy decouple clients from changes in backend infrastructure?", answer: "Clients only use the proxy's stable public endpoint. Backends can be added, removed, resized, or moved without clients changing anything; only the proxy's routing needs updating." },
+      { question: "Why is it important for a reverse proxy itself to be highly available?", answer: "Every request passes through it, so if it goes down, every backend behind it is unreachable. Its availability caps the availability of the whole system." },
     ],
     prerequisites: ["client-and-server"],
     relatedTopics: ["load-balancing", "api-gateway"],
@@ -498,20 +490,17 @@ yet — you can always add one later as the system grows.
     id: "authentication-and-sessions",
     title: "Authentication & Sessions",
     level: "beginner",
-    description: "How a server remembers who you are across multiple requests, even though HTTP itself doesn't.",
+    description: "How a server remembers who you are across requests, even though HTTP doesn't.",
     explanation: `
-HTTP is stateless — the server doesn't automatically remember anything
-about you between one request and the next. But most apps clearly do
-remember you: you log in once and stay logged in as you click around.
-That memory has to be built on top of HTTP deliberately, and there are
-two common ways to do it: **sessions** (the server keeps track of who's
-logged in, and gives your browser a small id to prove which session is
-yours) and **tokens** (the server gives your browser a self-contained
-piece of data that proves who you are, without the server needing to
-store anything).
+HTTP is stateless: the server doesn't remember you between requests. Yet
+apps do remember you. You log in once and stay logged in. That memory is
+built on top of HTTP, usually in one of two ways:
+
+- **Sessions**: the server tracks who's logged in and gives your browser a small id that points to your session.
+- **Tokens**: the server gives your browser a self-contained piece of data that proves who you are, so the server stores nothing.
     `.trim(),
     analogy:
-      "A session is like getting a wristband at a venue — the venue keeps a list of which wristband numbers were given to which paying customers, and checks your wristband against that list at each door. A token is more like getting a signed, tamper-proof ticket that itself already contains everything needed to prove it's valid — nobody needs to check a list, they just verify the ticket's signature.",
+      "A session is like a wristband at a venue: the venue keeps a list of which wristband went to which customer and checks yours against it at each door. A token is like a signed, tamper-proof ticket that carries everything needed to prove it's valid. Nobody checks a list; they just verify the signature.",
     examples: [
       {
         title: "A simple session-based login flow",
@@ -528,83 +517,82 @@ Cookie: sessionId=abc123
 // 4. Server looks up "abc123" in its session store to know who's asking`,
         walkthrough: [
           { code: "POST /login { username, password }", explanation: "The client sends credentials once, to prove identity." },
-          { code: "Set-Cookie: sessionId=abc123", explanation: "The server creates a session record and gives the browser a small id referencing it." },
+          { code: "Set-Cookie: sessionId=abc123", explanation: "The server creates a session record and gives the browser a small id pointing to it." },
           { code: "Cookie: sessionId=abc123", explanation: "The browser automatically resends that cookie on every later request." },
-          { code: 'Server looks up "abc123"', explanation: "The server checks its own storage to find out which user this session id belongs to." },
+          { code: 'Server looks up "abc123"', explanation: "The server checks its storage to see which user owns this session id." },
         ],
       },
     ],
     howItWorks: `
 With sessions, the server stores session data (who's logged in, since
-when) in memory or a database, keyed by a random session id, and gives
-that id to the browser as a cookie; every later request includes the
-cookie, and the server looks up the matching session. With tokens
-(commonly JWTs), the server instead signs a small piece of data
-containing the user's identity, so it can be verified without a lookup —
-the token itself is the proof, as long as its signature checks out.
+when) in memory or a database under a random session id, and gives that
+id to the browser as a cookie. Each later request sends the cookie, and
+the server looks up the session.
+
+With tokens (commonly JWTs), the server signs a small piece of data
+holding the user's identity. It can be verified without a lookup: the
+token is the proof, as long as its signature checks out.
     `.trim(),
     whyItExists: `
-Without some form of authentication and a session/token mechanism, a
-server would have no way to distinguish one visitor from another, or
-remember that you already proved who you are — every request would need
-to include your full credentials again, which is both impractical and
-insecure.
+Without it, a server couldn't tell visitors apart or remember that you
+already proved who you are. Every request would need your full
+credentials again, which is impractical and insecure.
     `.trim(),
     whenToUse: `
-Use session-based authentication when you want the server to retain full
-control — able to instantly revoke access by deleting a session record.
-Use token-based authentication when you want to avoid a centralized
-lookup on every request, especially across multiple independent
-services, at the cost of tokens being harder to revoke early.
+Use sessions when you want the server in full control, able to revoke
+access instantly by deleting a session record.
+
+Use tokens to avoid a central lookup on every request, especially across
+several independent services. The cost: tokens are harder to revoke
+early.
     `.trim(),
     whenNotToUse: `
-Don't build authentication from scratch for anything beyond a learning
-exercise — subtle mistakes here (like weak session ids, or improperly
-verifying a token's signature) are a common source of serious security
-vulnerabilities; use well-established, audited libraries and frameworks
-instead.
+Don't build authentication from scratch outside a learning exercise.
+Subtle mistakes (weak session ids, wrong token signature checks) are a
+common cause of serious security holes. Use well-established, audited
+libraries and frameworks instead.
     `.trim(),
     commonMistakes: [
-      "Storing session ids or tokens somewhere JavaScript can read them (making them vulnerable to theft via XSS) instead of an HttpOnly cookie.",
-      "Assuming a token can be instantly revoked the way a session can — a signed token generally stays valid until it expires, unless you build extra revocation logic.",
-      "Sending credentials or session identifiers over plain HTTP instead of HTTPS, exposing them to anyone on the network.",
+      "Storing session ids or tokens where JavaScript can read them (open to theft via XSS) instead of in an HttpOnly cookie.",
+      "Assuming a token can be revoked instantly like a session. A signed token generally stays valid until it expires unless you build extra revocation logic.",
+      "Sending credentials or session ids over plain HTTP instead of HTTPS, exposing them to anyone on the network.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain, in your own words, why HTTP being stateless means a server needs a separate mechanism to 'remember' a logged-in user." },
+      { difficulty: "Easy", prompt: "Explain in your own words why HTTP being stateless means a server needs a separate way to 'remember' a logged-in user." },
       { difficulty: "Medium", prompt: "Describe the difference between a session id and a token, and one advantage each has over the other." },
       { difficulty: "Hard", prompt: "Explain how a service could quickly revoke a compromised session versus a compromised token, and why one is harder." },
     ],
     interviewQuestions: [
-      { question: "Why can't the server just 'remember' a user across requests using HTTP alone?", answer: "HTTP is stateless by design — each request is handled independently, so remembering a user requires an explicit mechanism like a session or token layered on top." },
-      { question: "What's the difference between a session and a token?", answer: "A session stores the user's state on the server, identified by an id the client holds; a token holds the user's state itself (signed, so it can be verified), without the server needing to store anything." },
-      { question: "Why is a token harder to revoke early than a session?", answer: "A session can be invalidated by simply deleting its record on the server; a signed token is self-contained and remains valid until it expires, unless additional revocation tracking is built." },
-      { question: "What's the difference between authentication and authorization?", answer: "Authentication answers 'who are you?' — verifying identity, typically via credentials; authorization answers 'what are you allowed to do?' — deciding what an already-identified user can access or perform." },
-      { question: "What is a cookie, and how does the browser know to send it automatically on future requests?", answer: "A small piece of data the server asks the browser to store via a `Set-Cookie` response header; the browser then automatically attaches it to every subsequent request to the same domain (matching the cookie's scope) via the `Cookie` header, without the application needing to attach it manually." },
-      { question: "What does the HttpOnly flag on a cookie protect against?", answer: "It prevents JavaScript running on the page from reading the cookie's value, so even if an attacker manages to inject a script (XSS), they can't steal a session id or token stored in an `HttpOnly` cookie directly." },
-      { question: "What does the Secure flag on a cookie do?", answer: "It tells the browser to only ever send that cookie over HTTPS connections, preventing it from being exposed in plaintext if a request is ever made over unencrypted HTTP." },
-      { question: "What is the SameSite cookie attribute, and what problem does it help prevent?", answer: "It controls whether a cookie is sent along with requests originating from a different site than the one that set it; setting it to `Strict` or `Lax` helps prevent the browser from automatically attaching a user's session cookie to requests forged by a malicious third-party site (CSRF)." },
-      { question: "What is CSRF (Cross-Site Request Forgery), and how does SameSite help mitigate it?", answer: "CSRF tricks a logged-in user's browser into sending an unwanted authenticated request to a site they're logged into, by embedding that request on a malicious page — since browsers normally attach cookies automatically regardless of where a request originates. `SameSite` mitigates this by refusing to attach the cookie to requests that originate from another site." },
-      { question: "What is XSS (Cross-Site Scripting), and why does it matter for deciding where to store an auth token?", answer: "XSS is an attack where malicious script gets injected into and executed within a trusted page (e.g. via an unescaped user input); it matters for token storage because anything readable by JavaScript — like `localStorage` — can be read and exfiltrated by that injected script, whereas an `HttpOnly` cookie cannot." },
-      { question: "Why is storing a JWT in localStorage often discouraged compared to an HttpOnly cookie?", answer: "`localStorage` is fully readable by any JavaScript running on the page, so a successful XSS attack can steal the token directly; an `HttpOnly` cookie is invisible to JavaScript entirely, closing off that particular theft vector (though cookies bring their own CSRF considerations)." },
-      { question: "What is a JWT structurally made up of?", answer: "Three base64url-encoded parts separated by dots: a header (describing the algorithm used), a payload (the claims/data, like user id and expiry), and a signature (computed over the header and payload, used to verify they haven't been tampered with)." },
-      { question: "Does base64-encoding a JWT's payload make its contents secret? Why or why not?", answer: "No — base64 is just an encoding, not encryption; anyone can decode a JWT's payload and read its contents. The signature only proves the payload hasn't been altered, so a JWT should never be assumed to be confidential, and shouldn't carry sensitive data unless it's also encrypted." },
-      { question: "How does a server verify that a JWT hasn't been tampered with?", answer: "It recomputes the signature over the token's header and payload using its own secret (or public key, for asymmetric signing) and checks that it matches the signature attached to the token — any change to the header or payload would produce a different signature and fail verification." },
-      { question: "What's the difference between signing a JWT with a symmetric secret (HMAC) versus an asymmetric key pair (RSA/ECDSA)?", answer: "With HMAC, the same secret both signs and verifies the token, so any service that can verify a token could also forge one; with an asymmetric key pair, only the holder of the private key can sign tokens, while any number of services can safely verify using the public key without being able to create valid tokens themselves." },
-      { question: "Why might a system use short-lived access tokens paired with longer-lived refresh tokens?", answer: "A short-lived access token limits how long a stolen token remains useful, while the refresh token (kept more securely and used less often) lets the client obtain new access tokens without forcing the user to log in again — balancing security against convenience." },
-      { question: "What happens if a refresh token is stolen, and how do systems typically mitigate that risk?", answer: "A stolen refresh token could let an attacker mint new access tokens indefinitely; systems mitigate this with refresh token rotation (issuing a new refresh token on each use and invalidating the old one) and by detecting reuse of an already-rotated token as a signal of theft." },
-      { question: "Why do session-based systems scale less trivially across multiple servers than token-based systems, and how is that usually solved?", answer: "A session lives on whichever server created it, so a later request landing on a different server wouldn't find it unless something shares that state — this is usually solved with a shared session store (like Redis) that every server can read from, or by routing a client's requests back to the same server (sticky sessions)." },
-      { question: "What is a sticky session, and what problem does it cause for load balancing?", answer: "A load balancer configuration that routes all of a given client's requests to the same backend server, so that server's local, in-memory session data stays available; it undermines even load distribution and means losing that one server disproportionately affects the clients pinned to it." },
-      { question: "Why is storing passwords in plain text always wrong, regardless of any other security measures in place?", answer: "If the database is ever compromised (a leak, a misconfigured backup, an insider), every user's actual password is immediately exposed — and since people reuse passwords across services, that single breach can compromise accounts on other sites too." },
-      { question: "What is password hashing, and why is a slow, purpose-built algorithm like bcrypt preferred over a fast general-purpose hash like SHA-256?", answer: "Hashing stores a one-way transformation of the password instead of the password itself; bcrypt (and similar algorithms) are deliberately slow and tunable, which makes brute-forcing a huge number of guesses computationally expensive, whereas a fast hash like SHA-256 lets an attacker try billions of guesses per second on stolen hashes." },
-      { question: "What is a salt, and what attack does it protect against?", answer: "A salt is random data added to a password before hashing, unique per user; it protects against precomputed rainbow-table attacks and against instantly spotting that two users share the same password, since identical passwords produce different hashes once salted." },
-      { question: "Why is sending credentials over plain HTTP a serious vulnerability, even if the password is hashed before storage?", answer: "Hashing protects the password at rest in the database, but if it's transmitted over plain HTTP, anyone able to observe the network traffic (e.g. on shared Wi-Fi) can capture the plaintext password as it's sent, before it's ever hashed on the server." },
-      { question: "What is multi-factor authentication (MFA), and why does it improve security beyond a strong password alone?", answer: "MFA requires proving identity with more than one independent factor (something you know, like a password, plus something you have, like a phone, or something you are, like a fingerprint) — so a stolen or guessed password alone isn't enough to gain access, since the attacker would also need the second factor." },
-      { question: "What is OAuth, and what problem does it solve that a plain username/password login doesn't?", answer: "OAuth is a protocol for delegated access — it lets a user grant one application limited access to their data on another service without ever sharing their actual password with the first application, solving the problem of third-party apps needing credentials they shouldn't be trusted with." },
-      { question: "What's the difference between using OAuth for delegated access and using it for 'Sign in with Google/GitHub'-style login?", answer: "Delegated access uses OAuth to grant a specific scope of permission to act on a resource (like reading a user's calendar); 'Sign in with' login repurposes the same flow purely to confirm identity (via OpenID Connect on top of OAuth), without necessarily requesting access to any other data." },
-      { question: "Why is it a mistake to treat a valid JWT signature as proof that a user's access hasn't been revoked?", answer: "A valid signature only proves the token wasn't tampered with and was genuinely issued by the server — it says nothing about whether that user's access has since been revoked, since a self-contained token remains 'valid' by that check until it naturally expires, unless the system does extra work to track revocations." },
-      { question: "Describe a realistic scenario where you'd choose token-based auth over session-based auth.", answer: "A system with multiple independent backend services (a microservices architecture, or a public API consumed by many different clients) benefits from tokens because any service holding the public key (or shared secret) can verify a request's identity on its own, without a shared, centralized session store every service must query." },
-      { question: "Describe a realistic scenario where you'd choose session-based auth over token-based auth.", answer: "A traditional server-rendered web app with a single backend (or a small, tightly coupled set of services) benefits from sessions because it gets easy, immediate revocation (just delete the session record) and doesn't need to solve token-specific problems like revocation lists or key distribution across services it doesn't actually have." },
-      { question: "Why should session ids and tokens be generated using a cryptographically secure random generator rather than something predictable?", answer: "If an id can be guessed or predicted (e.g. generated from a simple counter or a weak random source), an attacker could forge a valid session id or token for another user without ever needing to steal it, defeating the entire mechanism." },
+      { question: "Why can't the server just 'remember' a user across requests using HTTP alone?", answer: "HTTP is stateless by design: each request is handled on its own. Remembering a user needs a mechanism like a session or token on top." },
+      { question: "What's the difference between a session and a token?", answer: "A session keeps the user's state on the server, found by an id the client holds. A token carries the user's state itself (signed, so it can be verified), and the server stores nothing." },
+      { question: "Why is a token harder to revoke early than a session?", answer: "You revoke a session by deleting its record on the server. A signed token is self-contained and stays valid until it expires, unless you build extra revocation tracking." },
+      { question: "What's the difference between authentication and authorization?", answer: "Authentication answers 'who are you?' by verifying identity, usually with credentials. Authorization answers 'what are you allowed to do?' for a user already identified." },
+      { question: "What is a cookie, and how does the browser know to send it automatically on future requests?", answer: "A small piece of data the server asks the browser to store via a `Set-Cookie` header. The browser then attaches it to every later request to the same domain (within the cookie's scope) in the `Cookie` header, without app code doing it." },
+      { question: "What does the HttpOnly flag on a cookie protect against?", answer: "It stops page JavaScript from reading the cookie. Even if an attacker injects a script (XSS), they can't directly steal a session id or token stored in an `HttpOnly` cookie." },
+      { question: "What does the Secure flag on a cookie do?", answer: "The browser only sends that cookie over HTTPS, so it's never exposed in plaintext over unencrypted HTTP." },
+      { question: "What is the SameSite cookie attribute, and what problem does it help prevent?", answer: "It controls whether a cookie is sent with requests that come from a different site than the one that set it. `Strict` or `Lax` stops the browser from attaching a user's session cookie to requests forged by a malicious site (CSRF)." },
+      { question: "What is CSRF (Cross-Site Request Forgery), and how does SameSite help mitigate it?", answer: "CSRF tricks a logged-in user's browser into sending an unwanted authenticated request, embedded on a malicious page. It works because browsers normally attach cookies no matter where a request starts. `SameSite` blocks the cookie on requests that come from another site." },
+      { question: "What is XSS (Cross-Site Scripting), and why does it matter for deciding where to store an auth token?", answer: "XSS injects malicious script into a trusted page (e.g. via unescaped user input) and runs it there. Anything JavaScript can read, like `localStorage`, that script can steal; an `HttpOnly` cookie it cannot." },
+      { question: "Why is storing a JWT in localStorage often discouraged compared to an HttpOnly cookie?", answer: "Any script on the page can read `localStorage`, so a successful XSS attack can steal the token. An `HttpOnly` cookie is invisible to JavaScript, closing that route (though cookies bring their own CSRF concerns)." },
+      { question: "What is a JWT structurally made up of?", answer: "Three base64url-encoded parts separated by dots: a header (the algorithm used), a payload (the claims, like user id and expiry), and a signature (computed over header and payload to detect tampering)." },
+      { question: "Does base64-encoding a JWT's payload make its contents secret? Why or why not?", answer: "No. base64 is an encoding, not encryption, so anyone can decode and read the payload. The signature only proves it wasn't altered. Never treat a JWT as confidential or put sensitive data in it unless it's also encrypted." },
+      { question: "How does a server verify that a JWT hasn't been tampered with?", answer: "It recomputes the signature over the header and payload with its secret (or the public key, for asymmetric signing) and checks it matches the token's signature. Any change to header or payload gives a different signature and fails." },
+      { question: "What's the difference between signing a JWT with a symmetric secret (HMAC) versus an asymmetric key pair (RSA/ECDSA)?", answer: "With HMAC, one secret both signs and verifies, so any service that can verify a token could also forge one. With a key pair, only the private-key holder can sign, while any number of services verify with the public key and can't create tokens." },
+      { question: "Why might a system use short-lived access tokens paired with longer-lived refresh tokens?", answer: "A short-lived access token limits how long a stolen one is useful. The refresh token (kept more securely, used less often) gets new access tokens without making the user log in again. It balances security and convenience." },
+      { question: "What happens if a refresh token is stolen, and how do systems typically mitigate that risk?", answer: "An attacker could keep minting new access tokens. Systems use refresh token rotation (a new refresh token on each use, the old one invalidated) and treat reuse of an already-rotated token as a sign of theft." },
+      { question: "Why do session-based systems scale less trivially across multiple servers than token-based systems, and how is that usually solved?", answer: "A session lives on the server that created it, so a request landing on another server won't find it unless state is shared. The usual fixes are a shared session store (like Redis) every server reads, or routing a client back to the same server (sticky sessions)." },
+      { question: "What is a sticky session, and what problem does it cause for load balancing?", answer: "A load balancer setting that sends all of a client's requests to the same backend, so its in-memory session stays available. It weakens even load spreading, and losing that server hits all clients pinned to it." },
+      { question: "Why is storing passwords in plain text always wrong, regardless of any other security measures in place?", answer: "If the database is ever exposed (a leak, a misconfigured backup, an insider), every real password is revealed. Since people reuse passwords, one breach can compromise their accounts on other sites too." },
+      { question: "What is password hashing, and why is a slow, purpose-built algorithm like bcrypt preferred over a fast general-purpose hash like SHA-256?", answer: "Hashing stores a one-way transformation of the password, not the password. bcrypt and similar algorithms are deliberately slow and tunable, making mass guessing expensive. A fast hash like SHA-256 lets an attacker try billions of guesses per second on stolen hashes." },
+      { question: "What is a salt, and what attack does it protect against?", answer: "Random data, unique per user, added to a password before hashing. It defeats precomputed rainbow-table attacks and hides when two users share a password, since the same password gives different hashes once salted." },
+      { question: "Why is sending credentials over plain HTTP a serious vulnerability, even if the password is hashed before storage?", answer: "Hashing protects the password at rest in the database. Over plain HTTP, anyone watching the network (e.g. on shared Wi-Fi) can capture the plaintext password in transit, before the server ever hashes it." },
+      { question: "What is multi-factor authentication (MFA), and why does it improve security beyond a strong password alone?", answer: "MFA requires more than one independent factor: something you know (a password) plus something you have (a phone) or something you are (a fingerprint). A stolen or guessed password alone isn't enough without the second factor." },
+      { question: "What is OAuth, and what problem does it solve that a plain username/password login doesn't?", answer: "A protocol for delegated access. A user grants one app limited access to their data on another service without giving that app their password, so third-party apps never hold credentials they shouldn't be trusted with." },
+      { question: "What's the difference between using OAuth for delegated access and using it for 'Sign in with Google/GitHub'-style login?", answer: "Delegated access grants a specific scope of permission on a resource (like reading a user's calendar). 'Sign in with' login reuses the same flow only to confirm identity (via OpenID Connect on top of OAuth), without necessarily requesting access to other data." },
+      { question: "Why is it a mistake to treat a valid JWT signature as proof that a user's access hasn't been revoked?", answer: "A valid signature only proves the token is untampered and was issued by the server. It says nothing about revocation: a self-contained token passes that check until it expires, unless the system tracks revocations separately." },
+      { question: "Describe a realistic scenario where you'd choose token-based auth over session-based auth.", answer: "Several independent backend services (microservices, or a public API used by many clients). Any service with the public key (or shared secret) can verify identity on its own, with no central session store every service must query." },
+      { question: "Describe a realistic scenario where you'd choose session-based auth over token-based auth.", answer: "A traditional server-rendered web app with one backend (or a few tightly coupled services). Sessions give easy, immediate revocation (delete the record) and avoid token problems like revocation lists or key distribution across services it doesn't have." },
+      { question: "Why should session ids and tokens be generated using a cryptographically secure random generator rather than something predictable?", answer: "If an id can be guessed (e.g. from a counter or weak random source), an attacker can forge a valid session id or token for another user without stealing anything, defeating the whole mechanism." },
     ],
     prerequisites: ["http", "client-and-server"],
     relatedTopics: ["http", "rest-apis"],

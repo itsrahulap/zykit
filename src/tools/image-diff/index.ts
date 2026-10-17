@@ -5,7 +5,7 @@ const imageDiff: ToolDefinition = {
   name: 'Image Diff',
   tagline: 'Compare two images and see what changed',
   description:
-    'Compare two images side by side, with a slider, onion skin, blink or a difference heatmap. Set a tolerance, ignore anti-aliasing, see the changed pixel count and download the diff as PNG. Nothing is uploaded.',
+    'Compare two images side by side, with a slider, onion skin, blink or difference heatmap. Set a tolerance, count changed pixels and download the diff PNG.',
   category: 'Images',
   icon: 'diff',
   tags: ['Image', 'Diff', 'Compare', 'Visual regression'],

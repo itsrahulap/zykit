@@ -5,30 +5,24 @@ export const twitterCaseStudy: CaseStudy = {
   title: "Twitter / X",
   difficulty: "Hard",
   summary:
-    "Design a microblogging platform: users post short messages ('tweets'), follow other users, and see a timeline of tweets from the people they follow.",
+    "Design a microblogging platform where users post short messages ('tweets'), follow others, and see a timeline of tweets from people they follow.",
   problemStatement: `
-A user types a short message and posts it. Anyone who follows them should
-see it show up in their home timeline shortly after, mixed in with tweets
-from everyone else they follow, newest first. Users can also reply, retweet,
-and like. On paper this sounds almost identical to a photo-sharing feed —
-and a lot of the underlying machinery genuinely is the same — but Twitter's
-specific shape of problem is dominated by one thing: **extreme, sudden
-fan-out**.
+A user posts a short message. Their followers should see it in their home
+timeline shortly after, mixed with tweets from everyone else they follow,
+newest first. Users can also reply, retweet, and like.
 
-Some accounts have on the order of a hundred million followers, and a
-single tweet from one of them needs to reach all of those followers'
-timelines within seconds, often during a live event when millions of people
-are refreshing at once. A design that works fine for a user with 300
-followers falls over completely if applied naively to a tweet from an
-account with 100 million — so unlike many systems where "the architecture
-handles the 99th percentile fine," here the extreme outlier accounts *are*
-the design problem, not an edge case bolted on afterward.
+This sounds like a photo-sharing feed, and much of the machinery is the
+same. But Twitter is dominated by one thing: **extreme, sudden fan-out**.
 
-The other Twitter-specific wrinkle is that content is public and
-short-lived in relevance — trending topics and search-by-recency matter in
-a way they don't for a photo feed, which pulls a real-time
-aggregation/counting problem into the design alongside the timeline-fan-out
-problem.
+Some accounts have around a hundred million followers. One tweet from them
+must reach all those timelines within seconds, often during a live event
+when millions are refreshing at once. A design that works for a user with
+300 followers falls over for an account with 100 million. Here the extreme
+outliers *are* the design problem, not an edge case.
+
+Content is also public and quickly loses relevance. Trending topics and
+search-by-recency matter more than in a photo feed, which adds a real-time
+counting problem alongside timeline fan-out.
   `.trim(),
   requirements: {
     functional: [
@@ -80,7 +74,7 @@ problem.
     },
   ],
   capacityNotes:
-    "The average numbers (~50:1 read:write, ~6,000 tweets/second) describe a system a fairly conventional fan-out-on-write feed architecture could handle. The outlier number — a single tweet potentially needing to reach 100+ million timelines — is the one that actually determines the architecture: any design that fans every tweet out to every follower synchronously (or even asynchronously, without limits) will occasionally need to perform tens of millions of writes in the seconds after one tweet is posted, and has to be built to survive that specifically.",
+    "The averages (~50:1 read:write, ~6,000 tweets/second) fit a conventional fan-out-on-write feed. The outlier decides the architecture: one tweet may need to reach 100+ million timelines. Any design that fans every tweet out to every follower (sync, or async without limits) will sometimes face tens of millions of writes within seconds of one tweet, and must be built to survive that.",
   apiDesign: [
     { method: "POST", path: "/api/v1/tweets", description: "Body: { text, mediaIds? }. Creates a tweet and triggers timeline fan-out." },
     { method: "GET", path: "/api/v1/timeline/home", description: "Returns the caller's home timeline, paginated, newest-first." },
@@ -120,35 +114,31 @@ over a sliding time window and writes only the current top-N into a small,
 heavily cached result.
   `.trim(),
   highLevelDesign: `
-The write path starts the same way a photo-feed's does: a new tweet is
-persisted, and a fan-out step pushes it into followers' precomputed
-timelines asynchronously via a queue, so posting returns immediately
-without waiting for fan-out to finish. The difference that shapes the rest
-of the design is what happens when the author has an enormous follower
-count: instead of enqueueing tens of millions of individual timeline
-writes, the system detects the account is above a follower-count threshold
-and skips fan-out-on-write for it entirely, marking the tweet for
-read-time merging instead.
+**Write path.** A new tweet is saved, and a fan-out step pushes it into
+followers' precomputed timelines through a queue. Posting returns without
+waiting for fan-out.
 
-The read path for a normal user's timeline is a lookup into
-\`timeline_items\` for the recently-fanned-out tweets, merged at read time
-with a small additional step: check the short list of celebrity accounts
-the user follows, fetch their few most recent tweets directly (there are
-never more than a handful of celebrities in any one user's follow list, so
-this merge is cheap), and interleave the two by timestamp before returning
-the page. This hybrid is what makes both the average case (single lookup)
-and the worst case (one tweet from one huge account) tractable at the same
-time.
+The key difference is huge accounts. Instead of queueing tens of millions
+of timeline writes, the system sees the author is above a follower-count
+threshold, skips fan-out-on-write, and marks the tweet for read-time
+merging.
 
-Trending topics run on an entirely separate real-time pipeline: tweets
-flow through a stream processor that extracts hashtags/keywords and
-maintains rolling counts over sliding windows, independent of the
-timeline-serving path, so a spike in trend-computation load can never
-slow down a timeline read. Everything sits behind a load balancer and
-stateless app servers, backed by a cache for hot tweets/timelines, a
-sharded metadata store, object storage + CDN for media, and a message
-queue decoupling "a tweet was posted" from all of its downstream side
-effects (fan-out, counters, trend ingestion, search indexing).
+**Read path.** A timeline load reads \`timeline_items\` for fanned-out
+tweets. It also fetches the latest tweets from the few celebrity accounts
+the user follows (only a handful, so this is cheap) and interleaves both by
+timestamp. This hybrid keeps both the average case (one lookup) and the
+worst case (one tweet from a huge account) manageable.
+
+**Trends.** A separate real-time pipeline handles trending topics. A
+stream processor extracts hashtags/keywords and keeps rolling counts over
+sliding windows. It's independent of timeline serving, so trend load never
+slows a timeline read.
+
+Everything sits behind a load balancer and stateless app servers, backed
+by a cache for hot tweets/timelines, a sharded metadata store, object
+storage + CDN for media, and a message queue. The queue decouples "a tweet
+was posted" from its side effects: fan-out, counters, trend ingestion, and
+search indexing.
   `.trim(),
   highLevelDiagram: `
                          ┌───────────────┐
@@ -184,148 +174,131 @@ effects (fan-out, counters, trend ingestion, search indexing).
     {
       title: "Timeline fan-out and the celebrity problem",
       explanation: `
-This is the central problem in the whole design, and the reasoning mirrors
-(and sharpens) the same trade-off any feed product faces:
+This is the central problem of the design, the same trade-off any feed
+faces, only sharper:
 
 - **Fan-out on write**: on posting, push the tweet id into every
-  follower's precomputed \`timeline_items\` list. Reads become a single
-  lookup — great for the common case, since reads outnumber writes here
-  too.
-- **Fan-out on read**: store nothing precomputed; merge tweets from
-  followed accounts at read time. Avoids ever wasting work on tweets no
-  one views, but makes every timeline load an expensive multi-account
-  merge.
-- **Hybrid (what real systems use)**: fan out on write for the vast
-  majority of accounts, but for accounts above a follower-count threshold
-  (the "celebrity" tier), skip fan-out entirely and merge their tweets in
-  at read time instead. Because any single user follows only a small,
-  bounded number of celebrities regardless of how many followers those
-  celebrities have, this merge stays cheap no matter how large the
-  celebrity's own follower count grows.
+  follower's \`timeline_items\` list. Reads become one lookup, which suits
+  the common case since reads outnumber writes.
+- **Fan-out on read**: precompute nothing; merge tweets from followed
+  accounts at read time. No wasted work on unseen tweets, but every
+  timeline load is an expensive multi-account merge.
+- **Hybrid (what real systems use)**: fan out on write for most accounts.
+  For accounts above a follower-count threshold (the "celebrity" tier),
+  skip fan-out and merge their tweets at read time. Each user follows
+  only a few celebrities, so this merge stays cheap however many
+  followers a celebrity has.
 
-The threshold itself is a tuning knob, not a fixed law: set it too low and
-too many accounts get the more-expensive read-time treatment; set it too
-high and fan-out workers periodically choke on tens of millions of writes
-triggered by one tweet. The number is chosen empirically, based on the
-actual follower-count distribution observed in production.
+The threshold is a tuning knob. Too low, and too many accounts get the
+costlier read-time path. Too high, and fan-out workers choke on tens of
+millions of writes from one tweet. It's set empirically from the real
+follower-count distribution.
       `.trim(),
     },
     {
       title: "Trending topics as a streaming aggregation problem",
       explanation: `
-Trending topics can't be computed by scanning the tweets table — at
-thousands of tweets per second, any query touching the raw firehose
-directly would never keep up, and "trending" implies a moving time window
-(what's hot *right now*, not all-time).
+You can't compute trends by scanning the tweets table. At thousands of
+tweets per second, a query on the raw firehose would never keep up. And
+"trending" means a moving window (hot *right now*, not all-time).
 
-- Tweets are published onto a stream (the same message queue backbone used
-  for fan-out, or a dedicated one), and a stream-processing layer
-  maintains rolling, windowed counts per hashtag/keyword — for example,
-  counts over the last 5, 15, and 60 minutes, decaying older data out
-  automatically as the window slides.
-- Because exact counts down to the last tweet don't matter for "what's
-  trending," approximate counting structures (e.g. count-min sketches) are
-  a reasonable choice when the cardinality of distinct terms is very high,
-  trading a small, bounded counting error for dramatically less memory
-  than exact per-term counters.
-- The pipeline periodically writes just the current top-N terms into a
-  small, heavily cached result set — the actual \`/trends\` endpoint never
-  touches the streaming layer directly, it just reads that small
-  precomputed answer, so trend computation and trend serving scale
-  completely independently of each other.
+- Tweets go onto a stream (the fan-out queue or a dedicated one). A
+  stream processor keeps rolling counts per hashtag/keyword, for example
+  over the last 5, 15, and 60 minutes, dropping old data as the window
+  slides.
+- Exact counts don't matter for "what's trending." When there are very
+  many distinct terms, approximate structures (e.g. count-min sketches)
+  trade a small, bounded error for far less memory than exact per-term
+  counters.
+- The pipeline periodically writes only the current top-N terms into a
+  small, heavily cached result. The \`/trends\` endpoint reads that, never
+  the streaming layer, so computing and serving trends scale
+  independently.
       `.trim(),
     },
     {
       title: "Retweets and replies without duplicating content",
       explanation: `
-A retweet needs to appear in the retweeting user's own timeline and
-profile, but storing a full copy of the original tweet's text for every
-retweet would both waste space and make edits/deletes of the original
+A retweet must appear in the retweeter's timeline and profile. Copying the
+original text for every retweet would waste space and make edits/deletes
 inconsistent across copies.
 
-- A retweet is stored as a thin row: \`retweet_of\` pointing at the
-  original \`tweet_id\`, with its own \`tweet_id\`, \`author_id\` (the
-  retweeter), and \`created_at\`. Rendering it means fetching the original
-  tweet's content by that pointer — usually a cache hit, since retweeted
-  tweets are by definition popular and therefore hot.
-- If the original tweet is deleted, the retweet row can either be hidden
-  (show "this tweet was deleted") or cascade-deleted, depending on product
-  policy — either way, no separate copy of the text needs to be found and
-  cleaned up, because none was ever made.
-- Replies are modeled similarly to ordinary tweets but with a
-  \`in_reply_to\` pointer, letting a conversation thread be reconstructed
-  by walking that pointer chain, without needing a dedicated
-  "conversation" table.
+- A retweet is a thin row: \`retweet_of\` pointing at the original
+  \`tweet_id\`, plus its own \`tweet_id\`, \`author_id\` (the retweeter), and
+  \`created_at\`. Rendering it fetches the original by that pointer,
+  usually a cache hit since retweeted tweets are popular.
+- If the original is deleted, the retweet is either hidden ("this tweet
+  was deleted") or cascade-deleted, depending on product policy. No copy
+  of the text needs cleaning up, because none was made.
+- Replies are ordinary tweets with an \`in_reply_to\` pointer. Walking that
+  chain rebuilds a thread, with no separate "conversation" table.
       `.trim(),
     },
     {
       title: "Search over a constantly growing, mostly-recent corpus",
       explanation: `
-Tweet search has an unusual access pattern compared to typical full-text
-search: most searches care about recent tweets far more than old ones, and
-the corpus grows by thousands of new documents every second.
+Tweet search is unusual: most searches care about recent tweets, and the
+corpus grows by thousands of documents every second.
 
-- Tweets are indexed asynchronously (off the same event stream used for
-  fan-out and trends) into a dedicated search index (e.g. an inverted-index
-  engine like Elasticsearch), never queried directly against the primary
-  metadata store, since full-text search and low-latency key lookups want
-  very different underlying data structures.
-- Indexes are typically time-partitioned (e.g. one shard set per day or
-  week), so a recency-biased query only needs to touch the most recent
-  shards, and old shards can be moved to cheaper, slower storage or dropped
-  entirely under a retention policy without touching the hot path.
-- As with fan-out, indexing tolerates a short lag (a tweet becoming
-  searchable a few seconds after being posted is invisible to users),
-  which is what allows it to happen asynchronously off the write path
-  rather than adding latency to posting a tweet.
+- Tweets are indexed asynchronously (off the same event stream as fan-out
+  and trends) into a dedicated search index (e.g. an inverted-index engine
+  like Elasticsearch). Search never queries the metadata store, because
+  full-text search and fast key lookups need very different data
+  structures.
+- Indexes are time-partitioned (e.g. one shard set per day or week). A
+  recent-first query touches only the newest shards. Old shards move to
+  cheaper storage or are dropped under a retention policy, away from the
+  hot path.
+- Users don't notice a tweet becoming searchable a few seconds late, so
+  indexing runs asynchronously instead of slowing down posting.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-The single failure mode this design is built around is a burst: one
-enormous account tweeting, or a live event causing millions of users to
-post and refresh simultaneously. The hybrid fan-out strategy exists purely
-to convert "100 million writes in a few seconds" into "a cheap read-time
-merge, repeated many times" — without it, the fan-out queue and workers
-would be the first and most catastrophic thing to fall over.
+The design is built around one failure mode: a burst. One huge account
+tweets, or a live event has millions posting and refreshing at once.
+Hybrid fan-out turns "100 million writes in a few seconds" into "a cheap
+read-time merge, repeated many times." Without it, the fan-out queue and
+workers would fail first, and worst.
 
-Past that, scaling follows the familiar playbook: shard the metadata store
-(typically by \`user_id\` or \`tweet_id\`) so most queries hit one shard;
-scale app servers, cache nodes, and fan-out/indexing/trend workers
-independently and horizontally behind their own layers; and replicate
-across regions so that both the read-heavy timeline path and the
-write-heavy fan-out path stay fast for users far from any single data
-center, accepting eventual consistency across regions as the cost of that
-latency win.
+Beyond that, the usual playbook applies:
+
+- Shard the metadata store (by \`user_id\` or \`tweet_id\`) so most queries
+  hit one shard.
+- Scale app servers, cache nodes, and fan-out/indexing/trend workers
+  horizontally and independently.
+- Replicate across regions so timeline reads and fan-out stay fast for
+  users far from any one data center, accepting eventual consistency
+  across regions.
   `.trim(),
   tradeOffs: [
     {
       decision: "Hybrid fan-out vs. pure fan-out-on-write for all accounts",
       explanation:
-        "A hybrid was chosen: fan-out-on-write for ordinary accounts (cheap reads, the common case), but read-time merging for accounts above a follower-count threshold. Pure fan-out-on-write is simpler to reason about but is not viable here — a single tweet from a 100-million-follower account would otherwise trigger a write storm large enough to overwhelm the fan-out layer.",
+        "Use a hybrid: fan-out-on-write for ordinary accounts (cheap reads, the common case) and read-time merging above a follower-count threshold. Pure fan-out-on-write is simpler but not viable. One tweet from a 100-million-follower account would cause a write storm that overwhelms the fan-out layer.",
     },
     {
       decision: "Exact counters vs. approximate counting for trending topics",
       explanation:
-        "Approximate structures (e.g. count-min sketches) were favored for trend counting once term cardinality gets large, accepting a small, bounded counting error in exchange for far less memory than tracking an exact count per distinct hashtag/keyword — an easy trade since 'trending' is inherently a fuzzy, top-N concept, not an exact ranking that needs to be precise to the last tweet.",
+        "Use approximate structures (e.g. count-min sketches) once there are many distinct terms. They accept a small, bounded error for far less memory than an exact count per hashtag/keyword. That's an easy trade, since 'trending' is a fuzzy top-N idea, not an exact ranking.",
     },
     {
       decision: "Synchronous vs. asynchronous fan-out, indexing, and counters",
       explanation:
-        "All of fan-out, search indexing, and counter updates happen asynchronously off a message queue rather than inline with posting a tweet, so the act of tweeting stays fast regardless of how much downstream work it triggers. The cost is a short window (typically seconds) where a tweet exists but hasn't yet reached every follower's timeline, the trend counters, or the search index — acceptable because nothing in the product requires that window to be zero.",
+        "Run fan-out, search indexing, and counter updates asynchronously off a message queue, so tweeting stays fast however much work it triggers. The cost is a short window (usually seconds) before a tweet reaches every timeline, the trend counters, and the search index. That's fine because nothing requires the window to be zero.",
     },
     {
       decision: "Storing retweets as pointers vs. duplicating the original tweet's content",
       explanation:
-        "Retweets store only a pointer to the original tweet rather than a copy of its text, keeping storage flat regardless of how many times something is retweeted and keeping edits/deletes of the original consistent everywhere it's referenced. The cost is that rendering a retweet always requires an extra lookup (usually a cache hit) rather than being a single self-contained row.",
+        "Store retweets as pointers to the original, not copies. Storage stays flat however often something is retweeted, and edits/deletes stay consistent everywhere. The cost is an extra lookup (usually a cache hit) to render a retweet.",
     },
   ],
   interviewTips: [
-    "Open by naming the celebrity/hot-user problem explicitly — it's the detail that distinguishes a strong answer from a generic 'feed system' answer, and Twitter is the canonical example interviewers expect it for.",
-    "Justify the fan-out threshold as a tunable, empirically-set number, not a fixed constant — it shows you understand it's a real operational knob.",
-    "Treat trending topics as a separate streaming/aggregation subsystem, not a query against the tweets table — conflating the two is a common mistake.",
-    "Mention that retweets/replies are pointers, not copies, when discussing the data model — it's a small detail that signals real data-modeling instinct.",
-    "If time allows, note that search and fan-out both tolerate a few seconds of lag, and use that explicitly to justify making them asynchronous.",
+    "Name the celebrity/hot-user problem early. It separates a strong answer from a generic 'feed system' one, and interviewers expect it for Twitter.",
+    "Present the fan-out threshold as a tunable, empirically set number, not a constant. It shows you see it as a real operational knob.",
+    "Treat trending topics as a separate streaming subsystem, not a query on the tweets table. Mixing them up is a common mistake.",
+    "Mention that retweets and replies are pointers, not copies. It signals good data-modeling instinct.",
+    "If time allows, note that search and fan-out both tolerate a few seconds of lag, and use that to justify making them asynchronous.",
   ],
   relatedTopics: [
     "caching",

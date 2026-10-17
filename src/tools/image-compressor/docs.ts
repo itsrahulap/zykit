@@ -9,8 +9,8 @@ const docs: ToolDocs = {
     'Download a single image, or **Download all (ZIP)** for the whole batch.',
   ],
   howItWorks:
-    'Each image is decoded by your browser with `createImageBitmap` (EXIF orientation applied), drawn onto a canvas, optionally scaled down to fit the max size, and re-encoded with the browser’s own encoder at the quality you set. When the browser supports `OffscreenCanvas`, this runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread.\n\n' +
-    'Lower quality settings discard more fine detail, which is what makes lossy formats smaller. With **Keep the original if compressing makes it bigger** on, an image whose re-encoded file in the same format and size came out larger is kept as the original instead. The ZIP stores files as they are, without compressing them again.',
+    'Each image is decoded with `createImageBitmap` (EXIF orientation applied), drawn onto a canvas, optionally scaled down to the max size, and re-encoded with the browser’s own encoder at your quality. If the browser supports `OffscreenCanvas`, this runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread.\n\n' +
+    'Lower quality discards more fine detail, which is what makes lossy formats smaller. With **Keep the original if compressing makes it bigger** on, if a same-format, same-size result comes out larger, the original is kept instead. The ZIP stores files as they are, without compressing them again.',
   limits: [
     'Up to 50 MB per file, 100 megapixels per image and 16,384 pixels on either side, and up to 100 images per batch.',
     'Which formats can be opened depends on your browser’s image decoder. WebP and AVIF output are only offered when your browser can encode them; JPEG is always available.',
@@ -19,11 +19,11 @@ const docs: ToolDocs = {
     'Re-encoding removes metadata such as EXIF and GPS. To remove metadata without re-encoding, use Clean Image.',
   ],
   privacy:
-    'Images are decoded, compressed and zipped entirely in your browser. They are never uploaded or saved to browser storage; the compressed files exist only in memory until you download them or leave the page.',
+    'Images are decoded, compressed and zipped entirely in your browser, and never uploaded or saved to browser storage. The compressed files exist only in memory until you download them or leave the page.',
   faqs: [
     {
       question: 'What quality setting should I use?',
-      answer: 'For photos, 70–80 usually looks the same as the original at a much smaller size. Go lower for thumbnails, higher if you see blocky edges or banding.',
+      answer: 'For photos, 70–80 usually looks the same as the original at a much smaller size. Go lower for thumbnails, and higher if you see blocky edges or banding.',
     },
     {
       question: 'Why did a file come out bigger than the original?',
@@ -36,7 +36,7 @@ const docs: ToolDocs = {
     },
     {
       question: 'Does compressing remove EXIF and GPS data?',
-      answer: 'Yes. Re-encoding writes a new file without the original metadata. Use Clean Image if you only want to remove metadata without changing the image itself.',
+      answer: 'Yes. Re-encoding writes a new file without the original metadata. To remove metadata without changing the image, use Clean Image.',
     },
     {
       question: 'Will my PNG stay a PNG?',

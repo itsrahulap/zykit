@@ -6,28 +6,23 @@ export const typescriptIntermediateTopics: Topic[] = [
     title: "Union & Intersection Types",
     level: "intermediate",
     description:
-      "Combining types with `|` to mean \"one of these\" and with `&` to mean \"all of these, merged.\"",
+      "Combine types with `|` for \"one of these\" and with `&` for \"all of these, merged.\"",
     explanation: `
-So far, every type you've seen describes one specific shape. But plenty of
-real values are more flexible than that. A function that accepts either an
-\`id\` (a number) or a \`slug\` (a string) to look up a record can't be
-described by a single basic type — it genuinely accepts *either* one.
+Some values can take more than one shape. A lookup function might accept
+an \`id\` (a number) *or* a \`slug\` (a string). No single basic type
+describes that.
 
-A **union type**, written \`A | B\`, describes exactly that: a value that
-is one of several possible types. \`string | number\` means "a string, or
-a number — could be either." TypeScript then requires you to check *which*
-one you actually got before doing something that only makes sense for one
-of them (this checking is covered in the next topic, narrowing).
+A **union type**, written \`A | B\`, is a value that is one of several
+types. \`string | number\` means "a string or a number." Before doing
+something that only works for one of them, you must check which one you
+have (this is narrowing, covered in a later topic).
 
-Going the other direction, sometimes you want a value that satisfies
-*multiple* shapes **at once** — it has to combine all of their properties
-together, not just be one or the other. That's an **intersection type**,
-written \`A & B\`. If \`A\` has a \`name\` property and \`B\` has an \`age\`
-property, then \`A & B\` requires *both* — a single object with both
-\`name\` and \`age\`.
+An **intersection type**, written \`A & B\`, goes the other way: the value
+must satisfy *all* the shapes **at once**. If \`A\` has \`name\` and \`B\`
+has \`age\`, then \`A & B\` is one object with both \`name\` and \`age\`.
     `.trim(),
     analogy:
-      "A union is like a form field that accepts \"either a phone number or an email\" — one or the other, your choice. An intersection is like a job application that requires both a resume AND a cover letter — you need every piece, combined into one submission, not just one of them.",
+      "A union is a form field that accepts \"a phone number or an email\": either one. An intersection is a job application that needs a resume AND a cover letter: every piece, in one submission.",
     examples: [
       {
         title: "A union type for flexible input",
@@ -41,11 +36,11 @@ lookup(true);
 // Error: Argument of type 'boolean' is not assignable
 // to parameter of type 'string | number'.`,
         explanation:
-          "`idOrSlug` may be a number or a string — nothing else. TypeScript accepts either, but rejects any value that's neither.",
+          "`idOrSlug` may be a number or a string, nothing else. Any other value is rejected.",
         walkthrough: [
-          { code: "function lookup(idOrSlug: number | string): void {", explanation: "The union `number | string` means this parameter must be one of exactly these two types." },
-          { code: "lookup(42);", explanation: "A number matches the union, so this call is valid." },
-          { code: "lookup(true);", explanation: "A boolean is neither a number nor a string, so it fails to satisfy the union and is rejected." },
+          { code: "function lookup(idOrSlug: number | string): void {", explanation: "The parameter must be one of these two types." },
+          { code: "lookup(42);", explanation: "A number matches the union, so this is valid." },
+          { code: "lookup(true);", explanation: "A boolean is neither, so it's rejected." },
         ],
       },
       {
@@ -66,74 +61,73 @@ const invalid: Person = { name: "Tariq" };
 // Error: Property 'age' is missing in type
 // '{ name: string; }' but required in type 'HasAge'.`,
         explanation:
-          "`Person` is the intersection of `HasName` and `HasAge`, so a valid `Person` must satisfy both interfaces at once — it needs every property from each.",
+          "`Person` is the intersection of `HasName` and `HasAge`, so a `Person` needs every property from both.",
       },
     ],
     howItWorks: `
-For a union type \`A | B\`, the compiler only lets you do things with the
-value that are safe for *both* \`A\` and \`B\` — anything specific to just
-one of them requires narrowing the type first (checking which one you
-actually have at runtime).
+For a union \`A | B\`, the compiler only allows operations that are safe
+for *both* \`A\` and \`B\`. Anything specific to one needs narrowing first
+(checking which one you have at runtime).
 
-For an intersection type \`A & B\`, the compiler merges the member lists of
-both types and requires an object to satisfy every member from both —
-effectively unioning the *requirements*, even though the type itself is
-called an intersection.
+For an intersection \`A & B\`, the compiler merges the members of both and
+requires an object to have all of them. So it combines the
+*requirements*, even though it's called an intersection.
     `.trim(),
     whyItExists: `
-Real-world data often genuinely varies in shape — an API response might be
-a success object or an error object, a function might accept a couple of
-different input forms. Union types let you describe that variability
-precisely, instead of falling back to **any** and losing all checking.
-Intersection types let you build up a bigger shape by combining smaller,
-reusable pieces instead of repeating properties across several similar
-interfaces.
+Real data often varies in shape. An API response might be a success or an
+error object; a function might accept a couple of input forms. Unions
+describe that precisely, instead of falling back to **any** and losing all
+checking.
+
+Intersections let you build a bigger shape from smaller reusable pieces
+instead of repeating properties across similar interfaces.
     `.trim(),
     whenToUse: `
-Use a union whenever a value can genuinely be more than one type — the
-result of an operation that can succeed or fail, a parameter accepting a
-couple of related input shapes, or a value read from an external, less
-predictable source. Use an intersection when you want to combine several
-smaller, independently useful shapes into one composite type, especially
-if those shapes are reused elsewhere on their own.
+Use a union when a value can really be more than one type: a result that
+can succeed or fail, a parameter that accepts a few related shapes, or
+data from an unpredictable external source.
+
+Use an intersection to combine smaller, independently useful shapes into
+one, especially if those shapes are reused on their own.
     `.trim(),
     whenNotToUse: `
-Avoid piling more than a handful of types into a single union — beyond
-that, the code handling every case tends to get unreadable, and it may be
-a sign the values should share a common structure instead (see
-discriminated unions). Avoid intersections that combine incompatible
-types (like **string & number**, which produces the unusable **never** type)
-— intersections only make sense between compatible object shapes.
+Don't pile more than a handful of types into one union. Code handling
+every case gets hard to read, and it may mean the values should share a
+common structure (see discriminated unions).
+
+Don't intersect incompatible types (like **string & number**, which gives
+the unusable **never** type). Intersections only make sense between
+compatible object shapes.
     `.trim(),
     commonMistakes: [
-      "Trying to access a property on a union type that only exists on one branch of it, before narrowing which branch you actually have.",
-      "Confusing `|` and `&` — a union (`|`) means \"could be either,\" while an intersection (`&`) means \"must be both, combined.\"",
-      "Intersecting two types that have the same property name with conflicting types (like `string` in one and `number` in the other), which silently collapses that property to `never`.",
+      "Accessing a property that exists on only one branch of a union before narrowing.",
+      "Confusing `|` and `&`. A union (`|`) means \"could be either\"; an intersection (`&`) means \"must be both, combined.\"",
+      "Intersecting types that share a property name with conflicting types (like `string` and `number`), which silently turns that property into `never`.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a type alias `Id` as `string | number`, and a function `printId(id: Id): void` that logs it." },
-      { difficulty: "Medium", prompt: "Define two interfaces, `Timestamped` (`createdAt: Date`) and `Named` (`name: string`), and create an intersection type `NamedEvent` combining both. Create a valid object of that type." },
-      { difficulty: "Hard", prompt: "Write a function that accepts `string | string[]` and always returns a `string[]` — wrapping a single string in an array, or returning the array as-is." },
+      { difficulty: "Easy", prompt: "Write a type alias `Id` as `string | number` and a function `printId(id: Id): void` that logs it." },
+      { difficulty: "Medium", prompt: "Define interfaces `Timestamped` (`createdAt: Date`) and `Named` (`name: string`). Combine them into an intersection type `NamedEvent` and create a valid object of that type." },
+      { difficulty: "Hard", prompt: "Write a function that accepts `string | string[]` and always returns a `string[]`: wrap a single string in an array, or return the array as-is." },
     ],
     interviewQuestions: [
-      { question: "What can you safely do with a value typed `string | number` before narrowing it?", answer: "Only operations that are valid for both branches — TypeScript refuses anything specific to just one type until you check, at runtime, which one you actually have." },
-      { question: "What does `A & B` require of a value, in terms of properties?", answer: "The value must satisfy every member of both `A` and `B` at once — an intersection combines requirements rather than offering a choice between them." },
-      { question: "Why does intersecting two incompatible primitive types, like `string & number`, produce the `never` type?", answer: "No value can simultaneously be a `string` and a `number`, so the set of values satisfying both constraints is empty — TypeScript represents that impossible, empty set as `never`." },
-      { question: "Given `function f(x: string | number) { x.toUpperCase(); }`, why does this fail to compile even though `x` might genuinely be a string at runtime?", answer: "TypeScript checks the *type*, not a specific call's actual value — since `x` could also be a `number` at that point, and `toUpperCase` doesn't exist on `number`, the call isn't safe for every possibility the union allows." },
-      { question: "If `HasName` and `HasAge` both declare `id: string` with the same type, what happens when you intersect them?", answer: "The shared property merges cleanly into one `id: string` requirement — a conflict only arises when the same property name has *incompatible* types across the intersected types." },
-      { question: "What happens to a property that two intersected types declare with conflicting, incompatible types (e.g. `string` in one, `number` in the other)?", answer: "That property's type collapses to `never`, since no value could satisfy both declared types at once — making the resulting type effectively impossible to construct." },
-      { question: "In what sense does an intersection type `A & B` combine \"requirements\" rather than combine \"possibilities\"?", answer: "A union expands which values are acceptable (either type qualifies), while an intersection shrinks the set of acceptable values down to only those satisfying every required property from both types simultaneously." },
-      { question: "How would you type a function that accepts either a single `string` or an array of strings?", answer: "As `string | string[]` — a union expressing that the parameter may genuinely be either shape, which then must be narrowed (e.g. with `Array.isArray`) before treating it as one or the other." },
-      { question: "Why does TypeScript reject calling a method that exists on only one branch of a union, without an explicit runtime check first?", answer: "The compiler can't prove which branch you actually have at that point in the code, so it only allows operations that are valid across every branch until a check narrows the type." },
-      { question: "What's the practical difference between typing a parameter as `string | number` versus typing it as `any`?", answer: "`string | number` still enforces that the value is one of exactly those two types and requires narrowing before type-specific use, while `any` disables checking entirely, silently allowing any value and any operation on it." },
-      { question: "Is `{ name: \"Tariq\" }` assignable to `type Person = HasName & HasAge`?", answer: "No — the intersection requires every property from both `HasName` and `HasAge`, so an object missing `age` fails the structural check even though it fully satisfies `HasName` on its own." },
-      { question: "Why are intersection types useful for building up a type from smaller, reusable pieces?", answer: "You can define small, independently useful interfaces once and combine them with `&` wherever needed, instead of repeating the same properties across several similar, hand-written interfaces." },
-      { question: "Why should you avoid piling more than a handful of types into a single union?", answer: "Code that has to handle every possible branch tends to become unreadable past a few cases, and it's often a sign the values actually share a common structure better expressed as a discriminated union." },
-      { question: "What's a cleaner alternative to a large union of many related object shapes?", answer: "Giving each shape a shared \"tag\" property with a distinct literal value (a discriminated union), so the branches are represented as one family of related types that narrow cleanly by checking that one property." },
-      { question: "Can a union mix primitive and object types, like `string | { id: number }`? What's the implication for using it?", answer: "Yes — a union places no restriction on what kinds of types can appear in it, but every branch still needs its own narrowing check (e.g. `typeof` for the string case) before you can use anything specific to that branch." },
-      { question: "Why does `lookup(42)` succeed and `lookup(true)` fail for a parameter typed `number | string`?", answer: "`42` matches one of the union's listed types, but `boolean` isn't a member of `number | string` at all, so it fails to satisfy either branch." },
-      { question: "If `A` and `B` each declare a method with the same name but different, incompatible parameter types, what tends to happen when you intersect them?", answer: "TypeScript combines the two signatures as an intersection of function types, which in practice usually only accepts arguments valid under both signatures at once — often collapsing to a signature too strict to call in any useful way." },
-      { question: "Why is a union type's *value space* the combination of its branches' values, while an intersection type's *value space* is narrower than either type alone?", answer: "A union accepts a value matching any one branch, so its space of valid values grows with each branch added; an intersection demands a value satisfy every combined type's requirements at once, so its space of valid values only shrinks (or stays the same) as more types are combined." },
+      { question: "What can you safely do with a value typed `string | number` before narrowing it?", answer: "Only operations valid for both branches. Anything specific to one type is refused until you check which one you have." },
+      { question: "What does `A & B` require of a value, in terms of properties?", answer: "Every member of both `A` and `B` at once. An intersection combines requirements instead of offering a choice." },
+      { question: "Why does intersecting two incompatible primitive types, like `string & number`, produce the `never` type?", answer: "No value can be both a `string` and a `number`, so the set of valid values is empty. TypeScript calls that empty set `never`." },
+      { question: "Given `function f(x: string | number) { x.toUpperCase(); }`, why does this fail to compile even though `x` might genuinely be a string at runtime?", answer: "TypeScript checks the type, not the actual value. `x` could be a `number`, which has no `toUpperCase`, so the call isn't safe for every case the union allows." },
+      { question: "If `HasName` and `HasAge` both declare `id: string` with the same type, what happens when you intersect them?", answer: "They merge into one `id: string` requirement. A conflict only happens when the same property has *incompatible* types." },
+      { question: "What happens to a property that two intersected types declare with conflicting, incompatible types (e.g. `string` in one, `number` in the other)?", answer: "It becomes `never`, since no value can be both types. The resulting type is effectively impossible to construct." },
+      { question: "In what sense does an intersection type `A & B` combine \"requirements\" rather than combine \"possibilities\"?", answer: "A union widens what's acceptable (either type qualifies). An intersection narrows it to values that meet every requirement of both types at once." },
+      { question: "How would you type a function that accepts either a single `string` or an array of strings?", answer: "As `string | string[]`. You then narrow it (for example with `Array.isArray`) before treating it as one or the other." },
+      { question: "Why does TypeScript reject calling a method that exists on only one branch of a union, without an explicit runtime check first?", answer: "The compiler can't prove which branch you have there, so it only allows operations valid for every branch until a check narrows the type." },
+      { question: "What's the practical difference between typing a parameter as `string | number` versus typing it as `any`?", answer: "`string | number` still requires one of those two types and narrowing before type-specific use. `any` turns off checking, allowing any value and any operation." },
+      { question: "Is `{ name: \"Tariq\" }` assignable to `type Person = HasName & HasAge`?", answer: "No. The intersection needs every property from both, so an object missing `age` fails, even though it satisfies `HasName`." },
+      { question: "Why are intersection types useful for building up a type from smaller, reusable pieces?", answer: "You define small interfaces once and combine them with `&` where needed, instead of repeating the same properties in several similar interfaces." },
+      { question: "Why should you avoid piling more than a handful of types into a single union?", answer: "Handling every branch gets hard to read past a few cases, and it often means the values share a structure better expressed as a discriminated union." },
+      { question: "What's a cleaner alternative to a large union of many related object shapes?", answer: "A discriminated union: give each shape a shared \"tag\" property with a distinct literal value, so checking that one property narrows cleanly to the right branch." },
+      { question: "Can a union mix primitive and object types, like `string | { id: number }`? What's the implication for using it?", answer: "Yes, a union can contain any kinds of types. But each branch still needs its own narrowing check (like `typeof` for the string) before you use anything specific to it." },
+      { question: "Why does `lookup(42)` succeed and `lookup(true)` fail for a parameter typed `number | string`?", answer: "`42` matches one of the union's types. `boolean` isn't in `number | string`, so it matches neither branch." },
+      { question: "If `A` and `B` each declare a method with the same name but different, incompatible parameter types, what tends to happen when you intersect them?", answer: "TypeScript intersects the two function types. In practice that usually accepts only arguments valid for both signatures at once, often too strict to call usefully." },
+      { question: "Why is a union type's *value space* the combination of its branches' values, while an intersection type's *value space* is narrower than either type alone?", answer: "A union accepts a value matching any branch, so each branch added grows the set. An intersection requires a value to meet every type's requirements at once, so adding types only shrinks the set (or leaves it the same)." },
     ],
     prerequisites: ["interfaces", "type-aliases"],
     relatedTopics: ["type-narrowing", "generics", "enums"],
@@ -144,33 +138,29 @@ types (like **string & number**, which produces the unusable **never** type)
     title: "Generics",
     level: "intermediate",
     description:
-      "Writing a function or type once so it works with whatever type you feed it, while still keeping that type checked.",
+      "Write a function or type once so it works with any type, while keeping that type checked.",
     explanation: `
-Suppose you write a function that just hands back whatever you gave it:
+Here's a function that returns whatever you give it:
 
 \`function identity(value: number): number { return value; }\`
 
-That works for numbers, but not for strings — you'd have to write a nearly
-identical \`identity\` function for every type you want to support, or give
-up and type the parameter as \`any\`, which throws away all type checking
-in the process (a caller could pass a number in and get a string out, and
-TypeScript wouldn't complain).
+It works for numbers but not strings. You'd need a near-copy for every
+type, or you'd use \`any\`, which drops all checking (a caller could pass a
+number and treat the result as a string with no error).
 
-What you actually want is: "whatever type you pass in, give me that exact
-same type back" — without giving up checking altogether. TypeScript lets
-you express that with a **type variable**, conventionally named \`T\`,
-written in angle brackets before the parameter list:
+What you want is "whatever type goes in, the same type comes out." You
+express that with a **type variable**, usually named \`T\`, in angle
+brackets before the parameters:
 
 \`function identity<T>(value: T): T { return value; }\`
 
-Now \`identity(5)\` is known to return a \`number\`, and \`identity("hi")\`
-is known to return a \`string\` — TypeScript figures out \`T\` fresh for
-each call, based on what you actually passed in. This pattern — writing
-code once that works across many types while keeping each specific use
-fully checked — is called a **generic**.
+Now \`identity(5)\` returns a \`number\` and \`identity("hi")\` returns a
+\`string\`. TypeScript works out \`T\` for each call from what you passed.
+Code written once that works for many types, with each use fully checked,
+is called a **generic**.
     `.trim(),
     analogy:
-      "A generic function is like a mold for making boxes that's adjustable to whatever you put in it — put in a small ball, get a small box back; put in a large book, get a large box back. It's one mold, but it never mixes up sizes: you always get back a box that fits exactly what went in.",
+      "A generic function is like an adjustable box mold. Put in a small ball, get a small box; put in a big book, get a big box. One mold, but it never mixes up sizes: the box always fits what went in.",
     examples: [
       {
         title: "A generic identity function",
@@ -184,11 +174,11 @@ const str = identity("hello");  // T is inferred as string
 const wrong: string = identity(5);
 // Error: Type 'number' is not assignable to type 'string'.`,
         explanation:
-          "`T` is a placeholder for \"whatever type is passed in.\" TypeScript figures out `T` separately for each call and uses it to check both the argument and how the result is used.",
+          "`T` stands for \"whatever type is passed in.\" TypeScript works out `T` for each call and uses it to check both the argument and how the result is used.",
         walkthrough: [
-          { code: "function identity<T>(value: T): T {", explanation: "`<T>` declares a type variable; `value: T` and the return type `T` both refer to the same, yet-to-be-determined type." },
-          { code: 'const num = identity(5);', explanation: "TypeScript infers T as number here, purely from the argument 5, so `num` is known to be a number." },
-          { code: "const wrong: string = identity(5);", explanation: "identity(5) returns a number, so assigning it to a string-typed variable is an error." },
+          { code: "function identity<T>(value: T): T {", explanation: "`<T>` declares a type variable. `value: T` and the return type `T` are the same, not-yet-known type." },
+          { code: 'const num = identity(5);', explanation: "TypeScript infers T as number from the argument 5, so `num` is a number." },
+          { code: "const wrong: string = identity(5);", explanation: "identity(5) returns a number, so assigning it to a string variable is an error." },
         ],
       },
       {
@@ -209,79 +199,76 @@ longest("hi", "hello"); // works — strings have .length
 longest(3, 4);
 // Error: number doesn't satisfy the constraint '{ length: number }'.`,
         explanation:
-          "`firstItem` works for an array of any type. The `extends` clause on `longest` restricts T to types that actually have a `.length` property, so calling it with plain numbers is rejected.",
+          "`firstItem` works for an array of any type. The `extends` clause on `longest` limits T to types with a `.length` property, so plain numbers are rejected.",
       },
     ],
     howItWorks: `
-When you call a generic function, the compiler looks at the actual
-argument(s) you pass and works backward to figure out what \`T\` must be —
-this is called **type inference** for generics. It then substitutes that
-inferred type everywhere \`T\` appears in the signature, and checks the
-rest of the call as if you'd written that specific type by hand. You can
-also specify \`T\` explicitly, like \`identity<string>("hi")\`, if you want
-to be precise or if inference can't figure it out on its own. A
-**constraint** (\`T extends SomeShape\`) narrows what \`T\` is allowed to be,
-so the function body can safely rely on \`T\` having certain properties.
+When you call a generic function, the compiler looks at the arguments and
+works out what \`T\` must be. This is **type inference**. It then puts that
+type everywhere \`T\` appears and checks the call as if you'd written the
+type by hand.
+
+You can also set \`T\` yourself, like \`identity<string>("hi")\`, to be
+precise or when inference can't work it out. A **constraint**
+(\`T extends SomeShape\`) limits what \`T\` can be, so the function body can
+rely on \`T\` having certain properties.
     `.trim(),
     whyItExists: `
-Without generics, you'd face a trade-off: either duplicate the same logic
-for every type you need to support (a **numberIdentity**, **stringIdentity**,
-and so on), or use **any** and lose type checking entirely. Generics let you
-write the logic exactly once, while still getting full, specific type
-checking for every individual call.
+Without generics you must either duplicate logic for every type
+(**numberIdentity**, **stringIdentity** and so on) or use **any** and lose
+checking. Generics let you write the logic once and still get specific type
+checking on every call.
     `.trim(),
     whenToUse: `
-Reach for generics whenever a function or type's logic doesn't actually
-depend on a specific type — a function that stores, returns, wraps, or
-transforms whatever it's given (arrays, containers, caches, API wrappers)
-is a natural fit. Also reach for them when writing a reusable interface,
-like a generic \`ApiResponse<T>\` that wraps different kinds of data.
+Use generics when the logic doesn't depend on a specific type: functions
+that store, return, wrap or transform what they're given (arrays,
+containers, caches, API wrappers). They also suit reusable interfaces, like
+an \`ApiResponse<T>\` that wraps different kinds of data.
     `.trim(),
     whenNotToUse: `
-If a function only ever needs to work with one specific type, adding a
-type variable is unnecessary complexity — just write the concrete type
-directly. Generics are for genuinely type-independent logic, not a default
-to sprinkle onto every function.
+If a function only ever works with one type, a type variable is needless
+complexity. Write the concrete type. Generics are for type-independent
+logic, not something to add to every function.
     `.trim(),
     commonMistakes: [
-      "Adding a generic `<T>` to a function that never actually uses `T` in its parameters or return type — if `T` isn't tied to anything, it isn't doing any useful checking.",
-      "Reaching for `any` instead of a generic when the goal is really \"any type, but consistently the same type throughout,\" which a generic captures and `any` doesn't.",
-      "Forgetting a constraint (`extends`) and then trying to use a property inside the function body that not every possible `T` actually has.",
+      "Adding `<T>` to a function that never uses `T` in its parameters or return type. If `T` isn't tied to anything, it checks nothing.",
+      "Using `any` when you mean \"any type, but the same type throughout.\" A generic captures that; `any` doesn't.",
+      "Skipping a constraint (`extends`) and then using a property in the body that not every `T` has.",
     ],
     exercises: [
       { difficulty: "Easy", prompt: "Write a generic function `wrapInArray<T>(value: T): T[]` that returns a one-element array containing the value." },
-      { difficulty: "Medium", prompt: "Write a generic function `pluck<T>(items: T[], index: number): T | undefined` that safely returns the item at a given index." },
+      { difficulty: "Medium", prompt: "Write a generic function `pluck<T>(items: T[], index: number): T | undefined` that safely returns the item at an index." },
       { difficulty: "Hard", prompt: "Write a generic function `merge<T extends object, U extends object>(a: T, b: U): T & U` that merges two objects and returns their intersection type." },
     ],
     interviewQuestions: [
-      { question: "What problem do generics solve that writing a separate function per type would also solve, but worse?", answer: "They let you write the logic exactly once while still getting full, type-specific checking for every call, instead of duplicating nearly identical functions like `numberIdentity` and `stringIdentity` for each type you need to support." },
-      { question: "Why is `any` a worse alternative to a generic for a function like `identity`?", answer: "`any` disables checking entirely — a caller could pass a `number` and treat the result as a `string` with no error — whereas a generic ties the return type to whatever specific type was actually passed in." },
-      { question: "Given `function identity<T>(value: T): T { return value; }`, what type is inferred for `identity(5)`, and how does TypeScript arrive at it?", answer: "`number` — TypeScript works backward from the actual argument `5` to figure out what `T` must be for that specific call, then substitutes `number` everywhere `T` appears in the signature." },
-      { question: "Why does `const wrong: string = identity(5);` fail to compile?", answer: "`T` is inferred as `number` from the argument `5`, so `identity(5)` returns `number`, which isn't assignable to a variable explicitly typed `string`." },
-      { question: "How does TypeScript infer a generic type variable when you call the function without specifying it explicitly?", answer: "It looks at the actual argument(s) supplied at the call site and works out the most specific type that makes the call valid, using that as `T` for just that call." },
-      { question: "How do you explicitly specify a generic type argument instead of relying on inference, and when might you need to?", answer: "By writing it in angle brackets at the call site, like `identity<string>(\"hi\")` — useful when inference can't determine a specific-enough type on its own, or when you want to be explicit for clarity." },
-      { question: "What does adding a constraint like `T extends { length: number }` do to a generic type parameter?", answer: "It narrows the set of types `T` is allowed to be to only those that structurally have a `.length` property, letting the function body safely use `.length` while still accepting any type that qualifies." },
-      { question: "Why does `longest(3, 4)` fail to compile when `longest` is declared as `function longest<T extends { length: number }>(a: T, b: T): T`?", answer: "`number` doesn't have a `.length` property, so it doesn't satisfy the constraint — the constraint restricts `T` to types with `.length`, and plain numbers aren't one of them." },
-      { question: "What's wrong with a generic function whose type parameter `T` never actually appears in its parameters or return type?", answer: "If `T` isn't tied to any input or output, the compiler has no argument to infer it from and no way to check anything against it, so it isn't doing any useful type checking — it's generic in name only." },
-      { question: "Given `function firstItem<T>(items: T[]): T | undefined`, what's the inferred type of `firstItem([\"Ana\", \"Bo\"])`?", answer: "`string | undefined` — `T` is inferred as `string` from the array's element type, and the `| undefined` in the declared return type accounts for the case where the array is empty." },
-      { question: "Why does `firstItem`'s return type include `| undefined` even though the function body doesn't check the array's length before indexing?", answer: "TypeScript's array indexing doesn't automatically add `undefined` for out-of-bounds access by default, so `| undefined` here is a deliberate, hand-written part of the signature to represent the empty-array case honestly, rather than something the compiler infers on its own." },
-      { question: "What's the difference between constraining a generic with `T extends SomeShape` and simply typing a parameter as a union?", answer: "A constraint restricts *which types `T` may be* while still preserving and returning that exact specific type per call; a union parameter widens the parameter to a fixed set of types and any return value tied to it is only known as that same wide union, not the caller's specific type." },
-      { question: "Can generics be used on interfaces and type aliases, not just functions?", answer: "Yes — a reusable shape like `interface ApiResponse<T> { data: T; error?: string }` uses the same type-variable mechanism to describe a wrapper whose contents vary by use, while the wrapper's own shape stays consistent." },
-      { question: "Why doesn't `any` capture the idea of \"any type, but the same type consistently throughout one call\" the way a generic does?", answer: "`any` disables checking for every use of that value independently, so nothing enforces that, say, the input and output stay the same type — a generic ties every occurrence of `T` in one call to a single, consistent, inferred type." },
-      { question: "What could go wrong with `function merge<T, U>(a: T, b: U): T & U` if it's called with two primitives, like `merge(1, \"a\")`?", answer: "Without constraints, `T` and `U` can be anything, including incompatible primitives — intersecting `number & string` produces `never`, so the function's return type becomes unusable for that call even though it compiles." },
-      { question: "How does adding `T extends object, U extends object` to `merge` prevent that problem?", answer: "It restricts both type parameters to object types, ruling out primitives entirely, so the intersection `T & U` is always between two object shapes that can be sensibly merged." },
-      { question: "When would you prefer a generic function over writing several function overloads, one per accepted type?", answer: "When the logic itself doesn't change based on the type — generics express that once with a single implementation, while overloads are better suited to genuinely different behavior or return types per input type." },
-      { question: "Why is the minimal `identity<T>(value: T): T` function a useful example for understanding generics, despite doing so little?", answer: "It isolates the core mechanism — a type variable flowing from parameter to return type — without any other logic getting in the way, making it clear that `T` is inferred per call and preserved through the signature." },
-      { question: "What happens if you call `identity<string>(5)`, explicitly specifying `T` as `string`?", answer: "It's a compile error — explicitly specifying `T` doesn't override the argument's actual type, it just fixes what `T` is expected to be, and the compiler still checks that `5` (a `number`) is assignable to that fixed `T`." },
-      { question: "Does specifying a generic type argument explicitly skip the compiler's checking of the argument against it?", answer: "No — explicit type arguments fix `T` for that call, but the compiler still verifies that each actual argument is assignable to the resulting, now-concrete parameter types." },
-      { question: "Why might inference occasionally fail to pin down a specific-enough type, forcing you to specify `T` explicitly?", answer: "Some call sites are ambiguous on their own — for example, calling a generic function with an empty array literal gives the compiler no element to infer an element type from, so it may fall back to an overly wide or unhelpful inferred type." },
-      { question: "Does `T extends { length: number }` require the argument to be declared as implementing some specific interface, or just to structurally have a `.length` property?", answer: "Just structurally — TypeScript's structural typing means any type with a compatible `.length: number` property satisfies the constraint, regardless of its name or where it's declared." },
-      { question: "What does a generic type parameter default, like `interface Box<T = string>`, do?", answer: "It supplies a fallback type to use for `T` when the type is referenced without an explicit type argument (e.g. plain `Box` behaves like `Box<string>`), while still allowing `Box<number>` or any other type to be specified." },
-      { question: "Compare `function f<T extends string | number>(x: T): T` with `function f(x: string | number): string | number` — what's the key behavioral difference?", answer: "The generic version returns the caller's *exact* specific type (passing in a `string` gives back a `string`), while the union version always returns the wide `string | number` type regardless of what was actually passed in, losing that specificity." },
-      { question: "Why does using a generic parameter preserve a value's specific type through a function call, where widening to a union or `any` would lose it?", answer: "A generic ties the return type directly to the inferred `T` from that particular call's argument, so the compiler carries the exact type through; a union or `any` return type is fixed and identical for every call, discarding whatever specific type came in." },
-      { question: "How would you write a generic function that reverses an array while keeping full type safety?", answer: "As `function reverse<T>(items: T[]): T[]`, so calling it with `number[]` returns `number[]` and calling it with `string[]` returns `string[]` — the element type flows through instead of being widened or lost." },
-      { question: "Why is a generic container type, like a `Box<T>` that stores and later returns a value, preferable to using `any` for the stored value?", answer: "With `any`, nothing stops storing one type and retrieving it as another; with `Box<T>`, the type used when constructing the box is remembered and enforced consistently every time the value is read back out." },
-      { question: "What's the relationship between a generic function's type parameter and the concept of type inference specifically?", answer: "Type inference is the mechanism that determines what a generic's type parameter actually is for a given call, based on the arguments passed — without inference, every generic call would require tediously specifying the type argument by hand." },
+      { question: "What problem do generics solve that writing a separate function per type would also solve, but worse?", answer: "You write the logic once and still get type-specific checking on every call, instead of near-identical copies like `numberIdentity` and `stringIdentity`." },
+      { question: "Why is `any` a worse alternative to a generic for a function like `identity`?", answer: "`any` turns off checking, so a caller could pass a `number` and treat the result as a `string` with no error. A generic ties the return type to the type passed in." },
+      { question: "Given `function identity<T>(value: T): T { return value; }`, what type is inferred for `identity(5)`, and how does TypeScript arrive at it?", answer: "`number`. TypeScript works out `T` from the argument `5`, then uses `number` everywhere `T` appears in the signature." },
+      { question: "Why does `const wrong: string = identity(5);` fail to compile?", answer: "`T` is inferred as `number`, so `identity(5)` returns a `number`, which can't be assigned to a `string` variable." },
+      { question: "How does TypeScript infer a generic type variable when you call the function without specifying it explicitly?", answer: "From the arguments at the call site. It picks the most specific type that makes the call valid and uses it as `T` for that call only." },
+      { question: "How do you explicitly specify a generic type argument instead of relying on inference, and when might you need to?", answer: "In angle brackets at the call site, like `identity<string>(\"hi\")`. Use it when inference can't find a specific enough type, or for clarity." },
+      { question: "What does adding a constraint like `T extends { length: number }` do to a generic type parameter?", answer: "It limits `T` to types that have a `.length` property. The body can then safely use `.length`, and any type with it is still accepted." },
+      { question: "Why does `longest(3, 4)` fail to compile when `longest` is declared as `function longest<T extends { length: number }>(a: T, b: T): T`?", answer: "`number` has no `.length` property, so it doesn't satisfy the constraint." },
+      { question: "What's wrong with a generic function whose type parameter `T` never actually appears in its parameters or return type?", answer: "With no input or output tied to `T`, there's nothing to infer it from and nothing to check. It's generic in name only." },
+      { question: "Given `function firstItem<T>(items: T[]): T | undefined`, what's the inferred type of `firstItem([\"Ana\", \"Bo\"])`?", answer: "`string | undefined`. `T` is inferred as `string`, and the declared `| undefined` covers an empty array." },
+      { question: "Why does `firstItem`'s return type include `| undefined` even though the function body doesn't check the array's length before indexing?", answer: "By default, array indexing doesn't add `undefined` for out-of-bounds access. The `| undefined` is written by hand to honestly represent the empty-array case; the compiler wouldn't infer it." },
+      { question: "What's the difference between constraining a generic with `T extends SomeShape` and simply typing a parameter as a union?", answer: "A constraint limits which types `T` may be but keeps and returns the caller's exact type. A union parameter accepts a fixed set of types, and any related return value is only known as that wide union." },
+      { question: "Can generics be used on interfaces and type aliases, not just functions?", answer: "Yes. `interface ApiResponse<T> { data: T; error?: string }` describes a wrapper whose contents vary by use while its own shape stays the same." },
+      { question: "Why doesn't `any` capture the idea of \"any type, but the same type consistently throughout one call\" the way a generic does?", answer: "`any` turns off checking for each use separately, so nothing keeps the input and output the same type. A generic ties every `T` in a call to one inferred type." },
+      { question: "What could go wrong with `function merge<T, U>(a: T, b: U): T & U` if it's called with two primitives, like `merge(1, \"a\")`?", answer: "Without constraints `T` and `U` can be anything. `number & string` is `never`, so the return type is unusable for that call even though it compiles." },
+      { question: "How does adding `T extends object, U extends object` to `merge` prevent that problem?", answer: "It rules out primitives, so `T & U` is always an intersection of two object shapes that can be merged sensibly." },
+      { question: "When would you prefer a generic function over writing several function overloads, one per accepted type?", answer: "When the logic is the same for every type. Generics express that with one implementation; overloads suit different behavior or return types per input type." },
+      { question: "Why is the minimal `identity<T>(value: T): T` function a useful example for understanding generics, despite doing so little?", answer: "It shows the core mechanism alone: a type variable flowing from parameter to return type, inferred per call and preserved through the signature." },
+      { question: "What happens if you call `identity<string>(5)`, explicitly specifying `T` as `string`?", answer: "A compile error. Setting `T` doesn't change the argument's type; it fixes what `T` must be, and `5` (a `number`) isn't assignable to `string`." },
+      { question: "Does specifying a generic type argument explicitly skip the compiler's checking of the argument against it?", answer: "No. It fixes `T` for that call, but each argument is still checked against the resulting parameter types." },
+      { question: "Why might inference occasionally fail to pin down a specific-enough type, forcing you to specify `T` explicitly?", answer: "Some calls are ambiguous. An empty array literal, for example, gives no element to infer from, so the compiler may fall back to an overly wide type." },
+      { question: "Does `T extends { length: number }` require the argument to be declared as implementing some specific interface, or just to structurally have a `.length` property?", answer: "Just structurally. Any type with a compatible `.length: number` property satisfies it, whatever its name or origin." },
+      { question: "What does a generic type parameter default, like `interface Box<T = string>`, do?", answer: "It gives `T` a fallback when no type argument is supplied: plain `Box` acts like `Box<string>`. You can still write `Box<number>` or any other type." },
+      { question: "Compare `function f<T extends string | number>(x: T): T` with `function f(x: string | number): string | number` — what's the key behavioral difference?", answer: "The generic version returns the caller's *exact* type (pass a `string`, get a `string`). The union version always returns `string | number`, losing that detail." },
+      { question: "Why does using a generic parameter preserve a value's specific type through a function call, where widening to a union or `any` would lose it?", answer: "A generic ties the return type to the `T` inferred for that call, so the exact type carries through. A union or `any` return type is the same for every call, discarding the specific type." },
+      { question: "How would you write a generic function that reverses an array while keeping full type safety?", answer: "`function reverse<T>(items: T[]): T[]`. A `number[]` gives back `number[]` and a `string[]` gives back `string[]`." },
+      { question: "Why is a generic container type, like a `Box<T>` that stores and later returns a value, preferable to using `any` for the stored value?", answer: "With `any`, you can store one type and read it back as another. `Box<T>` remembers the type it was created with and enforces it on every read." },
+      { question: "What's the relationship between a generic function's type parameter and the concept of type inference specifically?", answer: "Inference is how TypeScript decides what the type parameter is for each call, from the arguments. Without it, you'd have to write the type argument by hand on every call." },
     ],
     prerequisites: ["functions-with-types", "union-intersection-types"],
     relatedTopics: ["union-intersection-types", "utility-types", "mapped-types"],
@@ -292,21 +279,19 @@ to sprinkle onto every function.
     title: "Enums",
     level: "intermediate",
     description:
-      "A named set of related constant values, grouped under one type so you can refer to them by name instead of a raw value.",
+      "A named set of related constants under one type, so you refer to them by name instead of a raw value.",
     explanation: `
-Sometimes a value is really one of a small, fixed set of related options —
-a direction, a status, a day of the week. You could represent each option
-as a plain string or number scattered through your code (\`"UP"\`, \`0\`,
-\`1\`), but then nothing groups those related values together, and typos
-like \`"Up"\` instead of \`"UP"\` are easy to make and hard to catch.
+Some values are one of a small, fixed set of options: a direction, a
+status, a day of the week. You could use plain strings or numbers (\`"UP"\`,
+\`0\`, \`1\`) throughout your code, but nothing groups them, and typos like
+\`"Up"\` instead of \`"UP"\` are easy to make and hard to catch.
 
-An **enum** (short for "enumeration") groups a related set of named
-constants under one type. You declare the names once, and TypeScript
-treats each name as a distinct, valid value of that enum — while rejecting
-any string or number that isn't one of them.
+An **enum** ("enumeration") groups related named constants under one type.
+You declare the names once. TypeScript accepts each name as a valid value
+and rejects any string or number that isn't one of them.
     `.trim(),
     analogy:
-      "An enum is like the settings on a washing machine dial — Delicate, Normal, Heavy Duty. There's no in-between setting and no typing your own; you pick one of the fixed, clearly labeled positions the dial actually has.",
+      "An enum is like a washing machine dial: Delicate, Normal, Heavy Duty. No in-between settings and no typing your own; you pick one of the fixed, labeled positions.",
     examples: [
       {
         title: "A basic numeric enum",
@@ -326,11 +311,11 @@ function walk(direction: Direction) {
 
 walk(Direction.Left);`,
         explanation:
-          "Each member of `Direction` automatically gets a number, starting at 0. `Direction[direction]` looks the name back up from its numeric value — a feature specific to numeric enums.",
+          "Each `Direction` member gets a number automatically, starting at 0. `Direction[direction]` looks the name up from its number, which only numeric enums support.",
         walkthrough: [
-          { code: "enum Direction {\n  Up,\n  Down,\n  Left,\n  Right,\n}", explanation: "Declares four related named constants as one type, numbered 0 through 3 by default." },
-          { code: "let move: Direction = Direction.Up;", explanation: "move can only hold one of the four Direction values — nothing else is valid." },
-          { code: "walk(Direction.Left);", explanation: "Passing a named member instead of a raw number makes the call self-explanatory at the call site." },
+          { code: "enum Direction {\n  Up,\n  Down,\n  Left,\n  Right,\n}", explanation: "Four named constants in one type, numbered 0 to 3 by default." },
+          { code: "let move: Direction = Direction.Up;", explanation: "move can only hold one of the four Direction values." },
+          { code: "walk(Direction.Left);", explanation: "A named member instead of a raw number makes the call self-explanatory." },
         ],
       },
       {
@@ -350,68 +335,64 @@ function ship(status: OrderStatus) {
 ship(OrderStatus.Pending);
 ship("PENDING" as OrderStatus); // works, but requires an explicit cast`,
         explanation:
-          "A string enum assigns an explicit, readable string to each member instead of an auto-incrementing number, which makes debugging output and logs much clearer than seeing a bare number.",
+          "A string enum gives each member a readable string instead of an auto-incrementing number, so logs and debugging output are much clearer.",
       },
     ],
     howItWorks: `
-Unlike an interface or type alias, an enum is not purely a compile-time
-construct — it actually generates real JavaScript code, typically an
+Unlike an interface or type alias, an enum generates real JavaScript: an
 object mapping each member name to its value (and, for numeric enums,
-back the other way too). When you write \`Direction.Up\`, that compiles
-down to reading a property off that generated object at runtime. This is
-why enums are one of the few TypeScript-only features that produce actual
-runtime code, unlike interfaces and type aliases.
+values back to names too). \`Direction.Up\` compiles to reading a property
+off that object at runtime.
+
+That makes enums one of the few TypeScript-only features that produce
+runtime code.
     `.trim(),
     whyItExists: `
-Enums give a name to each option in a small, fixed set of related values,
-so code that uses them reads clearly (**OrderStatus.Shipped** instead of a
-bare **"SHIPPED"** string scattered everywhere) and typos are caught by the
-compiler instead of only showing up as a silent bug at runtime.
+Enums name each option in a small, fixed set. Code reads clearly
+(**OrderStatus.Shipped** instead of a bare **"SHIPPED"** string everywhere),
+and the compiler catches typos instead of them becoming silent runtime bugs.
     `.trim(),
     whenToUse: `
-Use an enum when you have a genuinely fixed, small set of related named
-options that the rest of the code will refer to by name — status codes,
-categories, directions, modes. String enums are usually preferable to
-numeric ones when the value might be logged, displayed, or sent over the
-network, since the string is self-explanatory on its own.
+Use an enum for a small, fixed set of related options that code refers to
+by name: status codes, categories, directions, modes. Prefer string enums
+over numeric ones when the value may be logged, displayed or sent over the
+network, since the string explains itself.
     `.trim(),
     whenNotToUse: `
-For a simple set of string literals, many teams prefer a union of string
-literal types (\`type Status = "pending" | "shipped" | "delivered"\`)
-instead of an enum — it needs no import, generates no runtime code, and
-works more naturally with plain JavaScript values coming from APIs. Reach
-for an enum specifically when you want the grouping and reverse lookup
-behavior an enum provides.
+For a simple set of strings, many teams prefer a union of string literal
+types (\`type Status = "pending" | "shipped" | "delivered"\`). It needs no
+import, generates no runtime code and works naturally with plain values
+from APIs. Use an enum when you want its grouping and reverse lookup.
     `.trim(),
     commonMistakes: [
-      "Forgetting that numeric enum members auto-increment starting at 0, and being surprised when inserting a new member in the middle shifts every later member's underlying number.",
-      "Assuming an enum is purely a compile-time construct like an interface — it actually generates a real JavaScript object at runtime.",
-      "Casting a raw string to a string enum (`\"PENDING\" as OrderStatus`) as a habit, instead of using the enum member directly, which defeats some of the safety enums are meant to provide.",
+      "Forgetting numeric enum members auto-increment from 0, so inserting a member in the middle shifts the number of every member after it.",
+      "Assuming an enum is compile-time only like an interface. It generates a real JavaScript object at runtime.",
+      "Habitually casting raw strings to a string enum (`\"PENDING\" as OrderStatus`) instead of using the member, which undoes some of the safety enums provide.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Create a numeric enum `TrafficLight` with `Red`, `Yellow`, and `Green`, and write a function that logs a message for each value." },
-      { difficulty: "Medium", prompt: "Convert `TrafficLight` into a string enum with explicit values (\"RED\", \"YELLOW\", \"GREEN\"), and explain in a comment why that might be preferable for logging." },
-      { difficulty: "Hard", prompt: "Rewrite the `TrafficLight` string enum as a union of string literal types instead, and write a function that works identically with both versions. Note what changes and what stays the same at the call sites." },
+      { difficulty: "Easy", prompt: "Create a numeric enum `TrafficLight` with `Red`, `Yellow` and `Green`, and write a function that logs a message for each value." },
+      { difficulty: "Medium", prompt: "Convert `TrafficLight` to a string enum with explicit values (\"RED\", \"YELLOW\", \"GREEN\"). In a comment, explain why that may be better for logging." },
+      { difficulty: "Hard", prompt: "Rewrite the `TrafficLight` string enum as a union of string literal types, and write a function that works the same with both versions. Note what changes at the call sites and what doesn't." },
     ],
     interviewQuestions: [
-      { question: "What problem does an enum solve compared to scattering raw string or number literals like `\"UP\"` or `0` through the code?", answer: "It groups a fixed set of related values under one named type, so the compiler can catch typos (like `\"Up\"` instead of `\"UP\"`) that would otherwise only surface as a silent bug at runtime." },
-      { question: "Do TypeScript enums exist at runtime, unlike interfaces and type aliases?", answer: "Yes — an enum compiles down to a real JavaScript object mapping member names to values, so referencing `Direction.Up` at runtime is actually reading a property off that generated object." },
-      { question: "What does `Direction.Up` compile down to at runtime?", answer: "A property lookup on the generated JavaScript object TypeScript creates for the enum — accessing the numeric (or string) value stored under the `Up` key." },
-      { question: "Why does `Direction[direction]` work to look up a member's name from its value for a numeric enum?", answer: "TypeScript generates a reverse mapping for numeric enums specifically — the compiled object maps names to numbers *and* numbers back to names — which is why this reverse lookup pattern works only for numeric enums." },
-      { question: "Given `enum Direction { Up, Down, Left, Right }`, what is the runtime value of `Direction.Down`?", answer: "`1` — numeric enum members auto-number starting at `0` in declaration order, so `Up` is `0`, `Down` is `1`, and so on." },
-      { question: "What happens to the values of later members if you insert a new member in the middle of a numeric enum's declaration?", answer: "Every member declared after the insertion point silently shifts to a new auto-assigned number, which can break any code or stored data that depended on the old numeric values." },
-      { question: "How do string enums avoid the member-reordering pitfall numeric enums have?", answer: "Each string enum member is assigned an explicit, fixed string value rather than an auto-incrementing number, so reordering the declarations doesn't change any member's actual value." },
-      { question: "What does `console.log(move)` print given `let move: Direction = Direction.Up;` with `Direction` declared as a plain numeric enum?", answer: "`0` — `Direction.Up` is the first member of a numeric enum that starts auto-numbering at `0`." },
-      { question: "Why does `ship(\"PENDING\" as OrderStatus)` need an explicit cast rather than being assignable directly?", answer: "A raw string literal like `\"PENDING\"` is not automatically considered the same type as the enum member `OrderStatus.Pending`, even though it has the same underlying value, so TypeScript requires an explicit assertion to accept it where an `OrderStatus` is expected." },
-      { question: "What's a common alternative to an enum for representing a small, fixed set of string options, and what does it trade away?", answer: "A union of string literal types, like `type Status = \"pending\" | \"shipped\"` — it needs no import and generates no runtime code, but it loses the enum's grouping under one named value and its (for numeric enums) reverse lookup." },
-      { question: "Between an enum and a union of string literals, which one leaves compiled JavaScript output behind, and which is fully erased?", answer: "An enum generates a real runtime object; a union of string literal types is a purely compile-time construct that's completely erased, leaving no trace in the compiled JavaScript." },
-      { question: "Why might a string enum be preferable to a numeric enum specifically when the value will be logged, displayed, or sent over a network?", answer: "A string enum's runtime value is a self-explanatory string like `\"SHIPPED\"`, whereas a numeric enum's runtime value is just a bare number, which is meaningless without also knowing the enum's declaration order." },
-      { question: "What breaks if you treat an enum as a purely compile-time construct, the same way you'd treat an interface?", answer: "Interfaces are fully erased and leave nothing behind, but an enum actually generates a JavaScript object at runtime — assuming otherwise can lead to surprises around bundle size, reverse lookups, or the enum object being inspectable at runtime." },
-      { question: "What changes at the call sites if you convert a numeric `TrafficLight` enum to a string enum with explicit values?", answer: "Nothing about how consumers reference members changes (`TrafficLight.Red` still works the same way) — what changes is the underlying runtime value of each member, from an auto-numbered integer to the explicit string you assigned." },
-      { question: "A function expects `status: OrderStatus`, but a caller has a plain string `\"PENDING\"` from a JSON API response. Why does passing it directly fail, and what are two ways to fix it?", answer: "A bare string literal isn't automatically typed as the enum, even if the value matches — you can either cast it explicitly (`\"PENDING\" as OrderStatus`) or, often better, model the field as a union of string literals in the first place so plain API strings are assignable without a cast." },
-      { question: "Why can generating a real runtime object for every enum be a downside compared to a union of string literals, from a bundle-size perspective?", answer: "The enum's object and its reverse-mapping entries (for numeric enums) become actual code shipped to the client, whereas a union of string literals is erased entirely and adds nothing to the compiled bundle." },
-      { question: "TypeScript numeric enums are known to accept any number as assignable to the enum type, not just its declared members — why is this a notable safety gap compared to string enums?", answer: "Because numeric enums are structurally just numbers under the hood, TypeScript allows any `number` to be assigned without an error for backward-compatibility reasons, whereas string enum members are checked against their specific declared string values, giving string enums stricter safety against invalid values." },
-      { question: "Why is `OrderStatus.Pending === OrderStatus.Shipped` guaranteed to be `false`?", answer: "Each enum member is assigned its own distinct underlying value at compile time (a unique auto-number or an explicit unique string), so no two members ever share the same runtime value." },
+      { question: "What problem does an enum solve compared to scattering raw string or number literals like `\"UP\"` or `0` through the code?", answer: "It groups a fixed set of values under one named type, so the compiler catches typos (like `\"Up\"` instead of `\"UP\"`) that would otherwise be silent runtime bugs." },
+      { question: "Do TypeScript enums exist at runtime, unlike interfaces and type aliases?", answer: "Yes. An enum compiles to a real JavaScript object mapping names to values, so `Direction.Up` reads a property off that object at runtime." },
+      { question: "What does `Direction.Up` compile down to at runtime?", answer: "A property lookup on the generated enum object, reading the number (or string) stored under the `Up` key." },
+      { question: "Why does `Direction[direction]` work to look up a member's name from its value for a numeric enum?", answer: "For numeric enums only, TypeScript generates a reverse mapping: the object maps names to numbers *and* numbers back to names." },
+      { question: "Given `enum Direction { Up, Down, Left, Right }`, what is the runtime value of `Direction.Down`?", answer: "`1`. Members auto-number from `0` in declaration order: `Up` is `0`, `Down` is `1`, and so on." },
+      { question: "What happens to the values of later members if you insert a new member in the middle of a numeric enum's declaration?", answer: "Every member after it silently gets a new number, which can break code or stored data that relied on the old values." },
+      { question: "How do string enums avoid the member-reordering pitfall numeric enums have?", answer: "Each member has an explicit, fixed string value, so reordering the declarations changes nothing." },
+      { question: "What does `console.log(move)` print given `let move: Direction = Direction.Up;` with `Direction` declared as a plain numeric enum?", answer: "`0`. `Direction.Up` is the first member, and numbering starts at `0`." },
+      { question: "Why does `ship(\"PENDING\" as OrderStatus)` need an explicit cast rather than being assignable directly?", answer: "A string literal like `\"PENDING\"` isn't treated as the enum member `OrderStatus.Pending`, even with the same value. TypeScript needs an explicit assertion to accept it as an `OrderStatus`." },
+      { question: "What's a common alternative to an enum for representing a small, fixed set of string options, and what does it trade away?", answer: "A union of string literals, like `type Status = \"pending\" | \"shipped\"`. It needs no import and generates no runtime code, but loses the enum's grouping under one named value and (for numeric enums) reverse lookup." },
+      { question: "Between an enum and a union of string literals, which one leaves compiled JavaScript output behind, and which is fully erased?", answer: "An enum generates a runtime object. A union of string literals is compile-time only and fully erased." },
+      { question: "Why might a string enum be preferable to a numeric enum specifically when the value will be logged, displayed, or sent over a network?", answer: "Its runtime value is a readable string like `\"SHIPPED\"`. A numeric enum's value is a bare number, meaningless unless you know the declaration order." },
+      { question: "What breaks if you treat an enum as a purely compile-time construct, the same way you'd treat an interface?", answer: "Interfaces are erased, but an enum produces a runtime JavaScript object. Forgetting that can cause surprises around bundle size, reverse lookups, or the enum object being inspectable at runtime." },
+      { question: "What changes at the call sites if you convert a numeric `TrafficLight` enum to a string enum with explicit values?", answer: "Nothing: `TrafficLight.Red` works the same. Only each member's runtime value changes, from an auto-numbered integer to the string you assigned." },
+      { question: "A function expects `status: OrderStatus`, but a caller has a plain string `\"PENDING\"` from a JSON API response. Why does passing it directly fail, and what are two ways to fix it?", answer: "A plain string isn't typed as the enum, even if the value matches. Either cast it (`\"PENDING\" as OrderStatus`) or, often better, model the field as a union of string literals so API strings are assignable without a cast." },
+      { question: "Why can generating a real runtime object for every enum be a downside compared to a union of string literals, from a bundle-size perspective?", answer: "The enum object (plus reverse-mapping entries for numeric enums) ships to the client as real code. A union of string literals is erased and adds nothing." },
+      { question: "TypeScript numeric enums are known to accept any number as assignable to the enum type, not just its declared members — why is this a notable safety gap compared to string enums?", answer: "Numeric enums are just numbers underneath, so for backward compatibility TypeScript lets a `number` be assigned without error. String enum members are checked against their declared strings, so string enums are stricter about invalid values." },
+      { question: "Why is `OrderStatus.Pending === OrderStatus.Shipped` guaranteed to be `false`?", answer: "Each member gets its own distinct value (a unique auto-number or a unique explicit string), so no two members share a runtime value." },
     ],
     prerequisites: ["union-intersection-types"],
     relatedTopics: ["union-intersection-types", "type-narrowing"],

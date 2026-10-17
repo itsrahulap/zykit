@@ -347,11 +347,11 @@ needed. And avoid \`var\` in new code: it's never better than
     level: "beginner",
     description: "The different kinds of values JavaScript can store and work with.",
     explanation: `
-Not all values are the same kind of thing. The number 5, the word "hello",
-and a true/false answer all behave differently. JavaScript groups values
-into a small set of **data types** so it knows how to handle each one.
+The number 5, the word "hello" and a true/false answer all behave
+differently. JavaScript groups values into a small set of **data types** so
+it knows how to handle each one.
 
-The most common ones you'll use constantly:
+The ones you'll use most:
 
 - **String** — text, written in quotes: \`"hello"\`
 - **Number** — any number: \`42\`, \`3.14\`
@@ -361,7 +361,7 @@ The most common ones you'll use constantly:
 - **Object** — a collection of related data (including arrays and functions)
     `.trim(),
     analogy:
-      "Think of a toolbox with different compartments — one for screws, one for nails, one for tape. Data types are those compartments; they tell you what kind of thing you're holding so you know what you can do with it.",
+      "Think of a toolbox with compartments for screws, nails and tape. Data types are those compartments: they tell you what you're holding, so you know what you can do with it.",
     examples: [
       {
         title: "Checking a value's type",
@@ -383,31 +383,28 @@ console.log(typeof undefined); // "undefined"`,
 console.log("2" + "3");   // "23" — both strings, so + joins them
 console.log("2" + 3);     // "23" — mixed, so the number becomes a string first`,
         explanation:
-          "The `+` operator behaves differently depending on the types of its two values — this is exactly why knowing a value's type matters.",
+          "`+` behaves differently depending on the types of its two values. That's why knowing a value's type matters.",
       },
     ],
     howItWorks: `
-When JavaScript stores a value, it tags it internally with a type. This tag
-determines which operations are allowed — you can do math on numbers, but
-adding two strings joins them together instead ("2" + "3" becomes "23", not
-5). Knowing the type of a value tells you how it will behave.
+JavaScript tags every value with a type. The type decides what operations
+do: you can do math on numbers, but adding two strings joins them ("2" + "3"
+becomes "23", not 5). Know the type, and you know how a value behaves.
     `.trim(),
     whyItExists: `
-Different kinds of data need different rules. Text needs to be joined and
-searched; numbers need to be added and compared; true/false values need to
-drive decisions. Types let the language apply the right rules automatically.
+Different data needs different rules. Text is joined and searched; numbers
+are added and compared; true/false values drive decisions. Types let the
+language apply the right rules automatically.
     `.trim(),
     whenToUse: `
-You actively think about data types whenever you're not sure what kind of
-value you're dealing with — checking user input, debugging an unexpected
-result, or deciding whether two values can be safely compared or combined.
-\`typeof\` is the quick way to check.
+Think about types when you're unsure what kind of value you have: checking
+user input, debugging an odd result, or deciding whether two values can be
+safely compared or combined. \`typeof\` is the quick way to check.
     `.trim(),
     whenNotToUse: `
-You don't need to manually check the type of a value you created yourself
-and already know the shape of — sprinkling \`typeof\` checks everywhere just
-adds noise. Save type-checking for boundaries: user input, API responses,
-and function arguments coming from code you don't control.
+Don't check the type of values you created yourself and already know.
+\`typeof\` checks everywhere just add noise. Save them for boundaries: user
+input, API responses and arguments from code you don't control.
     `.trim(),
     commonMistakes: [
       "Mixing up a number and a string that looks like a number, e.g. `\"5\" + 1` gives `\"51\"`, not `6`.",
@@ -420,36 +417,36 @@ and function arguments coming from code you don't control.
       { difficulty: "Hard", prompt: "Write a function `describeType(value)` that returns a friendly sentence describing the value's type." },
     ],
     interviewQuestions: [
-      { question: "What are the basic data types built into JavaScript?", answer: "Seven primitive types — String, Number, Boolean, Undefined, Null, Symbol, and BigInt — plus Object, which covers everything else: plain objects, arrays, functions, dates, and more." },
-      { question: "What's the difference between a primitive and an object?", answer: "A primitive holds its actual value directly and is compared/copied by value — two strings with the same characters are equal. An object holds a reference to a location in memory, and variables pointing to it are compared/copied by that reference — two separately created objects with identical contents are not `===` equal." },
-      { question: "What does `typeof` return for a string, a number, and a boolean?", answer: "`\"string\"`, `\"number\"`, and `\"boolean\"` respectively — `typeof` returns a string naming the value's type, which is useful for quick checks at runtime." },
-      { question: "What's the difference between `null` and `undefined`?", answer: "`undefined` is what JavaScript itself assigns automatically — a declared-but-unassigned variable, a missing function argument, a missing object property — it means nothing has been set here yet. `null` is a value a developer assigns deliberately to represent intentionally empty or no value." },
-      { question: "What is `NaN`, and what does the name stand for?", answer: "\"Not a Number\" — it's the special value returned by numeric operations that don't produce a valid number, like `0 / 0` or `Number(\"abc\")`. Despite the name, `typeof NaN` is `\"number\"`, since it's still technically a member of the Number type." },
-      { question: "Is an array its own separate data type in JavaScript?", answer: "No — arrays are a specialized kind of object (with numeric-like indices and a `length` property), not a distinct primitive type. `typeof []` returns `\"object\"`, and checking for an array specifically requires `Array.isArray()`." },
-      { question: "Is a function a data type in JavaScript?", answer: "Functions are objects too — technically callable objects. `typeof` treats them specially and returns `\"function\"` rather than `\"object\"`, which is the one case where `typeof` distinguishes a callable object from a plain one." },
-      { question: "What does `typeof null` return, and why is that surprising?", answer: "It returns `\"object\"`, even though `null` is one of the primitive types, not an object. It's a long-standing bug from the original 1995 implementation — `null` was represented internally with the same type tag as objects — and it's been kept ever since purely for backward compatibility." },
-      { question: "What does `typeof` return for an array, and how would you actually check for one?", answer: "`typeof []` returns `\"object\"`, same as for any plain object — `typeof` can't tell arrays apart from other objects. Use `Array.isArray(value)` instead, which checks specifically for array-ness." },
-      { question: "What does `typeof` return for a function?", answer: "`\"function\"` — the one case where `typeof` gives a more specific answer than `\"object\"` for something that's technically an object under the hood." },
-      { question: "What is type coercion?", answer: "The automatic conversion of a value from one type to another that JavaScript performs when an operation expects a different type than what it was given — e.g. converting a number to a string so `+` can join it with an existing string." },
-      { question: "Why does `\"2\" + 3` produce `\"23\"` while `\"2\" - 1` produces `1`?", answer: "`+` has a special rule: if either operand is a string, it converts the other operand to a string and concatenates. Every other arithmetic operator, including `-`, has no string-joining behavior at all, so it instead converts both operands to numbers first — `\"2\"` becomes `2`, and `2 - 1` is `1`." },
-      { question: "What's the difference between implicit and explicit type conversion?", answer: "Implicit conversion (coercion) happens automatically as a side effect of an operation, like `\"5\" * 2` silently becoming `10`. Explicit conversion is when the code deliberately converts a value, like `Number(\"5\")` or `String(5)`, making the intent visible instead of relying on an operator's built-in rules." },
-      { question: "How would you explicitly convert a string to a number?", answer: "`Number(\"42\")`, `parseInt(\"42\")` / `parseFloat(\"42.5\")`, or the unary `+\"42\"` shorthand all work — `Number()` and unary `+` require the whole string to be numeric or they return `NaN`, while `parseInt`/`parseFloat` parse as much of a leading numeric portion as they can and ignore the rest." },
-      { question: "How would you explicitly convert a number to a string?", answer: "`String(42)`, `(42).toString()`, or concatenating with an empty string like `42 + \"\"` (which relies on implicit coercion rather than being truly explicit) all produce `\"42\"`." },
-      { question: "What is `BigInt`, and why does it exist?", answer: "A primitive type for representing whole numbers larger than `Number` can safely hold (`Number.MAX_SAFE_INTEGER`, 2^53 - 1) without losing precision. You create one by appending `n` to an integer literal, e.g. `123n`, and `BigInt` values can't be mixed with regular numbers in arithmetic without an explicit conversion." },
-      { question: "What is `Symbol`, and what is it typically used for?", answer: "A primitive type that produces a guaranteed-unique value every time it's created (`Symbol(\"id\") !== Symbol(\"id\")`), commonly used as an object property key that won't collide with any string key or another symbol — useful for adding metadata to objects without risking a name clash." },
-      { question: "Why is `NaN === NaN` false?", answer: "By the IEEE 754 floating-point specification (which JavaScript's Number type follows), `NaN` is defined to never equal anything, including itself — it represents \"not a valid numeric result\" rather than any specific value that could be compared." },
-      { question: "How do you correctly check whether a value is `NaN`?", answer: "`Number.isNaN(value)`, which only returns `true` for the actual `NaN` value. The older global `isNaN(value)` first coerces its argument to a number, so `isNaN(\"hello\")` also returns `true` even though `\"hello\"` isn't literally `NaN`." },
-      { question: "What's the difference between `Number.isNaN()` and the global `isNaN()`?", answer: "`Number.isNaN()` checks strictly — it returns `true` only if the value is exactly `NaN`, no conversion involved. The global `isNaN()` coerces its argument to a number first, which means non-numeric values like `isNaN(\"abc\")` also return `true`, even though `\"abc\"` was never `NaN` to begin with." },
-      { question: "Is JavaScript strongly or weakly typed, and what does that mean in practice?", answer: "Weakly typed — operators freely convert between types instead of raising errors when types don't match, e.g. `\"5\" * 2` silently becomes `10` rather than throwing. This makes some code more forgiving to write but is a common source of subtle bugs when a conversion happens somewhere the developer didn't intend." },
-      { question: "Is JavaScript statically or dynamically typed?", answer: "Dynamically typed — a variable's type isn't checked or fixed at compile time; the type lives with the current value and is only known and checked while the code actually runs. This is what TypeScript's static type system is layered on top to address." },
-      { question: "Can a variable's type change after it's declared?", answer: "Yes — since JavaScript is dynamically typed, a variable is just a name bound to whatever value it currently holds. `let x = 5; x = \"now text\";` is completely legal; the variable itself has no fixed type, only the value assigned to it at any given moment does." },
-      { question: "Why are primitives compared by value while objects are compared by reference?", answer: "Primitives are stored directly, so comparing two of them means comparing their actual contents — `\"cat\" === \"cat\"` is `true` because the characters match. Objects are stored as a reference to a location in memory, so `===` compares whether two variables point to the exact same object, not whether their contents look the same — two separately created objects with identical properties are still `!==`." },
-      { question: "What happens when you access a property on a primitive, like `\"hello\".length`?", answer: "JavaScript temporarily wraps the primitive in its corresponding object type (a `String` object, here), reads the property off that wrapper, and then discards the wrapper immediately — the primitive itself never actually becomes an object; this \"auto-boxing\" just makes property/method access on primitives work transparently." },
-      { question: "Output-prediction: what does `typeof typeof 1` evaluate to?", answer: "`\"string\"`. The inner `typeof 1` evaluates first and returns the string `\"number\"`; the outer `typeof` then runs on that string value, and the type of any string is `\"string\"`." },
-      { question: "Output-prediction: what does `console.log(1 + \"1\"); console.log(1 - \"1\");` log?", answer: "It logs `\"11\"` then `0`. `+` sees a string operand and coerces the number to a string, concatenating them. `-` has no string-joining behavior, so it coerces the string `\"1\"` to the number `1` instead, giving `1 - 1 = 0`." },
-      { question: "Output-prediction: what does `console.log([1, 2, 3] + [4, 5, 6])` log?", answer: "It logs the string `\"1,2,34,5,6\"`. `+` on two objects (arrays are objects) coerces both to strings first — an array's default string conversion joins its elements with commas — producing `\"1,2,3\"` and `\"4,5,6\"`, which are then concatenated." },
-      { question: "Output-prediction: what does `null == undefined` evaluate to? What about `null === undefined`?", answer: "`null == undefined` is `true` — the specification special-cases loose equality between `null` and `undefined` to treat them as equal to each other (but to nothing else). `null === undefined` is `false`, because strict equality also requires the same type, and Null and Undefined are different types." },
-      { question: "Output-prediction: what does `typeof NaN` return?", answer: "`\"number\"`. Despite meaning \"not a number,\" `NaN` is a special value that still belongs to the Number type — it represents an invalid numeric result, not an absence of a number." },
+      { question: "What are the basic data types built into JavaScript?", answer: "Seven primitive types (String, Number, Boolean, Undefined, Null, Symbol and BigInt) plus Object, which covers everything else: plain objects, arrays, functions, dates and more." },
+      { question: "What's the difference between a primitive and an object?", answer: "A primitive holds its value directly and is compared and copied by value: two strings with the same characters are equal. An object is held by reference, so it's compared and copied by reference: two separately created objects with identical contents are not `===` equal." },
+      { question: "What does `typeof` return for a string, a number, and a boolean?", answer: "`\"string\"`, `\"number\"` and `\"boolean\"`. `typeof` returns a string naming the value's type, handy for quick runtime checks." },
+      { question: "What's the difference between `null` and `undefined`?", answer: "JavaScript gives you `undefined` automatically for a declared-but-unassigned variable, a missing argument or a missing property: nothing has been set yet. `null` is assigned deliberately by a developer to mean \"intentionally empty\"." },
+      { question: "What is `NaN`, and what does the name stand for?", answer: "\"Not a Number\": the value numeric operations return when the result isn't a valid number, like `0 / 0` or `Number(\"abc\")`. Despite the name, `typeof NaN` is `\"number\"`, since it belongs to the Number type." },
+      { question: "Is an array its own separate data type in JavaScript?", answer: "No. Arrays are a special kind of object (with numeric-like indices and a `length` property). `typeof []` returns `\"object\"`; to check for an array, use `Array.isArray()`." },
+      { question: "Is a function a data type in JavaScript?", answer: "Functions are callable objects. `typeof` returns `\"function\"` for them instead of `\"object\"`, the one case where it tells a callable object apart from a plain one." },
+      { question: "What does `typeof null` return, and why is that surprising?", answer: "It returns `\"object\"`, though `null` is a primitive. It's a bug from the original 1995 implementation (`null` shared the internal type tag used for objects), kept only for backward compatibility." },
+      { question: "What does `typeof` return for an array, and how would you actually check for one?", answer: "`typeof []` returns `\"object\"`, like any plain object, so `typeof` can't spot arrays. Use `Array.isArray(value)` instead." },
+      { question: "What does `typeof` return for a function?", answer: "`\"function\"`. It's the one case where `typeof` is more specific than `\"object\"` for something that is an object underneath." },
+      { question: "What is type coercion?", answer: "JavaScript automatically converting a value to another type when an operation expects a different type. For example, turning a number into a string so `+` can join it to a string." },
+      { question: "Why does `\"2\" + 3` produce `\"23\"` while `\"2\" - 1` produces `1`?", answer: "`+` has a special rule: if either operand is a string, it turns the other into a string and joins them. Other arithmetic operators, including `-`, can't join strings, so they convert both operands to numbers: `\"2\"` becomes `2`, and `2 - 1` is `1`." },
+      { question: "What's the difference between implicit and explicit type conversion?", answer: "Implicit conversion (coercion) happens automatically during an operation, like `\"5\" * 2` silently becoming `10`. Explicit conversion is done on purpose in code, like `Number(\"5\")` or `String(5)`, so the intent is visible." },
+      { question: "How would you explicitly convert a string to a number?", answer: "`Number(\"42\")`, `parseInt(\"42\")` / `parseFloat(\"42.5\")`, or unary `+\"42\"`. `Number()` and unary `+` need the whole string to be numeric or they return `NaN`. `parseInt`/`parseFloat` read as much of the leading number as they can and ignore the rest." },
+      { question: "How would you explicitly convert a number to a string?", answer: "`String(42)`, `(42).toString()`, or `42 + \"\"` (which relies on coercion, so it's less explicit). All produce `\"42\"`." },
+      { question: "What is `BigInt`, and why does it exist?", answer: "A primitive for whole numbers larger than `Number` can safely hold (`Number.MAX_SAFE_INTEGER`, 2^53 - 1), without losing precision. Add `n` to an integer literal to create one, e.g. `123n`. You can't mix `BigInt` and regular numbers in arithmetic without converting explicitly." },
+      { question: "What is `Symbol`, and what is it typically used for?", answer: "A primitive that is unique every time you create one (`Symbol(\"id\") !== Symbol(\"id\")`). It's often used as an object property key that can't collide with any string key or other symbol, which is useful for adding metadata to objects safely." },
+      { question: "Why is `NaN === NaN` false?", answer: "The IEEE 754 floating-point spec (which JavaScript numbers follow) defines `NaN` as never equal to anything, including itself. It means \"not a valid numeric result\", not a specific value." },
+      { question: "How do you correctly check whether a value is `NaN`?", answer: "`Number.isNaN(value)`, which returns `true` only for `NaN` itself. The older global `isNaN(value)` converts its argument to a number first, so `isNaN(\"hello\")` is also `true`." },
+      { question: "What's the difference between `Number.isNaN()` and the global `isNaN()`?", answer: "`Number.isNaN()` is strict: `true` only if the value is exactly `NaN`, with no conversion. The global `isNaN()` converts its argument to a number first, so `isNaN(\"abc\")` is also `true`, though `\"abc\"` was never `NaN`." },
+      { question: "Is JavaScript strongly or weakly typed, and what does that mean in practice?", answer: "Weakly typed. Operators convert between types instead of throwing when types don't match: `\"5\" * 2` silently becomes `10`. That's forgiving, but a common source of subtle bugs when a conversion happens where you didn't expect it." },
+      { question: "Is JavaScript statically or dynamically typed?", answer: "Dynamically typed. Types aren't fixed or checked at compile time; they belong to the current value and are only checked as the code runs. TypeScript's static types are added on top to address this." },
+      { question: "Can a variable's type change after it's declared?", answer: "Yes. A variable is just a name for whatever value it currently holds, so `let x = 5; x = \"now text\";` is legal. Only the value has a type, not the variable." },
+      { question: "Why are primitives compared by value while objects are compared by reference?", answer: "Primitives are stored directly, so comparing them compares their contents: `\"cat\" === \"cat\"` is `true`. Objects are stored as references, so `===` checks whether both variables point to the same object. Two separate objects with identical properties are still `!==`." },
+      { question: "What happens when you access a property on a primitive, like `\"hello\".length`?", answer: "JavaScript briefly wraps the primitive in its object type (here a `String` object), reads the property, then throws the wrapper away. The primitive never becomes an object; this \"auto-boxing\" just lets primitives use properties and methods." },
+      { question: "Output-prediction: what does `typeof typeof 1` evaluate to?", answer: "`\"string\"`. The inner `typeof 1` returns the string `\"number\"`, and the type of any string is `\"string\"`." },
+      { question: "Output-prediction: what does `console.log(1 + \"1\"); console.log(1 - \"1\");` log?", answer: "It logs `\"11\"` then `0`. `+` sees a string, so it turns the number into a string and joins them. `-` can't join strings, so it turns `\"1\"` into `1`, giving `1 - 1 = 0`." },
+      { question: "Output-prediction: what does `console.log([1, 2, 3] + [4, 5, 6])` log?", answer: "The string `\"1,2,34,5,6\"`. `+` converts both arrays to strings first (arrays join their elements with commas), giving `\"1,2,3\"` and `\"4,5,6\"`, which are then joined." },
+      { question: "Output-prediction: what does `null == undefined` evaluate to? What about `null === undefined`?", answer: "`null == undefined` is `true`: the spec makes loose equality treat them as equal to each other (and to nothing else). `null === undefined` is `false`, because strict equality also needs the same type." },
+      { question: "Output-prediction: what does `typeof NaN` return?", answer: "`\"number\"`. Despite its name, `NaN` belongs to the Number type: it's an invalid numeric result, not a missing number." },
     ],
     prerequisites: ["variables"],
     relatedTopics: ["variables", "operators", "js-gotchas"],
@@ -461,12 +458,11 @@ and function arguments coming from code you don't control.
     level: "beginner",
     description: "Symbols that perform actions on values, like math or comparisons.",
     explanation: `
-You constantly need to do things with values — add two numbers together,
-check which of two is bigger, or combine two conditions into one decision.
-JavaScript gives you a set of symbols, called **operators**, that do exactly
-that: each one takes one or more values and produces a result.
+You often need to do things with values: add two numbers, check which is
+bigger, or combine two conditions into one decision. **Operators** are the
+symbols that do this. Each takes one or more values and produces a result.
 
-A few groups you'll use daily:
+The groups you'll use daily:
 
 - **Arithmetic**: \`+ - * / %\` for math
 - **Comparison**: \`=== !== > < >= <=\` for comparing two values
@@ -474,7 +470,7 @@ A few groups you'll use daily:
 - **Assignment**: \`= += -=\` for storing or updating a value
     `.trim(),
     analogy:
-      "Operators are like the buttons on a calculator — each one takes the numbers you've entered and does a specific, predictable action with them.",
+      "Operators are like calculator buttons: each one does a specific, predictable action with the numbers you've entered.",
     examples: [
       {
         title: "Arithmetic and comparison",
@@ -498,29 +494,27 @@ console.log(canEnter); // true
 const skipLine = age < 12 || age > 65;
 console.log(skipLine); // false`,
         explanation:
-          "`&&` requires both sides to be true; `||` only needs one side to be true. Both are common ways to combine multiple conditions into one decision.",
+          "`&&` needs both sides to be true; `||` needs only one. Both combine several conditions into one decision.",
       },
     ],
     howItWorks: `
-Each operator takes one or two values (called operands) and produces a
-result. \`+\` takes two numbers and produces their sum. \`===\` takes two values
-and produces a boolean — true if they match exactly, false otherwise.
+Each operator takes one or two values (operands) and produces a result. \`+\`
+turns two numbers into their sum. \`===\` turns two values into a boolean:
+true if they match exactly, false otherwise.
     `.trim(),
     whyItExists: `
-Programs constantly need to calculate, compare, and combine values to make
-decisions. Operators are the basic building blocks for all of that logic.
+Programs constantly calculate, compare and combine values to make decisions.
+Operators are the building blocks for that logic.
     `.trim(),
     whenToUse: `
-Use arithmetic operators whenever your code needs to calculate something,
-and comparison operators whenever it needs to make a decision. Logical
-operators (\`&&\`, \`||\`) come in whenever that decision depends on more than
-one condition at once.
+Use arithmetic operators to calculate and comparison operators to decide.
+Use logical operators (\`&&\`, \`||\`) when a decision depends on more than one
+condition.
     `.trim(),
     whenNotToUse: `
-Avoid \`==\` in new code — its type-converting comparisons cause more bugs
-than they prevent; \`===\` should be your default. And don't chain more
-logical operators into one expression than a reader can parse at a glance —
-split a complex condition into a well-named variable instead.
+Avoid \`==\` in new code: its type conversions cause more bugs than they
+prevent, so make \`===\` your default. And if a condition chains too many
+logical operators to read at a glance, move it into a well-named variable.
     `.trim(),
     commonMistakes: [
       "Using `=` (assignment) when you meant `===` (comparison).",
@@ -533,27 +527,27 @@ split a complex condition into a well-named variable instead.
       { difficulty: "Hard", prompt: "Write a one-line expression using `&&` and `||` that checks if a user is either an admin or (a member and over 18)." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between `==` and `===`?", answer: "`==` (loose equality) converts operands to a common type before comparing if they differ, which can produce surprising matches like `\"5\" == 5`. `===` (strict equality) compares both value and type with no conversion, so mismatched types are never equal — it's the safer default in almost every case." },
-      { question: "What does the `%` (modulo) operator do?", answer: "It returns the remainder left over after dividing the left operand by the right one — `10 % 3` is `1`, because 3 goes into 10 three times with 1 left over. It's the standard way to check divisibility (`n % 2 === 0` for even) or wrap a number into a fixed range." },
-      { question: "What's the difference between `=`, `==`, and `===`?", answer: "`=` is assignment — it stores a value into a variable and isn't a comparison at all. `==` and `===` are both comparisons that produce a boolean; `==` allows type conversion before comparing, `===` doesn't. Accidentally writing `=` inside a condition where `==`/`===` was intended is a classic bug, since `if (x = 5)` assigns 5 to x and then evaluates the condition as truthy." },
-      { question: "What do `&&` and `||` do?", answer: "`&&` (logical AND) requires both operands to be truthy for the overall expression to be truthy; `||` (logical OR) only needs at least one operand to be truthy. Both are used to combine multiple conditions into a single true/false decision." },
-      { question: "What does the `!` operator do?", answer: "It's logical NOT — it converts its operand to a boolean and flips it, so `!true` is `false` and `!0` is `true` (since `0` is falsy). Doubling it, `!!value`, is a common shorthand for converting any value to its boolean truthy/falsy equivalent." },
-      { question: "What is short-circuit evaluation?", answer: "JavaScript stops evaluating a logical expression as soon as the overall result is already determined by the operands it's seen so far, instead of always evaluating every operand — in `a || b`, if `a` is truthy the result is already known to be truthy, so `b` is never evaluated at all." },
-      { question: "Why does `a || b` sometimes not evaluate `b` at all?", answer: "Because `||` only needs one truthy operand to know the whole expression is truthy — once `a` turns out truthy, evaluating `b` couldn't change the answer, so the engine skips it entirely. This matters if `b` is a function call with side effects: those side effects simply won't happen." },
-      { question: "If both operands of `&&` are truthy, what does the expression actually evaluate to?", answer: "Not `true` — `&&` returns the second operand's actual value if the first is truthy (since the first no longer determines the result), so `\"a\" && \"b\"` evaluates to `\"b\"`, not `true`. It only looks like a boolean when the operands themselves happen to be booleans." },
-      { question: "If the first operand of `||` is truthy, what does the expression evaluate to?", answer: "The first operand's own value, not `true` — `||` returns as soon as it finds a truthy operand, so `\"hello\" || \"fallback\"` evaluates to `\"hello\"`. This is exactly the mechanism default-value patterns like `const name = input || \"Guest\";` rely on." },
-      { question: "What is operator precedence, and how does it explain the result of `2 + 3 * 4`?", answer: "Precedence is the fixed order in which JavaScript evaluates operators when an expression mixes several of them, independent of left-to-right reading order. Multiplication binds tighter than addition, so `3 * 4` is computed first (`12`), then `2 + 12` gives `14`, not `20`." },
-      { question: "What's the difference between `x += 1` and `x = x + 1`?", answer: "Functionally nothing — `+=` is shorthand that reads `x`, adds `1`, and reassigns the result back to `x`, exactly what the longer form does explicitly. It exists purely for brevity when updating a variable based on its own current value." },
-      { question: "What is the nullish coalescing operator (`??`), and how does it differ from `||`?", answer: "`a ?? b` evaluates to `b` only when `a` is specifically `null` or `undefined` — any other falsy value like `0`, `\"\"`, or `false` is left alone and returned as-is. `||` falls back to `b` for any falsy `a`, which incorrectly overrides legitimate values like `0` or an empty string that were never meant to trigger a default." },
-      { question: "What is optional chaining (`?.`), and what problem does it solve?", answer: "It short-circuits to `undefined` instead of throwing when you try to access a property through a `null` or `undefined` value partway down a chain — `user?.address?.city` returns `undefined` safely if `user` or `address` is missing, instead of throwing `TypeError: Cannot read properties of undefined`." },
-      { question: "What's the difference between `++x` (prefix) and `x++` (postfix)?", answer: "Both increment `x` by 1, but they differ in what the expression itself evaluates to: `++x` increments first and evaluates to the new value; `x++` evaluates to the old value first, and the increment happens after. This only matters when the increment is used inline as part of a larger expression, e.g. `arr[i++]` uses the current `i` for indexing, then increments it." },
-      { question: "Why do `&&` and `||` return one of their actual operand values instead of a plain boolean?", answer: "It's a deliberate design choice that enables patterns beyond pure boolean logic — default values (`input || \"default\"`), guarded property access (`user && user.name`), and conditionally running a function (`isReady && doThing()`) all rely on these operators passing through a real value rather than collapsing everything to `true`/`false`." },
-      { question: "What does `NaN == NaN` evaluate to? What about `NaN === NaN`?", answer: "Both are `false`. Neither loose nor strict equality special-cases `NaN` — per the IEEE 754 spec its underlying floats follow, `NaN` is defined to never equal any value, including itself, regardless of which equality operator is used." },
-      { question: "Why does `0.1 + 0.2 === 0.3` evaluate to `false`?", answer: "JavaScript numbers are stored as IEEE 754 double-precision floats, which can't represent most decimal fractions exactly in binary. `0.1 + 0.2` actually computes to something like `0.30000000000000004`, which is not bit-for-bit equal to the literal `0.3` — comparing floating-point numbers for exact equality is unreliable in any language that uses this representation, not just JavaScript." },
-      { question: "Output-prediction: what does `console.log(1 < 2 < 3)` log?", answer: "`true`, but not for the reason it looks like. `<` is left-associative, so it evaluates as `(1 < 2) < 3` — `1 < 2` is `true`, and then `true < 3` coerces `true` to `1`, and `1 < 3` is `true`. It happens to give the mathematically \"correct\" answer here, but the same pattern with different numbers, e.g. `3 < 2 < 1`, gives a misleading `true` too, since it becomes `false < 1` → `0 < 1`." },
-      { question: "Output-prediction: what do `console.log(\"5\" == 5)` and `console.log(\"5\" === 5)` log?", answer: "`true` then `false`. `==` converts the string `\"5\"` to the number `5` before comparing, so they match. `===` refuses to convert types at all, and a string is never strictly equal to a number regardless of its content." },
-      { question: "Output-prediction: what do `console.log(null ?? \"default\")` and `console.log(0 ?? \"default\")` log?", answer: "`\"default\"` then `0`. `??` only falls back when the left side is `null` or `undefined` — `null` qualifies, but `0` is a perfectly valid, non-nullish value, so it's returned as-is even though it's falsy." },
-      { question: "Output-prediction: what does `let x = 5; console.log(x++ + ++x);` log?", answer: "It logs `12`. `x++` evaluates to the current value `5` (then bumps `x` to `6`); `++x` then bumps `x` to `7` first and evaluates to `7`. The expression becomes `5 + 7`, which is `12`, and `x` ends up `7`." },
+      { question: "What's the difference between `==` and `===`?", answer: "`==` (loose equality) converts differing types to a common type before comparing, which gives surprises like `\"5\" == 5`. `===` (strict equality) compares value and type with no conversion, so different types are never equal. It's the safer default almost always." },
+      { question: "What does the `%` (modulo) operator do?", answer: "It returns the remainder after division: `10 % 3` is `1`, since 3 goes into 10 three times with 1 left over. It's the standard way to check divisibility (`n % 2 === 0` for even) or wrap a number into a fixed range." },
+      { question: "What's the difference between `=`, `==`, and `===`?", answer: "`=` is assignment: it stores a value in a variable. `==` and `===` are comparisons that produce a boolean; `==` converts types first, `===` doesn't. Writing `=` in a condition by mistake is a classic bug: `if (x = 5)` assigns 5 to x and the condition is truthy." },
+      { question: "What do `&&` and `||` do?", answer: "`&&` (AND) is truthy only if both operands are truthy; `||` (OR) needs at least one. Both combine conditions into one true/false decision." },
+      { question: "What does the `!` operator do?", answer: "Logical NOT: it converts its operand to a boolean and flips it, so `!true` is `false` and `!0` is `true` (`0` is falsy). `!!value` is a common shorthand to turn any value into its boolean equivalent." },
+      { question: "What is short-circuit evaluation?", answer: "JavaScript stops evaluating a logical expression once the result is decided. In `a || b`, if `a` is truthy the result is already truthy, so `b` is never evaluated." },
+      { question: "Why does `a || b` sometimes not evaluate `b` at all?", answer: "`||` needs only one truthy operand. Once `a` is truthy, `b` can't change the answer, so it's skipped. This matters if `b` is a function call with side effects: they won't happen." },
+      { question: "If both operands of `&&` are truthy, what does the expression actually evaluate to?", answer: "Not `true`. If the first operand is truthy, `&&` returns the second operand's value, so `\"a\" && \"b\"` is `\"b\"`. It only looks boolean when the operands are booleans." },
+      { question: "If the first operand of `||` is truthy, what does the expression evaluate to?", answer: "That operand's own value, not `true`. `||` returns the first truthy operand, so `\"hello\" || \"fallback\"` is `\"hello\"`. Default-value patterns like `const name = input || \"Guest\";` rely on this." },
+      { question: "What is operator precedence, and how does it explain the result of `2 + 3 * 4`?", answer: "Precedence is the fixed order JavaScript evaluates mixed operators in, regardless of left-to-right order. Multiplication binds tighter than addition, so `3 * 4` (`12`) comes first, then `2 + 12` gives `14`, not `20`." },
+      { question: "What's the difference between `x += 1` and `x = x + 1`?", answer: "Nothing in practice. `+=` is shorthand: it reads `x`, adds `1` and stores the result back in `x`, exactly like the longer form." },
+      { question: "What is the nullish coalescing operator (`??`), and how does it differ from `||`?", answer: "`a ?? b` gives `b` only when `a` is `null` or `undefined`. Other falsy values like `0`, `\"\"` or `false` are returned as-is. `||` falls back for any falsy `a`, which wrongly overrides valid values like `0` or an empty string." },
+      { question: "What is optional chaining (`?.`), and what problem does it solve?", answer: "It returns `undefined` instead of throwing when a value partway down a chain is `null` or `undefined`. `user?.address?.city` safely gives `undefined` if `user` or `address` is missing, instead of throwing `TypeError: Cannot read properties of undefined`." },
+      { question: "What's the difference between `++x` (prefix) and `x++` (postfix)?", answer: "Both add 1 to `x`, but the expression's value differs: `++x` increments first and gives the new value; `x++` gives the old value, then increments. This only matters inside a larger expression: `arr[i++]` indexes with the current `i`, then increments it." },
+      { question: "Why do `&&` and `||` return one of their actual operand values instead of a plain boolean?", answer: "It's deliberate, and it enables useful patterns: default values (`input || \"default\"`), guarded property access (`user && user.name`) and conditional calls (`isReady && doThing()`). All rely on getting a real value back, not just `true`/`false`." },
+      { question: "What does `NaN == NaN` evaluate to? What about `NaN === NaN`?", answer: "Both are `false`. Under the IEEE 754 spec, `NaN` never equals any value, including itself, whichever equality operator you use." },
+      { question: "Why does `0.1 + 0.2 === 0.3` evaluate to `false`?", answer: "JavaScript numbers are IEEE 754 double-precision floats, which can't store most decimal fractions exactly in binary. `0.1 + 0.2` is actually about `0.30000000000000004`, not exactly `0.3`. Exact equality on floats is unreliable in every language that uses this format, not just JavaScript." },
+      { question: "Output-prediction: what does `console.log(1 < 2 < 3)` log?", answer: "`true`, but not for the obvious reason. `<` runs left to right, so it's `(1 < 2) < 3`: `1 < 2` is `true`, then `true < 3` turns `true` into `1`, and `1 < 3` is `true`. The same pattern gives a misleading `true` for `3 < 2 < 1`, since it becomes `false < 1` → `0 < 1`." },
+      { question: "Output-prediction: what do `console.log(\"5\" == 5)` and `console.log(\"5\" === 5)` log?", answer: "`true` then `false`. `==` converts `\"5\"` to the number `5` first, so they match. `===` never converts types, and a string is never strictly equal to a number." },
+      { question: "Output-prediction: what do `console.log(null ?? \"default\")` and `console.log(0 ?? \"default\")` log?", answer: "`\"default\"` then `0`. `??` only falls back for `null` or `undefined`. `0` isn't nullish, so it's returned even though it's falsy." },
+      { question: "Output-prediction: what does `let x = 5; console.log(x++ + ++x);` log?", answer: "It logs `12`. `x++` gives `5` (then `x` becomes `6`); `++x` makes `x` `7` and gives `7`. So it's `5 + 7` = `12`, and `x` ends up `7`." },
     ],
     prerequisites: ["data-types"],
     relatedTopics: ["data-types", "conditions"],
@@ -565,15 +559,14 @@ split a complex condition into a well-named variable instead.
     level: "beginner",
     description: "Making your code choose between different paths based on a test.",
     explanation: `
-Most real programs need to make decisions: "if the user is logged in, show
-their name; otherwise, show a login button." Conditions are how you write
-that decision in code.
+Programs make decisions: "if the user is logged in, show their name;
+otherwise, show a login button." Conditions are how you write that in code.
 
-The main tool is the \`if\` statement — it runs a block of code only when a
-test is true, and can offer alternatives with \`else if\` and \`else\`.
+The main tool is the \`if\` statement. It runs a block only when a test is
+true, and offers alternatives with \`else if\` and \`else\`.
     `.trim(),
     analogy:
-      "It's like a fork in a road with a sign: 'If it's raining, take the covered path. Otherwise, take the shortcut.' Your code reads the sign and picks a path.",
+      "It's like a fork in the road with a sign: 'If it's raining, take the covered path. Otherwise, take the shortcut.' Your code reads the sign and picks a path.",
     examples: [
       {
         title: "if / else if / else",
@@ -589,9 +582,9 @@ if (hour < 12) {
 // logs: "Good afternoon"`,
         walkthrough: [
           { code: "const hour = 14;", explanation: "Stores the current hour." },
-          { code: "if (hour < 12)", explanation: "Checks whether it's before noon — it isn't, so this block is skipped." },
-          { code: "} else if (hour < 18) {", explanation: "Only checked because the first condition was false; checks whether it's before 6pm — it is, so this block runs." },
-          { code: "} else {", explanation: "Would run only if neither condition above matched." },
+          { code: "if (hour < 12)", explanation: "Is it before noon? No, so this block is skipped." },
+          { code: "} else if (hour < 18) {", explanation: "Checked only because the first test failed. Is it before 6pm? Yes, so this block runs." },
+          { code: "} else {", explanation: "Runs only if neither test above matched." },
         ],
       },
       {
@@ -601,15 +594,16 @@ if (hour < 12) {
 const message = age >= 18 ? "You can vote" : "You can't vote yet";
 console.log(message); // "You can vote"`,
         explanation:
-          "For a simple choice between two values, a ternary (`condition ? ifTrue : ifFalse`) is a compact one-line alternative to a full if/else.",
+          "For a simple choice between two values, a ternary (`condition ? ifTrue : ifFalse`) is a one-line alternative to if/else.",
       },
     ],
     howItWorks: `
-JavaScript checks the condition inside the parentheses. If it evaluates to
-a **truthy** value — basically, anything except \`false\`, \`0\`, \`""\`, \`null\`,
-\`undefined\`, or \`NaN\` (those are the "falsy" values) — it runs that block and
-skips the rest. Otherwise, it moves to the next \`else if\` and repeats the
-check, finally falling into \`else\` if nothing else matched.
+JavaScript checks the condition in the parentheses. If it's **truthy**
+(anything except the "falsy" values \`false\`, \`0\`, \`""\`, \`null\`,
+\`undefined\` and \`NaN\`), it runs that block and skips the rest.
+
+Otherwise it moves to the next \`else if\` and checks again, finally falling
+into \`else\` if nothing matched.
     `.trim(),
     diagram: `
 Check condition
@@ -621,22 +615,19 @@ Check condition
 check next condition (repeat)
     `.trim(),
     whyItExists: `
-A program that always does the exact same thing regardless of input isn't
-very useful. Conditions let code adapt its behavior to the current data or
-situation.
+A program that always does the same thing, whatever the input, isn't very
+useful. Conditions let code adapt to the current data or situation.
     `.trim(),
     whenToUse: `
-Use conditions whenever your program's next step depends on data you don't
-know in advance — a user's input, a value from an API, the current time.
-Anytime you can describe your logic with the word "if," you're describing
-a condition.
+Use conditions when the next step depends on data you don't know in
+advance: user input, an API value, the current time. If you can describe
+your logic with "if," it's a condition.
     `.trim(),
     whenNotToUse: `
-If every branch of an \`if/else\` ends up doing almost the same thing, a
-condition may be hiding a simpler solution — like a lookup object or a
-default value — that avoids repeating yourself. And a \`switch\` (or a
-lookup) usually reads better than five or more chained \`else if\` blocks
-checking the same variable.
+If every branch does almost the same thing, a simpler solution like a
+lookup object or a default value may avoid the repetition. A \`switch\` (or
+a lookup) also reads better than five or more \`else if\` blocks checking
+the same variable.
     `.trim(),
     commonMistakes: [
       "Forgetting the `else` and assuming a variable is always set inside the `if` block.",
@@ -649,24 +640,24 @@ checking the same variable.
       { difficulty: "Hard", prompt: "Rewrite a chain of 4 `else if` checks using a `switch` statement instead." },
     ],
     interviewQuestions: [
-      { question: "What counts as a 'falsy' value in JavaScript, and how does that affect an `if` condition?", answer: "`false`, `0`, `-0`, `0n`, `\"\"` (empty string), `null`, `undefined`, and `NaN` are the only falsy values — every other value, including `\"0\"`, `[]`, and `{}`, is truthy. An `if` condition doesn't require a literal boolean; it converts whatever it's given to `true`/`false` using these rules before deciding which branch to run." },
-      { question: "What is a ternary operator?", answer: "A compact, single-expression conditional: `condition ? valueIfTrue : valueIfFalse`. Unlike `if/else`, it's an expression that produces a value, so it can be used directly inside an assignment, a function argument, or a template string, not just as a standalone statement." },
-      { question: "When would you reach for `switch` instead of `if/else`?", answer: "When you're comparing one single value against several specific, known possibilities — a status code, a day of the week, a menu option. It often reads more clearly than a long `else if` chain that keeps repeating the same variable, though for a small number of branches either works fine." },
-      { question: "What's the difference between chaining `else if` and writing separate standalone `if` statements?", answer: "In an `else if` chain, only one branch ever runs — once a condition matches, the rest are skipped entirely. With separate `if` statements, every single one is checked independently and can run, even if an earlier one already matched, which usually isn't what's intended when the conditions overlap." },
-      { question: "What happens if an `if` condition isn't a literal `true` or `false`, like `if (user)`?", answer: "JavaScript coerces whatever value the condition evaluates to into a boolean before deciding, using the truthy/falsy rules — `if (user)` runs its block whenever `user` is any truthy value (an object, a non-empty string, a non-zero number), and skips it for any falsy value, without ever needing an explicit `=== true`." },
-      { question: "Does `switch` compare its cases with `==` or `===`?", answer: "Strict equality (`===`) — a `switch` never coerces types when matching, so `switch (1) { case \"1\": ... }` will not match, even though `1 == \"1\"` is `true` with loose equality." },
-      { question: "What is 'fallthrough' in a `switch` statement, and why does `break` matter?", answer: "Without a `break`, execution doesn't stop after a matching case's code runs — it keeps falling into the code of the next case(s) below it, executing them too, until it hits a `break` or the end of the `switch`. `break` is what stops that and makes each case behave like an isolated branch." },
-      { question: "Can you chain multiple `else if` blocks indefinitely? What decides which one actually runs?", answer: "Yes, there's no limit — JavaScript checks each condition top to bottom and runs the code for the very first one that evaluates truthy, then skips every remaining `else if`/`else` in that chain, even if a later condition would also have matched." },
-      { question: "What's the practical difference between nesting `if` statements and chaining them with `else if`?", answer: "Nested `if`s check conditions that depend on each other (an inner check only makes sense once an outer one already passed), while an `else if` chain checks a series of mutually exclusive alternatives for the same overall decision. Using deep nesting for what's really a set of alternatives makes code harder to read than a flat `else if` chain would." },
-      { question: "Why might a lookup object be a better choice than a long `else if` chain?", answer: "When every branch just maps one specific input to one specific output (e.g. a status code to a message), a plain object used as a lookup table (`messages[code]`) replaces the whole chain with a single property access — it's shorter, avoids repeating the same variable name in every condition, and is easy to extend by just adding a key." },
-      { question: "Why does `if (0)` skip its block, but `if (\"0\")` run it?", answer: "The number `0` is one of the fixed falsy values, so it coerces to `false`. The string `\"0\"` is a non-empty string, and every non-empty string is truthy regardless of its content — string truthiness depends only on length, not on what characters are inside." },
-      { question: "Can a `switch` statement handle range checks or complex boolean conditions directly, like `age > 18`?", answer: "Not directly, since `switch` matches by strict equality against a fixed set of values. A common workaround is `switch (true) { case age > 18: ... }`, which works because each `case` expression is evaluated and compared against `true` — but at that point an `if/else if` chain is usually clearer." },
-      { question: "Beyond syntax, what's a real difference between a ternary and an `if/else` statement?", answer: "A ternary is an expression — it always produces a value that can be used directly (assigned, passed as an argument, interpolated into a string). An `if/else` is a statement — it doesn't produce a usable value itself, so using it to choose a value requires first declaring a variable and assigning to it inside each branch." },
-      { question: "Output-prediction: does `if ([]) console.log(\"truthy\"); else console.log(\"falsy\");` log \"truthy\" or \"falsy\", and why does that surprise people?", answer: "It logs `\"truthy\"`. An empty array is an object, and every object — including `[]` and `{}` — is truthy regardless of whether it has any contents; only the specific fixed list of falsy values (`false`, `0`, `\"\"`, `null`, `undefined`, `NaN`) is falsy, and an empty array isn't on that list." },
-      { question: "Output-prediction: what does `switch (1) { case \"1\": console.log(\"string one\"); break; case 1: console.log(\"number one\"); break; default: console.log(\"none\"); }` log?", answer: "It logs `\"number one\"`. `switch` compares with strict equality, so the number `1` doesn't match the case `\"1\"` (different types) and falls through to check `case 1`, which matches exactly." },
-      { question: "Output-prediction: what does `let result; if (false) { result = \"a\"; } console.log(result);` log?", answer: "It logs `undefined`. `result` is declared but never assigned, since the `if` block's condition is `false` and its body never runs — there's no `else` to give it a value either, so it keeps its default `undefined`." },
-      { question: "Trap: what's the bug in `switch (color) { case \"red\": console.log(\"stop\"); case \"green\": console.log(\"go\"); break; }`, and what does it print for `color = \"red\"`?", answer: "It prints both `\"stop\"` and `\"go\"`. The `\"red\"` case is missing a `break`, so after running its own code, execution falls through into the next case's code unconditionally, regardless of whether `color` actually matched `\"green\"`." },
-      { question: "Output-prediction: what does `age >= 18 ? \"adult\" : age >= 13 ? \"teen\" : \"child\"` evaluate to when `age` is `15`?", answer: "`\"teen\"`. Nested ternaries evaluate like chained `else if`s: `age >= 18` is `false`, so the expression falls to the part after the first `:`, which is itself another ternary — `age >= 13` is `true` for `15`, so that inner ternary evaluates to `\"teen\"`." },
+      { question: "What counts as a 'falsy' value in JavaScript, and how does that affect an `if` condition?", answer: "`false`, `0`, `-0`, `0n`, `\"\"` (empty string), `null`, `undefined` and `NaN` are the only falsy values. Everything else, including `\"0\"`, `[]` and `{}`, is truthy. An `if` doesn't need a real boolean; it converts its condition to `true`/`false` with these rules." },
+      { question: "What is a ternary operator?", answer: "A one-expression conditional: `condition ? valueIfTrue : valueIfFalse`. Unlike `if/else`, it produces a value, so you can use it directly in an assignment, a function argument or a template string." },
+      { question: "When would you reach for `switch` instead of `if/else`?", answer: "When you compare one value against several known possibilities: a status code, a day of the week, a menu option. It often reads better than a long `else if` chain repeating the same variable. For a few branches, either is fine." },
+      { question: "What's the difference between chaining `else if` and writing separate standalone `if` statements?", answer: "In an `else if` chain, only one branch runs; once a condition matches, the rest are skipped. Separate `if`s are each checked and can all run, even if an earlier one matched, which is usually not what you want when conditions overlap." },
+      { question: "What happens if an `if` condition isn't a literal `true` or `false`, like `if (user)`?", answer: "JavaScript converts the value to a boolean using the truthy/falsy rules. `if (user)` runs when `user` is truthy (an object, a non-empty string, a non-zero number) and skips for any falsy value. No `=== true` needed." },
+      { question: "Does `switch` compare its cases with `==` or `===`?", answer: "Strict equality (`===`). `switch` never converts types, so `switch (1) { case \"1\": ... }` won't match, even though `1 == \"1\"` is `true`." },
+      { question: "What is 'fallthrough' in a `switch` statement, and why does `break` matter?", answer: "Without a `break`, execution doesn't stop after a matching case: it falls into the next case's code and runs it too, until a `break` or the end of the `switch`. `break` makes each case an isolated branch." },
+      { question: "Can you chain multiple `else if` blocks indefinitely? What decides which one actually runs?", answer: "Yes, there's no limit. JavaScript checks conditions top to bottom, runs the first truthy one and skips the rest of the chain, even if a later condition would also match." },
+      { question: "What's the practical difference between nesting `if` statements and chaining them with `else if`?", answer: "Nested `if`s check conditions that depend on each other (the inner check only matters once the outer one passed). An `else if` chain checks mutually exclusive alternatives for one decision. Deep nesting for what are really alternatives is harder to read than a flat chain." },
+      { question: "Why might a lookup object be a better choice than a long `else if` chain?", answer: "When each branch just maps one input to one output (e.g. a status code to a message), a lookup object (`messages[code]`) replaces the chain with one property access. It's shorter, doesn't repeat the variable, and you extend it by adding a key." },
+      { question: "Why does `if (0)` skip its block, but `if (\"0\")` run it?", answer: "The number `0` is falsy. The string `\"0\"` is non-empty, and every non-empty string is truthy, whatever its characters. String truthiness depends only on length." },
+      { question: "Can a `switch` statement handle range checks or complex boolean conditions directly, like `age > 18`?", answer: "Not directly; `switch` matches fixed values with strict equality. A workaround is `switch (true) { case age > 18: ... }`, which compares each `case` expression with `true`. But an `if/else if` chain is usually clearer." },
+      { question: "Beyond syntax, what's a real difference between a ternary and an `if/else` statement?", answer: "A ternary is an expression: it produces a value you can assign, pass as an argument or put in a string. An `if/else` is a statement that produces no value, so choosing a value with it means declaring a variable and assigning it in each branch." },
+      { question: "Output-prediction: does `if ([]) console.log(\"truthy\"); else console.log(\"falsy\");` log \"truthy\" or \"falsy\", and why does that surprise people?", answer: "It logs `\"truthy\"`. An empty array is an object, and every object (including `[]` and `{}`) is truthy, even when empty. Only the fixed falsy values (`false`, `0`, `\"\"`, `null`, `undefined`, `NaN`) are falsy." },
+      { question: "Output-prediction: what does `switch (1) { case \"1\": console.log(\"string one\"); break; case 1: console.log(\"number one\"); break; default: console.log(\"none\"); }` log?", answer: "It logs `\"number one\"`. `switch` uses strict equality, so `1` doesn't match `\"1\"` (different types) but does match `case 1`." },
+      { question: "Output-prediction: what does `let result; if (false) { result = \"a\"; } console.log(result);` log?", answer: "It logs `undefined`. The `if` body never runs and there's no `else`, so `result` is never assigned and stays `undefined`." },
+      { question: "Trap: what's the bug in `switch (color) { case \"red\": console.log(\"stop\"); case \"green\": console.log(\"go\"); break; }`, and what does it print for `color = \"red\"`?", answer: "It prints `\"stop\"` and `\"go\"`. The `\"red\"` case has no `break`, so execution falls through into the `\"green\"` code, even though `color` isn't `\"green\"`." },
+      { question: "Output-prediction: what does `age >= 18 ? \"adult\" : age >= 13 ? \"teen\" : \"child\"` evaluate to when `age` is `15`?", answer: "`\"teen\"`. Nested ternaries work like chained `else if`s: `age >= 18` is `false`, so it moves to the second ternary, where `age >= 13` is `true`, giving `\"teen\"`." },
     ],
     prerequisites: ["operators"],
     relatedTopics: ["operators", "loops"],
@@ -678,10 +669,10 @@ checking the same variable.
     level: "beginner",
     description: "Repeating an action multiple times without copy-pasting code.",
     explanation: `
-Sometimes you need to do the same thing many times — print every item in a
-list, check every user, count from 1 to 100. Writing that out by hand would
-be tedious and error-prone. A **loop** repeats a block of code automatically,
-either a fixed number of times or until a condition is no longer true.
+Often you need to do the same thing many times: print every item in a list,
+check every user, count from 1 to 100. Writing that out by hand is tedious
+and error-prone. A **loop** repeats a block of code for you, either a fixed
+number of times or until a condition is no longer true.
 
 The two you'll use most:
 
@@ -689,7 +680,7 @@ The two you'll use most:
 - **while** — when you want to repeat until some condition becomes false
     `.trim(),
     analogy:
-      "A loop is like giving someone instructions: 'Keep folding laundry until the basket is empty.' They don't need a new instruction for every item — just one instruction repeated.",
+      "A loop is like telling someone: 'Keep folding laundry until the basket is empty.' One instruction, repeated, instead of a new one for every item.",
     examples: [
       {
         title: "A basic for loop",
@@ -700,10 +691,10 @@ The two you'll use most:
         explanation:
           "`i = 1` sets the start, `i <= 5` is the condition checked before each run, and `i++` increases `i` after each run.",
         walkthrough: [
-          { code: "let i = 1", explanation: "Runs once, before the loop starts: creates a counter starting at 1." },
-          { code: "i <= 5", explanation: "Checked before every pass — the loop keeps going as long as this is true." },
-          { code: "console.log(i);", explanation: "The part that actually repeats — prints the current value of i." },
-          { code: "i++", explanation: "Runs after every pass, increasing i by 1 before the condition is checked again." },
+          { code: "let i = 1", explanation: "Runs once, before the loop starts: creates a counter at 1." },
+          { code: "i <= 5", explanation: "Checked before every pass. The loop continues while this is true." },
+          { code: "console.log(i);", explanation: "The part that repeats: prints the current i." },
+          { code: "i++", explanation: "Runs after every pass, adding 1 to i before the next check." },
         ],
       },
       {
@@ -724,14 +715,13 @@ for (const fruit of fruits) {
 }
 // logs apple, banana, cherry`,
         explanation:
-          "`for...of` loops directly over the values in an array (or any other iterable), so there's no counter to manage and no risk of an off-by-one error.",
+          "`for...of` loops over the values in an array (or any iterable), so there's no counter to manage and no off-by-one risk.",
       },
     ],
     howItWorks: `
-Before each pass through the loop, JavaScript checks the condition. If it's
-true, it runs the loop's body, then checks again. This repeats until the
-condition becomes false, at which point the loop stops and the program
-continues after it.
+Before each pass, JavaScript checks the condition. If it's true, it runs the
+loop body and checks again. When the condition becomes false, the loop stops
+and the program continues after it.
     `.trim(),
     diagram: `
 Check condition
@@ -743,22 +733,19 @@ Check condition
  exit loop
     `.trim(),
     whyItExists: `
-Loops let you write one small block of logic and apply it to many items or
-many repetitions, instead of duplicating code — which would be both tedious
-and hard to change later.
+Loops let you write one block of logic and apply it to many items or
+repetitions, instead of duplicating code that's tedious to write and hard to
+change.
     `.trim(),
     whenToUse: `
-Use a loop whenever you need to repeat the same action for every item in a
-collection, or repeat something an unknown number of times until a
-condition is met — processing a list, retrying a request, counting down a
-timer.
+Use a loop to repeat an action for every item in a collection, or to repeat
+something until a condition is met: processing a list, retrying a request,
+counting down a timer.
     `.trim(),
     whenNotToUse: `
-If you already know you only need to do something a fixed, small number of
-times, a loop can be overkill — a couple of plain repeated statements are
-sometimes clearer. And for common patterns like transforming every item in
-an array, methods like \`.map()\` and \`.filter()\` are usually more readable
-than a manual loop.
+For a small, fixed number of repeats, a couple of plain statements can be
+clearer than a loop. And to transform or filter every item in an array,
+\`.map()\` and \`.filter()\` usually read better than a manual loop.
     `.trim(),
     commonMistakes: [
       "Forgetting to update the loop variable, causing an infinite loop (e.g. forgetting `i++`).",
@@ -771,24 +758,24 @@ than a manual loop.
       { difficulty: "Hard", prompt: "Use a nested loop to print a 5x5 grid of `*` characters." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between `for` and `while`?", answer: "A `for` loop bundles the counter's setup, condition, and update into one line, which makes it the natural fit when you know in advance how many times (or over what range) you need to repeat. A `while` loop only has a condition, checked before each pass, making it the natural fit when repetition depends on something that isn't a simple counter — no fixed number of iterations known ahead of time." },
-      { question: "What causes an infinite loop?", answer: "A loop whose condition never becomes false — most often because the code that's supposed to change the value being tested (like `i++` in a `for` loop, or updating a flag in a `while` loop) is missing, runs on the wrong branch, or accidentally moves the value in the wrong direction." },
-      { question: "What do `break` and `continue` do?", answer: "`break` immediately exits the loop entirely — no further iterations run. `continue` skips only the rest of the current iteration's body and jumps straight to the next iteration's condition check, without exiting the loop." },
-      { question: "What is a `for...of` loop, and what does it iterate over?", answer: "A loop that iterates directly over the values of any iterable — arrays, strings, Maps, Sets — without needing an index variable at all, so there's no counter to manage and no risk of an off-by-one mistake." },
-      { question: "What's the difference between `for...of` and `for...in`?", answer: "`for...of` iterates over the values of an iterable (an array's elements, a string's characters). `for...in` iterates over the enumerable property keys of an object, given back as strings — using it on an array gives you the indices as strings (`\"0\"`, `\"1\"`, ...) rather than the values, and it's generally reserved for plain objects, not arrays." },
-      { question: "What is a `do...while` loop, and how does it differ from a regular `while` loop?", answer: "It runs the loop body once before checking the condition for the first time, then continues checking before each subsequent pass, like a normal `while`. That guarantees at least one execution of the body even if the condition is false from the start, which a regular `while` loop never does." },
-      { question: "What is an 'off-by-one' error, and how does it typically happen in a loop?", answer: "Running a loop one time too many or too few — usually from using `<=` when `<` was intended (or vice versa) in the condition, causing the loop to include or skip one extra element at a boundary, like looping `i <= array.length` and reading one index past the end of the array." },
-      { question: "Why does modifying an array's length while looping over it with a classic indexed `for` loop cause bugs?", answer: "The loop's index keeps advancing based on the array's current length and contents at each check, but removing or adding elements shifts every subsequent element's index — so the loop can skip an element that shifted into an already-visited position, or process the same element twice, without ever throwing an error to flag it." },
-      { question: "Inside a nested loop, does a plain `break` exit both loops or just the inner one?", answer: "Just the inner loop — a bare `break` only exits the nearest enclosing loop. To exit an outer loop from inside a nested one, you need a labeled statement, like `outer: for (...) { for (...) { break outer; } } `." },
-      { question: "Can you use `continue` inside a `for...of` loop?", answer: "Yes — it works exactly like in any other loop, skipping the rest of the current iteration's body and moving on to the next value in the iterable." },
-      { question: "Why is `for...of` generally preferred over a classic indexed `for` loop when you just need each value?", answer: "It removes an entire category of bugs tied to manually managing an index — off-by-one errors, wrong comparison operators, forgetting to increment — and it reads more directly as 'for each value in this collection,' since there's no counter variable cluttering the intent." },
-      { question: "What's a key behavior difference between a classic `for` loop and `.forEach()`?", answer: "`.forEach()` calls a callback function once per element, which means it has its own function scope per call and works well with `let`/`const` closures naturally, but it also means `break`/`continue`/`return` don't affect the overall iteration the way they do in a real loop — you can't stop a `.forEach()` early." },
-      { question: "Can `break` be used inside `.forEach()`? Why or why not?", answer: "No — `break` is a loop-control statement that only works inside actual loop constructs (`for`, `while`, `do...while`). `.forEach()` is a regular function that happens to be called repeatedly, not a loop syntactically, so `break` inside its callback is a `SyntaxError`. To stop early, you need a real loop, `for...of` with `break`, or a method like `.some()`/`.find()` that stops itself once satisfied." },
-      { question: "Why does a `let` counter in a `for` loop create a new binding on every iteration, and why does that matter for closures?", answer: "The language spec specifically defines `for (let i ...)` to re-create and re-initialize a fresh `i` binding for each iteration (copying forward the previous value), rather than reusing one shared binding for the whole loop. This is exactly what lets a closure created inside the loop body — like a `setTimeout` callback — capture that iteration's own separate value of `i`, instead of every callback sharing one final value the way they would with `var`." },
-      { question: "Output-prediction: what does `for (let i = 0; i < 3; i++) { if (i === 1) continue; console.log(i); }` log?", answer: "It logs `0` then `2`. When `i` is `1`, `continue` skips the rest of that iteration's body — the `console.log` never runs for `i = 1` — and the loop moves straight on to `i = 2`." },
-      { question: "Output-prediction: what does `outer: for (let i = 0; i < 2; i++) { for (let j = 0; j < 2; j++) { if (j === 1) continue outer; console.log(i, j); } } ` log?", answer: "It logs `0 0` then `1 0`. `continue outer` skips straight to the next iteration of the labeled outer loop as soon as `j` is `1`, before the inner loop's `console.log` for `j = 1` ever runs — so each outer pass only ever gets to log its `j = 0` case." },
-      { question: "Trap: what's wrong with `let i = 0; while (i < 5) { console.log(i); }`, and what actually happens when it runs?", answer: "It's an infinite loop that logs `0` forever — nothing inside the loop body ever changes `i`, so the condition `i < 5` stays true on every check. It's missing something like `i++;` inside the block to make progress toward the loop eventually ending." },
-      { question: "Output-prediction: what does `const arr = [\"a\", \"b\", \"c\"]; for (const index in arr) { console.log(typeof index); }` log?", answer: "It logs `\"string\"` three times. `for...in` enumerates an array's property keys, and array indices — even though you'd normally think of them as numbers — are handed over as strings (`\"0\"`, `\"1\"`, `\"2\"`), which is one reason `for...in` is discouraged for arrays in favor of `for...of` or indexed access." },
+      { question: "What's the difference between `for` and `while`?", answer: "A `for` loop puts the counter's setup, condition and update on one line, so it fits when you know how many times (or over what range) to repeat. A `while` loop has only a condition, checked before each pass, so it fits when repetition depends on something other than a simple counter." },
+      { question: "What causes an infinite loop?", answer: "A condition that never becomes false. Usually the code that should change the tested value (like `i++`, or updating a flag in a `while`) is missing, runs on the wrong branch, or moves the value the wrong way." },
+      { question: "What do `break` and `continue` do?", answer: "`break` exits the loop immediately; no more iterations run. `continue` skips the rest of the current iteration and jumps to the next condition check, without leaving the loop." },
+      { question: "What is a `for...of` loop, and what does it iterate over?", answer: "A loop over the values of any iterable (arrays, strings, Maps, Sets) with no index variable, so there's no counter to manage and no off-by-one risk." },
+      { question: "What's the difference between `for...of` and `for...in`?", answer: "`for...of` loops over an iterable's values (an array's elements, a string's characters). `for...in` loops over an object's enumerable property keys, as strings. On an array it gives indices as strings (`\"0\"`, `\"1\"`, ...), not values, so it's generally kept for plain objects." },
+      { question: "What is a `do...while` loop, and how does it differ from a regular `while` loop?", answer: "It runs the body once before the first condition check, then checks before each later pass like a normal `while`. So the body always runs at least once, even if the condition is false from the start." },
+      { question: "What is an 'off-by-one' error, and how does it typically happen in a loop?", answer: "Running a loop one time too many or too few, usually by using `<=` instead of `<` (or the reverse). For example, looping `i <= array.length` reads one index past the end of the array." },
+      { question: "Why does modifying an array's length while looping over it with a classic indexed `for` loop cause bugs?", answer: "Adding or removing elements shifts the indexes of everything after them, while the loop index keeps advancing. So the loop can skip an element or process one twice, with no error to warn you." },
+      { question: "Inside a nested loop, does a plain `break` exit both loops or just the inner one?", answer: "Just the inner one; a bare `break` exits only the nearest loop. To exit an outer loop from inside, use a label, like `outer: for (...) { for (...) { break outer; } } `." },
+      { question: "Can you use `continue` inside a `for...of` loop?", answer: "Yes. It works as in any loop: it skips the rest of the current iteration and moves to the next value." },
+      { question: "Why is `for...of` generally preferred over a classic indexed `for` loop when you just need each value?", answer: "It removes the bugs that come with managing an index by hand (off-by-one errors, wrong comparisons, forgetting to increment), and it reads directly as \"for each value in this collection.\"" },
+      { question: "What's a key behavior difference between a classic `for` loop and `.forEach()`?", answer: "`.forEach()` calls a callback once per element, so each call has its own function scope, which works naturally with `let`/`const` closures. But `break`/`continue`/`return` can't control the iteration the way they do in a real loop: you can't stop a `.forEach()` early." },
+      { question: "Can `break` be used inside `.forEach()`? Why or why not?", answer: "No. `break` only works inside real loops (`for`, `while`, `do...while`). `.forEach()` is a function called repeatedly, not loop syntax, so `break` in its callback is a `SyntaxError`. To stop early, use `for...of` with `break`, or a method like `.some()`/`.find()` that stops once satisfied." },
+      { question: "Why does a `let` counter in a `for` loop create a new binding on every iteration, and why does that matter for closures?", answer: "The spec defines `for (let i ...)` to create a fresh `i` for each iteration (carrying over the previous value), instead of one shared binding. That lets a closure in the loop body, like a `setTimeout` callback, capture that iteration's own `i`, instead of all callbacks sharing one final value as with `var`." },
+      { question: "Output-prediction: what does `for (let i = 0; i < 3; i++) { if (i === 1) continue; console.log(i); }` log?", answer: "It logs `0` then `2`. When `i` is `1`, `continue` skips the `console.log` and the loop moves on to `i = 2`." },
+      { question: "Output-prediction: what does `outer: for (let i = 0; i < 2; i++) { for (let j = 0; j < 2; j++) { if (j === 1) continue outer; console.log(i, j); } } ` log?", answer: "It logs `0 0` then `1 0`. When `j` is `1`, `continue outer` jumps to the next outer iteration before the inner `console.log` runs, so each outer pass only logs `j = 0`." },
+      { question: "Trap: what's wrong with `let i = 0; while (i < 5) { console.log(i); }`, and what actually happens when it runs?", answer: "It's an infinite loop that logs `0` forever. Nothing in the body changes `i`, so `i < 5` stays true. It needs something like `i++;` inside the block." },
+      { question: "Output-prediction: what does `const arr = [\"a\", \"b\", \"c\"]; for (const index in arr) { console.log(typeof index); }` log?", answer: "It logs `\"string\"` three times. `for...in` gives an array's property keys, and indices come as strings (`\"0\"`, `\"1\"`, `\"2\"`). That's one reason to prefer `for...of` or indexed access for arrays." },
     ],
     prerequisites: ["conditions"],
     relatedTopics: ["conditions", "functions", "arrays"],
@@ -800,16 +787,16 @@ than a manual loop.
     level: "beginner",
     description: "A reusable, named block of code that performs a specific task.",
     explanation: `
-As programs grow, you end up needing to do the same task in multiple
-places — calculate a total, validate an email, format a date. Instead of
-repeating that logic everywhere, you wrap it in a **function**: a named
-block of code you can "call" whenever you need it.
+As programs grow, you need the same task in several places: calculate a
+total, check an email, format a date. Instead of repeating that logic, wrap
+it in a **function**: a named block of code you can "call" whenever you
+need it.
 
-A function can accept inputs (called **parameters**) and can send back a
-result (using \`return\`).
+A function can take inputs (**parameters**) and send back a result (with
+\`return\`).
     `.trim(),
     analogy:
-      "A function is like a recipe. You give it ingredients (parameters), it follows a set of steps, and it hands you back a finished dish (the return value). You can reuse the same recipe as many times as you want.",
+      "A function is like a recipe. You give it ingredients (parameters), it follows the steps, and it hands back a finished dish (the return value). You can reuse it as often as you like.",
     examples: [
       {
         title: "Declaring and calling a function",
@@ -822,41 +809,38 @@ console.log(result); // 5`,
         explanation:
           "`add` takes two parameters, `a` and `b`, and returns their sum. Calling `add(2, 3)` runs that code with `a = 2` and `b = 3`.",
         walkthrough: [
-          { code: "function add(a, b) {", explanation: "Defines a function named add that expects two inputs, a and b." },
-          { code: "return a + b;", explanation: "Sends the sum of a and b back to wherever add was called." },
-          { code: "}", explanation: "Marks the end of the function's code." },
-          { code: "const result = add(2, 3);", explanation: "Calls add with 2 and 3, storing the returned value (5) in result." },
+          { code: "function add(a, b) {", explanation: "Defines a function named add that takes two inputs, a and b." },
+          { code: "return a + b;", explanation: "Sends the sum back to wherever add was called." },
+          { code: "}", explanation: "Ends the function's code." },
+          { code: "const result = add(2, 3);", explanation: "Calls add with 2 and 3 and stores the returned 5 in result." },
         ],
       },
       {
         title: "Arrow function shorthand",
         code: `const add = (a, b) => a + b;`,
-        explanation: "Arrow functions are a shorter way to write simple functions, especially common in modern JavaScript.",
+        explanation: "Arrow functions are a shorter way to write simple functions, common in modern JavaScript.",
       },
     ],
     howItWorks: `
-When you call a function, JavaScript pauses the current line, jumps into
-the function's code, runs it with the arguments you passed in, and — if
-there's a \`return\` statement — sends a value back to exactly where the
-function was called from. Execution then continues from there.
+When you call a function, JavaScript pauses the current line, runs the
+function's code with the arguments you passed, and, if there's a
+\`return\`, sends a value back to where it was called. Execution then
+continues from there.
     `.trim(),
     whyItExists: `
-Functions let you name a piece of logic once and reuse it anywhere, which
-keeps code shorter, easier to test, and easier to change — you only fix a
-bug in one place instead of everywhere it was copy-pasted.
+Functions let you name a piece of logic once and reuse it anywhere. Code
+stays shorter, easier to test and easier to change: you fix a bug in one
+place instead of every copy.
     `.trim(),
     whenToUse: `
-Write a function any time you find yourself about to write the same few
-lines of logic more than once, or whenever a chunk of code does one clear,
-nameable thing — validating an email, calculating a total, formatting a
-date.
+Write a function when you're about to repeat the same few lines, or when a
+chunk of code does one clear, nameable thing: checking an email,
+calculating a total, formatting a date.
     `.trim(),
     whenNotToUse: `
-Don't wrap a single line you only use once in its own function just for
-the sake of it — that can add an extra layer of indirection without any
-real benefit. And if a function is trying to do five unrelated things,
-that's usually a sign it should be split into several smaller, focused
-functions instead.
+Don't wrap a one-off single line in a function just because you can; it
+adds indirection with no benefit. And a function doing five unrelated
+things should usually be split into smaller, focused ones.
     `.trim(),
     commonMistakes: [
       "Forgetting to `return` a value and expecting the function to give one back automatically.",
@@ -869,36 +853,36 @@ functions instead.
       { difficulty: "Hard", prompt: "Write a function `average(numbers)` that takes an array and returns the average value." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between a parameter and an argument?", answer: "A parameter is the placeholder name written in the function's own definition (`function add(a, b)` — `a` and `b` are parameters). An argument is the actual value supplied at the call site (`add(2, 3)` — `2` and `3` are arguments)." },
-      { question: "What happens if a function has no `return` statement?", answer: "It implicitly returns `undefined` once execution reaches the end of the function body — calling it never throws, but any code that tries to use its \"result\" will be working with `undefined`." },
-      { question: "What's the difference between a function declaration and an arrow function?", answer: "Beyond the shorter syntax, arrow functions don't have their own `this`, `arguments` object, or `super`, and can't be used as constructors with `new` — they inherit `this` from the surrounding scope instead of getting a new one based on how they're called. Function declarations get their own `this` (determined by the call) and their own `arguments` object." },
-      { question: "What's the difference between a function declaration and a function expression?", answer: "A function declaration (`function foo() {}`) is a standalone statement that's hoisted along with its full body, so it can be called earlier in the code than where it's written. A function expression (`const foo = function () {}`) creates the function as part of an assignment; the variable follows normal `let`/`const`/`var` hoisting rules, so the function itself isn't callable until that assignment line has actually run." },
-      { question: "Can a function have more than one `return` statement?", answer: "Yes — a function can contain as many `return` statements as needed, often one per branch of an `if/else`. Whichever one actually executes first ends the function immediately at that point; any code after it in the function body doesn't run." },
-      { question: "What happens if you call a function with fewer arguments than it has parameters?", answer: "The missing parameters are simply set to `undefined` (or to their default value, if one is specified) — JavaScript doesn't throw an error or complain about a mismatched argument count, unlike many statically typed languages." },
-      { question: "What happens if you call a function with more arguments than it has declared parameters?", answer: "The extra arguments are accepted without error; they're just not bound to any named parameter. They're still accessible inside the function through the `arguments` object (in a regular function) or by declaring a rest parameter (`...args`) to collect them explicitly." },
-      { question: "What is a default parameter, and when does its default value actually kick in?", answer: "A value specified in the function signature (`function greet(name = \"Guest\")`) that's used only when the corresponding argument is `undefined` — either because it was omitted entirely, or explicitly passed as `undefined`. Passing any other falsy value, like `null` or `0`, does not trigger the default." },
-      { question: "What is a rest parameter, and how does it differ from the old `arguments` object?", answer: "`...args` as the last parameter collects any remaining arguments into a real array (`function sum(...nums) { ... }`), so array methods like `.map()` and `.reduce()` work on it directly. The older `arguments` object is available in every regular function automatically without declaring anything, but it's only array-like — it lacks array methods, and it isn't available at all inside arrow functions." },
-      { question: "Are function declarations hoisted? What about function expressions?", answer: "Function declarations are hoisted completely, body included, so they can be called before the line they're written on. Function expressions (and arrow functions) are not hoisted as callable functions — only the variable they're assigned to follows its own declaration's hoisting rules (`undefined` for `var`, or the TDZ for `let`/`const`), so calling one before its assignment line either gets `undefined is not a function` or a TDZ `ReferenceError`." },
-      { question: "What is a callback function?", answer: "A function passed as an argument into another function, to be invoked later — usually once some operation finishes or some event occurs, like the click handler passed to `addEventListener`, or the function passed to `.map()` that's run once per array element." },
-      { question: "What is a higher-order function?", answer: "A function that either takes another function as an argument, returns a function as its result, or both — array methods like `.map()`, `.filter()`, and `.reduce()` are all higher-order functions because each one accepts a callback." },
-      { question: "What is a closure, in plain terms?", answer: "A function that remembers the variables from the scope it was defined in, even after that outer scope has finished running — so a function returned from another function can keep reading and updating variables that technically belong to a call that's already completed." },
-      { question: "What is recursion, and what must a recursive function have to avoid infinite recursion?", answer: "A function that calls itself to solve a smaller version of the same problem, repeating until it reaches a base case simple enough to answer directly without recursing further. Without that base case — a condition that stops the recursive calls — the function keeps calling itself indefinitely until it exceeds the call stack size and throws a `RangeError: Maximum call stack size exceeded`." },
-      { question: "What is an IIFE (Immediately Invoked Function Expression), and why would you use one?", answer: "A function expression that's defined and called in the same statement, typically written as `(function () { ... })();`. It creates a private scope that runs once immediately — historically used before `let`/`const`/modules existed to avoid leaking variables into the global scope; it's much less necessary today but still shows up for one-off setup code." },
-      { question: "Can a function be assigned to a variable, passed as an argument, or returned from another function? What does that make functions in JavaScript?", answer: "Yes to all three — this makes functions \"first-class citizens\" (or first-class values): they can be treated exactly like any other value (a number, a string, an object), stored, passed around, and returned, which is what makes patterns like callbacks, higher-order functions, and closures possible in the first place." },
-      { question: "What's the practical difference between `function foo() {}` and `const foo = function () {}`?", answer: "Both create an equivalent function, but the first is a hoisted declaration usable before its line runs, while the second is an expression bound to a `const`, unusable until that assignment line executes. A subtler difference: the declaration's function always has the name `foo` for stack traces even if reassigned elsewhere, while a truly anonymous expression only gets an inferred name from the variable it's assigned to at creation time." },
-      { question: "Why don't arrow functions have their own `this`? Where do they get it from instead?", answer: "Arrow functions were deliberately designed without their own `this` binding — they don't create a new `this` when called, but instead look up `this` lexically, exactly like any other variable: from the nearest enclosing non-arrow function (or the module/global scope) at the point where the arrow function was defined, not where it's called from." },
-      { question: "Why can't arrow functions be used as constructors with `new`?", answer: "Using `new` relies on the function creating its own fresh `this` bound to the newly constructed object — arrow functions never create their own `this` at all, so there's nothing for `new` to bind, and JavaScript throws a `TypeError: X is not a constructor` if you try." },
-      { question: "What is a pure function? Why are pure functions easier to test and reason about?", answer: "A function that, given the same inputs, always returns the same output and causes no observable side effects — it doesn't modify anything outside itself (no mutating arguments, no touching global state, no I/O). That makes it trivial to test in isolation (call it, check the output, no setup or teardown needed) and safe to reason about without tracking any state beyond its own inputs." },
-      { question: "What does it mean for JavaScript functions to be 'first-class citizens'?", answer: "It means functions are treated as regular values rather than a special separate category — they can be stored in variables, put into arrays or object properties, passed as arguments, and returned from other functions, just like any number or string could be." },
-      { question: "What's the difference between a function's arity and the number of arguments it's actually called with?", answer: "Arity is a fixed property of the function's own definition — the number of parameters it declares (`function add(a, b) {}` has an arity of 2). The number of arguments is decided per call site and can be more, fewer, or exactly equal to the arity; JavaScript doesn't enforce that the two match." },
-      { question: "Are extra arguments passed beyond a function's declared parameters lost?", answer: "No — they're simply not assigned to a named parameter, but they still exist and are reachable, either through the `arguments` object in a regular function, or by explicitly capturing them with a rest parameter (`...rest`)." },
-      { question: "What is currying, and how does it relate to closures?", answer: "Transforming a function that takes multiple arguments into a sequence of functions that each take one argument and return the next function in the chain, e.g. `add(a)(b)(c)` instead of `add(a, b, c)`. It relies entirely on closures — each returned inner function keeps access to the arguments already supplied to the outer functions that produced it." },
-      { question: "Why can't arrow functions have their own `arguments` object?", answer: "It follows the same design as `this` — arrow functions don't create their own execution context binding for `arguments` either, so referencing `arguments` inside one looks it up lexically from the nearest enclosing regular function instead. Referencing `arguments` inside an arrow function with no enclosing regular function throws a `ReferenceError`." },
-      { question: "Output-prediction: what does `function outer() { let count = 0; return function () { count++; return count; }; } const counter = outer(); console.log(counter()); console.log(counter());` log?", answer: "It logs `1` then `2`. `outer()` runs once and returns the inner function, but that inner function keeps a closure over `count` from that specific call — each time `counter()` is invoked afterward, it reads and updates that same remembered `count` rather than starting fresh." },
-      { question: "Output-prediction: what does `sayHi(); function sayHi() { console.log(\"hi\"); }` do?", answer: "It logs `\"hi\"` successfully. Function declarations are hoisted along with their entire body, so `sayHi` is already fully defined and callable before execution even reaches the line where it's written." },
-      { question: "Output-prediction: what does `sayBye(); const sayBye = function () { console.log(\"bye\"); };` do?", answer: "It throws `ReferenceError: Cannot access 'sayBye' before initialization`. `sayBye` is a `const` binding, so it's hoisted but left in the Temporal Dead Zone until its declaration line runs — the fact that the value being assigned is a function doesn't change how `const` hoisting works." },
-      { question: "Output-prediction: given `const obj = { name: \"Ana\", greet() { console.log(this.name); }, greetArrow: () => console.log(this.name) };`, what does `obj.greet()` log compared to `obj.greetArrow()`?", answer: "`obj.greet()` logs `\"Ana\"` — a regular method's `this` is determined by its call-site, and calling it as `obj.greet()` binds `this` to `obj`. `obj.greetArrow()` does not log `\"Ana\"` — since arrow functions inherit `this` lexically from their surrounding scope rather than from how they're called, `this` here is whatever `this` was outside the object literal, never `obj`, regardless of how `greetArrow` is invoked." },
-      { question: "Output-prediction: given `function add(a, b = 10) { return a + b; }`, what do `add(5)`, `add(5, undefined)`, and `add(5, null)` each return?", answer: "`15`, `15`, then `5`. The default parameter only applies when the argument is exactly `undefined` — both omitting it and passing `undefined` explicitly trigger the default `10`. Passing `null`, however, is a real, present value, so the default is skipped and `b` stays `null`; `5 + null` then coerces `null` to `0` in numeric addition, giving `5`." },
+      { question: "What's the difference between a parameter and an argument?", answer: "A parameter is the placeholder name in the function's definition (`function add(a, b)`: `a` and `b`). An argument is the actual value passed at the call (`add(2, 3)`: `2` and `3`)." },
+      { question: "What happens if a function has no `return` statement?", answer: "It returns `undefined` when it reaches the end. Calling it doesn't throw, but any code using its \"result\" gets `undefined`." },
+      { question: "What's the difference between a function declaration and an arrow function?", answer: "Besides shorter syntax, arrow functions have no own `this`, `arguments` or `super`, and can't be used with `new`. They take `this` from the surrounding scope. Regular functions get their own `this` (set by how they're called) and their own `arguments` object." },
+      { question: "What's the difference between a function declaration and a function expression?", answer: "A declaration (`function foo() {}`) is hoisted with its full body, so you can call it before the line it's on. An expression (`const foo = function () {}`) is part of an assignment; the variable follows normal `let`/`const`/`var` hoisting, so the function isn't callable until that line runs." },
+      { question: "Can a function have more than one `return` statement?", answer: "Yes, often one per `if/else` branch. The first one that runs ends the function; code after it doesn't run." },
+      { question: "What happens if you call a function with fewer arguments than it has parameters?", answer: "The missing parameters are `undefined` (or their default value, if set). JavaScript doesn't complain about the count, unlike many statically typed languages." },
+      { question: "What happens if you call a function with more arguments than it has declared parameters?", answer: "The extras are accepted without error but aren't bound to a named parameter. You can still reach them through the `arguments` object (in a regular function) or with a rest parameter (`...args`)." },
+      { question: "What is a default parameter, and when does its default value actually kick in?", answer: "A value set in the signature (`function greet(name = \"Guest\")`), used only when the argument is `undefined`, whether omitted or passed as `undefined`. Other falsy values like `null` or `0` don't trigger it." },
+      { question: "What is a rest parameter, and how does it differ from the old `arguments` object?", answer: "`...args` as the last parameter collects remaining arguments into a real array (`function sum(...nums) { ... }`), so `.map()` and `.reduce()` work directly. The older `arguments` object exists automatically in every regular function, but it's only array-like (no array methods) and doesn't exist in arrow functions." },
+      { question: "Are function declarations hoisted? What about function expressions?", answer: "Declarations are hoisted fully, body included, so they work before their line. Function expressions (and arrow functions) aren't: only their variable is hoisted, by its own rules (`undefined` for `var`, TDZ for `let`/`const`). Calling one early gives `undefined is not a function` or a TDZ `ReferenceError`." },
+      { question: "What is a callback function?", answer: "A function passed into another function to be called later, often when an operation finishes or an event happens. Examples: the click handler given to `addEventListener`, or the function given to `.map()` that runs once per element." },
+      { question: "What is a higher-order function?", answer: "A function that takes a function as an argument, returns one, or both. `.map()`, `.filter()` and `.reduce()` are higher-order because each takes a callback." },
+      { question: "What is a closure, in plain terms?", answer: "A function that remembers the variables of the scope it was defined in, even after that scope has finished. A function returned from another function can keep reading and updating variables from a call that already ended." },
+      { question: "What is recursion, and what must a recursive function have to avoid infinite recursion?", answer: "A function that calls itself on a smaller version of the problem until it reaches a base case it can answer directly. Without a base case, it calls itself until the call stack overflows and throws `RangeError: Maximum call stack size exceeded`." },
+      { question: "What is an IIFE (Immediately Invoked Function Expression), and why would you use one?", answer: "A function expression defined and called in one statement, usually `(function () { ... })();`. It creates a private scope that runs once. Before `let`/`const`/modules, it was used to avoid leaking variables into the global scope; today it's rarer, but still used for one-off setup code." },
+      { question: "Can a function be assigned to a variable, passed as an argument, or returned from another function? What does that make functions in JavaScript?", answer: "Yes to all three. That makes functions \"first-class citizens\" (first-class values): you can store, pass and return them like any number, string or object. This is what makes callbacks, higher-order functions and closures possible." },
+      { question: "What's the practical difference between `function foo() {}` and `const foo = function () {}`?", answer: "Both create an equivalent function. The first is a hoisted declaration usable before its line; the second is bound to a `const` and unusable until that line runs. Also, a declaration always has the name `foo` in stack traces, while an anonymous expression only gets a name inferred from the variable it's first assigned to." },
+      { question: "Why don't arrow functions have their own `this`? Where do they get it from instead?", answer: "They were designed without their own `this`. Instead they look `this` up like any variable: from the nearest enclosing non-arrow function (or the module/global scope) where the arrow was defined, not where it's called." },
+      { question: "Why can't arrow functions be used as constructors with `new`?", answer: "`new` needs the function to create a fresh `this` bound to the new object. Arrow functions never create their own `this`, so JavaScript throws `TypeError: X is not a constructor`." },
+      { question: "What is a pure function? Why are pure functions easier to test and reason about?", answer: "A function that always returns the same output for the same inputs and has no side effects: no mutating arguments, no global state, no I/O. You can test it in isolation (call it, check the output, no setup) and reason about it from its inputs alone." },
+      { question: "What does it mean for JavaScript functions to be 'first-class citizens'?", answer: "Functions are regular values, not a special category. You can store them in variables, arrays or object properties, pass them as arguments and return them, just like numbers or strings." },
+      { question: "What's the difference between a function's arity and the number of arguments it's actually called with?", answer: "Arity is the number of parameters a function declares (`function add(a, b) {}` has arity 2). The number of arguments is set per call and can be more, fewer or equal; JavaScript doesn't enforce a match." },
+      { question: "Are extra arguments passed beyond a function's declared parameters lost?", answer: "No. They're not assigned to a named parameter, but you can reach them through the `arguments` object in a regular function, or capture them with a rest parameter (`...rest`)." },
+      { question: "What is currying, and how does it relate to closures?", answer: "Turning a multi-argument function into a chain of one-argument functions, e.g. `add(a)(b)(c)` instead of `add(a, b, c)`. It relies on closures: each returned function keeps access to the arguments already given to the outer ones." },
+      { question: "Why can't arrow functions have their own `arguments` object?", answer: "Same design as `this`: arrow functions don't bind their own `arguments`, so using it inside one looks it up from the nearest enclosing regular function. With no enclosing regular function, it throws a `ReferenceError`." },
+      { question: "Output-prediction: what does `function outer() { let count = 0; return function () { count++; return count; }; } const counter = outer(); console.log(counter()); console.log(counter());` log?", answer: "It logs `1` then `2`. `outer()` runs once and returns the inner function, which keeps a closure over that call's `count`. Each `counter()` call updates the same `count` instead of starting fresh." },
+      { question: "Output-prediction: what does `sayHi(); function sayHi() { console.log(\"hi\"); }` do?", answer: "It logs `\"hi\"`. Function declarations are hoisted with their whole body, so `sayHi` is callable before its line." },
+      { question: "Output-prediction: what does `sayBye(); const sayBye = function () { console.log(\"bye\"); };` do?", answer: "It throws `ReferenceError: Cannot access 'sayBye' before initialization`. `sayBye` is a `const`, so it's in the Temporal Dead Zone until its line runs. Assigning a function doesn't change `const` hoisting." },
+      { question: "Output-prediction: given `const obj = { name: \"Ana\", greet() { console.log(this.name); }, greetArrow: () => console.log(this.name) };`, what does `obj.greet()` log compared to `obj.greetArrow()`?", answer: "`obj.greet()` logs `\"Ana\"`: a regular method's `this` comes from the call, and `obj.greet()` sets `this` to `obj`. `obj.greetArrow()` doesn't log `\"Ana\"`: an arrow function takes `this` from the scope around the object literal, never `obj`, however it's called." },
+      { question: "Output-prediction: given `function add(a, b = 10) { return a + b; }`, what do `add(5)`, `add(5, undefined)`, and `add(5, null)` each return?", answer: "`15`, `15`, then `5`. The default applies only when the argument is `undefined`, whether omitted or passed explicitly. `null` is a real value, so `b` stays `null`, and `5 + null` treats `null` as `0`, giving `5`." },
     ],
     prerequisites: ["loops"],
     relatedTopics: ["arrays", "scope", "callbacks", "higher-order-functions"],

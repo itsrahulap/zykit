@@ -8,17 +8,18 @@ const docs: ToolDocs = {
     'For many sizes at once, list them under **Batch to ZIP** (for example `1200x630, 400x300, 150`) and download one ZIP with an image for each.',
   ],
   howItWorks:
-    'The preview and the SVG output are generated as a small SVG document: a full-size rectangle in the background colour and one centred text element, with the text escaped for XML. The SVG data URI is that document URL-encoded after `data:image/svg+xml,`.\n\n' +
-    'PNG, JPEG and WebP are drawn onto an HTML canvas of exactly the chosen size and encoded by the browser (JPEG and WebP at quality 0.92). Auto font size picks the largest size that fits within 90% of the width and 30% of the height, assuming an average glyph width of 0.58 em, with a minimum of 8 px. The ZIP is built in your browser with an uncompressed (stored) ZIP writer. Contrast is the WCAG ratio between the two colours.',
+    'The preview and SVG output are a small SVG document: a full-size rectangle in the background colour and one centred text element, with the text escaped for XML. The SVG data URI is that document URL-encoded after `data:image/svg+xml,`.\n\n' +
+    'PNG, JPEG and WebP are drawn on an HTML canvas of exactly the chosen size and encoded by the browser (JPEG and WebP at quality 0.92). Auto font size picks the largest size that fits within 90% of the width and 30% of the height, assuming an average glyph width of 0.58 em, with a minimum of 8 px.\n\n' +
+    'The ZIP is built in your browser with an uncompressed (stored) ZIP writer. Contrast is the WCAG ratio between the two colours.',
   limits: [
     'Width and height are whole numbers from 1 to 8000. Very large canvases (above about 16 million pixels) may fail to encode in some browsers, especially Safari and mobile browsers.',
-    'WebP encoding is not available in every browser; if yours cannot encode it you will see an error and can choose PNG or JPEG.',
-    'JPEG has no transparency, which does not matter here because the background is always opaque.',
+    'Not every browser can encode WebP. If yours can’t, you’ll see an error; choose PNG or JPEG instead.',
+    'JPEG has no transparency, which doesn’t matter here because the background is always opaque.',
     'The text is one line using your system’s default sans-serif font. Long text with a fixed font size can overflow the image, and PNG/JPEG/WebP text may look slightly different from the SVG because each uses its own font rendering.',
     'A ZIP holds at most 30 sizes. Colours must be hex (`#rgb` or `#rrggbb`).',
   ],
   privacy:
-    'Images are generated in your browser. Nothing is uploaded and nothing is stored. **Copy share link** puts the size, colours, text and format in the link’s `#` fragment, which browsers don’t send to servers.',
+    'Images are generated in your browser; nothing is uploaded or stored. **Copy share link** puts the size, colours, text and format in the link’s `#` fragment, which browsers don’t send to servers.',
   faqs: [
     {
       question: 'How do I use the data URI?',

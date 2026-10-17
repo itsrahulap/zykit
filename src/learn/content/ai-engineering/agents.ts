@@ -1511,17 +1511,17 @@ console.log("server state:", server.notes);`,
     level: "intermediate",
     description: "Retrieval as a tool: the model decides when to search, what to search for, and when it has enough to answer.",
     explanation: md(
-      "Classic **RAG** (retrieval-augmented generation) is a fixed pipeline: take the user's question, retrieve the top-k chunks, put them in the prompt, generate an answer. It always retrieves exactly once, with the user's words as the query. That works well for direct questions, but fails when the first search misses, when a question needs facts from several places, or when no retrieval is needed at all.",
-      "**Agentic RAG** turns retrieval into a **tool** inside an agent loop. The model decides:",
-      "- **Whether** to retrieve at all ('What is 2 + 2?' needs no search; 'What is our refund policy?' does).\n- **What** to search for: it can rewrite a vague question into precise queries, or split a comparison into one query per item.\n- **Where** to search, when you offer several tools: a docs index, a ticket database, a SQL tool, the web.\n- **Whether the results are enough**: if the hits are irrelevant or point to another document, it searches again with a new query (**iterative retrieval**), then answers.",
-      "**Multi-hop questions** are where this shines. 'Who approves refunds for the product our biggest customer uses?' needs: find the biggest customer, find their product, find that product's refund approver. A single similarity search for the whole question rarely finds all three pieces; an agent can follow the chain.",
-      "Designing the retrieval tool well is most of the work:",
-      "- Describe the corpus in the tool description ('Searches the internal HR and IT policy handbook. Not for customer data.').\n- Return results with **source ids** (file, section, URL) so the model can cite them, and short enough snippets to keep context small.\n- Offer useful parameters - `k`, a metadata filter (`source`, `date_after`) - but keep the schema small.\n- Return an explicit 'no results' message so the model knows to rephrase rather than invent.",
-      "The system prompt should set the rules: search before answering questions about internal facts, cite sources by id, try a different query when results look irrelevant, stop after a few searches, and say 'I could not find this' instead of guessing. Combined with a max-steps guard, this keeps cost bounded.",
-      "The trade-off: agentic RAG is slower and costs more per question (several model calls instead of one), and it is less predictable. Many production systems use a hybrid - a fast fixed pipeline for most questions, and an agentic path for complex ones, chosen by a router (see Workflow Patterns).",
+      "Classic **RAG** (retrieval-augmented generation) is a fixed pipeline: take the question, retrieve the top-k chunks, put them in the prompt, generate an answer. It always retrieves exactly once, using the user's words as the query. That works for direct questions, but fails when the first search misses, when the answer needs facts from several places, or when no retrieval is needed.",
+      "**Agentic RAG** makes retrieval a **tool** inside an agent loop. The model decides:",
+      "- **Whether** to retrieve ('What is 2 + 2?' needs no search; 'What is our refund policy?' does).\n- **What** to search for: it can rewrite a vague question into precise queries, or split a comparison into one query per item.\n- **Where** to search, if you offer several tools: a docs index, a ticket database, a SQL tool, the web.\n- **Whether the results are enough**: if hits are irrelevant or point to another document, it searches again with a new query (**iterative retrieval**), then answers.",
+      "**Multi-hop questions** are where this shines. 'Who approves refunds for the product our biggest customer uses?' means: find the biggest customer, then their product, then that product's refund approver. One similarity search for the whole question rarely finds all three; an agent can follow the chain.",
+      "Most of the work is designing the retrieval tool:",
+      "- Describe the corpus in the tool description ('Searches the internal HR and IT policy handbook. Not for customer data.').\n- Return results with **source ids** (file, section, URL) so the model can cite them, with snippets short enough to keep context small.\n- Offer useful parameters (`k`, a metadata filter like `source` or `date_after`), but keep the schema small.\n- Return an explicit 'no results' message so the model rephrases instead of inventing.",
+      "The system prompt sets the rules: search before answering questions about internal facts, cite sources by id, try a new query when results look irrelevant, stop after a few searches, and say 'I could not find this' instead of guessing. With a max-steps guard, this keeps cost bounded.",
+      "The trade-off: agentic RAG is slower, costs more per question (several model calls instead of one), and is less predictable. Many production systems use a hybrid: a fast fixed pipeline for most questions and an agentic path for complex ones, picked by a router (see Workflow Patterns).",
     ),
     analogy:
-      "Classic RAG is a librarian who, whatever you ask, fetches the five books whose titles best match your sentence and hands them over. Agentic RAG is a research assistant who reads your question, decides whether books are needed, looks something up, notices a footnote pointing to another book, fetches that one too, and comes back with an answer plus the page numbers.",
+      "Classic RAG is a librarian who, whatever you ask, hands you the five books whose titles best match your sentence. Agentic RAG is a research assistant who reads your question, decides whether books are needed, looks something up, spots a footnote pointing to another book, fetches that too, and returns with an answer and page numbers.",
     examples: [
       {
         title: "Iterative retrieval with a fake model (runnable)",
@@ -1569,7 +1569,7 @@ function agenticRag(question, maxSearches) {
 
 console.log("Q1:", agenticRag("Can I return a broken kettle and who pays shipping?", 3));
 console.log("Q2:", agenticRag("What is 12 times 12?", 3));`,
-        explanation: "For Q1 the first search finds refunds.md, which points to the shipping policy, so the model searches again before answering with citations. For Q2 it decides no retrieval is needed. A fixed pipeline would have searched once for both.",
+        explanation: "For Q1, the first search finds refunds.md, which points to the shipping policy, so the model searches again before answering with citations. For Q2, it decides no retrieval is needed. A fixed pipeline would have searched once for both.",
       },
       {
         title: "A search_docs tool backed by Chroma + sentence-transformers",
@@ -1616,7 +1616,7 @@ SYSTEM = """You answer questions about the company handbook.
 
 # Plug SEARCH_TOOL + search_docs into the agent loop from Build an Agent from Scratch:
 # tools=[SEARCH_TOOL], system=SYSTEM, and route "search_docs" in run_tool.`,
-        explanation: "The tool description tells the model what the corpus contains and how to use it; the result format puts source ids first so citations are easy. Lower distance means closer. Everything else is the same agent loop.",
+        explanation: "The tool description tells the model what the corpus holds and how to use it. Results put source ids first so citations are easy. Lower distance means closer. Everything else is the same agent loop.",
       },
       {
         title: "Classic vs agentic RAG, step by step",
@@ -1631,13 +1631,13 @@ Agentic RAG (several tool calls, several LLM calls)
   model: search_docs("per diem Berlin")   -> [travel.md#europe]
   model: search_docs("per diem Tokyo")    -> [travel.md#asia]
   model: answer with both figures, citing travel.md#europe and travel.md#asia`,
-        explanation: "Splitting a comparison into one query per item is a typical agentic move that a single similarity search cannot make.",
+        explanation: "Splitting a comparison into one query per item is a typical agentic move that a single similarity search can't make.",
       },
     ],
     howItWorks: md(
-      "Agentic RAG = the agent loop + a retrieval tool + rules in the system prompt. Each search result enters the context as a tool_result, so later steps can read earlier findings, notice gaps and refine queries. The model's final answer is grounded in the accumulated passages.",
-      "You can mix retrieval methods as separate tools (semantic search, keyword search, SQL over structured data, web search) or as one tool doing hybrid search internally. Fewer, well-described tools usually work better than many overlapping ones.",
-      "Cost control: cap the number of searches in the prompt and in code, keep passages short, and deduplicate passages already seen. Evaluate with the same metrics as RAG (did it retrieve the right sources, is the answer faithful) plus agent metrics (number of steps, unnecessary searches).",
+      "Agentic RAG = the agent loop + a retrieval tool + rules in the system prompt. Each search result enters the context as a tool_result, so later steps can read earlier findings, spot gaps and refine queries. The final answer is grounded in the collected passages.",
+      "You can offer retrieval methods as separate tools (semantic search, keyword search, SQL over structured data, web search) or as one tool doing hybrid search internally. A few well-described tools usually beat many overlapping ones.",
+      "Control cost: cap searches in the prompt and in code, keep passages short, and drop passages already seen. Evaluate with RAG metrics (right sources retrieved? faithful answer?) plus agent metrics (step count, unnecessary searches).",
     ),
     diagram: `   question
       |
@@ -1656,13 +1656,13 @@ Agentic RAG (several tool calls, several LLM calls)
   +-------------------------------------+
          (max searches guard)`,
     whyItExists: md(
-      "Fixed RAG pipelines make one retrieval with the user's raw wording, which breaks on vague questions, multi-part comparisons, multi-hop chains and questions that need no retrieval at all. Giving the model control over retrieval lets it reformulate, iterate and choose sources - the same way a person researches.",
+      "Fixed RAG pipelines retrieve once using the user's raw wording. That breaks on vague questions, multi-part comparisons, multi-hop chains, and questions that need no retrieval. Letting the model control retrieval means it can rephrase, iterate and choose sources, the way a person researches.",
     ),
     whenToUse: md(
-      "Use agentic RAG for complex or multi-hop questions, research-style tasks, corpora spread across several sources, and assistants where many questions need no retrieval. It also suits conversational assistants where the model must decide if a follow-up needs a new search.",
+      "Use agentic RAG for complex or multi-hop questions, research-style tasks, corpora spread across several sources, and assistants where many questions need no retrieval. It also suits chat assistants where the model must decide whether a follow-up needs a new search.",
     ),
     whenNotToUse: md(
-      "For simple FAQ-style lookups with strict latency or cost requirements, a fixed RAG pipeline (possibly with query rewriting and reranking) is faster, cheaper and easier to evaluate. Start there, measure failures, and add the agentic path only for the questions that need it.",
+      "For simple FAQ-style lookups with strict latency or cost limits, a fixed RAG pipeline (maybe with query rewriting and reranking) is faster, cheaper and easier to evaluate. Start there, measure failures, and add the agentic path only for questions that need it.",
     ),
     commonMistakes: [
       "Vague tool descriptions that do not say what the corpus contains, so the model searches for things that are not there.",
@@ -1698,18 +1698,18 @@ Agentic RAG (several tool calls, several LLM calls)
     level: "intermediate",
     description: "Five proven ways to compose LLM calls in code: prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer.",
     explanation: md(
-      "Most successful LLM features are not free-roaming agents; they are **workflows** - LLM calls composed by ordinary code in a known structure. Workflows are cheaper, faster, easier to test and easier to debug than agents, and they cover a large share of real use cases. Five patterns come up again and again. Learn them, and you will recognise which one a problem needs.",
-      "All five are built from the same unit, sometimes called the **augmented LLM**: a model call that may also have retrieval, tools and memory. The patterns differ only in how your code connects those calls.",
-      "**1. Prompt chaining.** Split a task into fixed sequential steps, where each call works on the output of the previous one: outline, then check the outline, then write; or extract, then translate, then format. Between steps you can add a **gate** - a plain code check (length, valid JSON, required sections) that stops or retries before errors propagate. Each step is a simpler task, so each is more accurate. Trade-off: more latency.",
-      "**2. Routing.** Classify the input first, then send it to a specialised handler: refunds to a billing prompt, bugs to a technical prompt with docs search, small talk to a cheap fast model. Routing lets each path have its own prompt, tools and model size without one prompt trying to do everything. The classifier can be an LLM call or a traditional classifier.",
-      "**3. Parallelization.** Run independent LLM calls at the same time and combine them in code. Two flavours:",
-      "- **Sectioning**: split a task into independent parts handled in parallel - for example one call answers the user while another screens the request against policy (a guardrail), or each section of a long document is reviewed separately.\n- **Voting**: run the same task several times (or with different prompts) and aggregate - majority vote, or 'flag if any reviewer flags'. This trades cost for confidence and lets you tune false positives vs false negatives.",
-      "**4. Orchestrator-workers.** A central LLM (the orchestrator) looks at the task, decides *dynamically* what subtasks are needed, hands each to a worker LLM call, and synthesises the results. Unlike sectioning, the subtasks are not known in advance - for example, which files need to change for a feature request depends on the request. It sits between workflow and agent: the plan is dynamic, but the structure (plan, fan out, combine) is fixed.",
-      "**5. Evaluator-optimizer.** One call generates, another evaluates against clear criteria and returns specific feedback, and the generator revises - looping until the evaluator passes it or a round limit is hit. It works when you can articulate what 'good' means and when feedback measurably improves output: translations, code that must pass tests, writing that must meet a checklist.",
-      "These patterns combine: a router whose technical branch uses a chain whose last step is an evaluator-optimizer loop. Start with the simplest pattern that solves the problem, measure, and add structure only where measurements show it helps. In production, the 'parallel' calls really run concurrently - `Promise.all` in JavaScript or `asyncio.gather` / a thread pool in Python; the runnable sketches below call a fake `llm()` sequentially to stay simple and deterministic.",
+      "Most successful LLM features aren't free-roaming agents. They're **workflows**: LLM calls composed by ordinary code in a known structure. Workflows are cheaper, faster, and easier to test and debug than agents, and they cover most real use cases. Five patterns come up again and again; learn them and you'll recognise which one a problem needs.",
+      "All five use the same unit, sometimes called the **augmented LLM**: a model call that may also have retrieval, tools and memory. The patterns differ only in how your code connects those calls.",
+      "**1. Prompt chaining.** Split a task into fixed steps, each working on the previous output: outline, check the outline, write; or extract, translate, format. Between steps, add a **gate**: a plain code check (length, valid JSON, required sections) that stops or retries before errors spread. Each step is simpler, so each is more accurate. Trade-off: more latency.",
+      "**2. Routing.** Classify the input, then send it to a specialised handler: refunds to a billing prompt, bugs to a technical prompt with docs search, small talk to a cheap fast model. Each path gets its own prompt, tools and model size, instead of one prompt doing everything. The classifier can be an LLM call or a traditional classifier.",
+      "**3. Parallelization.** Run independent LLM calls at once and combine them in code. Two flavours:",
+      "- **Sectioning**: split a task into independent parts run in parallel. For example, one call answers the user while another screens the request against policy (a guardrail), or each section of a long document is reviewed separately.\n- **Voting**: run the same task several times (or with different prompts) and aggregate: majority vote, or 'flag if any reviewer flags'. This trades cost for confidence and lets you tune false positives vs false negatives.",
+      "**4. Orchestrator-workers.** A central LLM (the orchestrator) reads the task, decides *dynamically* which subtasks are needed, hands each to a worker LLM call, and combines the results. Unlike sectioning, the subtasks aren't known in advance; which files a feature request touches depends on the request. It sits between workflow and agent: the plan is dynamic, but the structure (plan, fan out, combine) is fixed.",
+      "**5. Evaluator-optimizer.** One call generates, another evaluates against clear criteria and gives specific feedback, and the generator revises. It loops until the evaluator passes it or a round limit is hit. It works when you can state what 'good' means and feedback measurably helps: translations, code that must pass tests, writing that must meet a checklist.",
+      "Patterns combine: a router whose technical branch uses a chain ending in an evaluator-optimizer loop. Start with the simplest pattern that works, measure, and add structure only where measurements show it helps. In production, 'parallel' calls really run concurrently (`Promise.all` in JavaScript, `asyncio.gather` or a thread pool in Python). The runnable sketches below call a fake `llm()` sequentially to stay simple and deterministic.",
     ),
     analogy:
-      "A restaurant kitchen. Chaining is the line: prep, cook, plate, with the head chef checking each plate (the gate). Routing is the host sending diners to the bar or the dining room. Parallelization is several cooks working different dishes at once, or three tasters voting on a new sauce. Orchestrator-workers is the head chef reading a big catering order and deciding who cooks what. Evaluator-optimizer is a chef and a critic going back and forth until the dish is right.",
+      "Think of a restaurant kitchen. Chaining is the line (prep, cook, plate) with the head chef checking each plate (the gate). Routing is the host sending diners to the bar or the dining room. Parallelization is several cooks on different dishes, or three tasters voting on a new sauce. Orchestrator-workers is the head chef reading a big catering order and assigning who cooks what. Evaluator-optimizer is a chef and a critic going back and forth until the dish is right.",
     examples: [
       {
         title: "Prompt chaining with a gate, and routing (runnable)",
@@ -1748,7 +1748,7 @@ for (const ticket of ["I was charged twice", "App shows error 500 on login", "Do
   const route = llm("ROUTE: " + ticket);
   console.log(route.padEnd(9) + " <- " + ticket + "  => " + handlers[route](ticket));
 }`,
-        explanation: "The chain's gate is ordinary code, so a bad intermediate result stops the pipeline instead of producing a bad article. The router means each handler can be small and focused.",
+        explanation: "The chain's gate is ordinary code, so a bad intermediate result stops the pipeline instead of producing a bad article. The router lets each handler stay small and focused.",
       },
       {
         title: "Parallelization: sectioning and voting (runnable)",
@@ -1777,7 +1777,7 @@ const flagged = votes.filter((v) => v === "VULNERABLE").length;
 console.log("votes:", votes.join(", "));
 console.log("majority rule  :", flagged >= 2 ? "FLAG" : "pass");
 console.log("any-flag rule  :", flagged >= 1 ? "FLAG" : "pass", "(more sensitive, more false alarms)");`,
-        explanation: "Sectioning splits different jobs across parallel calls; voting runs the same question through several reviewers and lets your code choose the aggregation rule - majority for precision, any-flag for recall.",
+        explanation: "Sectioning splits different jobs across parallel calls. Voting runs the same question past several reviewers and lets your code pick the aggregation rule: majority for precision, any-flag for recall.",
       },
       {
         title: "Orchestrator-workers: a dynamic plan, fixed structure (runnable)",
@@ -1812,7 +1812,7 @@ for (const request of ["Add a dark mode setting", "Sync the language setting via
   const outputs = plan.map(worker);          // parallel in production
   console.log(synthesize(request, outputs));
 }`,
-        explanation: "The two requests produce different numbers and kinds of subtasks - that is what distinguishes orchestrator-workers from fixed sectioning. In a real system the orchestrator returns its plan as structured output (a JSON list of subtasks).",
+        explanation: "The two requests produce different numbers and kinds of subtasks. That's what sets orchestrator-workers apart from fixed sectioning. In a real system, the orchestrator returns its plan as structured output (a JSON list of subtasks).",
       },
       {
         title: "Evaluator-optimizer: generate, critique, revise (runnable)",
@@ -1845,9 +1845,10 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
       },
     ],
     howItWorks: md(
-      "Every pattern is a few lines of control flow around `llm()` calls: sequential calls with checks (chaining), a classification followed by a dispatch table (routing), concurrent calls plus an aggregation function (parallelization), a planning call that returns a list followed by a fan-out and a synthesis call (orchestrator-workers), and a bounded loop of generate and evaluate (evaluator-optimizer).",
-      "Because the structure lives in your code, each step can be tested and measured on its own: does the router classify correctly, does the gate catch bad outlines, how often does the evaluator pass on round one? That observability is the main advantage over a free-form agent.",
-      "To make intermediate results reliable, have steps return structured output (a schema for the classification, a JSON plan for the orchestrator, a pass/fail plus feedback object for the evaluator), and validate before the next step.",
+      "Each pattern is a few lines of control flow around `llm()` calls:",
+      "- **Chaining**: sequential calls with checks.\n- **Routing**: a classification, then a dispatch table.\n- **Parallelization**: concurrent calls plus an aggregation function.\n- **Orchestrator-workers**: a planning call that returns a list, then a fan-out and a synthesis call.\n- **Evaluator-optimizer**: a bounded generate-and-evaluate loop.",
+      "Since the structure lives in your code, you can test and measure each step alone: does the router classify correctly, does the gate catch bad outlines, how often does the evaluator pass on round one? That visibility is the main advantage over a free-form agent.",
+      "For reliable intermediate results, have steps return structured output (a schema for the classification, a JSON plan for the orchestrator, a pass/fail plus feedback object for the evaluator), and validate before the next step.",
     ),
     diagram: `CHAINING      in -> [LLM] -> gate -> [LLM] -> out
 ROUTING       in -> [classify] -> A | B | C -> out
@@ -1858,13 +1859,13 @@ ORCH-WORKERS  in -> [plan] -> [w1][w2]..[wn] -> [merge]
 EVAL-OPT      in -> [gen] -> [eval] -pass-> out
                       ^--feedback--+ (max rounds)`,
     whyItExists: md(
-      "A single prompt asked to do everything at once is harder for the model and impossible to debug. A free agent is flexible but costly and unpredictable. Workflow patterns sit in between: they decompose problems into steps the model handles well, while keeping the control flow explicit, testable and cheap.",
+      "One prompt asked to do everything is harder for the model and impossible to debug. A free agent is flexible but costly and unpredictable. Workflow patterns sit in between: they break problems into steps the model handles well, while keeping control flow explicit, testable and cheap.",
     ),
     whenToUse: md(
-      "Chaining: tasks with clear fixed stages. Routing: distinct input categories that deserve different handling or model sizes. Sectioning: independent subtasks or a guardrail alongside the main answer. Voting: high-stakes judgments where you want confidence. Orchestrator-workers: complex tasks whose subtasks depend on the input. Evaluator-optimizer: outputs with articulable quality criteria that improve with feedback.",
+      "- **Chaining**: tasks with clear fixed stages.\n- **Routing**: distinct input categories that need different handling or model sizes.\n- **Sectioning**: independent subtasks, or a guardrail alongside the main answer.\n- **Voting**: high-stakes judgments where you want confidence.\n- **Orchestrator-workers**: complex tasks whose subtasks depend on the input.\n- **Evaluator-optimizer**: outputs with clear quality criteria that improve with feedback.",
     ),
     whenNotToUse: md(
-      "Do not add a pattern a single prompt already handles well - each extra call adds latency and cost. Avoid voting when calls are expensive and the task is low-stakes. Avoid evaluator-optimizer when you cannot state concrete criteria. If the number and kind of steps are truly unpredictable and need environment feedback, move to an agent.",
+      "Don't add a pattern when a single prompt already works; each extra call adds latency and cost. Skip voting when calls are expensive and the task is low-stakes. Skip evaluator-optimizer when you can't state concrete criteria. If the number and kind of steps are truly unpredictable and need environment feedback, move to an agent.",
     ),
     commonMistakes: [
       "Chaining steps without validation gates, so an early error flows silently to the end.",
@@ -1902,18 +1903,19 @@ EVAL-OPT      in -> [gen] -> [eval] -pass-> out
     level: "advanced",
     description: "Several LLM agents with separate contexts and roles working together - when that helps, how to structure it, and what it costs.",
     explanation: md(
-      "A **multi-agent system** splits work across several agents, each with its own system prompt, its own tools, and - most importantly - its own **context window**. Typically a lead agent (the **orchestrator** or **supervisor**) breaks a task down and delegates pieces to **subagents**, which work independently and report back condensed results.",
+      "A **multi-agent system** splits work across several agents, each with its own system prompt, tools and, most importantly, **context window**. Usually a lead agent (the **orchestrator** or **supervisor**) breaks the task down and delegates pieces to **subagents**, which work independently and report back condensed results.",
       "Why would several agents beat one? Three real reasons:",
-      "- **Context isolation**: a subagent can read 50 pages to answer one sub-question and return a 150-word summary. The lead agent's context stays small and focused instead of filling with raw material it will never need again.\n- **Parallelism**: independent sub-questions (research five competitors, check four regions) can run at the same time, cutting wall-clock time for breadth-first tasks.\n- **Specialisation and least privilege**: each agent gets only the prompt and tools for its job. A research subagent can have read-only search; only a separate, approval-gated agent can send emails.",
-      "And real costs - often larger than people expect:",
-      "- **Tokens multiply**: every agent has its own system prompt, tool definitions and loop, and subagents often explore more than strictly needed. Multi-agent runs commonly use several times more tokens than a single agent on the same task.\n- **Coordination is hard**: the lead must write clear, self-contained task descriptions (objective, scope, output format, what not to do). Vague delegation leads to duplicated work, gaps, or subagents solving the wrong problem.\n- **Information loss**: summaries drop details; subagents cannot see each other's findings unless you design shared state.\n- **Harder debugging and evaluation**: failures spread across several transcripts; you need tracing that links parent and child runs.\n- **Conflicts**: parallel agents that *write* (edit the same files, update the same record) can collide.",
+      "- **Context isolation**: a subagent can read 50 pages to answer one sub-question and return a 150-word summary. The lead's context stays small and focused, not full of raw material it won't need again.\n- **Parallelism**: independent sub-questions (research five competitors, check four regions) run at the same time, cutting wall-clock time for breadth-first tasks.\n- **Specialisation and least privilege**: each agent gets only the prompt and tools for its job. A research subagent gets read-only search; only a separate, approval-gated agent can send emails.",
+      "The costs are real, and often bigger than expected:",
+      "- **Tokens multiply**: each agent has its own system prompt, tool definitions and loop, and subagents often explore more than needed. Multi-agent runs commonly use several times the tokens of a single agent on the same task.\n- **Coordination is hard**: the lead must write clear, self-contained tasks (objective, scope, output format, what not to do). Vague delegation causes duplicated work, gaps, or subagents solving the wrong problem.\n- **Information loss**: summaries drop details, and subagents can't see each other's findings unless you design shared state.\n- **Harder debugging and evaluation**: failures spread across several transcripts; you need tracing that links parent and child runs.\n- **Conflicts**: parallel agents that *write* (same files, same record) can collide.",
       "Common structures:",
-      "- **Orchestrator with subagents (supervisor)**: the lead plans, delegates via a 'delegate' tool, and synthesises. The most widely used and easiest to reason about. Subagents are effectively *tools that happen to be agents*.\n- **Handoffs**: a triage agent transfers the conversation to a specialist agent (billing, technical) that then owns it. Good for customer-facing flows with clear domains.\n- **Pipeline**: agents in a fixed order (researcher, then writer, then editor) - really a workflow whose steps are agents.\n- **Critic / debate**: one agent proposes, another challenges; a judge or rule decides. Useful for review, but costly.",
-      "Practical rules: start with a **single agent** and only split when you hit a concrete limit (context overflow, latency on parallelisable work, tool permissions). Give subagents **tight, explicit tasks** and a required output format. Return **condensed** results, not transcripts. Cap steps per agent and the number of subagents. Keep writes in one place (subagents read and propose; one agent or a human applies changes). Trace everything with a shared run id.",
-      "Multi-agent setups tend to shine on **breadth-first** tasks - research across many independent sources, broad surveys, large-scale review - and to struggle on tightly coupled tasks where every part depends on every other part, such as most coding changes, where a single agent with full context usually does better.",
+      "- **Orchestrator with subagents (supervisor)**: the lead plans, delegates via a 'delegate' tool, and combines results. The most common and easiest to reason about. Subagents are really *tools that happen to be agents*.\n- **Handoffs**: a triage agent passes the conversation to a specialist (billing, technical) that then owns it. Good for customer-facing flows with clear domains.\n- **Pipeline**: agents in a fixed order (researcher, writer, editor). Really a workflow whose steps are agents.\n- **Critic / debate**: one agent proposes, another challenges, and a judge or rule decides. Useful for review, but costly.",
+      "Practical rules:",
+      "- Start with a **single agent**; split only when you hit a concrete limit (context overflow, latency on parallelisable work, tool permissions).\n- Give subagents **tight, explicit tasks** and a required output format.\n- Return **condensed** results, not transcripts.\n- Cap steps per agent and the number of subagents.\n- Keep writes in one place: subagents read and propose; one agent or a human applies changes.\n- Trace everything with a shared run id.",
+      "Multi-agent setups shine on **breadth-first** tasks (research across many independent sources, broad surveys, large-scale review). They struggle on tightly coupled tasks where every part depends on every other, like most coding changes, where one agent with full context usually does better.",
     ),
     analogy:
-      "A newsroom. The editor (orchestrator) assigns three reporters (subagents) to cover different angles. Each reporter spends a day on interviews and notes - that is their private context - and files a 300-word piece. The editor never reads the raw notes, only the pieces, and writes the front page. It is faster than one reporter covering everything, but you pay three salaries, and if the editor's assignments are vague, two reporters cover the same story while nobody covers the important one.",
+      "Think of a newsroom. The editor (orchestrator) assigns three reporters (subagents) to different angles. Each spends a day on interviews and notes (their private context) and files a 300-word piece. The editor reads only the pieces, not the raw notes, and writes the front page. It's faster than one reporter doing everything, but you pay three salaries. And if the assignments are vague, two reporters cover the same story while nobody covers the important one.",
     examples: [
       {
         title: "Context isolation and its token price (runnable, toy numbers)",
@@ -1949,7 +1951,7 @@ const peak = Math.max(leadContext, ...results.map((r) => r.context));
 console.log("single agent : peak context", single, "| total tokens", single);
 console.log("multi-agent  : peak context", peak, "| total tokens", multiTotal);
 console.log("=> smaller, cleaner contexts, but", (multiTotal / single).toFixed(2) + "x the tokens");`,
-        explanation: "Each subagent's context holds only its slice, and the lead sees roughly 60 words of summaries instead of 1,500 words of raw text. But overhead is paid per agent, so total tokens rise. Real agents loop several times per task, so the multiplier in practice is usually larger than this toy shows.",
+        explanation: "Each subagent's context holds only its slice, and the lead sees about 60 words of summaries instead of 1,500 words of raw text. But overhead is paid per agent, so total tokens rise. Real agents loop several times per task, so the real multiplier is usually larger than this toy shows.",
       },
       {
         title: "Handoffs with least-privilege tool sets (runnable)",
@@ -1977,7 +1979,7 @@ for (const msg of ["I need a refund for invoice 881", "The dashboard is down wit
 }
 console.log(callTool("billing", "issue_refund"));
 console.log(callTool("technical", "issue_refund"));   // a confused or hijacked agent is stopped`,
-        explanation: "Each specialist gets only the tools for its domain, and the check lives in code. If the technical agent is tricked by text in a bug report into trying a refund, the call is refused regardless of what the model wants.",
+        explanation: "Each specialist gets only its domain's tools, and the check lives in code. If text in a bug report tricks the technical agent into trying a refund, the call is refused no matter what the model wants.",
       },
       {
         title: "Orchestrator with parallel research subagents (Python)",
@@ -2050,13 +2052,13 @@ def orchestrate(task: str, max_steps: int = 6) -> str:
     return "[orchestrator stopped at step limit]"
 
 print(orchestrate("Compare the travel and expense rules for contractors vs employees."))`,
-        explanation: "Subagents are just agent loops exposed to the lead as a tool. Each one starts with an empty context, does its own searching, and returns only a summary. pool.map preserves order, so each answer is paired with the right tool_use id. Every subagent's tokens add to the bill - log usage per agent.",
+        explanation: "Subagents are just agent loops exposed to the lead as a tool. Each starts with an empty context, does its own searching, and returns only a summary. pool.map keeps order, so each answer pairs with the right tool_use id. Every subagent's tokens add to the bill, so log usage per agent.",
       },
     ],
     howItWorks: md(
-      "Mechanically, a multi-agent system is nested agent loops. The lead agent's loop treats 'run a subagent' as a tool call; that tool's implementation starts a new loop with a fresh `messages` list, a different system prompt and a restricted tool set, runs it to completion, and returns its final text as the tool_result. Parallel tool calls from the lead become concurrent subagent runs.",
-      "Information flows only through what you pass: the task description going down, the summary coming up, plus any shared store (a file, a database, a notes tool) you deliberately provide. This is both the benefit (isolation) and the risk (lost context). Designing the delegation message - objective, constraints, expected output format, effort limit - is the most important part of the system.",
-      "Operationally you need: per-agent step and token limits, a global budget, a trace id that ties child runs to the parent, and evaluation at both levels (did each subagent answer its question, did the final answer solve the task).",
+      "Mechanically, a multi-agent system is nested agent loops. The lead's loop treats 'run a subagent' as a tool call. That tool starts a new loop with a fresh `messages` list, a different system prompt and a restricted tool set, runs it to completion, and returns its final text as the tool_result. Parallel tool calls from the lead become concurrent subagent runs.",
+      "Information flows only through what you pass: the task going down, the summary coming up, and any shared store (a file, a database, a notes tool) you deliberately provide. That's both the benefit (isolation) and the risk (lost context). The delegation message (objective, constraints, expected output format, effort limit) is the most important part of the design.",
+      "In operation you need per-agent step and token limits, a global budget, a trace id tying child runs to the parent, and evaluation at both levels (did each subagent answer its question, did the final answer solve the task).",
     ),
     diagram: `                 user task
                      |
@@ -2076,13 +2078,13 @@ print(orchestrate("Compare the travel and expense rules for contractors vs emplo
                     v
             final answer + sources`,
     whyItExists: md(
-      "Single agents hit limits on large, broad tasks: their context fills with raw material, sequential exploration is slow, and one agent holding every tool violates least privilege. Splitting work across agents with isolated contexts and narrow permissions addresses those limits - at the price of more tokens and more coordination.",
+      "Single agents hit limits on large, broad tasks: context fills with raw material, sequential exploration is slow, and one agent holding every tool breaks least privilege. Splitting work across agents with isolated contexts and narrow permissions fixes those limits, at the price of more tokens and coordination.",
     ),
     whenToUse: md(
-      "Use multiple agents for breadth-first work that splits into independent parts (multi-source research, surveys, reviewing many documents), when a single agent's context overflows with material it only needs briefly, when parallelism meaningfully reduces latency, or when distinct domains need different tools and permissions (handoffs between support specialists).",
+      "Use multiple agents for breadth-first work that splits into independent parts (multi-source research, surveys, reviewing many documents), when one agent's context overflows with material it needs only briefly, when parallelism clearly cuts latency, or when separate domains need different tools and permissions (handoffs between support specialists).",
     ),
     whenNotToUse: md(
-      "Do not use multi-agent designs for tightly coupled tasks where every step depends on shared, detailed context (most code changes, a single coherent document), for simple tasks a single agent or workflow already handles, or when token cost matters more than speed. Many 'multi-agent' demos are better as one agent with good tools, or as a workflow.",
+      "Avoid multi-agent designs for tightly coupled tasks where every step needs shared, detailed context (most code changes, a single coherent document), for simple tasks one agent or workflow already handles, or when token cost matters more than speed. Many 'multi-agent' demos work better as one agent with good tools, or as a workflow.",
     ),
     commonMistakes: [
       "Going multi-agent first, before a single agent has been shown to hit a real limit.",

@@ -316,33 +316,33 @@ datasets where the tables don't need to stay in sync.
       { question: "What is a primary key?", answer: "A column (or set of columns) whose value uniquely identifies each row in a table, enforced by the database to never have duplicates." },
       { question: "What is a foreign key?", answer: "A column in one table that stores the primary key value of a row in another table, creating a link between the two without duplicating data." },
       { question: "Why use a generated id instead of a real-world value like an email as a primary key?", answer: "Real-world values can change over time (like an email being updated), which breaks anything referencing it; a generated id never changes." },
-      { question: "What is a composite primary key?", answer: "A primary key made of more than one column together, where the combination of values must be unique across rows even though no single column alone is. For example, an `order_items` table could use `(order_id, product_id)` as its primary key, so one specific product can appear only once per order." },
-      { question: "When would you reach for a composite primary key instead of a single auto-incrementing id column?", answer: "When a row is naturally and entirely defined by the combination of two or more foreign keys and nothing else needs to identify it — the classic case is a join table linking two other tables, like `order_items` linking `orders` and `products`, where 'this order plus this product' is inherently what the row represents." },
-      { question: "Must a foreign key always reference the other table's primary key specifically?", answer: "No — a foreign key can reference any column in the other table that's guaranteed unique (typically enforced with a `UNIQUE` constraint), though referencing the primary key is by far the most common and simplest case." },
-      { question: "What is referential integrity, in plain terms?", answer: "The guarantee that every foreign key value in a table corresponds to a real, existing row in the table it references — no order can point at a `user_id` that doesn't exist, keeping related tables consistent with each other." },
-      { question: "If a foreign key constraint is enforced, what happens when you try to insert a row whose foreign key value doesn't exist in the referenced table?", answer: "The database rejects the insert with a constraint violation error, rather than silently storing a row that points at a nonexistent record." },
-      { question: "What does `ON DELETE CASCADE` do on a foreign key?", answer: "When the referenced row (say, a user) is deleted, the database automatically deletes every row that references it (that user's orders) as well, instead of leaving them pointing at nothing." },
-      { question: "What does `ON DELETE SET NULL` do, and what does it require of the foreign key column?", answer: "When the referenced row is deleted, referencing rows have their foreign key column set to `NULL` instead of being deleted themselves. This requires the foreign key column to allow `NULL`, since that's the value it will be set to." },
-      { question: "What does `ON DELETE RESTRICT` (or the default `NO ACTION` in many databases) do?", answer: "It blocks the delete entirely — the database refuses to delete the referenced row as long as any other row still references it, forcing you to deal with those references first." },
-      { question: "Running `DELETE FROM users WHERE id = 1;` fails with a foreign key constraint violation. What's the most likely cause?", answer: "Some row in another table (like `orders`) still has a foreign key pointing at that user, and the foreign key's delete behavior is `RESTRICT`/`NO ACTION` (a common default) rather than `CASCADE` or `SET NULL`, so the database refuses to leave that reference dangling." },
-      { question: "Between `ON DELETE CASCADE` and `ON DELETE RESTRICT`, which is generally the safer default, and why?", answer: "`RESTRICT` is generally safer as a default because it forces a deliberate decision about what to do with dependent rows, rather than silently deleting a potentially large, unintended chain of related data. `CASCADE` is powerful but can remove far more than expected if the relationship chain is deep." },
-      { question: "Can a primary key column contain `NULL`?", answer: "No. A primary key implies both uniqueness and `NOT NULL` — a `NULL` value couldn't reliably identify a specific row, and `NULL` isn't even considered equal to another `NULL`, so databases disallow it in primary key columns." },
-      { question: "Can a foreign key column contain `NULL`, and what does that mean?", answer: "Yes, as long as the column isn't also marked `NOT NULL`. A `NULL` foreign key typically means 'this row doesn't currently reference anything' — for example, an order with no assigned sales rep — representing an optional relationship rather than a broken one." },
-      { question: "What is the difference between a natural key and a surrogate key?", answer: "A natural key is a real-world attribute that's already unique to the row, like a national ID number or an email address. A surrogate key is an artificial value the database generates purely to identify the row, like an auto-incrementing id, with no meaning outside the database." },
-      { question: "What's a downside of using a natural key like an email as a primary key, beyond the fact that emails can change?", answer: "Natural keys are often longer or more complex than a simple integer, which makes them slower to index and join on, and using them elsewhere as foreign keys propagates that same complexity into every referencing table." },
-      { question: "Can a table have more than one column, or combination of columns, that could each serve as a unique identifier? What are those called?", answer: "Yes — any column or combination that's unique is a candidate key. A table picks exactly one candidate key to be its actual primary key, but other candidate keys can still be enforced with `UNIQUE` constraints." },
-      { question: "What's the difference between a `UNIQUE` constraint and a `PRIMARY KEY` constraint?", answer: "Both enforce uniqueness, but a table can have only one primary key while it can have several `UNIQUE` constraints on different columns. A `UNIQUE` column, unlike a primary key, is generally still allowed to contain `NULL` (commonly even more than one, in most databases, since `NULL` is never considered equal to another `NULL`)." },
-      { question: "What happens if you try to insert a row whose primary key value already exists in the table?", answer: "The database rejects the insert with a uniqueness violation error — it never silently overwrites or duplicates an existing row." },
-      { question: "Design a `comments` table that belongs to both a `posts` table and a `users` table. What foreign key columns would it need?", answer: "Two foreign key columns — `post_id INTEGER REFERENCES posts(id)` for which post the comment is on, and `user_id INTEGER REFERENCES users(id)` for who wrote it — alongside its own primary key, `id`." },
-      { question: "What is a self-referencing foreign key? Give an example.", answer: "A foreign key column in a table that references the primary key of that same table — for example, an `employees` table with `manager_id INTEGER REFERENCES employees(id)`, where a manager is just another row in the same table." },
-      { question: "Given `orders(id PK, user_id FK -> users.id ON DELETE CASCADE)`, what happens to a user's orders if that user's row is deleted?", answer: "Every order whose `user_id` points at that user is automatically deleted along with it, because of the `ON DELETE CASCADE` behavior." },
-      { question: "Given `orders(id PK, assigned_rep_id FK -> employees.id ON DELETE SET NULL)`, what happens to an order if the employee assigned to it is deleted?", answer: "The order row isn't deleted — its `assigned_rep_id` column is automatically set to `NULL`, leaving the order in place but now unassigned." },
-      { question: "Does adding a foreign key column automatically combine that table's data with the referenced table's data in query results?", answer: "No — a foreign key only creates, and optionally enforces, the link between rows. Actually seeing combined data from both tables in one result set still requires writing an explicit `JOIN`." },
-      { question: "Why does inserting an order with a `user_id` that doesn't correspond to any real user cause problems, even without an actively enforced foreign key constraint?", answer: "Any later query that joins orders to users to show who placed the order finds nothing for that row, reports can silently undercount or drop it, and there's no way to tell later whether it's a data entry mistake or an intentionally orphaned record — referential integrity exists precisely to prevent this ambiguity." },
-      { question: "In a composite primary key like `(order_id, product_id)`, does the order the two columns are listed in change what's enforced?", answer: "The uniqueness guarantee itself doesn't depend on the listed order — the combination is what must be unique either way — though the column order can affect which queries make efficient use of the underlying index built to enforce it." },
-      { question: "Is it valid, from the database's point of view, to create a table with no primary key at all?", answer: "Yes, most databases allow it, but it's rarely a good idea — without a primary key there's no guaranteed way to reliably target, update, or delete one specific row, and other tables can't establish clean foreign key relationships to it." },
-      { question: "What's the practical difference between a column that's `NOT NULL` and `UNIQUE` versus that same column being declared `PRIMARY KEY`?", answer: "Functionally, `NOT NULL` plus `UNIQUE` enforces the same two things a primary key does. The difference is that a table can have only one primary key, signaling the main identifier other tables should reference, while it can have multiple independent `NOT NULL` and `UNIQUE` columns alongside it." },
-      { question: "If `orders` has `ON DELETE CASCADE` back to `users`, and `order_items` has `ON DELETE CASCADE` back to `orders`, what happens when a single user row is deleted?", answer: "Deleting the user cascades to delete all of that user's orders, and each of those deletions in turn cascades to delete all of that order's order_items — a single delete can ripple through multiple linked tables when `CASCADE` is chained across relationships, which is exactly why `RESTRICT` is often preferred as a default." },
+      { question: "What is a composite primary key?", answer: "A primary key made of several columns together. The combination must be unique, even though no single column is. For example, `order_items` could use `(order_id, product_id)`, so a product appears only once per order." },
+      { question: "When would you reach for a composite primary key instead of a single auto-incrementing id column?", answer: "When a row is fully defined by a combination of foreign keys and nothing else needs to identify it. The classic case is a join table, like `order_items` linking `orders` and `products`, where 'this order plus this product' is the row." },
+      { question: "Must a foreign key always reference the other table's primary key specifically?", answer: "No. It can reference any column that's guaranteed unique (usually via a `UNIQUE` constraint). Referencing the primary key is just the most common and simplest case." },
+      { question: "What is referential integrity, in plain terms?", answer: "The guarantee that every foreign key value matches a real row in the table it references. No order can point at a `user_id` that doesn't exist." },
+      { question: "If a foreign key constraint is enforced, what happens when you try to insert a row whose foreign key value doesn't exist in the referenced table?", answer: "The database rejects the insert with a constraint violation error. It won't store a row pointing at a missing record." },
+      { question: "What does `ON DELETE CASCADE` do on a foreign key?", answer: "When the referenced row (say, a user) is deleted, the database also deletes every row that references it (that user's orders), instead of leaving them pointing at nothing." },
+      { question: "What does `ON DELETE SET NULL` do, and what does it require of the foreign key column?", answer: "When the referenced row is deleted, referencing rows keep existing but their foreign key is set to `NULL`. The foreign key column must therefore allow `NULL`." },
+      { question: "What does `ON DELETE RESTRICT` (or the default `NO ACTION` in many databases) do?", answer: "It blocks the delete. The database won't delete the referenced row while any other row still references it, so you must deal with those references first." },
+      { question: "Running `DELETE FROM users WHERE id = 1;` fails with a foreign key constraint violation. What's the most likely cause?", answer: "A row in another table (like `orders`) still points at that user, and the foreign key uses `RESTRICT`/`NO ACTION` (a common default) rather than `CASCADE` or `SET NULL`. The database refuses to leave the reference dangling." },
+      { question: "Between `ON DELETE CASCADE` and `ON DELETE RESTRICT`, which is generally the safer default, and why?", answer: "`RESTRICT`. It forces you to decide what happens to dependent rows, instead of silently deleting a possibly large chain of related data. `CASCADE` is powerful but can remove far more than expected when relationships run deep." },
+      { question: "Can a primary key column contain `NULL`?", answer: "No. A primary key means both unique and `NOT NULL`. A `NULL` can't reliably identify a row, and one `NULL` isn't even equal to another." },
+      { question: "Can a foreign key column contain `NULL`, and what does that mean?", answer: "Yes, unless it's also marked `NOT NULL`. A `NULL` foreign key usually means 'no reference right now', like an order with no assigned sales rep. It's an optional relationship, not a broken one." },
+      { question: "What is the difference between a natural key and a surrogate key?", answer: "A natural key is a real-world value already unique to the row, like a national ID or email. A surrogate key is an artificial value the database generates just to identify the row, like an auto-incrementing id, with no meaning outside the database." },
+      { question: "What's a downside of using a natural key like an email as a primary key, beyond the fact that emails can change?", answer: "Natural keys are often longer or more complex than an integer, so they're slower to index and join on. That cost spreads to every table that uses them as a foreign key." },
+      { question: "Can a table have more than one column, or combination of columns, that could each serve as a unique identifier? What are those called?", answer: "Yes. Each is a candidate key. The table picks one as its primary key; the others can still be enforced with `UNIQUE` constraints." },
+      { question: "What's the difference between a `UNIQUE` constraint and a `PRIMARY KEY` constraint?", answer: "Both enforce uniqueness, but a table has only one primary key and can have many `UNIQUE` constraints. Unlike a primary key, a `UNIQUE` column can usually hold `NULL`, often more than once in most databases, since `NULL` never equals another `NULL`." },
+      { question: "What happens if you try to insert a row whose primary key value already exists in the table?", answer: "The database rejects it with a uniqueness violation error. It never silently overwrites or duplicates the existing row." },
+      { question: "Design a `comments` table that belongs to both a `posts` table and a `users` table. What foreign key columns would it need?", answer: "Two foreign keys: `post_id INTEGER REFERENCES posts(id)` for the post, and `user_id INTEGER REFERENCES users(id)` for the author, plus its own primary key, `id`." },
+      { question: "What is a self-referencing foreign key? Give an example.", answer: "A foreign key that references the primary key of its own table. For example, `employees` with `manager_id INTEGER REFERENCES employees(id)`, where a manager is just another employee row." },
+      { question: "Given `orders(id PK, user_id FK -> users.id ON DELETE CASCADE)`, what happens to a user's orders if that user's row is deleted?", answer: "All orders whose `user_id` points at that user are deleted too, because of `ON DELETE CASCADE`." },
+      { question: "Given `orders(id PK, assigned_rep_id FK -> employees.id ON DELETE SET NULL)`, what happens to an order if the employee assigned to it is deleted?", answer: "The order stays, but its `assigned_rep_id` is set to `NULL`, so it's now unassigned." },
+      { question: "Does adding a foreign key column automatically combine that table's data with the referenced table's data in query results?", answer: "No. A foreign key only creates (and optionally enforces) the link. To see data from both tables in one result, you still write a `JOIN`." },
+      { question: "Why does inserting an order with a `user_id` that doesn't correspond to any real user cause problems, even without an actively enforced foreign key constraint?", answer: "Queries joining orders to users find nothing for that row, reports can silently undercount it, and later nobody can tell whether it's a typo or an intentionally orphaned record. Referential integrity exists to prevent exactly this." },
+      { question: "In a composite primary key like `(order_id, product_id)`, does the order the two columns are listed in change what's enforced?", answer: "No. The combination must be unique either way. But column order can affect which queries can use the underlying index efficiently." },
+      { question: "Is it valid, from the database's point of view, to create a table with no primary key at all?", answer: "Most databases allow it, but it's rarely wise. Without one, there's no guaranteed way to target, update, or delete one specific row, and other tables can't cleanly reference it." },
+      { question: "What's the practical difference between a column that's `NOT NULL` and `UNIQUE` versus that same column being declared `PRIMARY KEY`?", answer: "`NOT NULL` plus `UNIQUE` enforces the same two rules as a primary key. But a table has only one primary key, marking the main identifier other tables should reference, while it can have many `NOT NULL` `UNIQUE` columns." },
+      { question: "If `orders` has `ON DELETE CASCADE` back to `users`, and `order_items` has `ON DELETE CASCADE` back to `orders`, what happens when a single user row is deleted?", answer: "The user's orders are deleted, and each of those deletes removes that order's order_items. One delete can ripple through several tables when `CASCADE` is chained, which is why `RESTRICT` is often the preferred default." },
     ],
     prerequisites: ["tables-rows-columns"],
     relatedTopics: ["tables-rows-columns", "basic-sql-queries", "joins", "normalization"],
@@ -352,24 +352,22 @@ datasets where the tables don't need to stay in sync.
     id: "basic-sql-queries",
     title: "Basic SQL Queries",
     level: "beginner",
-    description: "The four core commands — SELECT, INSERT, UPDATE, DELETE — used to read and change data in a database.",
+    description: "The four core commands (SELECT, INSERT, UPDATE, DELETE) for reading and changing data.",
     explanation: `
-Once data lives in tables, you need a way to actually read it and change
-it. **SQL** (Structured Query Language) is the language almost every
-relational database understands, and it's built around four core
-operations, often remembered by the acronym **CRUD** (Create, Read,
-Update, Delete):
+**SQL** (Structured Query Language) is the language almost every
+relational database understands. It's built around four core operations,
+known as **CRUD** (Create, Read, Update, Delete):
 
-- \`SELECT\` — read existing rows
-- \`INSERT\` — add a new row
-- \`UPDATE\` — change values in existing rows
-- \`DELETE\` — remove rows
+- \`SELECT\`: read existing rows
+- \`INSERT\`: add a new row
+- \`UPDATE\`: change values in existing rows
+- \`DELETE\`: remove rows
 
-These four commands, combined with ways to filter which rows they apply
-to, cover the overwhelming majority of everyday database work.
+These four, plus ways to filter which rows they touch, cover most everyday
+database work.
     `.trim(),
     analogy:
-      "Think of a table as a shared notebook. SELECT is reading a page without touching it. INSERT is writing a brand-new entry on a fresh line. UPDATE is crossing out part of an existing entry and writing a correction. DELETE is tearing an entry out entirely.",
+      "Think of a table as a shared notebook. SELECT is reading a page. INSERT is writing a new entry on a fresh line. UPDATE is crossing out part of an entry and writing a correction. DELETE is tearing an entry out.",
     examples: [
       {
         title: "All four operations on a users table",
@@ -385,12 +383,12 @@ UPDATE users SET email = 'amara@newmail.com' WHERE id = 1;
 -- Remove a user
 DELETE FROM users WHERE id = 1;`,
         language: "sql",
-        explanation: "Each statement is a complete command on its own — SQL statements are typically written one operation at a time, ending in a semicolon.",
+        explanation: "Each statement is a complete command, usually one operation at a time, ending in a semicolon.",
         walkthrough: [
-          { code: "SELECT * FROM users;", explanation: "Asks for every column of every row in the users table. The * means 'all columns'." },
-          { code: "INSERT INTO users (name, email) VALUES ('Amara', 'amara@example.com');", explanation: "Adds one new row, setting the name and email columns to the given values." },
-          { code: "UPDATE users SET email = 'amara@newmail.com' WHERE id = 1;", explanation: "Finds the row where id equals 1, and changes only its email column." },
-          { code: "DELETE FROM users WHERE id = 1;", explanation: "Removes the row where id equals 1 entirely." },
+          { code: "SELECT * FROM users;", explanation: "Gets every column of every row in users. The * means 'all columns'." },
+          { code: "INSERT INTO users (name, email) VALUES ('Amara', 'amara@example.com');", explanation: "Adds one row with the given name and email." },
+          { code: "UPDATE users SET email = 'amara@newmail.com' WHERE id = 1;", explanation: "Finds the row with id 1 and changes only its email." },
+          { code: "DELETE FROM users WHERE id = 1;", explanation: "Removes the row with id 1." },
         ],
       },
       {
@@ -399,78 +397,74 @@ DELETE FROM users WHERE id = 1;`,
 
 UPDATE users SET age = age + 1 WHERE id = 3;`,
         language: "sql",
-        explanation: "SELECT doesn't have to grab every column — you can list exactly the ones you need. UPDATE can also compute a new value based on the current one, like incrementing age by 1.",
+        explanation: "SELECT can list just the columns you need. UPDATE can compute a new value from the current one, like adding 1 to age.",
       },
     ],
     howItWorks: `
-When you send a SQL statement to the database, it gets parsed and turned
-into a plan for how to carry it out: which table to touch, which rows
-match any given condition, and what to do with them. \`SELECT\` never
-changes data — it only reads and returns it. \`INSERT\`, \`UPDATE\`, and
-\`DELETE\` all modify the table's actual contents, and each one, without a
-\`WHERE\` clause narrowing things down, applies to *every* row in the
-table — which is why forgetting a WHERE clause on UPDATE or DELETE is one
-of the most dangerous mistakes in SQL.
+The database parses each SQL statement into a plan: which table to touch,
+which rows match, and what to do with them.
+
+\`SELECT\` only reads; it never changes data. \`INSERT\`, \`UPDATE\`, and
+\`DELETE\` change the table. Without a \`WHERE\` clause, UPDATE and DELETE
+apply to *every* row, which is why forgetting WHERE is one of the most
+dangerous mistakes in SQL.
     `.trim(),
     whyItExists: `
-SQL exists so that reading and changing data doesn't require custom
-code for every situation. Instead of writing a program to loop through
-files searching for matches, you describe *what* you want ("all users
-older than 30") and the database figures out *how* to get it, using one
-shared, standardized language across virtually every relational
-database.
+SQL means you don't write custom code for every read or change. You
+describe *what* you want ("all users older than 30") and the database works
+out *how* to get it. The same standard language works across almost every
+relational database.
     `.trim(),
     whenToUse: `
-Use SELECT any time you need to read data. Use INSERT when new data is
-created (a new signup, a new order). Use UPDATE when existing data
-changes (an address update, a status change). Use DELETE when data
-should be permanently removed.
+- SELECT: whenever you need to read data.
+- INSERT: when new data is created (a signup, an order).
+- UPDATE: when existing data changes (a new address, a status change).
+- DELETE: when data should be removed for good.
     `.trim(),
     whenNotToUse: `
-For truly bulk, one-time data loads (millions of rows at once) many
-databases offer faster specialized bulk-loading tools instead of
-individual INSERT statements. And for data you might need to recover
-later, consider a "soft delete" (marking a row as inactive) instead of
-an actual DELETE.
+For huge one-time loads (millions of rows), many databases offer faster
+bulk-loading tools than individual INSERTs. For data you might need to
+recover, consider a "soft delete" (marking a row inactive) instead of a
+real DELETE.
     `.trim(),
     commonMistakes: [
-      "Running an UPDATE or DELETE without a WHERE clause, which applies the change to every single row in the table.",
-      "Forgetting that SELECT * pulls every column, even ones you don't need, which wastes bandwidth on large tables.",
-      "Assuming INSERT requires listing every column — columns with defaults or that allow empty values can often be omitted.",
+      "Running UPDATE or DELETE without a WHERE clause, which changes every row in the table.",
+      "Forgetting that SELECT * fetches every column, even unneeded ones, wasting bandwidth on large tables.",
+      "Thinking INSERT must list every column. Columns with defaults or that allow empty values can often be left out.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a SELECT statement that retrieves the name and email of every row in a users table." },
-      { difficulty: "Medium", prompt: "Write an INSERT statement adding a new product with a name and a price to a products table, and an UPDATE statement that changes that product's price." },
-      { difficulty: "Hard", prompt: "Explain, step by step, what would happen if you ran `DELETE FROM users;` with no WHERE clause, and why that's dangerous." },
+      { difficulty: "Easy", prompt: "Write a SELECT that gets the name and email of every row in a users table." },
+      { difficulty: "Medium", prompt: "Write an INSERT that adds a product with a name and price to a products table, then an UPDATE that changes its price." },
+      { difficulty: "Hard", prompt: "Explain step by step what happens if you run `DELETE FROM users;` with no WHERE clause, and why that's dangerous." },
     ],
     interviewQuestions: [
       { question: "What do the four basic SQL commands SELECT, INSERT, UPDATE, and DELETE each do?", answer: "SELECT reads rows, INSERT adds a new row, UPDATE modifies values in existing rows, and DELETE removes rows." },
       { question: "What happens if you run an UPDATE statement with no WHERE clause?", answer: "It applies the change to every row in the table, not just one — which is a common and dangerous mistake." },
       { question: "Does SELECT ever modify the underlying data?", answer: "No — SELECT only reads and returns data; it never changes what's stored." },
-      { question: "How do you insert multiple new rows using a single INSERT statement?", answer: "List multiple parenthesized value groups after `VALUES`, separated by commas — for example, `INSERT INTO products (name, price_cents) VALUES ('Pen', 150), ('Notebook', 300), ('Eraser', 50);` inserts three rows in one statement." },
-      { question: "Why is a single multi-row INSERT generally more efficient than the same number of single-row INSERT statements?", answer: "It sends and parses one statement instead of many, letting the database batch the work internally — fewer round trips between application and database, and often fewer repeated internal bookkeeping steps like index updates — which matters a lot when inserting many rows." },
-      { question: "What does adding `RETURNING *` (or specific columns) to an INSERT statement do?", answer: "It hands back the actual row as it ended up stored — including any values the database generated itself, like an auto-incremented id or a default timestamp — in the same round trip as the insert, without a separate SELECT afterward." },
-      { question: "Why is RETURNING especially useful after an INSERT that relies on an auto-generated primary key?", answer: "The application doesn't know that generated id ahead of time. Without RETURNING, a second query would be needed to look the new row back up, and you'd need some other unique detail to find it by; RETURNING hands the id back immediately as part of the insert itself." },
-      { question: "Is RETURNING part of every SQL database's basic dialect?", answer: "No — support for it varies by database. Whether, and how, RETURNING is available depends on which specific database you're using, so it's worth checking that database's own documentation rather than assuming it works identically everywhere." },
-      { question: "Can RETURNING be used with UPDATE and DELETE statements too, not just INSERT?", answer: "Where supported, yes — an UPDATE with RETURNING hands back a row's new values after the change, and a DELETE with RETURNING hands back the values of the row as they were right before it was removed." },
-      { question: "Running `INSERT INTO users (name) VALUES ('Amara');` fails, and `email` is declared NOT NULL with no default. Why?", answer: "Omitting a column from an INSERT's column list is only allowed if that column has a DEFAULT value or otherwise permits NULL. Neither is true for email here, so the database refuses to leave it without a value and rejects the insert." },
-      { question: "If you supply an explicit column list in an INSERT, like `INSERT INTO users (email, name) VALUES ('a@x.com', 'Amara');`, does the order of those columns need to match the table's declared column order?", answer: "No — when you supply an explicit column list, each value is matched to a column by position within that list, not the table's original declared order, so listing email before name works fine even if the table itself declares name first. Omitting the column list entirely, though, does require the VALUES to line up with the table's actual declared column order." },
-      { question: "What's the difference between `UPDATE products SET price_cents = 500` and `UPDATE products SET price_cents = price_cents + 100`?", answer: "The first sets every matching row's price_cents to the exact same fixed value, 500. The second computes a new value relative to each row's current value, adding 100 to whatever it already was, so different rows end up with different results depending on their starting price." },
-      { question: "If an UPDATE or DELETE's WHERE clause matches zero rows, is that an error?", answer: "No — the statement completes successfully having changed zero rows. Most databases report back a rows-affected count of 0 rather than raising an error, since matching no rows isn't inherently invalid." },
-      { question: "What's the difference between `DELETE FROM orders;` with no WHERE and `TRUNCATE TABLE orders;`?", answer: "Both remove every row, but DELETE removes rows one at a time as a filterable operation (and can be given a WHERE clause), while TRUNCATE is a more specialized operation that resets the whole table at once — often faster, but it can't be limited with a WHERE clause and can interact differently with things like auto-increment counters depending on the database." },
-      { question: "Can a SELECT return a computed value that isn't stored as an actual column?", answer: "Yes — SELECT can include expressions, not just raw column names. `SELECT price_cents * quantity AS line_total FROM order_items;` computes a new value per row on the fly and labels it with the alias line_total." },
-      { question: "What does `AS` do in a statement like `SELECT price_cents * quantity AS line_total`?", answer: "It gives a computed expression, or even a plain column, an alias — a name to use for that value in the returned results — which is especially useful for expressions that wouldn't otherwise have a meaningful column name." },
-      { question: "What's the difference between `INSERT INTO ... VALUES (...)` and `INSERT INTO ... SELECT ...`?", answer: "VALUES inserts one or more literal rows written out directly. INSERT INTO ... SELECT instead inserts whatever rows a SELECT query produces, which is useful for copying or transforming data already in the database into another table without pulling it out to the application first." },
-      { question: "If a multi-row INSERT includes one row that violates a constraint, like a duplicate primary key, what typically happens to the other, valid rows in that statement?", answer: "In most databases the entire statement fails and none of the rows are inserted — the statement is treated as one atomic operation, not independent per-row inserts, so a single bad row rolls the whole batch back rather than leaving partial results." },
-      { question: "Could `UPDATE users SET status = 'active' WHERE last_login > '2026-01-01';` ever match more than one row?", answer: "Yes, easily. WHERE only guarantees a single row when filtering on a column known to be unique, like a primary key. Filtering on a non-unique column like last_login can match any number of rows, all of which get updated." },
-      { question: "After running an UPDATE or DELETE, how do you find out how many rows were actually affected?", answer: "Most database drivers or clients report a rows-affected count alongside the statement's result. Checking that count is a common way to confirm a targeted UPDATE or DELETE actually hit the row you expected, rather than silently matching zero." },
-      { question: "Why might using `SELECT *` in application code be riskier than listing exact column names?", answer: "If the table's columns change later — one added, removed, or reordered — code relying on SELECT * can silently start receiving different data than expected. Naming exact columns keeps the query's contract stable regardless of later schema changes, and avoids fetching data the application doesn't need." },
-      { question: "Is `WHERE id = 1` guaranteed to behave the same as `WHERE id = '1'` if id is an INTEGER column?", answer: "Many databases implicitly convert the string '1' to compare it against the integer column and still match, but relying on that conversion is poor practice — some databases are stricter about it, and it can silently defeat index usage in others — so it's better to match the literal's type to the column's declared type." },
-      { question: "Explain what happens, step by step, if you run `DELETE FROM users;` with no WHERE clause.", answer: "The database interprets having no WHERE clause as no filter at all, so it deletes every single row currently in the users table, not just one or a few, with no built-in way to select 'the one I meant' afterward — which is why this is one of the most dangerous mistakes possible in SQL." },
-      { question: "You want to update a row and immediately see its new value, like an updated_at timestamp the database sets automatically. What's the advantage of `UPDATE ... RETURNING updated_at` over a separate SELECT afterward?", answer: "RETURNING gets you the row's actual post-update value in the same round trip and same atomic operation. A separate follow-up SELECT is an extra query, and in theory another process could change or delete the row in the gap between the two, so RETURNING avoids that race entirely." },
-      { question: "Write a single statement that inserts three new products, each with a name and price_cents.", answer: "`INSERT INTO products (name, price_cents) VALUES ('Pen', 150), ('Notebook', 300), ('Folder', 220);` — one INSERT, three comma-separated value groups, all committed together." },
-      { question: "Why do INSERT, UPDATE, and DELETE each count as a single atomic operation, even when they affect many rows at once?", answer: "The database guarantees either the entire statement's effect on every matching row takes hold, or none of it does. There's no in-between state where only some of the intended rows changed and the statement failed partway, which is what makes a rows-affected count of 0 or the full expected count a safe way to reason about a statement's outcome." },
-      { question: "A developer runs `UPDATE orders SET status = 'shipped' WHERE order_date = '2026-01-01';` intending to update one specific order, but several rows change. What went wrong?", answer: "They filtered on order_date, a column that isn't guaranteed unique — multiple orders can share the same date — so WHERE matched every order placed that day instead of the single one intended. Filtering by a unique identifier like the order's id would have targeted exactly one row." },
+      { question: "How do you insert multiple new rows using a single INSERT statement?", answer: "List several value groups after `VALUES`, separated by commas. For example, `INSERT INTO products (name, price_cents) VALUES ('Pen', 150), ('Notebook', 300), ('Eraser', 50);` inserts three rows." },
+      { question: "Why is a single multi-row INSERT generally more efficient than the same number of single-row INSERT statements?", answer: "One statement is sent and parsed instead of many, so the database can batch the work. That means fewer round trips and often less repeated bookkeeping like index updates, which matters when inserting many rows." },
+      { question: "What does adding `RETURNING *` (or specific columns) to an INSERT statement do?", answer: "It returns the row as stored, including values the database generated (like an auto-incremented id or default timestamp), in the same round trip. No separate SELECT needed." },
+      { question: "Why is RETURNING especially useful after an INSERT that relies on an auto-generated primary key?", answer: "Your app doesn't know the generated id in advance. Without RETURNING, you'd need a second query and some other unique detail to find the new row. RETURNING gives you the id right away." },
+      { question: "Is RETURNING part of every SQL database's basic dialect?", answer: "No. Support varies by database, so check your database's documentation instead of assuming it works the same everywhere." },
+      { question: "Can RETURNING be used with UPDATE and DELETE statements too, not just INSERT?", answer: "Yes, where supported. UPDATE ... RETURNING gives the row's new values; DELETE ... RETURNING gives the row's values just before it was removed." },
+      { question: "Running `INSERT INTO users (name) VALUES ('Amara');` fails, and `email` is declared NOT NULL with no default. Why?", answer: "You can leave a column out of an INSERT only if it has a DEFAULT or allows NULL. email has neither, so the insert is rejected." },
+      { question: "If you supply an explicit column list in an INSERT, like `INSERT INTO users (email, name) VALUES ('a@x.com', 'Amara');`, does the order of those columns need to match the table's declared column order?", answer: "No. With a column list, values match columns by position in that list, so email before name is fine. Without a column list, VALUES must follow the table's declared column order." },
+      { question: "What's the difference between `UPDATE products SET price_cents = 500` and `UPDATE products SET price_cents = price_cents + 100`?", answer: "The first sets every matching row to exactly 500. The second adds 100 to each row's current price, so results differ by starting price." },
+      { question: "If an UPDATE or DELETE's WHERE clause matches zero rows, is that an error?", answer: "No. The statement succeeds and changes zero rows. Most databases report a rows-affected count of 0." },
+      { question: "What's the difference between `DELETE FROM orders;` with no WHERE and `TRUNCATE TABLE orders;`?", answer: "Both remove every row. DELETE removes rows one by one and accepts a WHERE clause. TRUNCATE resets the whole table at once: often faster, but it can't take a WHERE clause and may treat things like auto-increment counters differently depending on the database." },
+      { question: "Can a SELECT return a computed value that isn't stored as an actual column?", answer: "Yes. SELECT can include expressions. `SELECT price_cents * quantity AS line_total FROM order_items;` computes a value per row and names it line_total." },
+      { question: "What does `AS` do in a statement like `SELECT price_cents * quantity AS line_total`?", answer: "It gives an expression (or column) an alias: the name used for it in the results. Handy for expressions that would otherwise have no meaningful name." },
+      { question: "What's the difference between `INSERT INTO ... VALUES (...)` and `INSERT INTO ... SELECT ...`?", answer: "VALUES inserts rows you write out literally. INSERT INTO ... SELECT inserts whatever rows a query returns, which is useful for copying or transforming data between tables without pulling it into the app." },
+      { question: "If a multi-row INSERT includes one row that violates a constraint, like a duplicate primary key, what typically happens to the other, valid rows in that statement?", answer: "In most databases the whole statement fails and no rows are inserted. The statement is atomic, so one bad row rolls back the batch instead of leaving partial results." },
+      { question: "Could `UPDATE users SET status = 'active' WHERE last_login > '2026-01-01';` ever match more than one row?", answer: "Yes, easily. WHERE only guarantees one row when filtering on a unique column like a primary key. A non-unique column like last_login can match any number of rows, and all get updated." },
+      { question: "After running an UPDATE or DELETE, how do you find out how many rows were actually affected?", answer: "Most drivers and clients report a rows-affected count with the result. Checking it confirms the statement hit the row you expected and didn't silently match zero." },
+      { question: "Why might using `SELECT *` in application code be riskier than listing exact column names?", answer: "If columns are later added, removed, or reordered, code using SELECT * can silently get different data. Naming columns keeps the query stable through schema changes and avoids fetching data you don't need." },
+      { question: "Is `WHERE id = 1` guaranteed to behave the same as `WHERE id = '1'` if id is an INTEGER column?", answer: "Many databases convert '1' to a number and still match, but don't rely on it. Some databases are stricter, and in others the conversion can silently stop an index being used. Match the literal's type to the column's type." },
+      { question: "Explain what happens, step by step, if you run `DELETE FROM users;` with no WHERE clause.", answer: "No WHERE means no filter, so the database deletes every row in users, not just the one you meant. There's no built-in way to pick out 'the one I meant' afterward, which makes this one of the most dangerous SQL mistakes." },
+      { question: "You want to update a row and immediately see its new value, like an updated_at timestamp the database sets automatically. What's the advantage of `UPDATE ... RETURNING updated_at` over a separate SELECT afterward?", answer: "RETURNING gives the post-update value in the same round trip and the same atomic operation. A follow-up SELECT is an extra query, and another process could change or delete the row in between. RETURNING avoids that race." },
+      { question: "Write a single statement that inserts three new products, each with a name and price_cents.", answer: "`INSERT INTO products (name, price_cents) VALUES ('Pen', 150), ('Notebook', 300), ('Folder', 220);`: one INSERT, three value groups, committed together." },
+      { question: "Why do INSERT, UPDATE, and DELETE each count as a single atomic operation, even when they affect many rows at once?", answer: "The database guarantees the statement either takes effect on every matching row or on none. It never fails partway with only some rows changed. That's why the rows-affected count (0 or the full expected count) is a safe way to judge the outcome." },
+      { question: "A developer runs `UPDATE orders SET status = 'shipped' WHERE order_date = '2026-01-01';` intending to update one specific order, but several rows change. What went wrong?", answer: "order_date isn't unique; many orders can share a date. So WHERE matched every order from that day. Filtering by the order's id would have hit exactly one row." },
     ],
     prerequisites: ["tables-rows-columns"],
     relatedTopics: ["tables-rows-columns", "filtering-and-sorting", "transactions-and-acid"],
@@ -480,21 +474,20 @@ an actual DELETE.
     id: "filtering-and-sorting",
     title: "Filtering & Sorting",
     level: "beginner",
-    description: "Narrowing a query down to the rows you actually want with WHERE, and controlling the order results come back in with ORDER BY.",
+    description: "Pick the rows you want with WHERE, and set the order they come back in with ORDER BY.",
     explanation: `
-\`SELECT * FROM orders\` gives you every single order — but most of the
-time you want something more specific: only orders from this month,
-only the five most expensive ones, only users whose name starts with
-"A." That's what filtering and sorting are for.
+\`SELECT * FROM orders\` returns every order. Usually you want something
+narrower: orders from this month, the five most expensive, users whose name
+starts with "A."
 
-The \`WHERE\` clause narrows a query down to only the rows that match a
-condition you specify. The \`ORDER BY\` clause controls what order the
-matching rows come back in — ascending or descending, by any column you
-choose. They're often used together: filter down to the rows you care
-about, then sort them in a useful order.
+- \`WHERE\` keeps only the rows that match a condition.
+- \`ORDER BY\` sorts the results by any column, ascending or descending.
+
+They're often used together: filter to the rows you care about, then sort
+them.
     `.trim(),
     analogy:
-      "WHERE is like sifting a basket of laundry down to just the socks. ORDER BY is then lining those socks up from smallest to biggest before you look at them. You can do either alone, or both together.",
+      "WHERE is sorting a laundry basket down to just the socks. ORDER BY is lining those socks up from smallest to biggest. You can do either alone, or both.",
     examples: [
       {
         title: "Filtering with WHERE",
@@ -502,11 +495,11 @@ about, then sort them in a useful order.
 FROM orders
 WHERE total_cents > 5000;`,
         language: "sql",
-        explanation: "Only returns orders whose total is more than 5000 cents ($50) — every other row is left out entirely.",
+        explanation: "Returns only orders over 5000 cents ($50). Every other row is left out.",
         walkthrough: [
           { code: "SELECT name, total_cents", explanation: "Choose which columns to return." },
           { code: "FROM orders", explanation: "Choose which table to read from." },
-          { code: "WHERE total_cents > 5000;", explanation: "Keep only the rows where this condition is true; every non-matching row is excluded from the results." },
+          { code: "WHERE total_cents > 5000;", explanation: "Keep only rows where this condition is true." },
         ],
       },
       {
@@ -517,81 +510,73 @@ WHERE total_cents > 5000
 ORDER BY total_cents DESC
 LIMIT 3;`,
         language: "sql",
-        explanation: "Finds orders over $50, sorts the matching ones from highest total to lowest (DESC means descending), then keeps only the top 3.",
+        explanation: "Finds orders over $50, sorts them from highest total to lowest (DESC means descending), then keeps the top 3.",
       },
     ],
     howItWorks: `
-The database evaluates the \`WHERE\` condition against every row's actual
-values, keeping only the rows where it comes out true. Conditions can be
-combined with \`AND\` and \`OR\` for more complex logic. \`ORDER BY\` then
-takes the surviving rows and sorts them by one or more columns —
-\`ASC\` (ascending, the default) or \`DESC\` (descending). \`LIMIT\` can cap
-how many of the sorted results actually get returned.
+The database checks the \`WHERE\` condition against each row and keeps the
+rows where it's true. You can combine conditions with \`AND\` and \`OR\`.
+\`ORDER BY\` sorts the remaining rows by one or more columns, \`ASC\`
+(ascending, the default) or \`DESC\` (descending). \`LIMIT\` caps how many
+sorted rows come back.
 
-Under the hood, without help from an index (a topic on its own), the
-database typically has to look at every row in the table to check the
-WHERE condition — how that lookup can be sped up is exactly what indexes
-are for.
+Without an index (a topic of its own), the database usually has to check
+every row against WHERE. Indexes exist to speed up exactly that lookup.
     `.trim(),
     whyItExists: `
-Real applications almost never want "everything, in whatever order the
-database happens to store it in." Filtering and sorting exist so that
-the database itself can do the narrowing and ordering work, instead of
-your application code fetching every row and doing that filtering and
-sorting itself in memory — which would be both slower and far more code
-to write.
+Apps rarely want "everything, in whatever order it's stored." Filtering and
+sorting let the database do that work, instead of your code fetching every
+row and filtering and sorting in memory, which is slower and more code.
     `.trim(),
     whenToUse: `
-Use WHERE any time you only want a subset of a table's rows. Use ORDER
-BY whenever the order results are presented in matters — recent-first
-activity feeds, cheapest-first product listings, alphabetical name
-lists.
+Use WHERE whenever you want only some rows. Use ORDER BY whenever order
+matters: recent-first feeds, cheapest-first product lists, alphabetical
+names.
     `.trim(),
     whenNotToUse: `
-If you genuinely need every row and the order truly doesn't matter (for
-instance, feeding all rows into a batch job that processes them in any
-order), skipping WHERE and ORDER BY avoids unnecessary work for the
-database.
+If you need every row and order doesn't matter (say, a batch job that
+processes rows in any order), skip WHERE and ORDER BY to save the database
+work.
     `.trim(),
     commonMistakes: [
-      "Forgetting that ORDER BY without DESC defaults to ascending order, which can look 'backwards' for things like dates when you want most-recent-first.",
-      "Filtering in application code after fetching all rows, instead of letting WHERE do it inside the database — much slower on large tables.",
-      "Assuming rows come back in a particular order automatically — without ORDER BY, the order isn't guaranteed at all.",
+      "Forgetting ORDER BY defaults to ascending, which looks 'backwards' for dates when you want newest first.",
+      "Fetching all rows and filtering in app code instead of using WHERE. Much slower on large tables.",
+      "Assuming rows come back in some order automatically. Without ORDER BY, no order is guaranteed.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a query that selects all products from a products table with a price less than 20." },
-      { difficulty: "Medium", prompt: "Write a query that returns the 5 most recently created rows from an orders table, assuming it has a created_at column." },
-      { difficulty: "Hard", prompt: "Write a query combining WHERE and ORDER BY to find the 3 cheapest in-stock products, assuming a products table with price and in_stock columns." },
+      { difficulty: "Easy", prompt: "Write a query that selects all products with a price less than 20 from a products table." },
+      { difficulty: "Medium", prompt: "Write a query that returns the 5 most recently created rows from an orders table with a created_at column." },
+      { difficulty: "Hard", prompt: "Using WHERE and ORDER BY, find the 3 cheapest in-stock products in a products table with price and in_stock columns." },
     ],
     interviewQuestions: [
       { question: "What does the WHERE clause do?", answer: "It filters which rows a query applies to, keeping only rows where the given condition evaluates to true." },
       { question: "What does ORDER BY control, and what's the default direction?", answer: "It controls the order results are returned in, by one or more columns; the default direction is ascending (ASC) unless DESC is specified." },
       { question: "If you don't use ORDER BY, is the order of returned rows guaranteed?", answer: "No — without an explicit ORDER BY, the database doesn't guarantee any particular row order." },
-      { question: "What does `WHERE age = NULL` actually do, and why doesn't it match rows where age is NULL?", answer: "It matches nothing, ever. Comparing anything to NULL with `=` (or any comparison operator) doesn't evaluate to true or false — it evaluates to unknown, because NULL represents an unknown value and you can't know whether an unknown value equals anything. Finding NULL rows requires `WHERE age IS NULL` instead." },
-      { question: "What are the three possible outcomes of evaluating a WHERE condition?", answer: "True, false, and unknown — unknown is typically produced whenever NULL is involved in a comparison. WHERE only keeps rows where the condition evaluates to true; both false and unknown rows are excluded from the results." },
-      { question: "Given a table where some rows have age as NULL, what does `WHERE age > 20` return for those rows, and what about `WHERE NOT (age > 20)`?", answer: "Neither includes them. `age > 20` evaluates to unknown for a NULL age, not false, and negating unknown with NOT still produces unknown, not true. Both queries silently exclude those rows rather than treating an unknown age as passing either check." },
-      { question: "Why is `WHERE column <> 5` on a column containing some NULL values likely to exclude more rows than expected?", answer: "Rows where that column is NULL don't satisfy `<>` any more than they'd satisfy `=` — comparing NULL with anything yields unknown, not true — so NULL rows are silently dropped from both an equals-5 and a not-equals-5 result, even though intuitively a 'not equals' filter might seem like it should catch them." },
-      { question: "What's a dangerous trap with `WHERE column NOT IN (list)` if that list can contain a NULL value?", answer: "If even one element of the IN list is NULL, NOT IN can end up matching zero rows at all for the entire query. NOT IN is effectively a chain of `<>` comparisons ANDed together, and comparing against NULL produces unknown for that one comparison, which poisons the whole chain to unknown — excluded — rather than true." },
-      { question: "Does AND bind more tightly than OR in a WHERE clause, and why does that matter?", answer: "Yes. AND is evaluated before OR when there are no parentheses, so `WHERE a = 1 OR b = 2 AND c = 3` is actually interpreted as `WHERE a = 1 OR (b = 2 AND c = 3)`, not `WHERE (a = 1 OR b = 2) AND c = 3`. Relying on this precedence instead of writing explicit parentheses is an easy way to introduce a subtly wrong filter." },
-      { question: "Is the range in `WHERE price BETWEEN 10 AND 20` inclusive or exclusive of 10 and 20?", answer: "Inclusive on both ends — BETWEEN is equivalent to `price >= 10 AND price <= 20`, so rows with price exactly 10 or exactly 20 are included." },
-      { question: "What do `%` and `_` mean inside a LIKE pattern?", answer: "`%` matches any sequence of zero or more characters, and `_` matches exactly one character, so `LIKE 'A%'` matches anything starting with A, while `LIKE 'A_'` matches exactly two characters starting with A." },
-      { question: "Is LIKE guaranteed to be case-sensitive?", answer: "Not universally — it depends on the specific database and sometimes the column's collation. For example, PostgreSQL's LIKE is case-sensitive by default (with a separate case-insensitive ILIKE), while some other databases are case-insensitive by default for standard text, so this shouldn't be assumed to behave the same everywhere." },
-      { question: "When ordering by two columns, like `ORDER BY last_name ASC, age DESC`, how does the second column affect the sort?", answer: "Rows are primarily sorted by last_name ascending. Only when two or more rows share the same last_name does age descending get used to break that tie — the second column never overrides the first, it only resolves ties within it." },
-      { question: "Given the rows Kenji/34, Amara/29, and Amara/41, what order does `ORDER BY name ASC, age DESC` return them in?", answer: "Amara/41, then Amara/29, then Kenji/34. Rows are sorted by name alphabetically first (Amara before Kenji), and since both Amara rows tie on name, age DESC breaks the tie so the older Amara comes first." },
-      { question: "Can each column listed in an ORDER BY clause have its own independent ASC/DESC direction?", answer: "Yes — direction is specified per column, so `ORDER BY total_cents DESC, created_at ASC` sorts primarily by highest total first, and only uses created_at (oldest first) to break ties among equal totals." },
-      { question: "What does `LIMIT 5` do to a query's results?", answer: "It caps the number of rows returned to at most 5, discarding any additional matching (and, if present, sorted) rows beyond that count." },
-      { question: "What does `OFFSET 10` do when combined with `LIMIT 5`?", answer: "It skips the first 10 matching, sorted rows, then returns up to the next 5 after that — the classic pattern for fetching a later page of results." },
-      { question: "Why is it risky to use LIMIT/OFFSET for pagination without an ORDER BY clause?", answer: "Without ORDER BY, the database doesn't guarantee any particular row order between queries, so which rows land on 'page 1' versus 'page 2' isn't reliably consistent — the same row could appear on multiple pages, or never appear at all, especially if rows are also being inserted or deleted between requests." },
-      { question: "What happens if OFFSET is larger than the total number of matching rows?", answer: "The query simply returns zero rows. It's not an error — it just means there's nothing left after skipping that many." },
-      { question: "In terms of logical order of evaluation, does WHERE run before or after ORDER BY?", answer: "WHERE runs first, filtering down to the matching rows. Only those surviving rows get sorted by ORDER BY, and only after that does LIMIT, if present, truncate the final sorted list — filtering, then sorting, then capping." },
-      { question: "Where do NULL values end up when sorting a column with ORDER BY — always first, or always last?", answer: "It's not universal — different databases default to different placement for NULLs (some put them first in ascending order, others last), so if the exact position matters, check the specific database's default or specify it explicitly, since many support NULLS FIRST or NULLS LAST." },
-      { question: "Write a query that finds the 3 cheapest in-stock products from a products table with price and in_stock columns.", answer: "`SELECT * FROM products WHERE in_stock = true ORDER BY price ASC LIMIT 3;` — filters down to in-stock products, sorts the survivors from cheapest to most expensive, then keeps only the first three." },
-      { question: "A query with `WHERE total_cents > 5000 ORDER BY total_cents DESC LIMIT 3` returns only 1 row. Is that a bug?", answer: "Not necessarily. LIMIT only caps the maximum rows returned. If WHERE matched only 1 row in total, that's all there is to sort and return, regardless of LIMIT 3 asking for up to three." },
-      { question: "How would you get the rows ranked 2nd and 3rd by price, skipping the single cheapest, using LIMIT and OFFSET?", answer: "`ORDER BY price ASC LIMIT 2 OFFSET 1` — sort cheapest first, skip the first row with OFFSET 1, then take the next two." },
-      { question: "Why does filtering with WHERE inside the database scale better than fetching every row and filtering in application code?", answer: "The database can potentially use structures like indexes to jump straight to matching rows and never has to transfer non-matching rows over the network at all. Filtering in application code means every row, matching or not, has to be fetched, sent over the connection, and then discarded, which wastes both database and network work as the table grows." },
-      { question: "Without any index, how does the database evaluate a condition like `WHERE total_cents > 5000`?", answer: "It generally performs a full table scan, checking the condition against every single row one by one, since there's no shortcut structure telling it which rows might qualify without looking. Indexes exist specifically to avoid this by letting the database narrow down candidate rows faster." },
-      { question: "What's the difference between what WHERE excludes and what LIMIT excludes?", answer: "WHERE excludes rows based on whether they satisfy a condition — a row is kept or thrown out on its own merits. LIMIT excludes rows purely based on position in the already filtered and sorted result set, regardless of their content, purely to cap how many come back." },
-      { question: "A developer expects `ORDER BY created_at DESC LIMIT 5 OFFSET 5` to always return a stable 'page 2' that never overlaps page 1, even as new orders keep being inserted. What can go wrong?", answer: "If new rows are inserted between the two requests, every existing row can shift down one position in the DESC ordering, which can cause the same row to reappear on both pages, or a row to be skipped entirely. LIMIT/OFFSET pagination is based on position, not a stable per-row marker, so it isn't safe against concurrent inserts or deletes affecting the exact ordering column being used." },
+      { question: "What does `WHERE age = NULL` actually do, and why doesn't it match rows where age is NULL?", answer: "It never matches anything. Comparing to NULL with `=` (or any comparison) gives unknown, not true or false, because you can't know whether an unknown value equals something. Use `WHERE age IS NULL` instead." },
+      { question: "What are the three possible outcomes of evaluating a WHERE condition?", answer: "True, false, and unknown. Unknown usually comes from comparisons involving NULL. WHERE keeps only true rows; false and unknown rows are excluded." },
+      { question: "Given a table where some rows have age as NULL, what does `WHERE age > 20` return for those rows, and what about `WHERE NOT (age > 20)`?", answer: "Neither returns them. `age > 20` is unknown for a NULL age, and NOT unknown is still unknown. Both queries silently drop those rows." },
+      { question: "Why is `WHERE column <> 5` on a column containing some NULL values likely to exclude more rows than expected?", answer: "A NULL compared with anything gives unknown, so NULL rows fail `<>` just as they fail `=`. They're dropped from both the equals-5 and not-equals-5 results, even though 'not equals' seems like it should include them." },
+      { question: "What's a dangerous trap with `WHERE column NOT IN (list)` if that list can contain a NULL value?", answer: "If any item in the list is NULL, NOT IN can match zero rows for the whole query. NOT IN is a chain of `<>` checks joined by AND, and the NULL comparison makes the whole chain unknown, so every row is excluded." },
+      { question: "Does AND bind more tightly than OR in a WHERE clause, and why does that matter?", answer: "Yes. Without parentheses AND runs first, so `WHERE a = 1 OR b = 2 AND c = 3` means `WHERE a = 1 OR (b = 2 AND c = 3)`, not `WHERE (a = 1 OR b = 2) AND c = 3`. Write explicit parentheses to avoid subtly wrong filters." },
+      { question: "Is the range in `WHERE price BETWEEN 10 AND 20` inclusive or exclusive of 10 and 20?", answer: "Inclusive on both ends. BETWEEN equals `price >= 10 AND price <= 20`, so prices of exactly 10 or 20 are included." },
+      { question: "What do `%` and `_` mean inside a LIKE pattern?", answer: "`%` matches zero or more characters; `_` matches exactly one. So `LIKE 'A%'` matches anything starting with A, and `LIKE 'A_'` matches exactly two characters starting with A." },
+      { question: "Is LIKE guaranteed to be case-sensitive?", answer: "No. It depends on the database and sometimes the column's collation. PostgreSQL's LIKE is case-sensitive by default (ILIKE is the case-insensitive version), while some other databases are case-insensitive by default. Don't assume it's the same everywhere." },
+      { question: "When ordering by two columns, like `ORDER BY last_name ASC, age DESC`, how does the second column affect the sort?", answer: "Rows sort by last_name ascending first. age descending only breaks ties between rows with the same last_name. The second column never overrides the first." },
+      { question: "Given the rows Kenji/34, Amara/29, and Amara/41, what order does `ORDER BY name ASC, age DESC` return them in?", answer: "Amara/41, Amara/29, Kenji/34. Names sort alphabetically first; the two Amaras tie, so age DESC puts the older one first." },
+      { question: "Can each column listed in an ORDER BY clause have its own independent ASC/DESC direction?", answer: "Yes, direction is per column. `ORDER BY total_cents DESC, created_at ASC` sorts by highest total first, then by oldest created_at to break ties." },
+      { question: "What does `LIMIT 5` do to a query's results?", answer: "It returns at most 5 rows and drops the rest." },
+      { question: "What does `OFFSET 10` do when combined with `LIMIT 5`?", answer: "It skips the first 10 sorted rows and returns up to the next 5. This is the classic way to fetch a later page." },
+      { question: "Why is it risky to use LIMIT/OFFSET for pagination without an ORDER BY clause?", answer: "Without ORDER BY, row order isn't guaranteed between queries, so pages aren't consistent. A row could show up on several pages or never, especially if rows are inserted or deleted between requests." },
+      { question: "What happens if OFFSET is larger than the total number of matching rows?", answer: "The query returns zero rows. It's not an error; there's just nothing left after skipping." },
+      { question: "In terms of logical order of evaluation, does WHERE run before or after ORDER BY?", answer: "WHERE runs first and filters rows. ORDER BY sorts what's left. Then LIMIT, if present, cuts the sorted list: filter, sort, cap." },
+      { question: "Where do NULL values end up when sorting a column with ORDER BY — always first, or always last?", answer: "Neither; it depends on the database. Some put NULLs first in ascending order, others last. If position matters, check the default or set it explicitly with NULLS FIRST or NULLS LAST, which many databases support." },
+      { question: "Write a query that finds the 3 cheapest in-stock products from a products table with price and in_stock columns.", answer: "`SELECT * FROM products WHERE in_stock = true ORDER BY price ASC LIMIT 3;`: keep in-stock products, sort cheapest first, take the first three." },
+      { question: "A query with `WHERE total_cents > 5000 ORDER BY total_cents DESC LIMIT 3` returns only 1 row. Is that a bug?", answer: "Not necessarily. LIMIT only sets a maximum. If WHERE matched just 1 row, that's all there is to return." },
+      { question: "How would you get the rows ranked 2nd and 3rd by price, skipping the single cheapest, using LIMIT and OFFSET?", answer: "`ORDER BY price ASC LIMIT 2 OFFSET 1`: sort cheapest first, skip one row, take the next two." },
+      { question: "Why does filtering with WHERE inside the database scale better than fetching every row and filtering in application code?", answer: "The database can use indexes to jump to matching rows and never sends non-matching rows over the network. Filtering in app code means fetching, sending, and discarding every non-matching row, which wastes more database and network work as the table grows." },
+      { question: "Without any index, how does the database evaluate a condition like `WHERE total_cents > 5000`?", answer: "Usually with a full table scan, checking every row one by one, since nothing tells it which rows might match. Indexes exist to avoid this." },
+      { question: "What's the difference between what WHERE excludes and what LIMIT excludes?", answer: "WHERE drops rows that fail a condition, based on each row's content. LIMIT drops rows based only on their position in the filtered, sorted results, just to cap the count." },
+      { question: "A developer expects `ORDER BY created_at DESC LIMIT 5 OFFSET 5` to always return a stable 'page 2' that never overlaps page 1, even as new orders keep being inserted. What can go wrong?", answer: "If new rows arrive between requests, existing rows shift down in the DESC order. The same row can then show up on both pages, or a row can be skipped. LIMIT/OFFSET works by position, not a stable per-row marker, so it isn't safe against concurrent inserts or deletes." },
     ],
     prerequisites: ["basic-sql-queries"],
     relatedTopics: ["basic-sql-queries", "indexes", "aggregation"],

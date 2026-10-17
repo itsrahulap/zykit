@@ -8,8 +8,8 @@ const docs: ToolDocs = {
     'Use **Pause**, **Resume** and **Stop** as needed. The word being spoken is highlighted when your browser reports word positions.',
   ],
   howItWorks:
-    'The tool uses the browser’s Web Speech API (`speechSynthesis`). Your text is split into sentence-sized chunks of at most 200 characters, and each chunk is queued as a `SpeechSynthesisUtterance` with the chosen voice, rate, pitch and volume. Splitting keeps long text working in browsers that stop long utterances after a while, and lets Stop and Pause react quickly.\n\n' +
-    'The voice list comes from `getVoices()` and is refreshed when the browser fires `voiceschanged`. Word highlighting uses the utterance’s `boundary` events, which only some browser and voice combinations send. No speech is synthesised by this site: the voices belong to your browser or operating system.',
+    'The tool uses the browser’s Web Speech API (`speechSynthesis`). Your text is split into sentence-sized chunks of at most 200 characters. Each chunk is queued as a `SpeechSynthesisUtterance` with the chosen voice, rate, pitch and volume. Splitting keeps long text working in browsers that stop long utterances after a while, and lets Stop and Pause react quickly.\n\n' +
+    'The voice list comes from `getVoices()` and refreshes when the browser fires `voiceschanged`. Word highlighting uses the utterance’s `boundary` events, which only some browser and voice combinations send. This site synthesises no speech itself: the voices belong to your browser or operating system.',
   limits: [
     'Which voices exist, and how good they sound, depends on your browser and operating system. Some browsers list none until a voice is installed.',
     'Word highlighting needs boundary events. Many online voices, and some browsers, do not send them, so no word is highlighted; speech still works.',
@@ -18,7 +18,7 @@ const docs: ToolDocs = {
     'Text is limited to 30,000 characters.',
   ],
   privacy:
-    'This site never sends your text anywhere and stores nothing. But speech is produced by your browser or operating system, and “online” (not local) voices may send the text to the vendor’s speech service, such as Google, Microsoft or Apple, to be turned into audio. Voices marked “on this device” run locally. If the text is sensitive, choose an on-device voice. **Copy share link** puts the text in the link’s `#` fragment, which browsers don’t send to servers, but anyone who has the link can read it.',
+    'This site never sends your text anywhere and stores nothing. But your browser or operating system produces the speech, and “online” (not local) voices may send the text to the vendor’s speech service, such as Google, Microsoft or Apple. Voices marked “on this device” run locally, so choose one if the text is sensitive. **Copy share link** puts the text in the link’s `#` fragment, which browsers don’t send to servers, but anyone with the link can read it.',
   faqs: [
     {
       question: 'Why is the voice list empty?',

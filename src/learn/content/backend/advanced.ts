@@ -5,26 +5,23 @@ export const backendAdvancedTopics: Topic[] = [
     id: "api-versioning",
     title: "API Versioning",
     level: "advanced",
-    description: "How to change an API's shape over time without breaking the other applications and clients already relying on it.",
+    description: "How to change an API over time without breaking the apps and clients that already use it.",
     explanation: `
-Once an API is live, you rarely control every single thing that calls
-it. A mobile app might be installed on thousands of phones, some of
-which won't update for months. A partner company might have built
-their own integration against your endpoints. If you change how an
-endpoint behaves — renaming a field, changing what a status code means,
-removing something you thought nobody used — every one of those
-existing callers can break the moment you deploy, with no warning.
+Once an API is live, you rarely control everything that calls it. A
+mobile app may be on thousands of phones, some not updated for months. A
+partner may have built an integration against your endpoints. If you
+rename a field, change what a status code means, or remove something you
+thought was unused, those callers can break the moment you deploy.
 
-**API versioning** is a strategy for making changes to an API while
-still letting existing clients keep working exactly as before,
-typically by letting multiple versions of an endpoint exist side by
-side, at least for a transition period. Two common approaches are
-**URL versioning** (\`/v1/users\` vs. \`/v2/users\`) and **header
-versioning** (the same URL, but the client specifies a version in a
-request header).
+**API versioning** lets you change an API while existing clients keep
+working as before, usually by running several versions of an endpoint
+side by side, at least for a while. Two common approaches:
+
+- **URL versioning**: \`/v1/users\` vs. \`/v2/users\`.
+- **Header versioning**: the same URL, with the client naming a version in a request header.
     `.trim(),
     analogy:
-      "Think of a road under construction. You don't close the only bridge into town overnight and strand everyone driving toward it — you build a new bridge alongside the old one, let both operate for a while, and only remove the old one once you're confident nobody still needs it.",
+      "Think of a road under construction. You don't close the only bridge into town overnight. You build a new bridge next to the old one, run both for a while, and remove the old one only when you're sure nobody needs it.",
     examples: [
       {
         title: "URL versioning",
@@ -37,11 +34,11 @@ app.get("/v1/users/:id", (req, res) => {
 app.get("/v2/users/:id", (req, res) => {
   res.json({ id: req.params.id, firstName: "Ada", lastName: "Lovelace" });
 });`,
-        explanation: "Old clients keep calling /v1/users and get exactly the response shape they always have, while new clients can opt into /v2/users for the improved shape.",
+        explanation: "Old clients keep calling /v1/users and get the same response shape as always. New clients can opt into /v2/users for the improved shape.",
         walkthrough: [
-          { code: 'app.get("/v1/users/:id", ...)', explanation: "The original contract, kept running unchanged for as long as any client still depends on it." },
-          { code: '{ id: req.params.id, name: "Ada Lovelace" }', explanation: "v1's response shape is frozen — changing it here would break every existing caller relying on a single 'name' field." },
-          { code: 'app.get("/v2/users/:id", ...)', explanation: "A separate route entirely, free to introduce a breaking change (splitting name into two fields) because it doesn't affect v1's callers at all." },
+          { code: 'app.get("/v1/users/:id", ...)', explanation: "The original contract, kept unchanged as long as any client depends on it." },
+          { code: '{ id: req.params.id, name: "Ada Lovelace" }', explanation: "v1's response shape is frozen. Changing it would break every caller relying on a single 'name' field." },
+          { code: 'app.get("/v2/users/:id", ...)', explanation: "A separate route, free to make a breaking change (splitting name into two fields) because v1's callers aren't affected." },
         ],
       },
       {
@@ -57,76 +54,71 @@ app.get("/v2/users/:id", (req, res) => {
   }
   res.json(user);
 });`,
-        explanation: "The URL never changes, but the client's requested version — sent as a header — determines the exact shape of the response.",
+        explanation: "The URL never changes. The version the client sends in a header decides the response shape.",
       },
     ],
     howItWorks: `
-Rather than changing an existing endpoint's behavior in place, a new
-version is introduced alongside it — either as a distinct URL prefix
-(\`/v2/...\`) or by reading a version identifier from a header (or
-sometimes a query parameter) and branching internally. Existing clients
-that don't specify a version, or that explicitly ask for the old one,
-keep getting the original behavior indefinitely (or until a
-communicated deprecation date), while new clients can adopt the new
-version whenever they're ready.
+Instead of changing an endpoint in place, you add a new version next to
+it. That can be a new URL prefix (\`/v2/...\`), or a version read from a
+header (sometimes a query parameter) that the code branches on.
+
+Clients that send no version, or ask for the old one, keep the original
+behavior indefinitely (or until an announced deprecation date). New
+clients adopt the new version when they're ready.
     `.trim(),
     whyItExists: `
-An API is a contract: whoever calls it is trusting that its shape and
-behavior won't shift unexpectedly under them. But software still needs
-to evolve — fields get renamed, response shapes improve, entire
-concepts get restructured. Versioning exists to let evolution and
-backward compatibility coexist, so an API owner can improve their
-design without holding every past decision hostage forever, and without
-breaking clients they don't control or can't instantly force to update.
+An API is a contract: callers trust that its shape and behavior won't
+change under them. But software must evolve: fields get renamed,
+responses improve, concepts get restructured. Versioning lets you
+improve the design without being stuck with every past decision, and
+without breaking clients you don't control or can't force to update.
     `.trim(),
     whenToUse: `
-Introduce a new version when you need to make a **breaking** change —
-removing a field, changing a field's type or meaning, changing what a
-status code represents — to an API that already has external or
-independently-deployed consumers.
+Add a new version when you need a **breaking** change (removing a field,
+changing a field's type or meaning, changing what a status code means)
+to an API that has external or independently deployed consumers.
     `.trim(),
     whenNotToUse: `
-Purely additive changes — adding a new optional field, adding a brand
-new endpoint — generally don't require a new version at all, since
-well-behaved existing clients simply ignore fields they don't recognize.
-Versioning everything, even non-breaking changes, adds unnecessary
-maintenance overhead.
+Purely additive changes, like a new optional field or a new endpoint,
+usually don't need a new version: well-behaved clients ignore fields
+they don't recognize. Versioning non-breaking changes just adds
+maintenance.
     `.trim(),
     commonMistakes: [
-      "Treating every single change as breaking and creating a new version far more often than necessary.",
-      "Introducing a new version but never actually retiring old ones, leaving an ever-growing pile of versions to maintain forever.",
-      "Changing an existing version's behavior 'just this once' instead of creating a proper new version, breaking clients who trusted that version to stay stable.",
+      "Treating every change as breaking and creating new versions far more often than needed.",
+      "Adding new versions but never retiring old ones, leaving an ever-growing pile to maintain.",
+      "Changing an existing version's behavior 'just this once' instead of creating a new version, breaking clients who trusted it to stay stable.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Explain the difference between a breaking change and a non-breaking change to an API, with one example of each." },
-      { difficulty: "Medium", prompt: "Design a /v1/ and /v2/ pair of routes for a `/products/:id` endpoint where v2 adds a new required field that v1 didn't have." },
-      { difficulty: "Hard", prompt: "Propose a deprecation plan for retiring an old API version: how would you warn existing clients, and how would you decide when it's finally safe to remove it?" },
+      { difficulty: "Easy", prompt: "Explain the difference between a breaking and a non-breaking API change, with one example of each." },
+      { difficulty: "Medium", prompt: "Design /v1/ and /v2/ routes for a `/products/:id` endpoint where v2 adds a new required field that v1 didn't have." },
+      { difficulty: "Hard", prompt: "Propose a plan for retiring an old API version: how would you warn existing clients, and how would you decide when it's safe to remove it?" },
     ],
     interviewQuestions: [
-      { question: "Why is API versioning necessary?", answer: "Because an API is a contract other systems depend on, and breaking changes to that contract can silently break clients you don't control — versioning lets you evolve the API while keeping existing consumers working." },
-      { question: "What's the difference between URL versioning and header versioning?", answer: "URL versioning encodes the version directly in the path (like `/v2/users`), making it visible and cacheable; header versioning keeps one URL and lets the client specify a version via a request header, keeping URLs stable over time." },
-      { question: "Does every change to an API require a new version?", answer: "No — only breaking changes (removing or restructuring existing fields, changing behavior clients rely on) typically require a new version; purely additive changes usually don't." },
-      { question: "What generally counts as a breaking change to an API?", answer: "Removing or renaming a field, changing a field's type or meaning, changing what a status code represents, adding a new *required* request parameter, or restructuring the URL itself — any change an existing, well-behaved client couldn't simply ignore." },
-      { question: "Give an example of a change that looks risky but usually isn't breaking.", answer: "Adding a brand-new optional field to a response. A well-behaved client only reads the fields it already knows about and ignores anything unfamiliar, so an additive field doesn't require a new version." },
-      { question: "Why is URL versioning considered more visible than header versioning?", answer: "The version appears directly in the path itself, so it shows up in browser address bars, server logs, proxy configuration, and cache keys — there's nothing hidden that only shows up by inspecting request headers." },
-      { question: "What's a downside of URL versioning?", answer: "Maintaining two (or more) full sets of routes for the same resource — `/v1/users` and `/v2/users` — means duplicated route logic and a growing surface area to keep working as more versions accumulate." },
-      { question: "What's a downside of header versioning?", answer: "It's less discoverable — you can't just paste a URL into a browser to see a given version's response — and caching gets trickier, since the same URL can now return different bodies depending on a header a cache may not vary by default." },
-      { question: "In the header-versioning example, what version does a request get if it sends no `api-version` header at all?", answer: "Version 1. The handler reads `req.headers[\"api-version\"] || \"1\"`, so a missing header falls back to the original behavior rather than failing or defaulting to the newest version." },
-      { question: "Why does defaulting a missing version header to the original version matter for backward compatibility?", answer: "It means clients that were built before versioning even existed keep working exactly as before, with zero changes required on their end, rather than being forced to explicitly opt into 'version 1' to avoid breaking." },
-      { question: "What's an alternative to a custom header for expressing an API version, using a standard HTTP mechanism?", answer: "Content negotiation via the `Accept` header, e.g. `Accept: application/vnd.myapi.v2+json` — the version rides on a mechanism HTTP already defines for negotiating response format, instead of a bespoke header name." },
-      { question: "Why doesn't API versioning map cleanly onto semantic versioning (major.minor.patch)?", answer: "Semantic versioning tracks every release's granularity, including non-breaking additions; API versions typically only bump when a change is actually breaking for consumers, so a long stretch of purely additive changes might never need a new API version at all." },
-      { question: "What is a deprecation window (or sunset period)?", answer: "A communicated span of time during which an old API version keeps working exactly as before but is explicitly marked for future removal, giving existing clients time to migrate before it's actually taken away." },
-      { question: "How might a server communicate an upcoming version retirement to its clients?", answer: "Through mechanisms like a `Sunset` or `Deprecation` response header, a warning field in the response body, published changelog/documentation entries, or direct outreach to known API consumers." },
-      { question: "Why is silently changing an existing version's behavior worse than releasing a proper new version?", answer: "It violates the contract clients trusted was stable, breaking them with no warning and no way to opt out or prepare — whereas a new version lets old behavior keep running untouched while new behavior is opt-in." },
-      { question: "Scenario: you need to change a live endpoint's field from a string to a number. What's the safe way to do it?", answer: "Don't mutate the existing field's type in place. Either introduce a new version where the change is made, or add a new field alongside the old one and deprecate the old field — either way, existing clients relying on the current type keep working." },
-      { question: "Why can adding a new *required* field to a request body be breaking, even though adding fields sounds additive?", answer: "Existing clients don't know to send that new required field, so their requests start failing validation the moment it's required — additive is only safe on the response side, where unfamiliar fields can be ignored; on the request side, a new required field is something old clients literally cannot satisfy." },
-      { question: "What's the practical risk of letting old API versions pile up indefinitely?", answer: "Every version adds ongoing maintenance, testing, and security-patching burden, and more surface area for subtle bugs — the common mistake isn't introducing versions, it's never retiring the ones nobody needs anymore." },
-      { question: "Debugging: a client explicitly requesting version 1 via the header is receiving the version 2 response shape. What's a likely bug?", answer: "The version comparison itself is probably wrong — e.g. comparing the header value against the wrong type, checking equality against the wrong string, or branching logic ordered so the v2 path runs before the version check happens at all." },
-      { question: "Why does API versioning usually require maintaining separate documentation per version?", answer: "Documentation has to accurately describe each version's actual contract; docs describing the current version's shape would be actively wrong for a client still calling an older, differently-shaped version." },
-      { question: "Trap: a team assumes a breaking change to a GET endpoint is low-risk because 'nobody really uses GET responses directly.' Why is that reasoning unsafe?", answer: "Versioning decisions should be based on the resource's actual contract, not assumptions about who's using it — any independently-deployed consumer could be parsing that GET response's exact shape, and there's no way to be sure none are." },
-      { question: "How does API versioning differ from a feature flag, given that both can change server behavior for some requests but not others?", answer: "A feature flag toggles internal behavior for a codebase you control end-to-end, often for gradual rollout; versioning specifically exists to preserve a stable, documented contract for external or independently-deployed clients that can't simply be forced to flip a flag on your schedule." },
-      { question: "Follow-up: once traffic to an old version has dropped to nearly zero, is it safe to delete it immediately?", answer: "Not necessarily — 'nearly zero' isn't zero, and a caller can still be quietly relying on it. It's safer to confirm via logs/metrics, announce a firm removal date, and only remove it after that grace period has actually passed." },
-      { question: "Advanced: how can an API gateway reduce the internal cost of supporting multiple externally-visible versions?", answer: "The gateway can translate or adapt requests/responses for older versions into whatever the current internal implementation actually expects, so the backend itself maintains fewer diverging code paths even while still exposing several versions to the outside world." },
+      { question: "Why is API versioning necessary?", answer: "An API is a contract other systems depend on, and breaking it can silently break clients you don't control. Versioning lets the API evolve while existing consumers keep working." },
+      { question: "What's the difference between URL versioning and header versioning?", answer: "URL versioning puts the version in the path (like `/v2/users`), so it's visible and cacheable. Header versioning keeps one URL and the client names a version in a request header, so URLs stay stable." },
+      { question: "Does every change to an API require a new version?", answer: "No. Usually only breaking changes (removing or restructuring fields, changing behavior clients rely on) need one. Purely additive changes usually don't." },
+      { question: "What generally counts as a breaking change to an API?", answer: "Removing or renaming a field, changing a field's type or meaning, changing what a status code means, adding a new *required* request parameter, or restructuring the URL. Anything an existing, well-behaved client can't just ignore." },
+      { question: "Give an example of a change that looks risky but usually isn't breaking.", answer: "Adding a new optional field to a response. Well-behaved clients only read fields they know and ignore the rest, so it doesn't need a new version." },
+      { question: "Why is URL versioning considered more visible than header versioning?", answer: "The version is in the path, so it shows up in address bars, server logs, proxy config and cache keys. Nothing is hidden in request headers." },
+      { question: "What's a downside of URL versioning?", answer: "You maintain two or more full sets of routes for one resource (`/v1/users` and `/v2/users`), which means duplicated route logic and more to keep working as versions pile up." },
+      { question: "What's a downside of header versioning?", answer: "It's less discoverable: you can't paste a URL into a browser to see a version. Caching is trickier too, since one URL can return different bodies depending on a header a cache may not vary on by default." },
+      { question: "In the header-versioning example, what version does a request get if it sends no `api-version` header at all?", answer: "Version 1. The handler reads `req.headers[\"api-version\"] || \"1\"`, so a missing header falls back to the original behavior instead of failing or using the newest version." },
+      { question: "Why does defaulting a missing version header to the original version matter for backward compatibility?", answer: "Clients built before versioning existed keep working with no changes, instead of having to opt into 'version 1' explicitly to avoid breaking." },
+      { question: "What's an alternative to a custom header for expressing an API version, using a standard HTTP mechanism?", answer: "Content negotiation with the `Accept` header, e.g. `Accept: application/vnd.myapi.v2+json`. The version uses HTTP's existing mechanism for choosing a response format instead of a custom header." },
+      { question: "Why doesn't API versioning map cleanly onto semantic versioning (major.minor.patch)?", answer: "Semantic versioning tracks every release, including non-breaking additions. API versions usually only change for breaking changes, so a long run of additive changes may never need a new API version." },
+      { question: "What is a deprecation window (or sunset period)?", answer: "An announced period when an old API version still works as before but is marked for removal, giving clients time to migrate." },
+      { question: "How might a server communicate an upcoming version retirement to its clients?", answer: "With a `Sunset` or `Deprecation` response header, a warning field in the response body, changelog and docs entries, or direct contact with known API consumers." },
+      { question: "Why is silently changing an existing version's behavior worse than releasing a proper new version?", answer: "It breaks the contract clients trusted, with no warning and no way to opt out or prepare. A new version keeps the old behavior running and makes the new one opt-in." },
+      { question: "Scenario: you need to change a live endpoint's field from a string to a number. What's the safe way to do it?", answer: "Don't change the field's type in place. Either make the change in a new version, or add a new field next to the old one and deprecate the old field. Either way, clients relying on the current type keep working." },
+      { question: "Why can adding a new *required* field to a request body be breaking, even though adding fields sounds additive?", answer: "Existing clients don't send the new field, so their requests fail validation as soon as it's required. Additive changes are only safe in responses, where unknown fields are ignored; a new required request field is something old clients can't provide." },
+      { question: "What's the practical risk of letting old API versions pile up indefinitely?", answer: "Each version adds maintenance, testing and security-patching work, plus more room for subtle bugs. The mistake isn't adding versions; it's never retiring unused ones." },
+      { question: "Debugging: a client explicitly requesting version 1 via the header is receiving the version 2 response shape. What's a likely bug?", answer: "The version check is probably wrong: comparing against the wrong type or string, or branching so the v2 path runs before the version check happens." },
+      { question: "Why does API versioning usually require maintaining separate documentation per version?", answer: "Docs must describe each version's actual contract. Docs for the current shape would be wrong for a client still calling an older, differently shaped version." },
+      { question: "Trap: a team assumes a breaking change to a GET endpoint is low-risk because 'nobody really uses GET responses directly.' Why is that reasoning unsafe?", answer: "Base versioning decisions on the resource's contract, not guesses about usage. Any independently deployed consumer could be parsing that GET response's exact shape, and you can't be sure none are." },
+      { question: "How does API versioning differ from a feature flag, given that both can change server behavior for some requests but not others?", answer: "A feature flag toggles internal behavior in code you fully control, often for gradual rollout. Versioning keeps a stable, documented contract for external or independently deployed clients that can't be made to flip a flag on your schedule." },
+      { question: "Follow-up: once traffic to an old version has dropped to nearly zero, is it safe to delete it immediately?", answer: "Not necessarily. 'Nearly zero' isn't zero, and a caller may still quietly rely on it. Confirm with logs and metrics, announce a firm removal date, and remove it only after that grace period." },
+      { question: "Advanced: how can an API gateway reduce the internal cost of supporting multiple externally-visible versions?", answer: "The gateway can translate older-version requests and responses into what the current internal implementation expects. The backend keeps fewer diverging code paths while still exposing several versions externally." },
     ],
     prerequisites: ["routing", "error-handling-apis"],
     relatedTopics: ["testing-backend-code", "deployment-and-cicd"],
@@ -136,26 +128,21 @@ maintenance overhead.
     id: "dependency-injection",
     title: "Dependency Injection",
     level: "advanced",
-    description: "Handing a function or class the things it needs from outside, rather than letting it create those things itself — making it far easier to swap or test.",
+    description: "Give a function or class the things it needs from outside, instead of letting it create them, so they're easy to swap or test.",
     explanation: `
-Imagine a function that sends a welcome email, and inside that function
-it directly creates a connection to a real email-sending service. That
-seems fine, until you try to write a test for it: every single test run
-would actually try to send a real email, hit a real network, and depend
-on a real third-party service being up and configured correctly. You
-can't easily swap in a fake version, because the function decided, all
-by itself, exactly which email service to talk to — and that decision
-is buried inside it.
+Imagine a function that sends a welcome email and creates its own
+connection to a real email service. That's fine until you test it:
+every test run sends a real email over a real network and needs the
+third-party service up and configured. You can't swap in a fake,
+because the choice of service is buried inside the function.
 
-**Dependency injection** flips that: instead of a function or class
-creating the things it depends on, those dependencies are handed to it
-from the outside — usually as parameters — so whoever is calling it
-controls what gets used. In a test, you can hand it a fake, predictable
-version of the email service instead of the real one; in production,
-you hand it the real one.
+**Dependency injection** flips this. Instead of creating its
+dependencies, a function or class receives them from outside, usually
+as parameters, so the caller controls what's used. A test passes a
+fake, predictable email service; production passes the real one.
     `.trim(),
     analogy:
-      "A restaurant kitchen that insists on growing its own vegetables, raising its own chickens, and mining its own salt would be nearly impossible to inspect or adjust. A kitchen that instead receives its ingredients from outside suppliers can easily swap one supplier for another — including, for a health inspection, temporarily swapping in ingredients specifically prepared for testing.",
+      "A kitchen that grows its own vegetables, raises its own chickens and mines its own salt is nearly impossible to inspect or adjust. A kitchen that gets ingredients from suppliers can swap one supplier for another, including, for a health inspection, ingredients prepared specially for testing.",
     examples: [
       {
         title: "Without dependency injection — hard to test",
@@ -165,7 +152,7 @@ async function sendWelcomeEmail(user) {
   // The function decides, internally, exactly which service to use
   await realEmailService.send(user.email, "Welcome!");
 }`,
-        explanation: "This function can only ever use the real email service — there's no way to substitute anything else without editing this file itself.",
+        explanation: "This function can only use the real email service. You can't substitute anything without editing this file.",
       },
       {
         title: "With dependency injection — swappable and testable",
@@ -180,56 +167,52 @@ await sendWelcomeEmail(user, realEmailService);
 const fakeEmailService = { send: jest.fn() };
 await sendWelcomeEmail(user, fakeEmailService);
 expect(fakeEmailService.send).toHaveBeenCalledWith(user.email, "Welcome!");`,
-        explanation: "The function no longer decides which email service to use — it just uses whatever is passed in, letting a test supply a fake, observable version instead of touching anything real.",
+        explanation: "The function no longer chooses the email service; it uses whatever is passed in. A test can supply a fake it can observe, without touching anything real.",
         walkthrough: [
-          { code: "async function sendWelcomeEmail(user, emailService) {", explanation: "emailService arrives as a parameter instead of being created or imported directly inside the function." },
-          { code: "await sendWelcomeEmail(user, realEmailService);", explanation: "In production, the caller supplies the real dependency — the function's own code never changes." },
-          { code: "const fakeEmailService = { send: jest.fn() };", explanation: "In a test, a lightweight fake stands in for the real service — no network calls, no real emails sent, and its calls can be inspected." },
+          { code: "async function sendWelcomeEmail(user, emailService) {", explanation: "emailService arrives as a parameter instead of being created or imported inside the function." },
+          { code: "await sendWelcomeEmail(user, realEmailService);", explanation: "In production, the caller passes the real dependency. The function's code never changes." },
+          { code: "const fakeEmailService = { send: jest.fn() };", explanation: "In a test, a lightweight fake stands in: no network calls, no real emails, and its calls can be inspected." },
         ],
       },
     ],
     howItWorks: `
-A function or class that needs something (a database connection, an
-email service, a clock, a logger) declares that need as a parameter (or
-a constructor argument, in an object-oriented style) instead of
-constructing or importing it directly inside its own body. Whoever
-calls the function — production code, a test, or a wiring layer set up
-at app startup — decides what concrete implementation to supply. In
-larger applications, a **dependency injection container** can
-automate that wiring, but the core idea is the same at any scale: the
-dependency comes from outside, not from within.
+A function or class that needs something (a database connection, email
+service, clock or logger) declares it as a parameter, or a constructor
+argument in object-oriented code, instead of creating or importing it
+inside its body.
+
+Whoever calls it (production code, a test, or wiring set up at app
+startup) decides which implementation to pass. Large apps may use a
+**dependency injection container** to automate that wiring, but the
+idea is the same at any scale: the dependency comes from outside.
     `.trim(),
     whyItExists: `
-Code that constructs its own dependencies internally is rigid: it can
-only ever be tested and run against those exact, real dependencies,
-which is often slow, flaky, or outright impossible in a test
-environment (you don't want tests actually charging real credit cards).
-Dependency injection exists to decouple *what* a piece of code needs
-from *which specific implementation* satisfies that need, making code
-dramatically easier to test in isolation and to reconfigure without
-editing its internals.
+Code that builds its own dependencies is rigid: it can only run and be
+tested against the real ones, which is often slow, flaky or impossible
+in tests (you don't want tests charging real credit cards). Dependency
+injection separates *what* code needs from *which implementation*
+provides it, so code is much easier to test in isolation and to
+reconfigure without editing its internals.
     `.trim(),
     whenToUse: `
-Reach for dependency injection for anything that talks to the outside
-world — databases, external APIs, the filesystem, the current time —
-especially in code you want to unit test without those real
-dependencies being involved.
+Use it for anything that talks to the outside world (databases,
+external APIs, the filesystem, the current time), especially in code you
+want to unit test without those real dependencies.
     `.trim(),
     whenNotToUse: `
-For small, self-contained utility functions with no external
-dependencies at all (like a pure function that formats a date), there's
-nothing to inject — adding indirection here just adds noise without any
-testability benefit.
+Small, self-contained functions with no external dependencies (like a
+pure function that formats a date) have nothing to inject. Adding
+indirection there is just noise.
     `.trim(),
     commonMistakes: [
-      "Importing and using a real dependency directly inside a function, then being surprised it's impossible to test in isolation.",
-      "Over-engineering dependency injection for simple, pure logic that has no external dependencies to swap in the first place.",
-      "Injecting a dependency but still reaching for a global or imported version of it somewhere else in the same code path, defeating the purpose.",
+      "Importing a real dependency directly inside a function, then finding it impossible to test in isolation.",
+      "Over-engineering injection for simple, pure logic with no external dependencies to swap.",
+      "Injecting a dependency but still using a global or imported copy elsewhere in the same code path, defeating the purpose.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Rewrite a function that directly calls `Date.now()` internally so that the current time is instead passed in as a parameter." },
-      { difficulty: "Medium", prompt: "Take a function that directly imports and uses a real database client, and refactor it to accept the database client as a parameter instead." },
-      { difficulty: "Hard", prompt: "Write a test for a `chargeCustomer(order, paymentService)` function using a fake `paymentService`, and explain what real-world problems that avoids compared to testing against the real payment provider." },
+      { difficulty: "Easy", prompt: "Rewrite a function that calls `Date.now()` internally so the current time is passed in as a parameter instead." },
+      { difficulty: "Medium", prompt: "Refactor a function that imports and uses a real database client so it accepts the client as a parameter instead." },
+      { difficulty: "Hard", prompt: "Write a test for `chargeCustomer(order, paymentService)` using a fake `paymentService`, and explain what real-world problems that avoids compared with testing against the real payment provider." },
     ],
     interviewQuestions: [
       { question: "What is dependency injection?", answer: "A design approach where a function or class receives the things it depends on from outside — usually as parameters or constructor arguments — instead of creating or importing them internally." },

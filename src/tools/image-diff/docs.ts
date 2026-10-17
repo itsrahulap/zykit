@@ -9,8 +9,9 @@ const docs: ToolDocs = {
     'Read the changed pixel count, percentage and bounding box, then **Download diff PNG**.',
   ],
   howItWorks:
-    'Both images are decoded by your browser with EXIF orientation applied, drawn onto a shared canvas and read as RGBA pixels. For every pixel the largest difference across the red, green, blue and alpha channels (0–255) is compared with your tolerance; anything above it is counted as changed.\n\n' +
-    'With **Ignore anti-aliasing** on, a changed pixel is skipped when its brightness lies between a darker and a lighter neighbour (an edge blend) in both images. This is a simple heuristic, so it can miss or over-skip some pixels. When the browser supports `OffscreenCanvas` the diff runs in a Web Worker so the page stays responsive.',
+    'Both images are decoded with EXIF orientation applied, drawn onto a shared canvas and read as RGBA pixels. For each pixel, the largest difference across the red, green, blue and alpha channels (0–255) is compared with your tolerance. Anything above it counts as changed.\n\n' +
+    'With **Ignore anti-aliasing** on, a changed pixel is skipped when its brightness lies between a darker and a lighter neighbour (an edge blend) in both images. This simple heuristic can miss or over-skip some pixels.\n\n' +
+    'If the browser supports `OffscreenCanvas`, the diff runs in a Web Worker so the page stays responsive.',
   limits: [
     'Up to 50 MB and 100 megapixels per image, 16,384 pixels per side. Which formats open depends on your browser.',
     'Animated images are compared by their first frame.',

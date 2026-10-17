@@ -1390,18 +1390,19 @@ for block in resp.content:
     id: "structured-output",
     title: "Structured Output: JSON, Schemas and Validation",
     level: "beginner",
-    description: "Getting machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
+    description: "Get machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
     explanation: md(
-      "Most LLM output in real applications is read by **code**, not people: a ticket category to route, fields extracted from an invoice, a list of tags to save in a database. Code needs **structured output** - data in a predictable shape - not a friendly paragraph.",
+      "In real applications, most LLM output is read by **code**, not people: a ticket category to route, fields from an invoice, tags to save in a database. Code needs **structured output** (data in a predictable shape), not a friendly paragraph.",
       "The usual format is **JSON** (JavaScript Object Notation): text that represents objects `{\"key\": value}`, arrays `[1, 2, 3]`, strings, numbers, booleans and null. Almost every language can parse it.",
-      "A **schema** describes the shape the JSON must have: which fields exist, their types, which are required, allowed values. **JSON Schema** is the standard language for that, and tools like **Pydantic** (Python) or **Zod** (TypeScript) let you define the shape as a class or object and validate data against it.",
-      "There are three levels of reliability, from weakest to strongest:",
-      "- **Ask nicely**: 'Reply with JSON containing category and urgent.' Usually works, but you may get extra prose, markdown code fences, missing fields, or a different spelling of a value.\n- **Ask with a schema and examples, then validate and retry**: include the schema in the prompt, parse the result, validate it, and on failure send the error back and ask again. Works with any model.\n- **Use the API's structured-output feature**: you pass the schema with the request and the API constrains the model's output to match it, so the response parses and conforms to the schema's structure. With the Anthropic Python SDK, `client.messages.parse(..., output_format=YourPydanticModel)` does this and returns the parsed object in `resp.parsed_output`.",
-      "Even with guaranteed structure, **validate the meaning** in code. A schema can guarantee `amount` is a number; it cannot guarantee the number is the right one from the invoice. Business rules (amount > 0, due date after issue date, the category exists in your system) are your code's job.",
-      "**Design tips for schemas**: keep them as flat and small as the task allows; use enums (a fixed list of allowed values) for categories; give fields clear names and descriptions; allow `null` for information that may genuinely be missing, so the model does not have to invent a value; and if you want the model to think before filling fields, add a `reasoning` field *before* the answer fields.",
+      "A **schema** describes the shape the JSON must have: which fields exist, their types, which are required, and allowed values. **JSON Schema** is the standard language for this. Tools like **Pydantic** (Python) or **Zod** (TypeScript) let you define the shape as a class or object and validate data against it.",
+      "Three levels of reliability, weakest to strongest:",
+      "- **Ask nicely**: 'Reply with JSON containing category and urgent.' Usually works, but you may get extra prose, markdown code fences, missing fields, or a value spelled differently.\n- **Ask with a schema and examples, then validate and retry**: put the schema in the prompt, parse and validate the result, and on failure send the error back and ask again. Works with any model.\n- **Use the API's structured-output feature**: pass the schema with the request, and the API constrains the output to match it, so the response parses and conforms to the schema's structure. With the Anthropic Python SDK, `client.messages.parse(..., output_format=YourPydanticModel)` does this and returns the parsed object in `resp.parsed_output`.",
+      "Even with guaranteed structure, **validate the meaning** in code. A schema can guarantee `amount` is a number, not that it is the right number from the invoice. Business rules (amount > 0, due date after issue date, the category exists in your system) are your code's job.",
+      "**Schema design tips:**",
+      "- Keep schemas as flat and small as the task allows.\n- Use enums (a fixed list of allowed values) for categories.\n- Give fields clear names and descriptions.\n- Allow `null` for information that may really be missing, so the model does not have to invent a value.\n- To make the model think before filling fields, add a `reasoning` field *before* the answer fields.",
     ),
     analogy:
-      "Asking for free-text answers is like asking a colleague to 'tell me about the invoice' over the phone - you get a story you have to interpret. Structured output is handing them a form with labelled boxes: vendor, date, amount, currency. A schema is the form's design; validation is the clerk who checks every box is filled in properly before the form goes into the filing system.",
+      "Asking for free text is like asking a colleague to 'tell me about the invoice' over the phone: you get a story you must interpret. Structured output is handing them a form with labelled boxes: vendor, date, amount, currency. The schema is the form's design; validation is the clerk who checks every box before the form is filed.",
     examples: [
       {
         title: "Parse, validate and report errors (offline)",
@@ -1449,11 +1450,11 @@ for (const out of modelOutputs) {
     console.log("NOT JSON:", e.message.slice(0, 60));
   }
 }`,
-        explanation: "Four realistic outputs from 'just asking for JSON': one good, one wrapped in a code fence with a wrong type, one with an invalid enum value and a missing field, and one with chatty text around it. This is why you validate - or better, use the API's structured-output support.",
+        explanation: "Four realistic outputs from 'just asking for JSON': one good, one in a code fence with a wrong type, one with an invalid enum value and a missing field, and one with chatty text around it. This is why you validate, or better, use the API's structured-output support.",
         walkthrough: [
           { code: "const schema = { category: { enum: [...] }, ... }", explanation: "The contract: field names, types and allowed values." },
           { code: "function extractJson(text)", explanation: "Defensive parsing: remove code fences, then JSON.parse (which throws on invalid JSON)." },
-          { code: "validate(obj, schema)", explanation: "Check every rule and collect readable error messages - these can be sent back to the model in a retry." },
+          { code: "validate(obj, schema)", explanation: "Check every rule and collect readable error messages. You can send these back to the model in a retry." },
         ],
       },
       {
@@ -1487,7 +1488,7 @@ function getStructured(task, maxAttempts = 3) {
 }
 
 console.log("result:", JSON.stringify(getStructured("Classify: 'I was charged twice!'")));`,
-        explanation: "Feeding the specific validation error back is much more effective than simply asking again. Always cap the attempts and have a fallback (default value, human review) when the cap is reached.",
+        explanation: "Sending back the specific validation error works much better than just asking again. Always cap the attempts, with a fallback (default value, human review) when the cap is reached.",
       },
       {
         title: "Structured outputs with Pydantic and messages.parse (Python)",
@@ -1521,7 +1522,7 @@ print(inv.vendor, inv.invoice_number, inv.total, inv.currency, inv.due_date)
 # Structure is guaranteed; business rules are still your job:
 if inv.total <= 0:
     raise ValueError("total must be positive")`,
-        explanation: "The Pydantic model is converted to a JSON Schema and sent with the request; the output is constrained to it and parsed back into a typed Python object. Note `due_date` is optional: the invoice gives '14 days', not a date, so `None` is the honest answer rather than an invented date.",
+        explanation: "The Pydantic model becomes a JSON Schema sent with the request; the output is constrained to it and parsed back into a typed Python object. `due_date` is optional: the invoice says '14 days', not a date, so `None` is the honest answer, not an invented date.",
       },
       {
         title: "Validate-and-retry with Pydantic (works with any model)",
@@ -1550,14 +1551,15 @@ for attempt in range(3):
         messages.append({"role": "user", "content": f"That was invalid: {e}. Reply with corrected JSON only."})
 
 print(ticket)`,
-        explanation: "This is the portable pattern: parse, validate, and send the validation error back. Prefer `messages.parse` when available because it removes most failures up front.",
+        explanation: "This is the portable pattern: parse, validate, and send the validation error back. Prefer `messages.parse` when available, because it removes most failures up front.",
       },
     ],
     howItWorks: md(
-      "**Prompt-only JSON** relies on the model following instructions; it is usually right but has no guarantee, so parsing can fail.",
-      "**Constrained decoding** (what API structured-output features do under the hood) restricts which tokens the model may choose at each step so the text being generated always stays a valid prefix of something matching the schema. If the schema says the next thing must be `true` or `false`, tokens that would start anything else are excluded. The result always parses and matches the structure.",
-      "The SDK's `parse` helper converts your Pydantic class to JSON Schema, sends it with the request, and validates the response back into an instance. Some JSON Schema features may not be supported by the constraint engine (for example certain numeric or string-length constraints); keep schemas simple and enforce extra rules in your own validation.",
-      "Validation layers: (1) syntax - is it JSON? (2) structure - required fields and types (schema); (3) semantics - business rules and cross-field checks (your code); (4) truth - does the value match the source (spot checks, evaluation).",
+      "**Prompt-only JSON** relies on the model following instructions. It is usually right, but nothing guarantees it, so parsing can fail.",
+      "**Constrained decoding** (what API structured-output features use under the hood) limits which tokens the model may pick at each step, so the text always stays a valid prefix of something matching the schema. If the schema says the next value must be `true` or `false`, tokens that would start anything else are excluded. The result always parses and matches the structure.",
+      "The SDK's `parse` helper converts your Pydantic class to JSON Schema, sends it with the request, and validates the response back into an instance. The constraint engine may not support some JSON Schema features (for example certain numeric or string-length constraints), so keep schemas simple and enforce extra rules in your own validation.",
+      "Validation layers:",
+      "- **Syntax**: is it JSON?\n- **Structure**: required fields and types (the schema).\n- **Semantics**: business rules and cross-field checks (your code).\n- **Truth**: does the value match the source? (spot checks, evaluation)",
     ),
     diagram: `   input text
        |
@@ -1574,13 +1576,13 @@ print(ticket)`,
        v
   typed object -> database / API / UI`,
     whyItExists: md(
-      "Integrating LLMs into software requires outputs that code can rely on. Free text breaks parsers in production at the worst moments. Schemas, validation and constrained decoding turn an LLM from a text generator into a dependable component: an extractor, classifier or router with a typed interface.",
+      "Software needs LLM outputs it can rely on, and free text breaks parsers in production at the worst moments. Schemas, validation and constrained decoding turn an LLM from a text generator into a dependable component: an extractor, classifier or router with a typed interface.",
     ),
     whenToUse: md(
-      "Use structured output whenever code consumes the result: classification, extraction from documents, routing decisions, generating records, filling forms, producing tool arguments, scoring in evaluations. Use enums for anything that maps to fixed options in your system.",
+      "Use structured output whenever code consumes the result: classification, extraction from documents, routing decisions, generating records, filling forms, tool arguments, scoring in evaluations. Use enums for anything that maps to fixed options in your system.",
     ),
     whenNotToUse: md(
-      "Do not force JSON for content meant for humans (an email reply, an explanation) - it adds escaping noise and can lower writing quality. For long prose plus a little metadata, return the prose as a string field or use tags. Do not build huge, deeply nested schemas for a single call; split the task.",
+      "Don't force JSON for content meant for humans (an email reply, an explanation); it adds escaping noise and can lower writing quality. For long prose plus a little metadata, return the prose as a string field or use tags. Don't build huge, deeply nested schemas for one call; split the task.",
     ),
     commonMistakes: [
       "Calling `JSON.parse`/`json.loads` on raw model text with no error handling.",
@@ -1614,20 +1616,22 @@ print(ticket)`,
     id: "embeddings",
     title: "Embeddings and Vector Similarity",
     level: "beginner",
-    description: "Turning text into vectors of numbers that capture meaning, and comparing them with cosine similarity and dot product - the foundation of semantic search and RAG.",
+    description: "Turn text into vectors of numbers that capture meaning, and compare them with cosine similarity and dot product: the foundation of semantic search and RAG.",
     explanation: md(
-      "A **vector** is simply a list of numbers, like `[0.2, -1.3, 0.7]`. You can picture a vector with two numbers as an arrow (or a point) on a flat map, three numbers as a point in 3D space, and a vector with 384 or 1024 numbers as a point in a space with that many **dimensions** - impossible to picture, but the maths is the same.",
-      "An **embedding** is a vector produced by a model (an **embedding model**) to represent a piece of text - a word, sentence, paragraph or document - such that **texts with similar meaning get vectors that are close together**. 'How do I reset my password?' and 'I forgot my login credentials' share almost no words, but their embeddings are near each other; 'best pizza in Naples' is far away from both.",
-      "This is what makes **semantic search** possible: instead of matching keywords, you embed every document once, embed the user's query, and return the documents whose vectors are closest to the query vector. It is the retrieval step at the heart of RAG.",
+      "A **vector** is a list of numbers, like `[0.2, -1.3, 0.7]`. Two numbers are a point on a flat map, three are a point in 3D space, and 384 or 1024 numbers are a point in a space with that many **dimensions**. You can't picture that, but the maths is the same.",
+      "An **embedding** is a vector that a model (an **embedding model**) produces to represent a piece of text (a word, sentence, paragraph or document), so that **texts with similar meaning get vectors that are close together**. 'How do I reset my password?' and 'I forgot my login credentials' share almost no words, but their embeddings are near each other; 'best pizza in Naples' is far from both.",
+      "This makes **semantic search** possible. Instead of matching keywords, you embed every document once, embed the user's query, and return the documents whose vectors are closest to it. It is the retrieval step at the heart of RAG.",
       "**Measuring closeness.** The common measures:",
-      "- **Dot product**: multiply matching positions and add them up: `a1*b1 + a2*b2 + ...`. Bigger means more similar, but it is also affected by the vectors' lengths.\n- **Cosine similarity**: the dot product divided by both vectors' lengths. It measures the *angle* between vectors and ignores length. It ranges from -1 (opposite) through 0 (unrelated) to 1 (same direction). For text embeddings, values are usually compared relative to each other rather than read as absolute scores.\n- **Euclidean distance**: the straight-line distance between the points. Smaller means more similar.",
-      "**Normalization** means scaling a vector so its length is exactly 1 (divide every number by the vector's length). For normalized vectors, cosine similarity and dot product give the *same* number, and ranking by Euclidean distance gives the same order. That is why many systems normalize embeddings once and then use the fast dot product.",
-      "**Dimensions** are how many numbers each vector has. More dimensions can capture more nuance but cost more storage and compute. Each embedding model has a fixed output size, and **vectors from different models cannot be compared** - a vector only has meaning relative to other vectors from the same model. If you change embedding models, you must re-embed everything.",
-      "**Where embeddings come from.** An embedding model is a neural network (often a transformer, like an LLM but trained differently) trained on pairs of texts that should be close (a question and its answer, a title and its article) and pairs that should be far apart. Training pushes related texts together and unrelated ones apart in the vector space. You do not train one yourself: you use an existing model, either a local open-source one (for example via the `sentence-transformers` library) or a hosted embeddings API from providers such as Voyage AI, OpenAI or Cohere. Anthropic does not offer its own embedding model.",
+      "- **Dot product**: multiply matching positions and add them up: `a1*b1 + a2*b2 + ...`. Bigger means more similar, but the vectors' lengths also affect it.\n- **Cosine similarity**: the dot product divided by both vectors' lengths. It measures the *angle* between vectors and ignores length, ranging from -1 (opposite) through 0 (unrelated) to 1 (same direction). For text embeddings, compare values with each other rather than reading them as absolute scores.\n- **Euclidean distance**: the straight-line distance between the points. Smaller means more similar.",
+      "**Normalization** scales a vector so its length is exactly 1 (divide every number by the vector's length). For normalized vectors, cosine similarity and dot product give the *same* number, and ranking by Euclidean distance gives the same order. So many systems normalize embeddings once and then use the fast dot product.",
+      "**Dimensions** are how many numbers each vector has. More dimensions can capture more nuance but cost more storage and compute. Each embedding model has a fixed output size.",
+      "**Vectors from different models cannot be compared.** A vector only has meaning relative to other vectors from the same model. If you change embedding models, you must re-embed everything.",
+      "**Where embeddings come from.** An embedding model is a neural network (often a transformer, like an LLM but trained differently). It is trained on pairs of texts that should be close (a question and its answer, a title and its article) and pairs that should be far apart, which pushes related texts together and unrelated ones apart.",
+      "You don't train one yourself. You use an existing model: a local open-source one (for example via the `sentence-transformers` library) or a hosted embeddings API from providers such as Voyage AI, OpenAI or Cohere. Anthropic does not offer its own embedding model.",
       "Embeddings capture *meaning* well but are weaker at *exact* matches: product codes, error numbers, rare names. That is why production search often combines embeddings with keyword search (see retrieval-strategies).",
     ),
     analogy:
-      "Imagine a huge library where books are not shelved alphabetically but by what they are about: cookbooks in one area, Italian cookbooks in one corner of that area, pasta books right next to each other. An embedding is a book's exact location (its coordinates) in that library. To find books about a question, you work out where the question would be shelved and grab the nearest books. Cosine similarity asks 'are these two books in the same direction from the entrance?' regardless of how far down the aisle each one is.",
+      "Imagine a huge library where books are shelved by topic, not alphabetically: cookbooks in one area, Italian cookbooks in one corner of it, pasta books side by side. An embedding is a book's exact coordinates in that library. To find books for a question, work out where the question would be shelved and grab the nearest books. Cosine similarity asks 'are these two books in the same direction from the entrance?', however far down the aisle each one is.",
     examples: [
       {
         title: "Dot product, length, normalization and cosine similarity",
@@ -1647,7 +1651,7 @@ console.log("cosine(a,c) =", cosine(a, c).toFixed(3));
 const na = normalize(a), nb = normalize(b);
 console.log("normalized a =", na.map(x => x.toFixed(3)).join(", "), "| length", length(na).toFixed(3));
 console.log("dot of normalized a,b =", dot(na, nb).toFixed(3), "= cosine");`,
-        explanation: "Once vectors are normalized to length 1, the dot product IS the cosine similarity. This is why vector databases often store normalized vectors and use the cheaper dot product.",
+        explanation: "Once vectors are normalized to length 1, the dot product IS the cosine similarity. That is why vector databases often store normalized vectors and use the cheaper dot product.",
         walkthrough: [
           { code: "const dot = (a, b) => ...", explanation: "Multiply matching positions and sum." },
           { code: "const length = a => Math.sqrt(dot(a, a))", explanation: "A vector's length (magnitude) is the square root of its dot product with itself." },
@@ -1681,7 +1685,7 @@ for (const [q, qv] of Object.entries(queries)) {
   console.log("Query:", q);
   for (const [title, score] of ranked.slice(0, 3)) console.log("  " + score.toFixed(3), title);
 }`,
-        explanation: "'I forgot my login credentials' shares no keywords with 'How to reset your password', yet it ranks first because their vectors point the same way. A real embedding model produces such vectors automatically from the text.",
+        explanation: "'I forgot my login credentials' shares no keywords with 'How to reset your password', yet it ranks first because the vectors point the same way. A real embedding model produces such vectors from the text automatically.",
       },
       {
         title: "Bag-of-words vectors: why learned embeddings are needed",
@@ -1702,7 +1706,7 @@ console.log("vocabulary (" + vocab.length + " dims):", vocab.join(", "));
 const q = embed(query);
 for (const d of docs) console.log(cosine(q, embed(d)).toFixed(3), d);
 console.log("'login credentials' vs 'password':", cosine(embed("login credentials"), embed("password")).toFixed(3));`,
-        explanation: "Word counts only match exact words: 'login credentials' and 'password' score 0 even though they mean nearly the same thing. Learned embeddings fix this by placing synonyms and paraphrases close together. Word-count ideas are still useful, though - BM25 keyword search builds on them (retrieval-strategies).",
+        explanation: "Word counts only match exact words: 'login credentials' and 'password' score 0 even though they mean nearly the same thing. Learned embeddings fix this by placing synonyms and paraphrases close together. Word-count ideas are still useful: BM25 keyword search builds on them (retrieval-strategies).",
       },
       {
         title: "Real embeddings with sentence-transformers (Python)",
@@ -1728,14 +1732,16 @@ q_vec = model.encode([query], normalize_embeddings=True)[0]   # shape (384,)
 scores = doc_vecs @ q_vec        # dot product = cosine similarity (vectors are normalized)
 for i in np.argsort(-scores):
     print(f"{scores[i]:.3f}  {docs[i]}")`,
-        explanation: "Embed documents once (store the vectors), embed each query at search time, and rank by dot product. Exact scores depend on the model; what matters is the ranking. The same pattern scales to millions of documents with a vector database (vector-databases).",
+        explanation: "Embed documents once (store the vectors), embed each query at search time, and rank by dot product. Exact scores depend on the model; the ranking is what matters. The same pattern scales to millions of documents with a vector database (vector-databases).",
       },
     ],
     howItWorks: md(
-      "An embedding model reads the text (as tokens), runs it through its network, and combines the token representations into one fixed-size vector (for example by averaging them). The output is usually a few hundred to a few thousand numbers.",
-      "Training uses **contrastive learning**: show the model a text and a related text (a question and its answer), plus unrelated texts. The loss rewards high similarity for related pairs and low similarity for unrelated ones. After training on many such pairs, *meaning* is encoded as *direction* in the vector space.",
-      "**Search** with embeddings: (1) split documents into chunks, (2) embed each chunk and store vector + text + metadata, (3) embed the query with the *same* model, (4) find the nearest stored vectors (top-k), (5) return their texts. For small collections you can compare against every vector (exact search); for large ones, vector databases use approximate nearest-neighbour indexes to stay fast.",
-      "Some embedding models expect different handling for queries versus documents (for example an instruction prefix or a separate input type). Read the model's documentation and apply it consistently.",
+      "An embedding model reads the text (as tokens), runs it through its network, and combines the token representations into one fixed-size vector (for example by averaging). The output is usually a few hundred to a few thousand numbers.",
+      "Training uses **contrastive learning**: show the model a text, a related text (a question and its answer) and unrelated texts. The loss rewards high similarity for related pairs and low similarity for unrelated ones. After many such pairs, *meaning* is encoded as *direction* in the vector space.",
+      "**Search** with embeddings:",
+      "- Split documents into chunks.\n- Embed each chunk and store vector + text + metadata.\n- Embed the query with the *same* model.\n- Find the nearest stored vectors (top-k).\n- Return their texts.",
+      "For small collections you can compare against every vector (exact search). For large ones, vector databases use approximate nearest-neighbour indexes to stay fast.",
+      "Some embedding models treat queries and documents differently (for example an instruction prefix or a separate input type). Read the model's documentation and apply it consistently.",
     ),
     diagram: `     meaning space (2 of many dimensions)
    accounts ^
@@ -1750,13 +1756,13 @@ for i in np.argsort(-scores):
  query vector . each doc vector -> scores
  top-k closest -> returned as search results`,
     whyItExists: md(
-      "Keyword search fails when users describe things in different words than the documents use. Embeddings give computers a numeric notion of *meaning*, so search, recommendation, clustering, deduplication and classification can work on what text is about rather than the exact words it contains.",
+      "Keyword search fails when users use different words than the documents. Embeddings give computers a numeric sense of *meaning*, so search, recommendation, clustering, deduplication and classification can work on what text is about, not the exact words.",
     ),
     whenToUse: md(
-      "Use embeddings for semantic search and RAG retrieval, finding similar items (similar tickets, duplicate questions), clustering documents by topic, and as features for lightweight classifiers. Normalize vectors and use dot product or cosine consistently with how your vector store is configured.",
+      "Use embeddings for semantic search and RAG retrieval, finding similar items (similar tickets, duplicate questions), clustering documents by topic, and as features for lightweight classifiers. Normalize vectors, and use dot product or cosine consistently with how your vector store is configured.",
     ),
     whenNotToUse: md(
-      "Do not rely on embeddings alone for exact identifiers (SKUs, error codes, names) - combine with keyword search or filters. Do not compare vectors from different embedding models. Do not use embeddings when a structured database query answers the question exactly ('orders over $100 last week').",
+      "Don't rely on embeddings alone for exact identifiers (SKUs, error codes, names); combine them with keyword search or filters. Don't compare vectors from different embedding models. Don't use embeddings when a structured database query answers the question exactly ('orders over $100 last week').",
     ),
     commonMistakes: [
       "Mixing vectors from two different embedding models (or versions) in the same index.",
@@ -1791,19 +1797,19 @@ for i in np.argsort(-scores):
     id: "what-is-rag",
     title: "What is RAG and Why It Exists",
     level: "beginner",
-    description: "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, private-data-aware and citable - compared with fine-tuning and long context.",
+    description: "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, use private data and can cite sources. Compared with fine-tuning and long context.",
     explanation: md(
-      "**Retrieval-Augmented Generation (RAG)** is a pattern for answering questions with an LLM using *your* information. Instead of hoping the model memorised the answer during training, you **retrieve** the most relevant pieces of your documents at question time and **augment** the prompt with them, then the model **generates** an answer based on that material.",
-      "It solves the problems from hallucinations-and-limitations directly:",
-      "- **Private data**: the model never saw your internal wiki, contracts or support tickets. RAG supplies them.\n- **Freshness**: update a document and the next answer uses it - no retraining.\n- **Grounding**: the model answers from supplied text, which greatly reduces made-up answers.\n- **Citations**: you know which passages were used, so you can show sources and users can verify.\n- **Access control**: you can retrieve only documents the current user is allowed to see.",
+      "**Retrieval-Augmented Generation (RAG)** is a pattern for answering questions with an LLM using *your* information. Instead of hoping the model memorised the answer in training, you **retrieve** the most relevant pieces of your documents at question time, **augment** the prompt with them, and the model **generates** an answer from that material.",
+      "It directly tackles the problems from hallucinations-and-limitations:",
+      "- **Private data**: the model never saw your internal wiki, contracts or support tickets. RAG supplies them.\n- **Freshness**: update a document and the next answer uses it, with no retraining.\n- **Grounding**: the model answers from supplied text, which greatly reduces made-up answers.\n- **Citations**: you know which passages were used, so you can show sources and users can verify.\n- **Access control**: you can retrieve only documents the current user may see.",
       "A RAG system has two phases:",
       "- **Indexing (offline, ahead of time)**: load documents, split them into **chunks** (passages of a few hundred tokens), compute an **embedding** for each chunk, and store chunk text + vector + metadata (source, title, date, permissions) in a **vector store**.\n- **Querying (online, per question)**: embed the question, find the top-k most similar chunks, optionally **rerank** them, put the best ones into a prompt with clear instructions ('answer only from these sources, cite them, say you don't know otherwise'), and call the LLM.",
       "**RAG vs the alternatives:**",
-      "- **Fine-tuning** (further training the model on your data) is good at changing *behaviour, style and format*, but it is a poor way to add *facts*: it is slow and costly to update, cannot cite sources, cannot enforce per-user permissions, and the model can still misremember. Use RAG for knowledge, fine-tuning (rarely) for behaviour (see fine-tuning-vs-rag).\n- **Long context** (just paste all the documents into the prompt) is perfectly reasonable when the material is small enough to fit comfortably and does not change much - it is the simplest solution and avoids retrieval errors. Prompt caching can make repeated long prompts cheaper. But it does not scale to large or growing collections, costs more per request, adds latency, and focus can suffer when the relevant part is a tiny fraction of a huge prompt. Many systems combine both: retrieve, then give the model generous context.\n- **Tools / agents**: for structured data (orders, accounts) the model can call an API or database query instead of retrieving text; agentic RAG lets the model decide when and what to search.",
-      "RAG quality depends mostly on **retrieval**: if the right chunk is not retrieved, the model cannot use it (and may guess). Most of the RAG section of this subject is about doing retrieval well: loading, chunking, embedding, hybrid search, reranking and evaluation.",
+      "- **Fine-tuning** (further training the model on your data) is good for changing *behaviour, style and format*, but poor for adding *facts*: it is slow and costly to update, cannot cite sources, cannot enforce per-user permissions, and the model can still misremember. Use RAG for knowledge and fine-tuning (rarely) for behaviour (see fine-tuning-vs-rag).\n- **Long context** (paste all the documents into the prompt) is fine when the material fits comfortably and rarely changes. It is the simplest option and avoids retrieval errors, and prompt caching can make repeated long prompts cheaper. But it does not scale to large or growing collections, costs more per request, adds latency, and focus can suffer when the relevant part is a tiny slice of a huge prompt. Many systems combine both: retrieve, then give the model generous context.\n- **Tools / agents**: for structured data (orders, accounts) the model can call an API or database query instead of retrieving text. Agentic RAG lets the model decide when and what to search.",
+      "RAG quality depends mostly on **retrieval**: if the right chunk is not retrieved, the model cannot use it (and may guess). Most of this subject's RAG section is about doing retrieval well: loading, chunking, embedding, hybrid search, reranking and evaluation.",
     ),
     analogy:
-      "A closed-book exam versus an open-book exam. A plain LLM sits a closed-book exam: it answers from memory and sometimes misremembers. RAG turns it into an open-book exam where a librarian first fetches the three most relevant pages and puts them on the desk, and the rules say 'answer from these pages and write down which page you used'. Fine-tuning is making the student study for weeks - great for learning the exam's style, but slow, and they still might misremember a detail. Long context is dumping the whole library on the desk: fine if it is a small shelf, unworkable if it is a building.",
+      "Closed-book versus open-book exam. A plain LLM sits a closed-book exam: it answers from memory and sometimes misremembers. RAG makes it open-book: a librarian first puts the three most relevant pages on the desk, and the rules say 'answer from these pages and note which page you used'. Fine-tuning is making the student study for weeks: great for learning the exam's style, but slow, and they may still misremember a detail. Long context is dumping the whole library on the desk: fine for a small shelf, unworkable for a building.",
     examples: [
       {
         title: "A complete RAG loop, offline (toy retrieval + fake LLM)",
@@ -1853,7 +1859,7 @@ for (const question of ["Can I get refunds on annual plans?", "How do I enable t
   console.log("   retrieved:", hits.map(h => h.id + " (" + h.score.toFixed(2) + ")").join(", ") || "nothing");
   console.log("   A:", fakeLLM(buildPrompt(question, hits)));
 }`,
-        explanation: "Every real RAG system has these four steps. Swap the word-count embedding for a real embedding model, the array for a vector database, and the fake LLM for an API call, and you have a production architecture. Note the third question: nothing relevant is retrieved, so the system says it does not know instead of inventing an address.",
+        explanation: "Every real RAG system has these four steps. Swap the word-count embedding for a real embedding model, the array for a vector database and the fake LLM for an API call, and you have a production architecture. In the third question nothing relevant is retrieved, so the system says it does not know instead of inventing an address.",
         walkthrough: [
           { code: "const index = chunks.map(c => ({ ...c, vector: embed(c.text) }))", explanation: "Indexing: compute and store a vector for every chunk, once, ahead of time." },
           { code: "function retrieve(question, k = 2)", explanation: "Embed the question and return the k most similar chunks." },
@@ -1903,7 +1909,7 @@ def answer(question: str) -> str:
     return next(b.text for b in resp.content if b.type == "text")
 
 print(answer("I'm on the annual plan - can I get money back if I cancel?"))`,
-        explanation: "Notice the question shares few words with the right chunk ('money back' vs 'refunded'), which semantic embeddings handle. The rest of the RAG section upgrades each part: a persistent vector database, better chunking, hybrid search, reranking, and citations.",
+        explanation: "The question shares few words with the right chunk ('money back' vs 'refunded'), which semantic embeddings handle. The rest of the RAG section upgrades each part: a persistent vector database, better chunking, hybrid search, reranking and citations.",
       },
       {
         title: "Choosing between long context, RAG and fine-tuning",
@@ -1917,14 +1923,15 @@ Different users may see different documents   -> RAG with permission filters
 Live structured data (orders, balances)       -> Tools / API calls
 Consistent style, tone or output format       -> Prompting first, fine-tuning rarely
 Teach the model new facts                     -> RAG, not fine-tuning`,
-        explanation: "A quick decision table. In practice, start with the simplest thing that works (often prompting plus long context), and move to RAG as the corpus grows.",
+        explanation: "A quick decision table. In practice, start with the simplest thing that works (often prompting plus long context) and move to RAG as the corpus grows.",
       },
     ],
     howItWorks: md(
       "**Indexing pipeline**: documents -> loaders (extract clean text from PDFs, HTML, etc.) -> chunker (split into passages, often with some overlap) -> embedding model -> vector store (vector + text + metadata). This runs whenever documents change.",
       "**Query pipeline**: question -> (optional) rewrite the question into a better search query -> embed -> similarity search for the top-k chunks (often 20-50 candidates) -> (optional) rerank to the best few -> build a prompt with sources in tags and grounding instructions -> LLM -> answer with citations -> (optional) validate citations.",
-      "**Why the pieces matter**: chunk too large and retrieval gets vague and the prompt fills with irrelevant text; too small and chunks lose context. Pure vector search misses exact terms; keyword search misses paraphrases; hybrid search combines both. Rerankers read the question and each candidate together for a more accurate relevance judgement. The prompt's instructions decide whether the model admits ignorance or guesses.",
-      "**Evaluating RAG** separates two questions: did retrieval find the right chunks (retrieval metrics like recall@k), and did the model answer faithfully from them (faithfulness, answer relevance)? Debugging always starts by checking which one failed (evaluating-rag).",
+      "**Why the pieces matter:**",
+      "- Chunks too large make retrieval vague and fill the prompt with irrelevant text; too small and they lose context.\n- Pure vector search misses exact terms, and keyword search misses paraphrases. Hybrid search combines both.\n- Rerankers read the question and each candidate together, for a more accurate relevance judgement.\n- The prompt's instructions decide whether the model admits it doesn't know or guesses.",
+      "**Evaluating RAG** asks two separate questions: did retrieval find the right chunks (retrieval metrics like recall@k), and did the model answer faithfully from them (faithfulness, answer relevance)? Debugging always starts by checking which one failed (evaluating-rag).",
     ),
     diagram: `INDEXING (offline)
  docs -> load -> chunk -> embed -> [vector store]
@@ -1942,13 +1949,13 @@ QUERYING (per question)
                          v
              answer + citations [id]`,
     whyItExists: md(
-      "LLMs know a lot, but not *your* information, not anything after their training cutoff, and not reliably the exact details that matter in business answers. Retraining a model whenever a document changes is impractical. RAG exists because it is the cheapest, most up-to-date and most verifiable way to connect a general model to specific knowledge: update the index, not the model.",
+      "LLMs know a lot, but not *your* information, nothing after their training cutoff, and not reliably the exact details business answers depend on. Retraining whenever a document changes is impractical. RAG is the cheapest, most up-to-date and most verifiable way to connect a general model to specific knowledge: update the index, not the model.",
     ),
     whenToUse: md(
-      "Use RAG for question answering over documentation, policies, knowledge bases, tickets, contracts, research papers and code - especially when the content is large, changes often, is private, needs per-user permissions, or answers must cite sources.",
+      "Use RAG for question answering over documentation, policies, knowledge bases, tickets, contracts, research papers and code, especially when the content is large, changes often, is private, needs per-user permissions, or answers must cite sources.",
     ),
     whenNotToUse: md(
-      "If all your material comfortably fits in the context window and rarely changes, skip the retrieval machinery and include it directly (with prompt caching). If the answer lives in structured data, query the database through a tool instead of embedding rows as text. If you need a different style or format, try prompting before anything else. And RAG cannot fix poor source documents - if the docs are wrong or missing, so are the answers.",
+      "If all your material fits comfortably in the context window and rarely changes, skip retrieval and include it directly (with prompt caching). If the answer lives in structured data, query the database through a tool instead of embedding rows as text. If you need a different style or format, try prompting first. And RAG cannot fix poor source documents: if the docs are wrong or missing, so are the answers.",
     ),
     commonMistakes: [
       "Building a complex RAG pipeline when the documents would simply fit in the prompt.",

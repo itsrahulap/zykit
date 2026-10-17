@@ -6,46 +6,44 @@ export const softwareArchitectureAdvancedTopics: Topic[] = [
     title: "Event Sourcing & CQRS",
     level: "advanced",
     description:
-      "Storing every change that happened instead of just the current state, and separating the model used to write data from the model used to read it.",
+      "Store every change that happened instead of just the current state, and use separate models for writing and reading data.",
     explanation: `
-Most applications store only the *current* state: a \`bankAccount\` row
-with a \`balance\` column. Every deposit or withdrawal just overwrites
-that number. This works fine until someone asks: "how did this account
-end up at $340? What was the sequence of transactions?" With only the
-current balance saved, that history is simply gone — you'd have to have
-been logging it separately from the start, and even then, reconstructing
-"what the account looked like at 3pm last Tuesday" from an ad-hoc log is
-painful.
+Most apps store only the *current* state: a \`bankAccount\` row with a
+\`balance\` column that each deposit or withdrawal overwrites. Then
+someone asks: "how did this account reach $340? What were the
+transactions?" That history is gone. You'd need a separate log from day
+one, and even then, rebuilding "the account at 3pm last Tuesday" from
+it is painful.
 
-**Event sourcing** solves this by flipping what gets saved: instead of
-storing the current balance, you store the full sequence of things that
-happened — \`AccountOpened\`, \`Deposited($100)\`, \`Withdrew($40)\` — as an
-ordered list of **events**. The current balance is never stored
-directly; it's calculated by replaying all the events from the
-beginning (or from a saved checkpoint). This gives you a complete,
-trustworthy history for free, the ability to see the state at any point
-in time, and the ability to fix a bug in your calculation logic and
-*replay* history to get corrected current state.
+**Event sourcing** flips what you save. Instead of the balance, you
+store the ordered list of **events** that happened: \`AccountOpened\`,
+\`Deposited($100)\`, \`Withdrew($40)\`. The balance is never stored. It's
+calculated by replaying the events from the start (or from a saved
+checkpoint). You get:
 
-A separate but often-paired problem: in many real systems, the shape of
-data you want when *writing* (validate this transaction, apply business
-rules, ensure consistency) is very different from the shape you want
-when *reading* (a denormalized, pre-joined view optimized for a
-dashboard, searchable and fast). Forcing both to go through the exact
-same model is often either slow for reads or awkward for writes.
-**CQRS (Command Query Responsibility Segregation)** addresses this by
-using a different model for writes ("commands," which change state)
-than for reads ("queries," which just fetch data) — they can even live
-in entirely different databases, optimized independently.
+- A complete, trustworthy history for free.
+- The state at any point in time.
+- The ability to fix a calculation bug and *replay* history to get the
+  corrected current state.
 
-Event sourcing and CQRS are frequently used together — events are the
-natural "write model," and a read-optimized view is built by projecting
-those events into whatever shape reads need — but they're separate
-ideas that solve separate problems, and either can be adopted without
-the other.
+A separate, often-paired problem: the data shape you want for
+*writing* (validate a transaction, apply rules, stay consistent) is
+very different from the shape for *reading* (a denormalized, pre-joined,
+fast, searchable dashboard view). One shared model is often slow for
+reads or awkward for writes.
+
+**CQRS (Command Query Responsibility Segregation)** uses one model for
+writes ("commands", which change state) and another for reads
+("queries", which just fetch data). They can even live in different
+databases, each optimized on its own.
+
+The two often go together: events are a natural write model, and read
+views are built by projecting events into whatever shape reads need.
+But they're separate ideas solving separate problems, and you can adopt
+either one alone.
   `.trim(),
     analogy:
-      "Event sourcing is like a bank keeping every transaction slip ever issued, rather than just a whiteboard with today's balance — the balance can always be recomputed, and you can answer 'what happened on March 3rd?' CQRS is like that same bank having a fast teller window for withdrawals (optimized for correctness) and a completely separate printed monthly statement (optimized for readability) — both describe the same account, built differently for different purposes.",
+      "Event sourcing is a bank keeping every transaction slip instead of a whiteboard with today's balance: the balance can always be recomputed, and you can answer 'what happened on March 3rd?' CQRS is that bank having a teller window for withdrawals (built for correctness) and a separate printed monthly statement (built for readability): same account, built differently for different jobs.",
     examples: [
       {
         title: "Traditional state storage vs. event sourcing",
@@ -70,15 +68,15 @@ function currentBalance(events) {
 
 currentBalance(events); // 60 — same answer, but the full history is preserved`,
         explanation:
-          "Both approaches agree the balance is 60, but only the event-sourced version can answer 'what was the balance right after the deposit?' or 'replay history with a corrected fee calculation.'",
+          "Both agree the balance is 60, but only the event-sourced version can answer 'what was the balance right after the deposit?' or 'replay history with a corrected fee calculation.'",
         walkthrough: [
           {
             code: 'const events = [{ type: "AccountOpened", ... }, ...]',
-            explanation: "Every meaningful change is captured as an immutable, ordered event — nothing is ever overwritten or deleted.",
+            explanation: "Every meaningful change is an immutable, ordered event. Nothing is ever overwritten or deleted.",
           },
           {
             code: "function currentBalance(events) { return events.reduce(...); }",
-            explanation: "The 'current state' isn't stored anywhere directly — it's derived on demand by replaying the events from the start.",
+            explanation: "The current state isn't stored anywhere. It's derived on demand by replaying the events from the start.",
           },
         ],
       },
@@ -106,18 +104,18 @@ class AccountSummaryProjection {
 // A dashboard query just reads dashboardDb directly — fast, pre-computed,
 // and never touches the event store or the write-side business rules.`,
         explanation:
-          "Withdrawing money goes through strict validation against the event history (the write/command side). Displaying a dashboard reads from a separate, pre-computed, denormalized store built by 'projecting' events as they happen (the read/query side) — each side is optimized for its own job.",
+          "A withdrawal is strictly validated against the event history (the write/command side). The dashboard reads from a separate, pre-computed, denormalized store built by 'projecting' events as they happen (the read/query side). Each side is optimized for its own job.",
       },
     ],
     howItWorks: `
-In an event-sourced, CQRS system, a **command** (like "withdraw $40")
-first passes through validation against the current state — reconstructed
-by replaying events (often from a periodic **snapshot** so you don't
-replay the entire history every time). If valid, a new event is appended
-to an append-only **event store**. Separately, one or more **projections**
-listen for new events and update whatever read-optimized views they're
-responsible for — a search index, a dashboard table, a cache. Reads never
-go through the command path at all; they query the projection directly.
+A **command** (like "withdraw $40") is validated against the current
+state, rebuilt by replaying events (often from a periodic **snapshot**,
+so you don't replay all of history each time). If valid, a new event is
+appended to an append-only **event store**.
+
+Separately, **projections** listen for new events and update their
+read-optimized views: a search index, a dashboard table, a cache. Reads
+never touch the command path; they query the projection directly.
   `.trim(),
     diagram: `
   Command  --> [ validate against replayed state ] --> Event Store (append-only)
@@ -130,72 +128,76 @@ go through the command path at all; they query the projection directly.
   `.trim(),
     whyItExists: `
 Event sourcing exists because "just the current state" throws away
-information many systems eventually need — audit trails, debugging
-("how did we get into this bad state?"), and the ability to fix
-calculation bugs retroactively by replaying corrected logic over
-history. CQRS exists because forcing reads and writes through one
-shared model creates a lose-lose compromise: either the model is
-normalized and safe for writes but slow and awkward for the complex
-reads a UI wants, or it's denormalized and fast for reads but risks
-inconsistency for writes. Splitting them lets each side be optimized
-for what it actually needs to do.
+what many systems eventually need: audit trails, debugging ("how did we
+get into this bad state?"), and fixing calculation bugs retroactively
+by replaying corrected logic over history.
+
+CQRS exists because one shared model for reads and writes is a
+lose-lose compromise. Normalized, it's safe for writes but slow and
+awkward for the complex reads a UI wants. Denormalized, it's fast for
+reads but risks inconsistent writes. Splitting them lets each side be
+optimized for its own job.
   `.trim(),
     whenToUse: `
-Reach for event sourcing when a full audit history is a real business
+Use event sourcing when a full audit history is a real business
 requirement (financial ledgers, inventory changes, anything regulators
-or support teams need to reconstruct), or when "what happened, and in
-what order" is itself valuable data. Reach for CQRS when read and write
-patterns have genuinely diverged — heavy, complex reads (dashboards,
-search, reports) alongside a write side that needs strict, careful
-validation.
+or support teams must reconstruct), or when "what happened, and in what
+order" is valuable data itself.
+
+Use CQRS when read and write patterns have truly diverged: heavy,
+complex reads (dashboards, search, reports) alongside a write side that
+needs strict validation.
   `.trim(),
     whenNotToUse: `
-Both add substantial complexity: event sourcing means every query for
-"current state" needs replay logic (or snapshotting infrastructure) and
-schema changes to events must be handled carefully since old events
-never disappear; CQRS means running and keeping two models in sync,
-often with eventual consistency between them. For a typical CRUD
-application with straightforward, aligned read/write needs and no
-audit requirement, this is significant overhead for no real benefit —
-plain current-state storage is simpler and should be the default.
+Both add a lot of complexity:
+
+- Event sourcing: every "current state" query needs replay logic (or
+  snapshot infrastructure), and event schema changes need care, since
+  old events never disappear.
+- CQRS: you run two models and keep them in sync, often with eventual
+  consistency between them.
+
+For a typical CRUD app with aligned read/write needs and no audit
+requirement, that's heavy overhead for no real benefit. Plain
+current-state storage is simpler and should be the default.
   `.trim(),
     commonMistakes: [
-      "Adopting event sourcing without a plan for handling changes to event schemas over time — old events were recorded under an old shape and can't be rewritten, only accommodated.",
-      "Assuming CQRS requires two separate databases and heavy infrastructure from day one, when a simpler version (two different query paths against related tables) can capture much of the benefit at far lower cost.",
-      "Using event sourcing purely 'because it's interesting' on a system with no real audit or replay need, rather than as a response to an actual requirement.",
+      "Adopting event sourcing with no plan for event schema changes. Old events were recorded in an old shape and can't be rewritten, only accommodated.",
+      "Assuming CQRS needs two databases and heavy infrastructure from day one, when a simpler version (two query paths against related tables) captures much of the benefit far more cheaply.",
+      "Using event sourcing 'because it's interesting' on a system with no real audit or replay need.",
     ],
     exercises: [
       {
         difficulty: "Easy",
         prompt:
-          "Given a list of events (`ItemAdded`, `ItemRemoved`) for a shopping cart, write a function that computes the current cart contents by replaying them.",
+          "Given a shopping cart's events (`ItemAdded`, `ItemRemoved`), write a function that computes the current cart contents by replaying them.",
       },
       {
         difficulty: "Medium",
         prompt:
-          "Design the events (names and payloads) you'd need to fully event-source a simple task-tracking app's task lifecycle (created, assigned, completed, reopened).",
+          "Design the events (names and payloads) needed to fully event-source a simple task tracker's task lifecycle (created, assigned, completed, reopened).",
       },
       {
         difficulty: "Hard",
         prompt:
-          "For an e-commerce order system, describe how you'd split the write model (placing/cancelling orders) from a read model (a customer-facing order history page), including what a projection would need to do to keep the read model updated.",
+          "For an e-commerce order system, describe how you'd split the write model (placing/cancelling orders) from a read model (a customer-facing order history page), including what a projection must do to keep the read model updated.",
       },
     ],
     interviewQuestions: [
       {
         question: "What problem does event sourcing solve that traditional current-state storage doesn't?",
         answer:
-          "It preserves the complete history of how a system reached its current state, rather than only the final value — enabling audit trails, point-in-time reconstruction, and the ability to replay history with corrected logic.",
+          "It keeps the full history of how the system reached its current state, not just the final value. That enables audit trails, point-in-time reconstruction, and replaying history with corrected logic.",
       },
       {
         question: "What does CQRS stand for, and what does it actually separate?",
         answer:
-          "Command Query Responsibility Segregation — it separates the model used to change state (commands, which enforce business rules) from the model used to read state (queries, which can be denormalized and optimized purely for fast, convenient reads).",
+          "Command Query Responsibility Segregation. It separates the model that changes state (commands, which enforce business rules) from the model that reads state (queries, which can be denormalized and optimized for fast, convenient reads).",
       },
       {
         question: "Why are event sourcing and CQRS often used together, even though they're separate concepts?",
         answer:
-          "Because the stream of events from an event-sourced write model is a natural source to build one or more read-optimized projections from, giving CQRS's read side a ready-made, complete feed of everything that changed.",
+          "An event-sourced write model produces a stream of events, which is a natural source for building read-optimized projections. It gives CQRS's read side a complete, ready-made feed of every change.",
       },
     ],
     prerequisites: ["clean-architecture", "domain-driven-design-basics"],
@@ -208,38 +210,39 @@ plain current-state storage is simpler and should be the default.
     title: "Architectural Decision Records (ADRs)",
     level: "advanced",
     description:
-      "Writing down significant architecture decisions and the reasoning behind them, so future maintainers understand why a choice was made, not just what was chosen.",
+      "Write down major architecture decisions and the reasons behind them, so future maintainers know why a choice was made, not just what it was.",
     explanation: `
-Six months after a team decides to use a message queue instead of
-direct API calls between two services, a new engineer joins, looks at
-the code, and wonders: "why is this so much more complicated than just
-calling the other service directly?" Nobody left a trace of the
-reasoning — maybe there was a good reason (the other service was
-unreliable and needed to be decoupled), or maybe it was a mistake that's
-now safe to undo. Without a record, both possibilities look identical,
-and the team either lives with a decision they don't understand or
-risks reverting something that was actually load-bearing.
+A team picks a message queue over direct API calls between two
+services. Six months later, a new engineer asks: "why is this so much
+more complicated than calling the other service directly?"
 
-An **Architectural Decision Record (ADR)** is a short, standalone
-document — usually just one file per decision — that captures a single
-significant architectural choice: the problem or context that prompted
-it, the options that were considered, the decision that was made, and
-the consequences (including tradeoffs accepted). ADRs are typically kept
-right in the codebase (often a folder like \`docs/adr/\`), numbered in
-order, and treated as immutable history — if a decision is later
-reversed, you write a *new* ADR that supersedes the old one rather than
-editing the old one out of existence, so the historical reasoning is
-never lost.
+Nobody recorded the reasoning. Maybe there was a good reason (the other
+service was unreliable and needed decoupling), or maybe it was a
+mistake that's now safe to undo. Without a record, both look the same.
+The team either lives with a decision it doesn't understand or risks
+reverting something load-bearing.
 
-The key shift in mindset: most documentation describes the system *as
-it is now*. An ADR deliberately preserves a snapshot of reasoning *at
-the moment a decision was made*, including the constraints and
-alternatives that no longer apply today — because that context is
-exactly what's needed to judge whether the decision is still right, or
-safe to revisit.
+An **Architectural Decision Record (ADR)** is a short document, usually
+one file per decision, that captures one significant choice:
+
+- The context or problem that prompted it.
+- The options considered.
+- The decision made.
+- The consequences, including tradeoffs accepted.
+
+ADRs usually live in the codebase (often \`docs/adr/\`), numbered in
+order, and are treated as immutable history. If a decision is reversed,
+you write a *new* ADR that supersedes the old one instead of editing
+it away, so the original reasoning is never lost.
+
+Most documentation describes the system *as it is now*. An ADR keeps a
+snapshot of reasoning *at the moment of the decision*, including
+constraints and alternatives that no longer apply. That context is
+what you need to judge whether the decision is still right or safe to
+revisit.
   `.trim(),
     analogy:
-      "A doctor's chart doesn't just record a patient's current medication — it records why a medication was prescribed and what alternatives were ruled out at the time, so a different doctor later can tell whether circumstances have changed enough to reconsider it.",
+      "A doctor's chart records not just current medication but why it was prescribed and which alternatives were ruled out, so a later doctor can tell whether things have changed enough to reconsider.",
     examples: [
       {
         title: "A minimal ADR",
@@ -270,7 +273,7 @@ consumes it whenever it's available.
   there's a small delay, and OrderService needs a way to show
   "processing" status to the user in the meantime.`,
         explanation:
-          "Notice this isn't just 'what' (use a queue) — it records the actual problem, the alternatives that were seriously considered and why they were rejected, and the honest tradeoffs accepted (a small delay is now introduced).",
+          "It's not just 'what' (use a queue). It records the real problem, the alternatives considered and why they were rejected, and the honest tradeoffs accepted (a small delay).",
       },
       {
         title: "Structuring ADRs as they accumulate",
@@ -283,80 +286,78 @@ consumes it whenever it's available.
     //   supersedes it once circumstances changed, keeping the
     //   original reasoning intact for anyone looking back.`,
         explanation:
-          "ADRs are numbered and kept permanently, even after being superseded, so the history of *why* the architecture evolved the way it did is never lost — only added to.",
+          "ADRs are numbered and kept forever, even when superseded, so the history of *why* the architecture evolved is never lost, only added to.",
       },
     ],
     howItWorks: `
-An ADR is written at the moment a significant, hard-to-reverse decision
-is made — typically as part of the same pull request or discussion that
-implements it, while the context is fresh. It follows a small, consistent
-template (context, decision, alternatives, consequences) so any team
-member can write and read one quickly. Crucially, once written, an ADR
-is not edited to reflect new information — if the decision changes later,
-a new ADR is written that references and supersedes the old one, so the
-full history of reasoning stays intact and in order.
+Write an ADR when a significant, hard-to-reverse decision is made,
+usually in the same pull request or discussion, while the context is
+fresh. A small, consistent template (context, decision, alternatives,
+consequences) makes it quick for anyone to write and read.
+
+Once written, an ADR is never edited for new information. If the
+decision changes, a new ADR references and supersedes it, keeping the
+full history of reasoning intact and in order.
   `.trim(),
     whyItExists: `
-It exists because the *reasoning* behind a decision decays far faster
-than the decision's effects in the code — the code stays, but the
-constraints, alternatives, and tradeoffs that justified it live only in
-people's memories, which fade or leave the company. Without a record,
-every future engineer either has to blindly trust past decisions
-forever, or risk re-litigating (and possibly reverting) decisions that
-were actually correct given context they can no longer see.
+The *reasoning* behind a decision fades much faster than its effects in
+the code. The code stays, but the constraints, alternatives, and
+tradeoffs live only in people's memories, which fade or leave the
+company.
+
+Without a record, future engineers must either trust past decisions
+blindly or risk re-arguing (and maybe reverting) decisions that were
+right given context they can no longer see.
   `.trim(),
     whenToUse: `
 Write an ADR for decisions that are expensive to reverse, affect
-multiple teams or a large part of the codebase, or involved real
-tradeoffs between competing options — choice of a database, a major
-architectural pattern, a significant third-party dependency, a
-cross-service communication style.
+several teams or much of the codebase, or involved real tradeoffs: a
+database choice, a major architectural pattern, a significant
+third-party dependency, a cross-service communication style.
   `.trim(),
     whenNotToUse: `
-Don't write an ADR for routine, easily-reversible implementation
-decisions (a function's internal algorithm, a variable naming
-convention) — that's what code comments or regular documentation are
-for. Writing an ADR for every small decision buries the genuinely
-important ones in noise and makes the practice feel like bureaucratic
-overhead instead of a useful record.
+Skip ADRs for routine, easily reversed implementation choices (a
+function's internal algorithm, a naming convention). Code comments and
+regular docs cover those. An ADR for every small decision buries the
+important ones and makes the practice feel like bureaucracy.
   `.trim(),
     commonMistakes: [
-      "Writing an ADR that only states the decision without the context and rejected alternatives — losing exactly the information that makes ADRs valuable later.",
-      "Editing or deleting old ADRs to 'keep them up to date' instead of writing a new ADR that supersedes the old one, destroying the historical trail.",
-      "Writing ADRs so long and formal that nobody keeps up the practice — the format should stay lightweight enough to actually get used consistently.",
+      "Stating only the decision, without the context and rejected alternatives, which is exactly the information that makes ADRs valuable later.",
+      "Editing or deleting old ADRs to 'keep them up to date' instead of writing a new one that supersedes them, destroying the historical trail.",
+      "Making ADRs so long and formal that nobody keeps writing them. Keep the format light enough to use consistently.",
     ],
     exercises: [
       {
         difficulty: "Easy",
         prompt:
-          "Write a short ADR for a real or hypothetical decision to use TypeScript instead of plain JavaScript for a new project, including at least one rejected alternative.",
+          "Write a short ADR for a real or imagined decision to use TypeScript instead of plain JavaScript for a new project. Include at least one rejected alternative.",
       },
       {
         difficulty: "Medium",
         prompt:
-          "Find (or recall) a significant technical decision made on a project you've worked on that was never documented. Reconstruct an ADR for it as best you can, noting what context you had to guess at.",
+          "Think of a significant technical decision on one of your projects that was never documented. Reconstruct an ADR for it as best you can, noting which context you had to guess.",
       },
       {
         difficulty: "Hard",
         prompt:
-          "Write two linked ADRs: one deciding to build a feature as a monolith module, and a second, later ADR that supersedes it by deciding to extract that module into a separate service, referencing what changed to justify the reversal.",
+          "Write two linked ADRs: one deciding to build a feature as a monolith module, and a later one that supersedes it by extracting the module into a separate service, citing what changed to justify the reversal.",
       },
     ],
     interviewQuestions: [
       {
         question: "What is an Architectural Decision Record?",
         answer:
-          "A short document capturing one significant architectural decision — the context that prompted it, the alternatives considered, the decision made, and its consequences — kept as a permanent record for future maintainers.",
+          "A short document that captures one significant architectural decision (its context, the alternatives considered, the decision, and its consequences) and is kept as a permanent record for future maintainers.",
       },
       {
         question: "Why shouldn't an old ADR be edited when a decision is later reversed?",
         answer:
-          "Because the old ADR preserves the reasoning and constraints that were true at the time the original decision was made; editing it destroys that historical context. Instead, a new ADR is written that explicitly supersedes the old one.",
+          "The old ADR preserves the reasoning and constraints that were true when the decision was made. Editing it destroys that context. Instead, write a new ADR that explicitly supersedes it.",
       },
       {
         question: "What kinds of decisions are worth writing an ADR for?",
         answer:
-          "Decisions that are expensive or risky to reverse, affect a significant part of the system or multiple teams, and involved real tradeoffs between alternatives — not routine, easily-reversible implementation details.",
+          "Decisions that are expensive or risky to reverse, affect a large part of the system or several teams, and involved real tradeoffs between alternatives. Not routine, easily reversed implementation details.",
       },
     ],
     relatedTopics: ["technical-debt"],

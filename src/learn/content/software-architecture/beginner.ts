@@ -555,36 +555,37 @@ assumptions.
     title: "Layered Architecture",
     level: "beginner",
     description:
-      "Organizing code into layers — like presentation, business logic, and data access — where each layer only talks to the one next to it.",
+      "Organize code into layers, like presentation, business logic, and data access, where each layer only talks to the one next to it.",
     explanation: `
-As an app grows, it typically ends up doing three broad kinds of work:
-showing things to the user (screens, API responses), deciding what
-should happen based on business rules (is this order allowed? what's
-the discount?), and reading or writing data somewhere durable (a
-database, a file, another service). If those three kinds of work are
-free to call each other in any direction — a screen component directly
-running a SQL query, a database function containing pricing rules — the
-codebase turns into a web where nobody can change one thing without
-tracing through the entire system.
+A growing app does three broad kinds of work:
 
-**Layered architecture** organizes the codebase into a stack of layers,
-commonly: a **presentation layer** (UI or API endpoints), a **business
-logic layer** (the actual rules and decisions of the application, also
-called the domain or service layer), and a **data access layer**
-(reading and writing to storage). The core rule is that each layer only
-talks to the layer directly below (or above) it — the presentation
-layer never touches the database directly; it goes through business
+- Showing things to the user (screens, API responses).
+- Applying business rules (is this order allowed? what's the discount?).
+- Reading and writing data (a database, a file, another service).
+
+If these can call each other in any direction, like a screen running SQL
+or a database function holding pricing rules, the codebase becomes a
+web. Nobody can change one thing without tracing the whole system.
+
+**Layered architecture** stacks the code into layers, commonly:
+
+- A **presentation layer** (UI or API endpoints).
+- A **business logic layer** (the app's rules and decisions, also called
+  the domain or service layer).
+- A **data access layer** (reading and writing storage).
+
+Each layer only talks to the layer directly next to it. The
+presentation layer never touches the database. It goes through business
 logic, which goes through data access.
 
-This isn't just a filing convention. It means if you need to change how
-data is stored — switch databases, add caching — you only need to touch
-the data access layer, because nothing above it depends on the
-storage details. And if you need to change how something is displayed,
-you never risk breaking a business rule, because the presentation layer
-doesn't contain any.
+This is more than a filing convention. To change how data is stored
+(switch databases, add caching), you only touch the data access layer,
+since nothing above depends on storage details. To change the display,
+you can't break a business rule, because the presentation layer holds
+none.
   `.trim(),
     analogy:
-      "A company's org chart: the front-desk staff (presentation) don't decide company policy or personally handle the filing cabinets — they escalate to managers (business logic), who decide what should happen and instruct records staff (data access) to look something up or file something.",
+      "A company org chart: front-desk staff (presentation) don't set policy or handle the filing cabinets. They escalate to managers (business logic), who decide what should happen and ask records staff (data access) to look something up or file it.",
     examples: [
       {
         title: "Before: layers bypassed",
@@ -595,7 +596,7 @@ app.get("/profile/:id", async (req, res) => {
   res.json({ name: row.name, discount });
 });`,
         explanation:
-          "The presentation layer talks directly to the database and contains a business rule (the VIP discount). Changing the database schema or the discount rule both require editing this same file.",
+          "The presentation layer queries the database directly and holds a business rule (the VIP discount). A schema change and a discount change both mean editing this same file.",
       },
       {
         title: "After: layers respected",
@@ -617,7 +618,7 @@ app.get("/profile/:id", async (req, res) => {
   res.json(profile);
 });`,
         explanation:
-          "The API handler no longer knows SQL exists, and the repository no longer knows what a 'discount' is. Each layer can change independently — swap the database, or change the discount rule — without touching the other two.",
+          "The API handler no longer knows SQL exists, and the repository doesn't know what a 'discount' is. You can swap the database or change the discount rule without touching the other layers.",
         walkthrough: [
           {
             code: "export async function getUserById(id) { ... }",
@@ -625,23 +626,23 @@ app.get("/profile/:id", async (req, res) => {
           },
           {
             code: "export async function getUserProfile(id) { ... }",
-            explanation: "The business logic layer applies the actual rule (VIP discount) using data it asked the layer below for.",
+            explanation: "The business logic layer applies the rule (VIP discount) to data from the layer below.",
           },
           {
             code: 'app.get("/profile/:id", async (req, res) => { ... }',
-            explanation: "The presentation layer just translates an HTTP request into a call to business logic, and the result into an HTTP response.",
+            explanation: "The presentation layer just turns an HTTP request into a business logic call, and the result into an HTTP response.",
           },
         ],
       },
     ],
     howItWorks: `
-Layers are typically arranged so that dependencies flow in one
-direction: presentation depends on business logic, business logic
-depends on data access — but never the reverse, and never skipping a
-layer. A useful mental check: if you can point to code in the data
-access layer that would need to change because the *UI* changed, or
-code in the presentation layer that contains a business rule, a layer
-has been skipped or its responsibility has leaked into the wrong place.
+Dependencies flow one way: presentation depends on business logic, and
+business logic depends on data access. Never the reverse, and never
+skipping a layer.
+
+A quick check: if data access code would change because the *UI*
+changed, or presentation code contains a business rule, a layer has
+been skipped or a responsibility has leaked into the wrong place.
   `.trim(),
     diagram: `
   Presentation Layer   (API routes / UI)
@@ -653,66 +654,66 @@ has been skipped or its responsibility has leaked into the wrong place.
   Data Access Layer    (database, files, external APIs)
   `.trim(),
     whyItExists: `
-Layering exists so that a change with one kind of cause — a UI redesign,
-a new business rule, a database migration — stays contained to one part
-of the codebase. Without layers, those three kinds of change get
-smeared across the same files, and every change risks touching logic it
-has nothing to do with. It also makes the codebase predictable: any
-engineer can guess where a given piece of logic lives just from knowing
-what kind of concern it is.
+Layering keeps each kind of change (a UI redesign, a new business rule,
+a database migration) inside one part of the codebase. Without layers,
+these changes smear across the same files, and every change risks
+touching unrelated logic.
+
+It also makes the codebase predictable: any engineer can guess where
+logic lives just from what kind of concern it is.
   `.trim(),
     whenToUse: `
-Layering pays off once an application has any real business logic
-worth protecting — anything beyond the simplest CRUD passthroughs. It's
-one of the first structural decisions worth making deliberately in a
-growing codebase, and it scales down easily (three folders and a
-convention) as well as up (formal boundaries enforced by tooling).
+Layering pays off once an app has real business logic worth
+protecting, anything beyond simple CRUD passthroughs. It's one of the
+first structural decisions to make on purpose in a growing codebase. It
+scales down (three folders and a convention) and up (formal boundaries
+enforced by tooling).
   `.trim(),
     whenNotToUse: `
-For a trivial CRUD script with no real business rules — where the
-'business logic' would just be 'call the database and return the
-result' — inserting a full business logic layer adds ceremony with no
-payoff. It's also possible to over-layer: forcing a rigid three-layer
-split on a tiny module can add indirection without adding any real
-protection against change.
+In a trivial CRUD script where the 'business logic' is just "call the
+database and return the result", a full business logic layer is
+ceremony with no payoff.
+
+You can also over-layer: forcing a rigid three-layer split on a tiny
+module adds indirection without real protection against change.
   `.trim(),
     commonMistakes: [
-      "Letting the presentation layer skip business logic and call the data access layer directly 'just this once' — these exceptions accumulate until the layering is meaningless.",
-      "Putting business rules inside the data access layer (e.g., a repository function that applies a discount) because it was convenient at the time.",
-      "Creating layers in name only — three folders that still freely import each other in every direction, giving the appearance of structure without its benefit.",
+      "Letting the presentation layer skip business logic and call data access directly 'just this once'. These exceptions pile up until the layering means nothing.",
+      "Putting business rules in the data access layer (e.g., a repository function that applies a discount) because it was convenient.",
+      "Creating layers in name only: three folders that still import each other in every direction, with the look of structure but none of the benefit.",
     ],
     exercises: [
       {
         difficulty: "Easy",
         prompt:
-          "Take a function that fetches a product from a database and applies a sale-price calculation in the same block, and split it into a data access function and a business logic function.",
+          "A function fetches a product from a database and calculates its sale price in the same block. Split it into a data access function and a business logic function.",
       },
       {
         difficulty: "Medium",
         prompt:
-          "Design the three layers (presentation, business logic, data access) for a 'submit a support ticket' feature. List what each layer is responsible for and what it's explicitly not allowed to do.",
+          "Design the three layers (presentation, business logic, data access) for a 'submit a support ticket' feature. List what each layer does and what it must not do.",
       },
       {
         difficulty: "Hard",
         prompt:
-          "Review a real API endpoint you've written or can find in an open-source project. Identify any place a layer is being skipped or a responsibility has leaked into the wrong layer, and propose a fix.",
+          "Review a real API endpoint, yours or from an open-source project. Find any place a layer is skipped or a responsibility has leaked into the wrong layer, and propose a fix.",
       },
     ],
     interviewQuestions: [
       {
         question: "What is layered architecture?",
         answer:
-          "An approach to organizing a codebase into layers — commonly presentation, business logic, and data access — where each layer has a distinct responsibility and only communicates with the adjacent layer, keeping dependencies flowing in one direction.",
+          "Organizing a codebase into layers, commonly presentation, business logic, and data access. Each layer has a distinct job and only talks to the adjacent layer, so dependencies flow one way.",
       },
       {
         question: "Why shouldn't the presentation layer talk directly to the database?",
         answer:
-          "Because it couples the UI or API to storage details and skips wherever business rules are supposed to live, making it easy for business logic to leak into presentation code and for database changes to ripple into unrelated places.",
+          "It couples the UI or API to storage details and skips the layer where business rules belong. Business logic then leaks into presentation code, and database changes ripple into unrelated places.",
       },
       {
         question: "What's a sign that a layered architecture isn't actually being respected?",
         answer:
-          "Business rules appearing inside the data access layer, or the presentation layer directly querying storage — both mean a layer's boundary is being bypassed even though the folders exist.",
+          "Business rules inside the data access layer, or the presentation layer querying storage directly. Either way, a layer boundary is being bypassed even though the folders exist.",
       },
     ],
     prerequisites: ["separation-of-concerns", "coupling-and-cohesion"],

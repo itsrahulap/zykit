@@ -216,18 +216,17 @@ may fit better.
     id: "strings",
     title: "Strings",
     level: "beginner",
-    description: "A sequence of characters, and the special rules for working with them efficiently.",
+    description: "A sequence of characters, and how to work with them efficiently.",
     explanation: `
-You need a way to store and work with text — a username, a message, a file
-of content. That's what a **string** is: a sequence of characters, like
-"hello". At first glance it looks like a simple value, but from a
-data-structures perspective, a string behaves a lot like an array of
-characters, and many classic coding problems are really about processing
-strings efficiently: reversing them, searching within them, checking if
-two strings are related in some way.
+A **string** is a sequence of characters, like "hello". It stores text:
+a username, a message, a file's contents.
+
+A string behaves a lot like an array of characters. Many classic coding
+problems are about processing strings efficiently: reversing them,
+searching within them, or checking how two strings relate.
     `.trim(),
     analogy:
-      "A string is like a train of connected train cars, each one carrying a single letter. You can look at any car by its position, but the whole train has to be considered when you want to know if it 'matches' another train — and just like you can't repaint one car without effectively building a new train, a string can't be changed in place: any 'edit' actually builds a brand new train car-by-car.",
+      "A string is like a train where each car carries one letter. You can look at any car by its position, but checking whether it 'matches' another train means looking at the whole train. You also can't repaint one car: any 'edit' builds a brand new train, car by car.",
     examples: [
       {
         title: "Treating a string like an array of characters",
@@ -239,78 +238,76 @@ console.log(word.length);    // 5
 const reversed = word.split("").reverse().join("");
 console.log(reversed);       // "olleh"`,
         explanation:
-          "`split(\"\")` breaks the string into an array of characters, `.reverse()` flips their order, and `.join(\"\")` glues them back into a string.",
+          "`split(\"\")` breaks the string into characters, `.reverse()` flips their order, and `.join(\"\")` glues them back together.",
         walkthrough: [
-          { code: 'const word = "hello";', explanation: "Creates a string, five characters long." },
-          { code: "word[0]", explanation: "Reads the character at index 0, just like accessing an array." },
-          { code: 'word.split("")', explanation: "Breaks the string into an array of individual characters." },
-          { code: ".reverse()", explanation: "Reverses the order of that array of characters." },
-          { code: '.join("")', explanation: "Glues the reversed characters back into a single string." },
+          { code: 'const word = "hello";', explanation: "Creates a five-character string." },
+          { code: "word[0]", explanation: "Reads the character at index 0, like an array." },
+          { code: 'word.split("")', explanation: "Breaks the string into an array of characters." },
+          { code: ".reverse()", explanation: "Reverses that array." },
+          { code: '.join("")', explanation: "Glues the characters back into one string." },
         ],
       },
     ],
     howItWorks: `
-In JavaScript, strings are immutable — once created, a string's contents
-never change. Any operation that seems to "modify" a string (like
-\`.toUpperCase()\` or concatenation) actually creates and returns a brand new
-string, leaving the original untouched.
+JavaScript strings are immutable: once created, their contents never
+change. Anything that seems to "modify" a string (like \`.toUpperCase()\`
+or concatenation) returns a new string and leaves the original alone.
     `.trim(),
     whyItExists: `
-Text is everywhere — usernames, messages, file contents, search queries.
+Text is everywhere: usernames, messages, file contents, search queries.
 Efficient string handling underpins search engines, spell checkers, text
-editors, and virtually every user-facing application.
+editors and almost every user-facing app.
     `.trim(),
     whenToUse: `
-You reach for string-specific thinking — immutability, character-by-
-character processing — whenever you're validating text, searching within
-it, or comparing two pieces of text for a relationship like being
-anagrams or palindromes.
+Think in string terms (immutability, character-by-character processing)
+when you validate text, search within it, or compare two texts, for
+example to check for anagrams or palindromes.
     `.trim(),
     whenNotToUse: `
-For very large, frequently-modified text — building up a huge string
-piece by piece in a loop — repeated concatenation can be slow. Building
-an array of pieces and joining it once at the end is usually faster.
+Building a huge string piece by piece in a loop with concatenation can be
+slow. Collecting the pieces in an array and joining once at the end is
+usually faster.
     `.trim(),
     commonMistakes: [
-      "Trying to change a character in a string directly (e.g. `str[0] = \"H\"`) — this silently does nothing, since strings are immutable.",
-      "Repeatedly concatenating strings in a large loop, which can be slower than building an array and joining it once at the end.",
-      "Forgetting that string comparison (`===`) is case-sensitive by default.",
+      "Changing a character directly (e.g. `str[0] = \"H\"`). Strings are immutable, so this silently does nothing.",
+      "Concatenating strings in a large loop instead of building an array and joining it once at the end.",
+      "Forgetting that string comparison (`===`) is case-sensitive.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a function that checks if a given string is a palindrome (reads the same forwards and backwards)." },
+      { difficulty: "Easy", prompt: "Write a function that checks if a string is a palindrome (reads the same forwards and backwards)." },
       { difficulty: "Medium", prompt: "Write a function that counts how many times each character appears in a string." },
-      { difficulty: "Hard", prompt: "Write a function that checks if two strings are anagrams of each other (contain exactly the same letters, in any order)." },
+      { difficulty: "Hard", prompt: "Write a function that checks if two strings are anagrams (the same letters, in any order)." },
     ],
     interviewQuestions: [
-      { question: "Are strings mutable in JavaScript?", answer: "No — strings are immutable. Any method that appears to transform a string actually returns a brand-new string." },
-      { question: "How would you check if a string is a palindrome?", answer: "Compare it to its own reverse, or use two pointers moving from both ends toward the middle, checking that characters match at each step." },
-      { question: "What's an efficient way to count character frequency in a string?", answer: "Use a hash table (or plain object) mapping each character to a running count, built in a single pass through the string." },
-      { question: "Why is building up a large string with `+=` inside a loop inefficient?", answer: "Strings are immutable, so each `+=` doesn't modify the existing string — it creates an entirely new string by copying all the characters from both the old string and the new piece. If the string grows by one piece each iteration, the total copying work across n iterations is roughly `1 + 2 + ... + n`, which is O(n²), not O(n)." },
-      { question: "What's a more efficient way to build a large string piece by piece, and why?", answer: "Push each piece into an array, then call `.join(\"\")` once at the end. Pushing into an array is amortized O(1) per piece, so filling the array is O(n) total, and `.join` does a single O(n) pass to concatenate everything — avoiding the repeated full-string copying that happens with `+=` inside a loop." },
-      { question: "What's the time complexity of reading a character by index, like `str[3]`?", answer: "O(1) — like an array, a specific character position within a string can be located with a direct calculation from the string's starting position in memory, without scanning any preceding characters." },
-      { question: "What's the time complexity of comparing two strings for equality with `===`, and why?", answer: "O(n) in the worst case, where n is the length of the strings — in general, the characters must be compared one by one until either a mismatch is found or the end is reached, so two strings that are identical (or that only differ in their very last character) require checking nearly every character." },
-      { question: "If string equality is O(n) worst case, why does comparing two very different strings often feel instant in practice?", answer: "Character-by-character comparison can stop as soon as it hits the first mismatch — if two strings differ at position 2, only 3 comparisons are needed before concluding they're unequal, regardless of how long the strings are. The O(n) worst case only applies when strings are identical or differ near the very end." },
-      { question: "What's the time complexity of a naive substring search, like `str.includes(sub)`?", answer: "O(n × m) in the worst case, where n is the length of the main string and m is the length of the substring: for each of the roughly n possible starting positions in the string, up to m characters may need to be compared before that position can be ruled out." },
-      { question: "How does a two-pointer approach check whether a string is a palindrome, and what's its time and space complexity?", answer: "One pointer starts at the beginning, another at the end; they compare characters and move toward each other, stopping immediately if a mismatch is found. It's O(n) time (at most n/2 comparisons) and O(1) extra space, since it only needs two index variables rather than building any new string." },
-      { question: "Both reversing a string and using two pointers can check for a palindrome in O(n) time — which uses less memory, and why?", answer: "The two-pointer approach uses O(1) extra space, tracking only two indices. Reversing the string first (e.g. `str.split(\"\").reverse().join(\"\")`) builds an entirely new string, using O(n) extra space — same time complexity, but the two-pointer method is more memory-efficient." },
-      { question: "What are two ways to check if two strings are anagrams, and what's the time complexity of each?", answer: "Sort both strings' characters and compare the results: O(n log n), dominated by the sort. Or count each character's frequency in a hash map for both strings and compare the counts: O(n), a single pass through each string. The counting approach is asymptotically faster, though sorting is often simpler to write." },
-      { question: "Why is checking that two strings have equal length a useful first step before checking if they're anagrams?", answer: "Two strings with different lengths can never contain the exact same multiset of characters, so comparing lengths is an O(1) check that can immediately rule out a huge number of non-anagram pairs before doing any more expensive character counting or sorting." },
-      { question: "What does `\"abc\".repeat(3)` return, and what's the time complexity of `.repeat(k)`?", answer: "It returns `\"abcabcabc\"`. The time complexity is O(n × k), where n is the original string's length, since the engine copies the original n characters k times to build the result." },
-      { question: "What does `\"hello\".slice(-3)` return?", answer: "`\"llo\"` — a negative argument to `slice` counts backward from the end of the string, so `-3` starts 3 characters before the end, and with no end argument it slices through to the end of the string." },
-      { question: "Does `.length` always give the correct number of visible characters in a string?", answer: "Not always. JavaScript's `.length` counts UTF-16 *code units*, not visible characters. Many emoji and other Unicode characters outside the Basic Multilingual Plane are represented as a *surrogate pair* — two code units — so a string containing a single emoji can report `.length === 2`, which can silently break code that assumes one unit equals one character." },
-      { question: "Why can `str.split(\"\").reverse().join(\"\")` corrupt a string that contains certain emoji?", answer: "`split(\"\")` splits the string by raw UTF-16 code unit, which can cut a surrogate-pair emoji into its two separate halves. Reversing the resulting array then puts those two halves in the wrong order relative to each other, producing garbled or invalid characters instead of a correctly reversed emoji." },
-      { question: "Why does `\"Hello\" === \"hello\"` evaluate to `false`, and how would you compare them case-insensitively?", answer: "String comparison is case-sensitive by default — uppercase and lowercase letters have different underlying character codes, so they're simply not equal as values. Calling `.toLowerCase()` (or `.toUpperCase()`) on both sides before comparing normalizes the case, at the cost of an extra O(n) pass to build each normalized copy." },
-      { question: "If you need to check thousands of words against a large, fixed dictionary, why convert the dictionary array to a `Set` first?", answer: "Checking `dictionaryArray.includes(word)` is O(n) per check, where n is the dictionary's size, since it may scan the whole array (and each string comparison inside that costs up to O(m), the word's length). Converting the dictionary to a `Set` once costs O(n), but afterward each lookup is O(m) average case — independent of dictionary size — which is a large win when doing many lookups." },
-      { question: "What's the time complexity of finding the longest substring without repeating characters, using brute force versus a sliding window?", answer: "Brute force checks every possible substring for uniqueness, and since there are O(n²) substrings to consider, this approach costs at least O(n²) (or worse, depending on how uniqueness is checked). A sliding window that tracks characters currently in view with a hash set achieves O(n): each character is added to the window and later removed from it at most once, as the window's two ends each move forward through the string at most n times total." },
-      { question: "Why do string algorithms often favor tracking positions with pointers/indices rather than building new strings inside a loop?", answer: "Because strings are immutable, any operation that looks like it modifies a string actually allocates a new one and copies data into it. Repeatedly slicing or concatenating inside a loop repeats that copying work on every iteration; tracking positions with index variables into the original string avoids any extra allocation until a final result actually needs to be built." },
-      { question: "What's the time complexity of converting a number to a string, or a string to a number?", answer: "O(d), where d is the number of digits/characters involved, since each digit generally needs to be read or written individually to build the result. For numbers of a fixed, bounded size this is sometimes treated as O(1) in practice, but formally it scales with the digit count." },
-      { question: "A candidate writes `str[0] = \"H\"` expecting to capitalize the first letter, but the string doesn't change. Why?", answer: "Strings are immutable in JavaScript, so assigning to an index silently does nothing (it doesn't throw an error, it just has no effect) — the original string is left untouched. To get a capitalized version, you'd need to build a new string, e.g. `\"H\" + str.slice(1)`." },
-      { question: "Checking a palindrome with two pointers versus with recursion (comparing outer characters and recursing inward) are both O(n) time — do they use the same space?", answer: "No. The two-pointer iterative version uses O(1) extra space, just two indices. The recursive version uses O(n) extra space, because each recursive call adds a frame to the call stack, and the recursion goes roughly n/2 calls deep before reaching the base case — same time complexity, but recursion trades memory for shorter code." },
-      { question: "Why is even just listing every substring of a string an O(n²) operation, before doing any work on them?", answer: "A string of length n has n(n+1)/2 possible contiguous substrings, since each is defined by a choice of start and end position — that count itself grows quadratically with n, so enumerating all of them is already O(n²), independent of whatever processing happens per substring." },
-      { question: "When counting character frequency with a hash map, is the space complexity always proportional to the string's length?", answer: "No — it's O(k), where k is the number of *distinct* characters that actually appear, not the string's total length. For strings limited to a small fixed alphabet (like lowercase English letters, at most 26 distinct values), that space is effectively bounded by a constant, even though a long string was scanned to build it." },
-      { question: "Why might you convert a string into an array of characters before doing heavy processing on it, rather than working with the string directly?", answer: "Since strings are immutable, repeatedly slicing or rebuilding a string inside a loop reallocates and copies memory every time. Converting to a mutable array once (O(n)) lets you freely read and overwrite elements in place afterward, then `.join(\"\")` back into a string just once at the end (O(n)), avoiding repeated copying in between." },
-      { question: "`Array.from(str)` and `str.split(\"\")` both convert a string to an array of characters — do they behave the same way on strings containing emoji?", answer: "Not necessarily, even though both are O(n) time and space. `Array.from` (and the spread operator `[...str]`) iterate the string by Unicode code point, correctly keeping a surrogate-pair emoji together as one array entry. `split(\"\")` splits by raw UTF-16 code unit instead, which can break a surrogate-pair emoji into two separate, invalid entries — so the two methods can produce arrays of different lengths for the exact same string." },
-      { question: "Why is `str.trim()` O(n) rather than O(1), even when it only removes a couple of whitespace characters?", answer: "Trimming has to scan inward from both ends to find where the whitespace stops, which in the worst case (a string with no leading/trailing whitespace) touches every character. It then must build an entirely new string — since strings are immutable — copying over just the remaining substring; both the scan and the copy scale with the string's length." },
+      { question: "Are strings mutable in JavaScript?", answer: "No, strings are immutable. Any method that seems to change a string returns a new one." },
+      { question: "How would you check if a string is a palindrome?", answer: "Compare it to its reverse, or move two pointers from both ends toward the middle and check that the characters match at each step." },
+      { question: "What's an efficient way to count character frequency in a string?", answer: "In one pass, use a hash table (or plain object) that maps each character to a running count." },
+      { question: "Why is building up a large string with `+=` inside a loop inefficient?", answer: "Strings are immutable, so each `+=` builds a new string by copying the old characters plus the new piece. If the string grows by one piece per iteration, total copying over n iterations is about `1 + 2 + ... + n`: O(n²), not O(n)." },
+      { question: "What's a more efficient way to build a large string piece by piece, and why?", answer: "Push each piece into an array, then call `.join(\"\")` once. Each push is amortized O(1), so filling the array is O(n), and `.join` is one O(n) pass. That avoids recopying the whole string on every `+=`." },
+      { question: "What's the time complexity of reading a character by index, like `str[3]`?", answer: "O(1). As with an array, the position is calculated directly, without scanning earlier characters." },
+      { question: "What's the time complexity of comparing two strings for equality with `===`, and why?", answer: "O(n) worst case, where n is the string length. Characters are compared one by one until a mismatch or the end, so identical strings (or ones differing only at the end) need nearly every character checked." },
+      { question: "If string equality is O(n) worst case, why does comparing two very different strings often feel instant in practice?", answer: "Comparison stops at the first mismatch. If two strings differ at position 2, only 3 comparisons are needed, however long they are. The O(n) worst case applies only when strings are identical or differ near the end." },
+      { question: "What's the time complexity of a naive substring search, like `str.includes(sub)`?", answer: "O(n × m) worst case, where n is the main string's length and m the substring's. For each of about n starting positions, up to m characters may be compared." },
+      { question: "How does a two-pointer approach check whether a string is a palindrome, and what's its time and space complexity?", answer: "One pointer starts at each end. They compare characters and move inward, stopping at the first mismatch. O(n) time (at most n/2 comparisons) and O(1) extra space, since it only needs two indices." },
+      { question: "Both reversing a string and using two pointers can check for a palindrome in O(n) time — which uses less memory, and why?", answer: "Two pointers use O(1) extra space: just two indices. Reversing first (e.g. `str.split(\"\").reverse().join(\"\")`) builds a new string: O(n) extra space." },
+      { question: "What are two ways to check if two strings are anagrams, and what's the time complexity of each?", answer: "Sort both strings' characters and compare: O(n log n), dominated by the sort. Or count character frequencies in a hash map for both and compare: O(n). Counting is faster; sorting is often simpler to write." },
+      { question: "Why is checking that two strings have equal length a useful first step before checking if they're anagrams?", answer: "Strings of different lengths can't have the same characters. The O(1) length check rules out many pairs before any costly counting or sorting." },
+      { question: "What does `\"abc\".repeat(3)` return, and what's the time complexity of `.repeat(k)`?", answer: "`\"abcabcabc\"`. It's O(n × k), where n is the original length, since those n characters are copied k times." },
+      { question: "What does `\"hello\".slice(-3)` return?", answer: "`\"llo\"`. A negative argument counts back from the end, so `-3` starts 3 characters before the end, and with no end argument it runs to the end." },
+      { question: "Does `.length` always give the correct number of visible characters in a string?", answer: "Not always. `.length` counts UTF-16 *code units*, not visible characters. Many emoji and other characters outside the Basic Multilingual Plane are a *surrogate pair* of two code units, so a single emoji can report `.length === 2`. Code that assumes one unit per character can silently break." },
+      { question: "Why can `str.split(\"\").reverse().join(\"\")` corrupt a string that contains certain emoji?", answer: "`split(\"\")` splits by UTF-16 code unit, which can cut a surrogate-pair emoji in half. Reversing then swaps the two halves, producing garbled or invalid characters." },
+      { question: "Why does `\"Hello\" === \"hello\"` evaluate to `false`, and how would you compare them case-insensitively?", answer: "Comparison is case-sensitive: uppercase and lowercase letters have different character codes. Call `.toLowerCase()` (or `.toUpperCase()`) on both sides first, at the cost of an extra O(n) pass for each copy." },
+      { question: "If you need to check thousands of words against a large, fixed dictionary, why convert the dictionary array to a `Set` first?", answer: "`dictionaryArray.includes(word)` is O(n) per check, where n is the dictionary size (and each string comparison costs up to O(m), the word's length). Building a `Set` costs O(n) once, then each lookup is O(m) on average, independent of dictionary size. That's a big win over many lookups." },
+      { question: "What's the time complexity of finding the longest substring without repeating characters, using brute force versus a sliding window?", answer: "Brute force checks every substring, and there are O(n²) of them, so it's at least O(n²) (worse, depending on how uniqueness is checked). A sliding window with a hash set of characters in view is O(n): each character is added and removed at most once, and each end of the window moves forward at most n times." },
+      { question: "Why do string algorithms often favor tracking positions with pointers/indices rather than building new strings inside a loop?", answer: "Strings are immutable, so every \"change\" allocates and copies a new string. Slicing or concatenating in a loop repeats that copying each time. Tracking index positions in the original string avoids allocation until you build the final result." },
+      { question: "What's the time complexity of converting a number to a string, or a string to a number?", answer: "O(d), where d is the number of digits or characters, since each is read or written individually. For fixed-size numbers it's often treated as O(1) in practice, but formally it scales with the digit count." },
+      { question: "A candidate writes `str[0] = \"H\"` expecting to capitalize the first letter, but the string doesn't change. Why?", answer: "Strings are immutable, so assigning to an index silently does nothing (no error, no effect). Build a new string instead, e.g. `\"H\" + str.slice(1)`." },
+      { question: "Checking a palindrome with two pointers versus with recursion (comparing outer characters and recursing inward) are both O(n) time — do they use the same space?", answer: "No. The iterative two-pointer version uses O(1) extra space. The recursive version uses O(n), because it goes about n/2 calls deep and each call adds a stack frame. Recursion trades memory for shorter code." },
+      { question: "Why is even just listing every substring of a string an O(n²) operation, before doing any work on them?", answer: "A string of length n has n(n+1)/2 contiguous substrings, one per start-and-end choice. That count grows quadratically, so just listing them is O(n²)." },
+      { question: "When counting character frequency with a hash map, is the space complexity always proportional to the string's length?", answer: "No. It's O(k), where k is the number of *distinct* characters. For a small fixed alphabet (like lowercase English letters, at most 26), that's effectively constant, however long the string." },
+      { question: "Why might you convert a string into an array of characters before doing heavy processing on it, rather than working with the string directly?", answer: "Rebuilding an immutable string in a loop copies memory every time. Converting to an array once (O(n)) lets you read and overwrite elements in place, then `.join(\"\")` once at the end (O(n)), with no repeated copying in between." },
+      { question: "`Array.from(str)` and `str.split(\"\")` both convert a string to an array of characters — do they behave the same way on strings containing emoji?", answer: "Not always, though both are O(n) time and space. `Array.from` (and spread, `[...str]`) iterate by Unicode code point, keeping a surrogate-pair emoji as one entry. `split(\"\")` splits by UTF-16 code unit and can break the emoji into two invalid entries. The arrays can end up with different lengths." },
+      { question: "Why is `str.trim()` O(n) rather than O(1), even when it only removes a couple of whitespace characters?", answer: "It scans inward from both ends to find where the whitespace stops, which can touch every character when there's none to remove. Then it builds a new string (strings are immutable) by copying the rest. Both steps scale with the string's length." },
     ],
     prerequisites: ["arrays"],
     relatedTopics: ["arrays", "hash-tables"],

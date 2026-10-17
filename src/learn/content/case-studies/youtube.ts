@@ -5,29 +5,28 @@ export const youtubeCaseStudy: CaseStudy = {
   title: "YouTube",
   difficulty: "Hard",
   summary:
-    "Design a video platform where anyone can upload a video and anyone else can watch it instantly, at whatever quality their connection supports.",
+    "Design a video platform where anyone can upload a video and anyone can watch it instantly, at the quality their connection supports.",
   problemStatement: `
-Someone uploads a video file from their phone. Minutes later, millions of
-people across the world — on fast fiber connections and on shaky mobile data
-— need to be able to watch that video, starting almost instantly, without it
-stuttering, and without YouTube's own servers being the ones streaming every
-single byte to every single viewer. That's the product: upload once, watch
-anywhere, on any device, on any network.
+Someone uploads a video from their phone. Minutes later, millions of people
+worldwide, on fast fiber and shaky mobile data, need to watch it. Playback
+should start almost instantly, without stuttering, and without YouTube's own
+servers streaming every byte to every viewer. Upload once, watch anywhere,
+on any device and network.
 
-The hard part isn't storing a video file — that's a solved problem. The hard
-part is that a raw uploaded file is usually a poor fit for playback: it might
-be a huge, unoptimized format, encoded for one specific screen size and
-network speed. A viewer on a slow train connection and a viewer on a home
-fiber line watching the same video need genuinely different versions of that
-file, and neither should have to wait for it to be prepared for them
-individually, in real time.
+Storing a video file is a solved problem. The hard part is that a raw upload
+is usually a poor fit for playback: a huge, unoptimized format encoded for
+one screen size and network speed. A viewer on a slow train and one on home
+fiber need different versions of the file, and neither should wait for it to
+be prepared on the fly.
 
-So the system actually being designed has two very different jobs bolted
-together: a **write-side pipeline** that takes a raw upload and turns it into
-many playable variants, and a **read-side delivery problem** — getting
-whichever variant fits a viewer's device and network, from somewhere close to
-that viewer, fast. Everything else (search, comments, recommendations, view
-counts) sits on top of that core.
+So the system has two very different jobs:
+
+- A **write-side pipeline** that turns a raw upload into many playable
+  variants.
+- A **read-side delivery problem**: getting the variant that fits a
+  viewer's device and network, from somewhere close to them, fast.
+
+Search, comments, recommendations, and view counts sit on top of that core.
   `.trim(),
   requirements: {
     functional: [
@@ -79,7 +78,7 @@ counts) sits on top of that core.
     },
   ],
   capacityNotes:
-    "Every number here says the same thing from a different angle: uploads are rare and can be handled asynchronously, but views are enormous, globally distributed, and bandwidth-dominated. That combination pushes the design toward two clearly separated concerns — an offline, horizontally-scalable transcoding pipeline for the write side, and a CDN-first, cache-everywhere delivery strategy for the read side — rather than one system trying to do both well.",
+    "Uploads are rare and can be handled asynchronously. Views are enormous, global, and bandwidth-heavy. So the design splits into two separate concerns: an offline, horizontally scalable transcoding pipeline for writes, and CDN-first, cache-everywhere delivery for reads. One system can't do both well.",
   apiDesign: [
     { method: "POST", path: "/api/v1/videos/upload-init", description: "Starts an upload session and returns pre-signed URLs/an upload target for chunked upload of the raw file." },
     { method: "PUT", path: "/api/v1/videos/upload/{uploadId}/chunk/{n}", description: "Uploads one chunk of the raw video file; supports resuming a failed upload." },
@@ -119,32 +118,32 @@ mixing them would force the metadata database to also absorb the enormous
 bandwidth of serving video, which it's not built for.
   `.trim(),
   highLevelDesign: `
-The **write path** starts when a client uploads a raw file in chunks (so a
-flaky connection can resume instead of restarting). Once the upload
-completes, the raw file lands in blob storage and an event is dropped onto a
-queue, which a fleet of transcoding workers picks up. Each worker (or set of
-parallel workers, one per output) re-encodes the source into multiple
-resolutions and bitrates, generates a thumbnail, and writes each output back
-to blob storage, updating the \`video_variants\` table as each one finishes.
-The video's status flips to "ready" once enough variants exist to start
-serving it — the video doesn't need every resolution done before the lowest
-one can go live.
+**Write path.** The client uploads the raw file in chunks, so a flaky
+connection can resume instead of restarting. When the upload completes, the
+file lands in blob storage and an event goes onto a queue.
 
-The **read path** is almost entirely decoupled from all of that. A viewer's
-player first fetches a small manifest listing available quality levels and
-where their segments live, then requests video **segments** (a few seconds of
-video each) one at a time, adjusting which quality level it asks for next
-based on measured download speed — this is adaptive bitrate streaming. Those
-segment requests hit a CDN first; only a cache miss ever reaches the origin
-blob storage, and because popular videos are watched by huge, overlapping
-audiences, the CDN absorbs the overwhelming majority of traffic.
+Transcoding workers pick it up. Each worker (or set of parallel workers, one
+per output) re-encodes the source into several resolutions and bitrates,
+makes a thumbnail, writes each output to blob storage, and updates
+\`video_variants\` as each finishes. The video becomes "ready" once enough
+variants exist. The lowest resolution can go live before the rest are done.
 
-Everything else — metadata, search, comments, recommendations, view counting
-— is layered on top as separate, independently scaled services behind an API
-gateway, each reading from its own storage tuned to its own access pattern
-(a search index for search, a cache-backed metadata store for video info, an
-async pipeline for view counts and recommendation signals) rather than one
-shared database trying to serve every kind of query well.
+**Read path.** This is almost fully decoupled from the write path. The
+player fetches a small manifest listing the quality levels and where their
+segments live. It then requests **segments** (a few seconds of video each)
+one at a time, picking the next quality level based on measured download
+speed. This is adaptive bitrate streaming.
+
+Segment requests hit a CDN first. Only cache misses reach origin blob
+storage. Popular videos have huge, overlapping audiences, so the CDN absorbs
+most traffic.
+
+Metadata, search, comments, recommendations, and view counting are
+separate, independently scaled services behind an API gateway. Each has
+storage suited to its access pattern: a search index for search, a
+cache-backed metadata store for video info, and an async pipeline for view
+counts and recommendation signals. No single shared database tries to serve
+every query.
   `.trim(),
   highLevelDiagram: `
    Upload (rare)                          Playback (huge scale)
@@ -179,178 +178,152 @@ shared database trying to serve every kind of query well.
     {
       title: "The upload and transcoding pipeline",
       explanation: `
-A video isn't "ready" the instant a file finishes uploading — it has to be
-converted into a form built for streaming, and that conversion is the most
-compute-heavy part of the whole system.
+A video isn't "ready" when the upload finishes. It must be converted into a
+streaming-friendly form, the most compute-heavy part of the system.
 
-- The raw upload happens in **chunks**, so a large file can resume from where
-  it left off after a dropped connection instead of starting over, and so the
-  service can start acting on data before the entire file has arrived.
-- Once uploaded, the raw file triggers a **job on a queue** rather than being
-  processed inline — transcoding a video can take far longer than an HTTP
-  request should ever block for, so it has to be asynchronous by design.
-- A fleet of **transcoding workers** pulls jobs off the queue and produces
-  several outputs per video: multiple resolutions (240p up to 4K) and often
-  multiple codecs, each split into small segments (a few seconds each) for
-  adaptive streaming.
-- Work can be **parallelized per output** — one worker producing 480p doesn't
-  need to wait for another producing 1080p — which is what lets a large
-  video fleet keep processing latency down even as upload volume grows.
-- The pipeline is idempotent and resumable: if a worker crashes partway
-  through a resolution, the job can be retried without corrupting or
-  duplicating already-completed outputs, and the video's status only flips
-  to "ready" once a minimum viable set of variants exists.
+- The upload happens in **chunks**. A large file resumes where it left off
+  after a dropped connection, and the service can start on data before the
+  whole file arrives.
+- The finished upload triggers a **job on a queue** instead of inline
+  processing. Transcoding takes far longer than an HTTP request should
+  block, so it must be async.
+- **Transcoding workers** pull jobs and produce several outputs per video:
+  resolutions from 240p up to 4K, often in several codecs, each split into
+  small segments (a few seconds each) for adaptive streaming.
+- Work is **parallelized per output**. The 480p worker doesn't wait for the
+  1080p one, which keeps processing latency down as upload volume grows.
+- The pipeline is idempotent and resumable. If a worker crashes mid-way,
+  the job retries without corrupting or duplicating finished outputs. The
+  video becomes "ready" only once a minimum set of variants exists.
 
-This pipeline is entirely off the request/response path a user experiences —
-its latency budget is minutes, not milliseconds, which is exactly why it can
-afford to do expensive, thorough work that the playback path never could.
+The pipeline is off the user's request path. Its latency budget is minutes,
+not milliseconds, so it can afford expensive work the playback path never
+could.
       `.trim(),
     },
     {
       title: "Adaptive bitrate streaming and CDN distribution",
       explanation: `
-Sending one fixed-quality video to every viewer would mean either wasting
-bandwidth on viewers who could handle more, or stalling out viewers on weak
-connections who can't handle what was sent. Adaptive bitrate streaming (the
-approach behind protocols like HLS/DASH) solves this by never sending "the
-video" as one file at all.
+One fixed quality for everyone either wastes bandwidth on fast connections
+or stalls slow ones. Adaptive bitrate streaming (behind protocols like
+HLS/DASH) fixes this by never sending the video as one file.
 
-- Each video is encoded at several bitrates/resolutions and chopped into
-  short segments (commonly a few seconds each), all aligned so a player can
-  switch between quality levels at a segment boundary without a visible
-  restart.
-- A **manifest file** lists the available quality levels and where their
-  segments live; the player downloads that first, then requests segments one
-  at a time, continuously measuring its own download speed and choosing the
-  next segment's quality level accordingly.
-- All of that segment traffic — the overwhelming majority of the system's
-  total bandwidth — is served from a **CDN**: edge servers geographically
-  close to viewers, caching popular segments so repeated requests for the
-  same popular video never have to travel back to origin storage at all.
-- Popularity follows a power-law distribution, just like a URL shortener's
-  hot links but at a vastly larger scale: a small number of videos account
-  for a huge share of total views, which is precisely the pattern that makes
-  CDN caching so effective here — cache hit rates stay very high even with a
-  cache far smaller than the entire catalog.
+- Each video is encoded at several bitrates/resolutions and cut into short
+  aligned segments (often a few seconds each). The player can switch
+  quality at a segment boundary without a visible restart.
+- A **manifest file** lists the quality levels and where their segments
+  live. The player downloads it first, then requests segments one at a
+  time, measuring its download speed and choosing each next segment's
+  quality.
+- Segment traffic, most of the system's bandwidth, is served from a
+  **CDN**: edge servers near viewers that cache popular segments, so
+  repeat requests never go back to origin.
+- Popularity follows a power law, like a URL shortener's hot links but far
+  bigger. A few videos get a huge share of views, so CDN hit rates stay
+  very high even with a cache much smaller than the catalog.
 
-Without a CDN in front of this, every viewer's segment requests would hit
-origin storage directly, and origin bandwidth would need to scale to
-hundreds of Tbps globally — which is neither affordable nor physically
-sensible when most of that traffic is the same popular content being
-requested over and over from nearby viewers.
+Without a CDN, every segment request would hit origin, which would need
+hundreds of Tbps globally. That's neither affordable nor sensible when most
+traffic is the same popular content requested again and again by nearby
+viewers.
       `.trim(),
     },
     {
       title: "View counts and recommendation data at scale",
       explanation: `
-A "views" counter looks like it should be a simple increment, but at billions
-of views a day, incrementing one row in a database per view would make that
-row an enormous point of write contention, and an exactly-correct count
-isn't actually worth what that would cost.
+A view counter looks like a simple increment. But at billions of views a
+day, one database row per video would become a huge write hotspot, and an
+exact count isn't worth that cost.
 
-- View events are emitted as **fire-and-forget messages onto a queue**
-  rather than synchronous writes, so recording a view never adds latency to
-  playback.
-- A stream-processing layer **batches and aggregates** those events (e.g. sum
-  view increments per video over short windows) before writing rollups to
-  the counts store, trading a small amount of staleness for a massive
-  reduction in write volume against any single row.
-- The same event stream feeds **recommendations**: what a user watched, for
-  how long, and what they watched next are exactly the signals a
-  recommendation model needs, so the pipeline that updates view counts and
-  the pipeline that trains/updates recommendation models draw from the same
-  underlying event log rather than duplicating collection logic.
-- Recommendations themselves are typically served from a **precomputed**
-  per-user or per-video candidate list, refreshed periodically by an offline
-  or near-real-time job, rather than computed from scratch on every page
-  load — computing a personalized ranking live for every request at this
-  scale would be far too slow.
+- View events are **fire-and-forget messages on a queue**, not synchronous
+  writes, so recording a view never slows playback.
+- A stream processor **batches and aggregates** events (e.g. sums
+  increments per video over short windows) before writing rollups. A
+  little staleness buys a huge cut in writes to any single row.
+- The same event stream feeds **recommendations**. What a user watched,
+  for how long, and what came next are exactly the signals a model needs.
+  View counts and model training share one event log instead of
+  duplicating collection.
+- Recommendations are served from a **precomputed** per-user or per-video
+  candidate list, refreshed by an offline or near-real-time job. Ranking
+  live on every page load would be far too slow at this scale.
 
-This is a case where relaxing consistency (counts and recommendations that
-are seconds-to-minutes stale) buys a large, necessary reduction in system
-load, and users genuinely don't notice or care about the staleness.
+Relaxing consistency here (counts and recommendations seconds to minutes
+stale) cuts load a lot, and users don't notice.
       `.trim(),
     },
     {
       title: "Storage tiering and cost management",
       explanation: `
-Not every video gets watched the same amount, and treating a video watched
-once and a video watched a billion times identically wastes money at this
-scale.
+Treating a video watched once like one watched a billion times wastes money
+at this scale.
 
-- **Hot videos** (recently uploaded, currently trending, or perpetually
-  popular) are kept aggressively cached at CDN edges and possibly served from
-  faster storage tiers at origin.
-- **Cold videos** (old, rarely watched) can live on cheaper, slower storage
-  tiers — the origin doesn't need to serve them fast because almost nobody
-  is requesting them, and a CDN cache miss followed by a slightly slower
-  origin fetch is an acceptable trade for videos with a handful of views a
-  year.
-- Encoding every video into every resolution/codec combination up front is
-  wasteful if most of them will only ever be watched at 480p on mobile;
-  some designs transcode lower resolutions eagerly (cheap, always useful) and
-  defer very high resolutions until first requested, or re-encode with
-  cheaper/older codecs for cold content to reclaim storage.
+- **Hot videos** (new, trending, or always popular) stay cached at CDN
+  edges and may use faster storage tiers at origin.
+- **Cold videos** (old, rarely watched) can live on cheaper, slower
+  storage. For a few views a year, a CDN miss plus a slightly slower origin
+  fetch is fine.
+- Encoding every video in every resolution/codec up front is wasteful if
+  most are only watched at 480p on mobile. Some designs transcode low
+  resolutions eagerly (cheap, always useful) and defer very high ones until
+  first requested, or re-encode cold content with cheaper/older codecs to
+  reclaim storage.
 
-The underlying principle is the same one that shows up everywhere in this
-design: don't pay the same cost for rare access as for common access — detect
-which bucket a piece of content falls into, and let storage tier, cache
-placement, and even encoding effort follow that.
+The principle runs through the whole design: don't pay the same for rare
+access as for common access. Work out which bucket content is in, and let
+storage tier, cache placement, and even encoding effort follow.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-The first thing to break at real scale is never the origin database — it's
-raw bandwidth: however good the transcoding pipeline is, serving video bytes
-to viewers is what actually costs the most and moves the most data, so the
-CDN's cache hit rate is the single most important number in the whole
-system. A drop in hit rate (a catalog with a very long, evenly-distributed
-tail rather than a few breakout hits) directly translates into origin
-bandwidth and cost spiking.
+What breaks first is raw bandwidth, not the origin database. Serving video
+bytes costs the most and moves the most data, so the CDN's cache hit rate is
+the most important number in the system. If hit rate drops (say, a long,
+even tail instead of a few big hits), origin bandwidth and cost spike.
 
-Beyond that, the transcoding pipeline scales by adding more worker capacity
-behind the queue — it's embarrassingly parallel across videos and even across
-resolutions of the same video, so it degrades gracefully under load (jobs
-queue up and take longer to start, rather than the system falling over).
-Metadata, search, and recommendation services scale independently of both of
-those, each by the usual playbook for their own storage (read replicas and
-caching for metadata, sharding for a search index, more consumers for the
-event stream). The one piece that genuinely resists easy scaling is a
-sudden, unexpected spike on a single video (something goes viral in minutes)
-— that's a cache-warming and origin-overload problem more than a
-capacity-planning one, and is usually handled by detecting rapid
-popularity growth and proactively pre-warming CDN edges before the full
-spike arrives.
+The transcoding pipeline scales by adding workers behind the queue. It's
+fully parallel across videos and even across resolutions of one video, so
+it degrades gracefully: jobs wait longer instead of the system falling
+over.
+
+Metadata, search, and recommendations scale independently, each with the
+usual playbook: read replicas and caching for metadata, sharding for the
+search index, more consumers for the event stream.
+
+The hard case is a sudden spike on one video that goes viral in minutes.
+That's a cache-warming and origin-overload problem more than a capacity one.
+It's usually handled by detecting fast popularity growth and pre-warming CDN
+edges before the full spike arrives.
   `.trim(),
   tradeOffs: [
     {
       decision: "Asynchronous transcoding pipeline vs. processing on upload",
       explanation:
-        "Transcoding is done asynchronously on a queue rather than synchronously during the upload request, trading a delay of minutes before a video is watchable for an upload path that stays fast and doesn't hold an HTTP connection open for as long as encoding takes. A synchronous approach would make uploads simpler to reason about, but couldn't scale independently of upload traffic and would leave users waiting on a request for far longer than is reasonable.",
+        "Transcode asynchronously on a queue, not during the upload request. Videos take minutes to become watchable, but uploads stay fast and don't hold an HTTP connection open while encoding runs. A synchronous approach is simpler to reason about, but can't scale separately from upload traffic and keeps users waiting far too long.",
     },
     {
       decision: "CDN-first delivery vs. serving from origin storage directly",
       explanation:
-        "Almost all playback traffic is pushed through a CDN, at the cost of a more complex delivery pipeline (cache invalidation, edge placement, cache-miss handling) and real financial cost for the CDN itself. The alternative — serving from origin — is simpler but cannot physically sustain the bandwidth video platforms require, and would put every viewer's latency at the mercy of their distance from a single origin region.",
+        "Push almost all playback through a CDN. The cost is a more complex delivery pipeline (cache invalidation, edge placement, cache-miss handling) and the CDN's real price. Serving from origin is simpler but can't sustain video-scale bandwidth, and every viewer's latency would depend on their distance from one origin region.",
     },
     {
       decision: "Eventually consistent view counts vs. exact, strongly consistent counts",
       explanation:
-        "View counts are aggregated asynchronously and allowed to be briefly stale, in exchange for avoiding write contention on a single counter under billions of daily increments. A strongly consistent exact count would be correct at every instant but would require serializing writes in a way that becomes a severe bottleneck under this load, for a guarantee users don't actually need.",
+        "Aggregate view counts asynchronously and let them be briefly stale, avoiding write contention on one counter under billions of daily increments. An exact, strongly consistent count would need serialized writes, a severe bottleneck at this load, for a guarantee users don't need.",
     },
     {
       decision: "Storing every transcoded variant vs. transcoding on demand",
       explanation:
-        "Pre-transcoding into multiple resolutions ahead of time means playback never waits on encoding, at the cost of several times the storage footprint of the raw uploads, including variants that may rarely be requested. On-demand transcoding would save storage but would add unacceptable latency to a viewer's first request for a quality level, and would repeat the same expensive CPU work for every popular video's first viewer at any given resolution.",
+        "Pre-transcode into several resolutions so playback never waits on encoding. The cost is several times the raw storage, including rarely requested variants. On-demand transcoding saves storage but adds unacceptable latency to the first request for a quality level, and repeats the same expensive work for each popular video's first viewer at each resolution.",
     },
   ],
   interviewTips: [
-    "Split the problem out loud into upload/transcoding (write path) and streaming/delivery (read path) early — they have almost nothing in common and interviewers want to see you recognize that.",
-    "Bring up adaptive bitrate streaming and CDN caching before being asked; they're the two ideas that most define this system.",
-    "Justify eventual consistency for view counts and recommendations explicitly — say why exactness isn't worth the cost, don't just assume it.",
-    "Mention that transcoding must be asynchronous and idempotent, and that a video can go live before every resolution finishes processing.",
-    "If time allows, discuss storage tiering (hot vs. cold content) — it shows you're thinking about cost, not just correctness.",
-    "Don't spend the whole interview on recommendations — it's a real part of the system but a much smaller design surface than upload/transcode/stream.",
+    "Split the problem early into upload/transcoding (write path) and streaming/delivery (read path). They have almost nothing in common, and interviewers want to see you notice.",
+    "Raise adaptive bitrate streaming and CDN caching before being asked. They're the two ideas that most define this system.",
+    "Justify eventual consistency for view counts and recommendations. Say why exactness isn't worth the cost.",
+    "Mention that transcoding must be async and idempotent, and that a video can go live before every resolution is done.",
+    "If time allows, discuss storage tiering (hot vs. cold content). It shows you think about cost, not just correctness.",
+    "Don't spend the whole interview on recommendations. They matter, but they're a much smaller design surface than upload/transcode/stream.",
   ],
   relatedTopics: ["cdn", "caching", "queues", "load-balancing", "sharding", "consistency-models", "scalability"],
   keywords: ["youtube", "video streaming", "adaptive bitrate", "transcoding", "cdn", "system design interview", "video upload pipeline"],

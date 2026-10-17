@@ -7,16 +7,15 @@ export const javascriptIntermediateTopics: Topic[] = [
     level: "intermediate",
     description: "An ordered list of values, stored in a single variable.",
     explanation: `
-Often you don't just have one value to track — you have many: a list of
-names, scores, or products. Instead of creating a separate variable for
-each one, JavaScript gives you an **array**: a single container that holds
-an ordered list of values, each accessible by its position (its "index").
+Often you have many values to track: a list of names, scores or products.
+Instead of a separate variable for each, use an **array**: one container
+holding an ordered list of values, each reachable by its position (its
+"index").
 
-Indexes start at 0, so the first item is at position 0, the second at
-position 1, and so on.
+Indexes start at 0, so the first item is at 0, the second at 1, and so on.
     `.trim(),
     analogy:
-      "An array is like a row of numbered lockers. Locker 0 holds the first item, locker 1 the second, and so on. You can look inside any locker directly if you know its number.",
+      "An array is like a row of numbered lockers. Locker 0 holds the first item, locker 1 the second, and so on. If you know the number, you can open any locker directly.",
     examples: [
       {
         title: "Creating and using an array",
@@ -29,10 +28,10 @@ fruits.push("date"); // adds to the end
 fruits.pop();        // removes the last item`,
         walkthrough: [
           { code: 'const fruits = ["apple", ...]', explanation: "Creates an array holding three strings, in order." },
-          { code: "fruits[0]", explanation: 'Reads the item at index 0 — the first item, "apple".' },
-          { code: "fruits.length", explanation: "Reports how many items are in the array right now." },
-          { code: 'fruits.push("date");', explanation: 'Adds "date" to the end of the array.' },
-          { code: "fruits.pop();", explanation: "Removes and returns the last item in the array." },
+          { code: "fruits[0]", explanation: 'Reads the item at index 0: the first item, "apple".' },
+          { code: "fruits.length", explanation: "How many items the array has right now." },
+          { code: 'fruits.push("date");', explanation: 'Adds "date" to the end.' },
+          { code: "fruits.pop();", explanation: "Removes and returns the last item." },
         ],
       },
       {
@@ -45,27 +44,24 @@ scores.forEach((score) => {
       },
     ],
     howItWorks: `
-Internally, an array stores its items in order and keeps track of how many
-there are (its \`length\`). Accessing \`fruits[0]\` jumps straight to the item
-at position 0 without needing to check the others.
+An array stores its items in order and tracks how many there are (its
+\`length\`). \`fruits[0]\` jumps straight to the item at position 0 without
+checking the others.
     `.trim(),
     whyItExists: `
-Almost every real program deals with collections of things — a list of
-users, a shopping cart, search results. Arrays give you a consistent,
-built-in way to store, access, and process ordered groups of data.
+Almost every program handles collections: a list of users, a shopping cart,
+search results. Arrays are the built-in way to store, access and process
+ordered groups of data.
     `.trim(),
     whenToUse: `
-Reach for an array whenever you have more than one related value with a
-natural order — a list of to-dos, a set of scores, the results of a
-search. If you catch yourself naming variables \`item1\`, \`item2\`, \`item3\`,
-that's a sign you want an array instead.
+Use an array for several related values with a natural order: to-dos,
+scores, search results. If you're naming variables \`item1\`, \`item2\`,
+\`item3\`, you want an array.
     `.trim(),
     whenNotToUse: `
-If your values aren't really a sequence but a set of named attributes
-about one thing (a person's name, age, and email), an object is a better
-fit than an array. And if you need fast lookups by a unique key rather
-than by position, a \`Map\` or object usually serves you better than
-searching through an array.
+If the values are named attributes of one thing (a person's name, age and
+email), use an object. If you need fast lookups by a unique key instead of
+by position, a \`Map\` or object beats searching an array.
     `.trim(),
     commonMistakes: [
       "Forgetting that array indexes start at 0, not 1.",
@@ -78,40 +74,40 @@ searching through an array.
       { difficulty: "Hard", prompt: "Use `.filter()` and `.reduce()` together to sum only the even numbers in an array." },
     ],
     interviewQuestions: [
-      { question: "What is an array in JavaScript?", answer: "An ordered, list-like structure that stores multiple values in a single variable, where each value is accessed by a numeric position (its index) rather than a name." },
-      { question: "Why do array indexes start at 0 instead of 1?", answer: "An index isn't a count of position, it's an offset from the start of the array's internal storage — the first item is 0 elements away from the start, the second is 1 element away, and so on." },
-      { question: "Does `array.length` update automatically as you add or remove items?", answer: "Yes — `length` is a live property tracked internally by the array, so it's always in sync after `push`, `pop`, `splice`, or a direct assignment like `arr[10] = \"x\"`." },
-      { question: "What's the difference between `push()`/`pop()` and `unshift()`/`shift()`?", answer: "`push`/`pop` add and remove at the end; `unshift`/`shift` do the same at the beginning. Because array indexes are contiguous, adding or removing at the front means every other element has to be re-indexed, making `unshift`/`shift` slower than `push`/`pop` on large arrays." },
-      { question: "What does accessing an index beyond an array's length return?", answer: "`undefined`, not an error — reading `arr[i]` is just an object-style property lookup, and a missing key resolves to `undefined` rather than throwing." },
-      { question: "What's the difference between `slice()` and `splice()`?", answer: "`slice(start, end)` returns a new array copying out a range and leaves the original untouched; `splice(start, deleteCount, ...items)` mutates the original array in place, removing and/or inserting items and returning the removed ones." },
-      { question: "What does this log? `const a = [1, 2, 3]; const b = a; b.push(4); console.log(a);`", answer: "`[1, 2, 3, 4]`. Arrays are reference types — `b = a` copies the reference, not the array, so `a` and `b` point at the same underlying array, and mutating one is visible through the other." },
-      { question: "Why does `typeof []` return `\"object\"` instead of `\"array\"`?", answer: "JavaScript has no separate array primitive — an array is a specialized kind of object with numeric keys and an auto-updating `length`, so `typeof` reports it the same as any other object." },
-      { question: "How do you reliably check whether a value is an array?", answer: "`Array.isArray(value)` — since `typeof` can't distinguish an array from a plain object, this dedicated check inspects the value's internal class instead." },
-      { question: "What does this log, and why? `console.log([10, 1, 2].sort());`", answer: "`[1, 10, 2]`. Without a comparator, `sort()` converts every element to a string and compares them lexicographically, so `\"10\"` sorts before `\"2\"`. Numeric sorting needs an explicit comparator like `(a, b) => a - b`." },
-      { question: "Does `.sort()` mutate the original array?", answer: "Yes — `sort()` (like `reverse()`, `splice()`, and `fill()`) reorders the elements in place and returns the same array reference, rather than producing a new one." },
-      { question: "How do you copy an array without mutating the original?", answer: "Spread it into a new array literal (`[...arr]`), use `arr.slice()` with no arguments, or `Array.from(arr)` — all three build a brand-new array, but only one level deep." },
-      { question: "What does this log? `const original = [{ id: 1 }]; const copy = [...original]; copy[0].id = 2; console.log(original[0].id);`", answer: "`2`. Spread only copies the array's top-level slots; the object stored at index 0 is still the same reference in both arrays, so mutating it through `copy` is visible through `original` too." },
-      { question: "What happens when you set `array.length = 0`?", answer: "It truncates the array to zero elements in place — a fast way to empty an array while keeping the same reference, which matters if other code already holds onto that same array." },
-      { question: "What is a 'sparse' array, and how do you accidentally create one?", answer: "An array with gaps — empty slots that aren't actually `undefined` values but simply missing indexes. Writing `[1, , 3]` or `new Array(3)` both produce one; `length` counts the gaps, but some iteration methods treat them differently from a real value." },
-      { question: "What does this log? `const arr = [1, , 3]; console.log(arr.length); arr.forEach((n) => console.log(n));`", answer: "First `3` (length includes the hole), then just `1` and `3` — `forEach` (like `map` and `filter`) skips empty slots entirely rather than calling the callback with `undefined`." },
-      { question: "What does the `delete` operator do to an array element, and why is it rarely what you want?", answer: "`delete arr[1]` removes the value at that index but leaves a hole — `length` stays the same and later indexes aren't shifted down. `splice(1, 1)` is almost always the operation you actually meant." },
-      { question: "How does `for...in` differ from `for...of` when looping over an array?", answer: "`for...in` iterates enumerable property keys as strings — including any non-index properties someone added to the array — in no guaranteed order; `for...of` iterates the actual values in index order, which is what you almost always want for an array." },
-      { question: "What does this log? `console.log([NaN].indexOf(NaN)); console.log([NaN].includes(NaN));`", answer: "`-1` then `true`. `indexOf` compares with strict equality, and `NaN !== NaN`, so it can never find it; `includes` uses the SameValueZero algorithm, which treats `NaN` as equal to itself." },
-      { question: "How do you convert an array-like object, like `arguments`, into a real array?", answer: "`Array.from(arguments)` or `[...arguments]` — both build a genuine array with all the array methods, which the original array-like object (which only has indexes and `length`) doesn't have." },
-      { question: "What's the difference between `Array.from()` and `Array.of()`?", answer: "`Array.from(source, mapFn?)` builds an array from an iterable or array-like value, optionally mapping each item; `Array.of(...items)` builds an array directly from its arguments, which exists specifically to sidestep the `new Array(n)` ambiguity." },
-      { question: "What's confusing about `new Array(7)`?", answer: "With a single numeric argument, `Array` constructs a sparse array of length 7 with no elements, not an array containing the value `7`. `Array.of(7)` or the literal `[7]` avoid the ambiguity." },
-      { question: "What's the difference between `.flat()` and `.flatMap()`?", answer: "`flat(depth)` flattens nested arrays by the given depth (default 1); `flatMap(fn)` maps every item and then flattens the result by one level in a single pass, more efficient than chaining `.map().flat()` separately." },
-      { question: "How do you access the last item of an array?", answer: "Traditionally `arr[arr.length - 1]`; `arr.at(-1)` does the same thing more directly, since `.at()` accepts negative indexes counting back from the end." },
-      { question: "What does this log? `function addItem(arr) { arr.push(\"new\"); } const list = [\"a\", \"b\"]; addItem(list); console.log(list);`", answer: "`[\"a\", \"b\", \"new\"]`. Arrays are passed by reference-copy — `arr` inside the function points at the same array as `list`, so a mutating method called on it is visible to the caller." },
-      { question: "What does this log? `function replace(arr) { arr = [\"x\", \"y\"]; } const list = [\"a\", \"b\"]; replace(list); console.log(list);`", answer: "`[\"a\", \"b\"]`, unchanged. `arr = [\"x\", \"y\"]` only repoints the local parameter `arr` to a brand-new array — it doesn't affect what `list` points to in the caller, because the reference itself was passed by value." },
-      { question: "Why does `[] === []` evaluate to `false`?", answer: "`===` on arrays (and objects) compares reference identity, not contents — two separate array literals create two separate objects in memory, even if their elements are identical." },
-      { question: "How would you compare two arrays for equality by content?", answer: "There's no built-in deep-equality check. A shallow comparison is typically `a.length === b.length && a.every((v, i) => v === b[i])`; `JSON.stringify(a) === JSON.stringify(b)` works for simple data but breaks down with nested objects, `undefined`, functions, or differing key order." },
-      { question: "Why are `push`/`pop` generally faster than `unshift`/`shift`?", answer: "`push`/`pop` only touch the end of the array, an O(1) operation; `unshift`/`shift` have to shift every remaining element's index up or down by one, making them O(n)." },
-      { question: "What does this log, and why? `const arr = [1, 2, 3]; arr.forEach((item, i) => { if (i === 0) arr.splice(1, 1); console.log(item); });`", answer: "`1` then `3` — `2` is skipped. Removing index 1 shifts `3` down into that slot, but `forEach`'s internal counter has already moved on to index 1, which now holds a different element, effectively skipping one. Mutating an array while iterating it is a common source of subtle bugs." },
-      { question: "What does this log? `const [a = 5] = [null];`", answer: "`a` is `null`, not `5` — a destructuring default only kicks in when the corresponding value is `undefined` (missing), not for other falsy values like `null`, `0`, or `\"\"`." },
-      { question: "How would you remove duplicate values from an array of numbers or strings in one line?", answer: "`[...new Set(array)]` — a `Set` only ever stores unique values (using SameValueZero equality), so building one from the array and spreading it back removes duplicates without writing a manual loop." },
-      { question: "When would you reach for `.find()` instead of `.filter()[0]`?", answer: "`find()` stops iterating and returns the element itself the moment it finds a match (or `undefined` if none exists); `filter()` always scans the entire array and builds a whole new array, only for you to immediately discard everything but index 0 — more work for the same result." },
-      { question: "Why is chaining several array methods like `.filter().map().reduce()` sometimes worth avoiding on very large arrays?", answer: "Each chained call is a full pass over the array producing an intermediate array; combining the logic into a single `.reduce()` (or a plain loop) does the same work in one pass, trading a bit of readability for avoiding the extra intermediate allocations." },
+      { question: "What is an array in JavaScript?", answer: "An ordered list of values in a single variable. Each value is accessed by its numeric position (index), not a name." },
+      { question: "Why do array indexes start at 0 instead of 1?", answer: "An index is an offset from the start, not a count. The first item is 0 steps from the start, the second is 1 step away, and so on." },
+      { question: "Does `array.length` update automatically as you add or remove items?", answer: "Yes. `length` is kept in sync after `push`, `pop`, `splice`, or a direct assignment like `arr[10] = \"x\"`." },
+      { question: "What's the difference between `push()`/`pop()` and `unshift()`/`shift()`?", answer: "`push`/`pop` add and remove at the end; `unshift`/`shift` do it at the start. Changing the front means re-indexing every other element, so `unshift`/`shift` are slower on large arrays." },
+      { question: "What does accessing an index beyond an array's length return?", answer: "`undefined`, not an error. `arr[i]` is a property lookup, and a missing key gives `undefined`." },
+      { question: "What's the difference between `slice()` and `splice()`?", answer: "`slice(start, end)` returns a new array with a copied range and leaves the original alone. `splice(start, deleteCount, ...items)` changes the original in place, removing and/or inserting items, and returns the removed ones." },
+      { question: "What does this log? `const a = [1, 2, 3]; const b = a; b.push(4); console.log(a);`", answer: "`[1, 2, 3, 4]`. `b = a` copies the reference, not the array, so both point to the same array and a change through one shows through the other." },
+      { question: "Why does `typeof []` return `\"object\"` instead of `\"array\"`?", answer: "There's no separate array type. An array is a special object with numeric keys and an auto-updating `length`, so `typeof` reports `\"object\"`." },
+      { question: "How do you reliably check whether a value is an array?", answer: "`Array.isArray(value)`. `typeof` can't tell an array from a plain object, but this check inspects the value's internal class." },
+      { question: "What does this log, and why? `console.log([10, 1, 2].sort());`", answer: "`[1, 10, 2]`. Without a comparator, `sort()` turns elements into strings and compares them alphabetically, so `\"10\"` comes before `\"2\"`. For numbers, pass a comparator like `(a, b) => a - b`." },
+      { question: "Does `.sort()` mutate the original array?", answer: "Yes. `sort()` (like `reverse()`, `splice()` and `fill()`) reorders in place and returns the same array, not a new one." },
+      { question: "How do you copy an array without mutating the original?", answer: "Spread it (`[...arr]`), call `arr.slice()` with no arguments, or use `Array.from(arr)`. All three create a new array, but only one level deep." },
+      { question: "What does this log? `const original = [{ id: 1 }]; const copy = [...original]; copy[0].id = 2; console.log(original[0].id);`", answer: "`2`. Spread copies only the top-level slots. Both arrays hold the same object at index 0, so changing it through `copy` shows through `original`." },
+      { question: "What happens when you set `array.length = 0`?", answer: "It empties the array in place. This keeps the same reference, which matters if other code holds that array." },
+      { question: "What is a 'sparse' array, and how do you accidentally create one?", answer: "An array with gaps: missing indexes, not actual `undefined` values. `[1, , 3]` and `new Array(3)` both create one. `length` counts the gaps, but some iteration methods treat them differently from real values." },
+      { question: "What does this log? `const arr = [1, , 3]; console.log(arr.length); arr.forEach((n) => console.log(n));`", answer: "`3` (length counts the hole), then `1` and `3`. `forEach` (like `map` and `filter`) skips empty slots instead of passing `undefined`." },
+      { question: "What does the `delete` operator do to an array element, and why is it rarely what you want?", answer: "`delete arr[1]` removes the value but leaves a hole: `length` stays the same and later items don't shift down. You almost always want `splice(1, 1)`." },
+      { question: "How does `for...in` differ from `for...of` when looping over an array?", answer: "`for...in` loops over enumerable keys as strings, including any non-index properties added to the array, in no guaranteed order. `for...of` loops over the values in index order, which is almost always what you want." },
+      { question: "What does this log? `console.log([NaN].indexOf(NaN)); console.log([NaN].includes(NaN));`", answer: "`-1` then `true`. `indexOf` uses strict equality and `NaN !== NaN`, so it never finds it. `includes` uses SameValueZero, which treats `NaN` as equal to itself." },
+      { question: "How do you convert an array-like object, like `arguments`, into a real array?", answer: "`Array.from(arguments)` or `[...arguments]`. Both build a real array with array methods, which the array-like (just indexes and `length`) lacks." },
+      { question: "What's the difference between `Array.from()` and `Array.of()`?", answer: "`Array.from(source, mapFn?)` builds an array from an iterable or array-like, optionally mapping each item. `Array.of(...items)` builds an array from its arguments, avoiding the `new Array(n)` ambiguity." },
+      { question: "What's confusing about `new Array(7)`?", answer: "With one numeric argument, it creates an empty sparse array of length 7, not an array containing `7`. Use `Array.of(7)` or `[7]` instead." },
+      { question: "What's the difference between `.flat()` and `.flatMap()`?", answer: "`flat(depth)` flattens nested arrays by the given depth (default 1). `flatMap(fn)` maps each item and flattens one level in a single pass, more efficient than `.map().flat()`." },
+      { question: "How do you access the last item of an array?", answer: "`arr[arr.length - 1]`, or more directly `arr.at(-1)`, since `.at()` accepts negative indexes counted from the end." },
+      { question: "What does this log? `function addItem(arr) { arr.push(\"new\"); } const list = [\"a\", \"b\"]; addItem(list); console.log(list);`", answer: "`[\"a\", \"b\", \"new\"]`. The function gets a copy of the reference, so `arr` points to the same array as `list`, and changes through it are visible to the caller." },
+      { question: "What does this log? `function replace(arr) { arr = [\"x\", \"y\"]; } const list = [\"a\", \"b\"]; replace(list); console.log(list);`", answer: "`[\"a\", \"b\"]`, unchanged. `arr = [\"x\", \"y\"]` only points the local parameter at a new array. The reference was passed by value, so `list` is unaffected." },
+      { question: "Why does `[] === []` evaluate to `false`?", answer: "`===` on arrays (and objects) compares references, not contents. Two array literals are two separate objects, even with identical elements." },
+      { question: "How would you compare two arrays for equality by content?", answer: "There's no built-in deep check. A shallow one is `a.length === b.length && a.every((v, i) => v === b[i])`. `JSON.stringify(a) === JSON.stringify(b)` works for simple data but breaks with nested objects, `undefined`, functions or different key order." },
+      { question: "Why are `push`/`pop` generally faster than `unshift`/`shift`?", answer: "`push`/`pop` only touch the end: O(1). `unshift`/`shift` must move every other element's index by one: O(n)." },
+      { question: "What does this log, and why? `const arr = [1, 2, 3]; arr.forEach((item, i) => { if (i === 0) arr.splice(1, 1); console.log(item); });`", answer: "`1` then `3`; `2` is skipped. Removing index 1 moves `3` into that slot, and `forEach` moves on to index 1, which now holds `3`. Changing an array while looping over it is a common source of subtle bugs." },
+      { question: "What does this log? `const [a = 5] = [null];`", answer: "`a` is `null`, not `5`. A destructuring default applies only when the value is `undefined`, not for other falsy values like `null`, `0` or `\"\"`." },
+      { question: "How would you remove duplicate values from an array of numbers or strings in one line?", answer: "`[...new Set(array)]`. A `Set` keeps only unique values (by SameValueZero), so spreading it back gives the array without duplicates." },
+      { question: "When would you reach for `.find()` instead of `.filter()[0]`?", answer: "`find()` stops at the first match and returns it (or `undefined`). `filter()` scans the whole array and builds a new one, only for you to throw away all but index 0." },
+      { question: "Why is chaining several array methods like `.filter().map().reduce()` sometimes worth avoiding on very large arrays?", answer: "Each call is a full pass that creates an intermediate array. One `.reduce()` (or a plain loop) does it in a single pass, trading some readability for fewer allocations." },
     ],
     prerequisites: ["functions"],
     relatedTopics: ["objects", "loops", "array-methods"],
