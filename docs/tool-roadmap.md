@@ -79,7 +79,7 @@ Work through it one item per session. Each item is sized to finish, test and rev
 - [x] I-2 Gitignore: editable output
 - [x] I-1 .env Diff: validator features
 - [x] I-5 JSON Tree Viewer: path formats
-- [ ] I-3 JSON to Code: Zod and Valibot
+- [x] I-3 JSON to Code: Zod and Valibot
 - [ ] I-7 HAR Viewer: redaction
 - [ ] I-4 nginx: editable output
 - [ ] N-1 Git Command Builder

@@ -3,7 +3,7 @@
 import type { FieldModel, Model, StructModel, TypeRef } from './model';
 import { applyCase, uniqueNames, type Casing } from './naming';
 
-export type Lang = 'go' | 'python' | 'rust' | 'java' | 'csharp' | 'kotlin';
+export type Lang = 'go' | 'python' | 'rust' | 'java' | 'csharp' | 'kotlin' | 'zod' | 'valibot';
 export type Naming = 'idiomatic' | 'original';
 
 export interface CodeOptions {
@@ -13,6 +13,8 @@ export interface CodeOptions {
   pyStyle: 'dataclass' | 'pydantic';
   javaStyle: 'record' | 'pojo';
   csStyle: 'record' | 'class';
+  /** Zod/Valibot: reject keys that aren't in the sample. */
+  strict: boolean;
 }
 
 export const LANGS: { id: Lang; label: string; ext: string; fence: string }[] = [
@@ -22,6 +24,8 @@ export const LANGS: { id: Lang; label: string; ext: string; fence: string }[] = 
   { id: 'java', label: 'Java', ext: 'java', fence: 'java' },
   { id: 'csharp', label: 'C#', ext: 'cs', fence: 'csharp' },
   { id: 'kotlin', label: 'Kotlin', ext: 'kt', fence: 'kotlin' },
+  { id: 'zod', label: 'Zod', ext: 'ts', fence: 'ts' },
+  { id: 'valibot', label: 'Valibot', ext: 'ts', fence: 'ts' },
 ];
 
 const KEYWORDS: Record<Lang, string[]> = {
@@ -30,6 +34,8 @@ const KEYWORDS: Record<Lang, string[]> = {
   rust: ['as', 'break', 'const', 'continue', 'crate', 'else', 'enum', 'extern', 'false', 'fn', 'for', 'if', 'impl', 'in', 'let', 'loop', 'match', 'mod', 'move', 'mut', 'pub', 'ref', 'return', 'self', 'Self', 'static', 'struct', 'super', 'trait', 'true', 'type', 'unsafe', 'use', 'where', 'while', 'async', 'await', 'dyn', 'abstract', 'become', 'box', 'do', 'final', 'macro', 'override', 'priv', 'typeof', 'unsized', 'virtual', 'yield', 'try'],
   java: ['abstract', 'assert', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extends', 'final', 'finally', 'float', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'int', 'interface', 'long', 'native', 'new', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'strictfp', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'try', 'void', 'volatile', 'while', 'true', 'false', 'null', 'var', 'record', 'yield', 'hashCode', 'toString', 'equals'],
   csharp: [],
+  zod: [],
+  valibot: [],
   kotlin: ['as', 'break', 'class', 'continue', 'do', 'else', 'false', 'for', 'fun', 'if', 'in', 'interface', 'is', 'null', 'object', 'package', 'return', 'super', 'this', 'throw', 'true', 'try', 'typealias', 'typeof', 'val', 'var', 'when', 'while'],
 };
 const RESERVED = Object.fromEntries(Object.entries(KEYWORDS).map(([k, v]) => [k, new Set(v)])) as Record<Lang, Set<string>>;
@@ -304,6 +310,45 @@ function genKotlin({ model, o }: Ctx): string {
   return join(out);
 }
 
+/* ---------------------------------------------------------------- Zod / Valibot */
+
+// Targets Zod 3.23+ / 4 and Valibot 1.x: every call used here exists in those versions.
+// Schemas keep the JSON keys as written (quoted when they aren't identifiers).
+const IDENT = /^[A-Za-z_$][\w$]*$/;
+const propKey = (k: string) => (IDENT.test(k) ? k : q(k));
+
+function genSchema({ model, o }: Ctx, lib: 'zod' | 'valibot'): string {
+  const zod = lib === 'zod';
+  const schema = (name: string) => `${name}Schema`;
+  const typeOf = (t: TypeRef): string => {
+    switch (t.k) {
+      case 'string': return zod ? 'z.string()' : 'v.string()';
+      case 'int': return zod ? 'z.number().int()' : 'v.pipe(v.number(), v.integer())';
+      case 'float': return zod ? 'z.number()' : 'v.number()';
+      case 'bool': return zod ? 'z.boolean()' : 'v.boolean()';
+      case 'any': return zod ? 'z.unknown()' : 'v.unknown()';
+      case 'array': return zod ? `z.array(${typeOf(t.item)})` : `v.array(${typeOf(t.item)})`;
+      case 'struct': return schema(t.name);
+    }
+  };
+  const field = (f: FieldModel) => {
+    let t = typeOf(f.type);
+    if (f.nullable && f.type.k !== 'any') t = zod ? `${t}.nullable()` : `v.nullable(${t})`;
+    if (f.optional) t = zod ? `${t}.optional()` : `v.optional(${t})`;
+    return t;
+  };
+  const objectFn = zod ? (o.strict ? 'z.strictObject' : 'z.object') : o.strict ? 'v.strictObject' : 'v.object';
+  const infer = (name: string) => (zod ? `z.infer<typeof ${schema(name)}>` : `v.InferOutput<typeof ${schema(name)}>`);
+  const out = [zod ? "import { z } from 'zod';" : "import * as v from 'valibot';"];
+  for (const s of model.structs) {
+    const body = s.fields.map((f) => `  ${propKey(f.key)}: ${field(f)},`).join('\n');
+    out.push(`export const ${schema(s.name)} = ${objectFn}({${body ? `\n${body}\n` : ''}});\nexport type ${s.name} = ${infer(s.name)};`);
+  }
+  const alias = aliasLine(model, (t) => `export const ${schema(model.rootName)} = ${typeOf(t)};\nexport type ${model.rootName} = ${infer(model.rootName)};`);
+  if (alias) out.push(alias);
+  return join(out);
+}
+
 /* ---------------------------------------------------------------- entry */
 
 const GENERATORS: Record<Lang, (c: Ctx) => string> = {
@@ -313,6 +358,8 @@ const GENERATORS: Record<Lang, (c: Ctx) => string> = {
   java: genJava,
   csharp: genCSharp,
   kotlin: genKotlin,
+  zod: (c) => genSchema(c, 'zod'),
+  valibot: (c) => genSchema(c, 'valibot'),
 };
 
 export function renderCode(model: Model, o: CodeOptions): string {
@@ -323,6 +370,6 @@ export function renderCode(model: Model, o: CodeOptions): string {
 export function fileNameFor(model: Model, lang: Lang): string {
   const ext = LANGS.find((l) => l.id === lang)!.ext;
   if (lang === 'java') return `${model.root.k === 'struct' ? model.root.name : (model.structs.at(-1)?.name ?? model.rootName)}.${ext}`;
-  const base = { go: 'models', python: 'models', rust: 'models', csharp: 'Models', kotlin: 'Models' }[lang];
+  const base = { go: 'models', python: 'models', rust: 'models', csharp: 'Models', kotlin: 'Models', zod: 'schemas', valibot: 'schemas' }[lang];
   return `${base}.${ext}`;
 }

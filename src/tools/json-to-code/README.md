@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Generates Go, Python (dataclass or Pydantic v2), Rust (serde), Java (record or POJO, Jackson), C# (record or class, `System.Text.Json`) and Kotlin (kotlinx.serialization) models from a sample JSON document. User-facing docs live in [`docs.ts`](docs.ts).
+Generates Go, Python (dataclass or Pydantic v2), Rust (serde), Java (record or POJO, Jackson), C# (record or class, `System.Text.Json`) and Kotlin (kotlinx.serialization) models, or Zod / Valibot schemas, from a sample JSON document. User-facing docs live in [`docs.ts`](docs.ts).
 
 ## File Structure
 
@@ -19,7 +19,7 @@ Generates Go, Python (dataclass or Pydantic v2), Rust (serde), Java (record or P
 
 ## Core Logic
 
-`inferShape` merges all array items and tracks optional keys, `null`, mixed scalars and whether a number had a fraction. `buildModel` turns that into post-order `StructModel`s (children first), deduping identical shapes by signature and numbering clashing names. Each renderer derives field names with `fieldNames` (casing per language, reserved words get a `_` suffix, duplicates numbered) and writes rename annotations when the identifier differs from the key. Nullable and optional both mean `Option`/pointer/`| None`/`?` types; optional additionally adds `omitempty`, `= None`, `skip_serializing_if` or `WhenWritingNull`. Python dataclasses put defaulted fields last. Roots that aren't objects get an alias where the language has one.
+`inferShape` merges all array items and tracks optional keys, `null`, mixed scalars and whether a number had a fraction. `buildModel` turns that into post-order `StructModel`s (children first), deduping identical shapes by signature and numbering clashing names. Each renderer derives field names with `fieldNames` (casing per language, reserved words get a `_` suffix, duplicates numbered) and writes rename annotations when the identifier differs from the key. Nullable and optional both mean `Option`/pointer/`| None`/`?` types; optional additionally adds `omitempty`, `= None`, `skip_serializing_if` or `WhenWritingNull`. Python dataclasses put defaulted fields last. Roots that aren't objects get an alias where the language has one. `genSchema` renders Zod or Valibot from the same model: children-first order means every schema is declared before use, keys stay as written (quoted when not identifiers), nullable wraps before optional (`.nullable().optional()` / `v.optional(v.nullable(...))`), `strict` switches to `strictObject`, and each schema gets an inferred type export. The output was checked once against real Zod 4 and Valibot 1 (parse, reject a non-integer, reject an extra key in strict mode, and `tsc --strict`); the unit tests compare text because neither library is a dependency.
 
 ## Limits
 

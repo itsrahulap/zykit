@@ -8,7 +8,7 @@ const jsonToCode: ToolDefinition = {
     'Turn JSON into typed models: Go structs, Python dataclasses or Pydantic, Rust serde structs, Java records or POJOs, C# classes and Kotlin data classes.',
   category: 'Data',
   icon: 'braces',
-  tags: ['JSON', 'Go', 'Python', 'Rust', 'Java', 'C#', 'Kotlin', 'Structs'],
+  tags: ['JSON', 'Go', 'Python', 'Rust', 'Java', 'C#', 'Kotlin', 'Zod', 'Valibot', 'Structs'],
   status: 'available',
   accepts: ['json'],
   produces: ['code'],

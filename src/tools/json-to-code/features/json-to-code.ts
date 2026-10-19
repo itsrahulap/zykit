@@ -1,4 +1,4 @@
-// Turns a parsed JSON sample into Go, Python, Rust, Java, C# or Kotlin type definitions.
+// Turns a parsed JSON sample into Go, Python, Rust, Java, C# or Kotlin types, or Zod / Valibot schemas.
 // Pure logic: the shape inference lives in json-to-typescript and is reused here.
 
 import type { JsonNode } from '../../json-formatter/features/json';
@@ -14,6 +14,7 @@ export const DEFAULT_OPTIONS: CodeOptions = {
   pyStyle: 'dataclass',
   javaStyle: 'record',
   csStyle: 'record',
+  strict: false,
 };
 
 export interface CodeResult {
