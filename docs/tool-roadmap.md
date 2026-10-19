@@ -88,7 +88,7 @@ Work through it one item per session. Each item is sized to finish, test and rev
 
 **Medium:**
 
-- [ ] I-6 Regex Tester: structure tree
+- [x] I-6 Regex Tester: structure tree
 - [ ] I-8 JSON Schema: builder tab
 - [ ] I-9 Compose: service builder
 - [ ] I-10 cURL: request builder
