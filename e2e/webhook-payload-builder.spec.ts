@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('Webhook Payload Builder works locally', async ({ page }) => {
+test('Webhook Payload Builder signs and builds requests locally', async ({ page }) => {
   const origin = new URL(test.info().project.use.baseURL!).origin;
   const offOrigin: string[] = [];
   const errors: string[] = [];
@@ -12,8 +12,27 @@ test('Webhook Payload Builder works locally', async ({ page }) => {
 
   await page.goto('/tools/webhook-payload-builder');
   await expect(page).toHaveTitle(/Webhook Payload Builder/);
-  await page.getByLabel('Input').fill('abc');
-  await expect(page.getByText('abc').last()).toBeVisible();
+  const req = page.getByRole('region', { name: 'Request' });
+
+  await page.getByLabel('Test secret').fill('test-secret');
+  await page.getByLabel('JSON body').fill('{"ok":true}');
+  await expect(req).toContainText(/X-Hub-Signature-256: sha256=[0-9a-f]{64}/);
+  await expect(req).toContainText(`--data-raw '{"ok":true}'`);
+  await expect(req).toContainText(`body: '{"ok":true}'`);
+
+  await page.getByRole('group', { name: 'Signature' }).getByRole('button', { name: 'Stripe style' }).click();
+  await expect(req).toContainText(/Stripe-Signature: t=\d+,v1=[0-9a-f]{64}/);
+
+  await page.getByLabel('JSON body').fill('{"broken":}');
+  await expect(page.getByText('JSON error')).toBeVisible();
+  await expect(req).toHaveCount(0);
+
+  await page.getByRole('combobox', { name: 'Sample event' }).click();
+  await page.getByRole('option', { name: 'payment.succeeded' }).click();
+  await expect(page.getByLabel('JSON body')).toHaveValue(/"type": "payment.succeeded"/);
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download fixture JSON' }).click();
+  expect((await download).suggestedFilename()).toBe('payment.succeeded.json');
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

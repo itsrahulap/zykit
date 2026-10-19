@@ -2,7 +2,8 @@
 // the request in the cURL converter's shape so its cURL / fetch generators can be reused.
 
 import type { HttpRequest } from '../../curl-converter/features/curl';
-import { hmac } from '../../hash-generator/features/hash-generator';
+import { jsString } from '../../curl-converter/features/generate';
+import { hmac } from '../../hash-generator/features/hash';
 import { parseJsonText, type TextError } from '../../../shared/lib/textpos';
 import { bytesToHex } from '../../../shared/lib/bytes';
 
@@ -91,4 +92,25 @@ export function buildRequest(o: { method: string; url: string; headers: [string,
   const headers: [string, string][] = [['Content-Type', 'application/json'], eventHeader(o.style, o.event), ...o.headers.filter(([n]) => n)];
   if (o.signature) headers.push(o.signature.header);
   return { method: o.method, url: o.url, headers, body: { kind: 'text', text: o.body } };
+}
+
+/**
+ * Node 18+ fetch code that sends the body as the exact signed string. (The cURL converter's generator
+ * re-serialises JSON bodies, which would change the bytes and break the signature.)
+ */
+export function toFetch(req: HttpRequest): string {
+  const headers = req.headers.map(([n, v]) => `    ${jsString(n)}: ${jsString(v)},`).join('\n');
+  const body = req.body?.kind === 'text' ? req.body.text : '';
+  return [
+    `const res = await fetch(${jsString(req.url)}, {`,
+    `  method: ${jsString(req.method)},`,
+    '  headers: {',
+    headers,
+    '  },',
+    '  // Sent byte for byte: the signature covers this exact text.',
+    `  body: ${jsString(body)},`,
+    '});',
+    'console.log(res.status, await res.text());',
+    '',
+  ].join('\n');
 }

@@ -1,8 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import webhookPayloadBuilder from './index';
-import { buildRequest, hasProblems, PRESETS, samplePayload, sign, validate, type EventPreset, type Signature, type Style } from './features/webhook-payload-builder';
+import { buildRequest, hasProblems, PRESETS, samplePayload, sign, toFetch, validate, type EventPreset, type Signature, type Style } from './features/webhook-payload-builder';
 import { toCurl } from '../curl-converter/features/fetch';
-import { generate } from '../curl-converter/features/generate';
 import { ErrorPanel } from '../../shared/ui/convert';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Select } from '../../shared/ui/Select';
@@ -178,7 +177,7 @@ export default function WebhookPayloadBuilderPage() {
           )}
           <div className="grid gap-6 lg:grid-cols-2">
             <Code title="cURL" text={toCurl(req)} />
-            <Code title="fetch (Node 18+)" text={generate(req, 'node').code} />
+            <Code title="fetch (Node 18+)" text={toFetch(req)} />
           </div>
           <div className="flex flex-wrap gap-3">
             <Button variant="secondary" onClick={() => downloadText(body.endsWith('\n') ? body : `${body}\n`, `${event.replace(/[^\w.-]+/g, '_')}.json`, 'application/json')}>
