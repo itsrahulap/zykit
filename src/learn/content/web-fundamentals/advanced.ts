@@ -226,31 +226,22 @@ permitted.
     title: "Browser DevTools & Debugging",
     level: "advanced",
     description:
-      "The built-in browser tools for inspecting, debugging, and understanding exactly what a page is doing, beyond just what it shows.",
+      "The browser's built-in tools for inspecting and debugging what a page is really doing, beyond what it shows.",
     explanation: `
-Every major browser ships with a set of built-in tools, usually opened
-with a keyboard shortcut or a right-click "Inspect," collectively
-called **DevTools**. They exist because a webpage's visible output
-often isn't enough to understand or fix a problem — you need to see
-the actual structure underneath, watch code run, inspect network
-traffic, or catch errors as they happen.
+Every major browser includes **DevTools**, usually opened with a keyboard
+shortcut or a right-click "Inspect." The visible page often isn't enough
+to understand or fix a problem. You need to see the structure underneath,
+watch code run, inspect network traffic, and catch errors as they happen.
 
-A few panels come up constantly. The **Elements** panel shows the live
-DOM tree (not the original HTML source) along with the computed CSS
-for whatever element you select, and lets you edit either on the fly to
-experiment. The **Console** panel shows messages logged by JavaScript,
-reports errors and warnings as they occur, and doubles as a live
-JavaScript prompt where you can run code directly against the current
-page. The **Network** panel lists every request the page has made —
-what was requested, how long it took, what came back — which is
-usually the first place to look when something isn't loading or is
-loading slowly. The **Sources** panel shows the actual JavaScript files
-running on the page and lets you set **breakpoints** — points where
-execution pauses so you can inspect variables and step through code
-line by line, rather than guessing what's happening from logs alone.
+The panels you'll use most:
+
+- **Elements** shows the live DOM tree (not the original HTML source) and the computed CSS for the selected element. You can edit either on the fly to experiment.
+- **Console** shows messages logged by JavaScript and reports errors and warnings as they happen. It's also a live prompt for running code against the current page.
+- **Network** lists every request the page made: what was requested, how long it took, and what came back. It's usually the first place to look when something won't load or loads slowly.
+- **Sources** shows the JavaScript files running on the page and lets you set **breakpoints**, points where execution pauses so you can inspect variables and step through code line by line instead of guessing from logs.
   `.trim(),
     analogy:
-      "DevTools is like popping the hood of a car instead of just looking at the dashboard — the dashboard (the rendered page) tells you the car is running, but the hood lets you see exactly which part is actually misbehaving.",
+      "DevTools is like opening the hood of a car instead of looking at the dashboard. The dashboard (the rendered page) tells you the car is running; under the hood you can see which part is misbehaving.",
     examples: [
       {
         title: "Inspecting and editing the live DOM",
@@ -259,7 +250,7 @@ line by line, rather than guessing what's happening from logs alone.
 // Editing text or a style there updates the page instantly,
 // without changing any actual file on disk.`,
         explanation:
-          "This is a fast way to test a visual tweak — try a new color or margin live in the browser — before actually writing it into a CSS file, since it's the live DOM being edited, not the source.",
+          "A quick way to test a visual tweak, like a new color or margin, before writing it into a CSS file. You're editing the live DOM, not the source.",
       },
       {
         title: "Setting a breakpoint in Sources",
@@ -271,65 +262,59 @@ line by line, rather than guessing what's happening from logs alone.
   return total;
 }`,
         explanation:
-          "Setting a breakpoint on the marked line pauses execution every time that line is about to run, letting you inspect the current values of total and item right there, rather than sprinkling console.log statements throughout the code.",
+          "A breakpoint on the marked line pauses execution each time that line is about to run, so you can check total and item right there instead of sprinkling console.log everywhere.",
         walkthrough: [
-          { code: "function calculateTotal(items) {", explanation: "The function whose behavior you're trying to understand or debug." },
-          { code: "total += item.price; // breakpoint", explanation: "Clicking the line number here in the Sources panel pauses execution exactly at this point, every time it runs." },
-          { code: "(paused execution)", explanation: "While paused, you can inspect the current value of every variable in scope, and step forward one line at a time to watch how they change." },
+          { code: "function calculateTotal(items) {", explanation: "The function you're trying to understand or debug." },
+          { code: "total += item.price; // breakpoint", explanation: "Click this line number in the Sources panel to pause execution here every time it runs." },
+          { code: "(paused execution)", explanation: "While paused, inspect every variable in scope and step forward one line at a time to watch them change." },
         ],
       },
     ],
     howItWorks: `
-DevTools is built directly into the browser and has privileged access
-to the page's internals: it can read the live DOM and its computed
-styles directly (Elements), tap into the JavaScript engine to log
-messages, catch errors, and run arbitrary code in the page's context
-(Console), observe every network request the page's engine makes
-(Network), and pause the JavaScript engine's execution at specific
-lines (Sources). None of this requires the page itself to include any
-special debugging code — the browser exposes it for every page by
-default.
+DevTools is built into the browser and has privileged access to the
+page's internals. It can:
+
+- read the live DOM and computed styles (Elements)
+- log messages, catch errors, and run any code in the page's context (Console)
+- watch every network request the page makes (Network)
+- pause JavaScript at specific lines (Sources)
+
+The page doesn't need any special debugging code; the browser offers
+this for every page by default.
   `.trim(),
     whyItExists: `
-DevTools exists because "look at the rendered page" isn't nearly enough
-information to build or fix anything nontrivial — you need visibility
-into structure, styling, network activity, and code execution that
-never shows up in the rendered output itself. Having this built into
-every browser, available on any page, makes debugging a normal part of
-using the web platform rather than something requiring separate,
-specialized tools.
+Looking at the rendered page isn't enough to build or fix anything
+nontrivial. You need to see structure, styling, network activity, and
+code execution that never show up on screen. Because every browser has
+these tools for any page, debugging is a normal part of web work, not
+something that needs separate specialized tools.
   `.trim(),
     whenToUse: `
-Reach for the Elements panel when something looks visually wrong and
-you need to see the actual applied styles. Reach for Console when
-checking for errors or quickly testing a snippet of code. Reach for
-Network when something isn't loading, is loading slowly, or you need
-to inspect what a request actually sent or received. Reach for Sources
-and breakpoints when you need to understand exactly what a piece of
-JavaScript is doing step by step, rather than guessing from behavior
-alone.
+- **Elements:** something looks wrong and you need the applied styles.
+- **Console:** checking for errors or quickly testing a snippet.
+- **Network:** something isn't loading, loads slowly, or you need to see what a request sent or received.
+- **Sources and breakpoints:** you need to see exactly what some JavaScript does, step by step.
   `.trim(),
     whenNotToUse: `
-DevTools is a debugging and inspection tool, not a way to permanently
-change a site — anything edited live in the Elements or Sources panel
-disappears the moment the page reloads, since none of it touches actual
-source files. For understanding intended, permanent behavior, reading
-the actual source code remains the source of truth.
+DevTools is for debugging and inspection, not permanent changes. Live
+edits in the Elements or Sources panel vanish on reload, since they never
+touch the real source files. For intended, permanent behavior, the source
+code is the source of truth.
   `.trim(),
     commonMistakes: [
-      "Editing something in the Elements panel and expecting the change to persist after a page reload, when live edits vanish on refresh.",
-      "Ignoring the Network panel when debugging a 'blank page' or missing-data issue, when a failed or slow request is often the actual cause.",
-      "Relying only on scattered console.log statements for a tricky bug instead of using a breakpoint to pause and inspect state directly.",
+      "Editing something in the Elements panel and expecting it to survive a reload, when live edits vanish on refresh.",
+      "Skipping the Network panel when debugging a 'blank page' or missing data, when a failed or slow request is often the cause.",
+      "Relying only on scattered console.log statements for a tricky bug instead of pausing at a breakpoint to inspect state.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Open DevTools on any webpage, select an element in the Elements panel, and identify one CSS rule currently applied to it." },
-      { difficulty: "Medium", prompt: "Open the Network panel, reload a page, and find the single largest resource that was downloaded." },
-      { difficulty: "Hard", prompt: "Set a breakpoint inside a JavaScript function on a real page, trigger it, and step through the code line by line while watching a variable's value change." },
+      { difficulty: "Easy", prompt: "Open DevTools on any webpage, select an element in the Elements panel, and find one CSS rule applied to it." },
+      { difficulty: "Medium", prompt: "Open the Network panel, reload a page, and find the largest resource downloaded." },
+      { difficulty: "Hard", prompt: "Set a breakpoint in a JavaScript function on a real page, trigger it, and step through the code line by line while watching a variable change." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between the Elements panel and viewing a page's HTML source?", answer: "The Elements panel shows the live, current DOM (which may have been changed by JavaScript since the page loaded), while 'view source' shows the original, static HTML as it was first sent by the server." },
-      { question: "What is a breakpoint, and why use one instead of console.log?", answer: "A breakpoint pauses JavaScript execution at a specific line so you can inspect all current variable values and step through code, which is often faster and more thorough than adding and removing scattered log statements." },
-      { question: "When would you check the Network panel while debugging?", answer: "Whenever something isn't appearing, is loading slowly, or you need to verify exactly what data a request sent or received — it's the primary place to see all network activity a page has triggered." },
+      { question: "What's the difference between the Elements panel and viewing a page's HTML source?", answer: "The Elements panel shows the live DOM, which JavaScript may have changed since load. 'View source' shows the original HTML as the server first sent it." },
+      { question: "What is a breakpoint, and why use one instead of console.log?", answer: "A breakpoint pauses JavaScript at a specific line so you can inspect every variable and step through the code. That's often faster and more thorough than adding and removing log statements." },
+      { question: "When would you check the Network panel while debugging?", answer: "When something isn't appearing, is loading slowly, or you need to check exactly what a request sent or received. It's the main place to see all of a page's network activity." },
     ],
     relatedTopics: ["the-dom", "browser-rendering", "web-performance-basics"],
     keywords: ["devtools", "debugging", "elements panel", "console", "network panel", "breakpoints"],
@@ -339,34 +324,22 @@ the actual source code remains the source of truth.
     title: "Progressive Web Apps (PWA)",
     level: "advanced",
     description:
-      "What lets an ordinary website behave more like a native app — installable, working offline, and launchable from a home screen.",
+      "What lets a website act more like a native app: installable, working offline, and launchable from a home screen.",
     explanation: `
-A regular website generally needs a live network connection and lives
-only inside a browser tab. But some sites are built to go further: they
-can be "installed" onto a device like a native app, keep working (at
-least partially) with no internet connection, and show up with their
-own icon outside the browser entirely. A site built this way is called
-a **Progressive Web App**, or **PWA** — "progressive" because it starts
-as a normal website and layers these app-like capabilities on top,
-rather than requiring a totally separate app to be built.
+A regular website needs a live connection and lives inside a browser
+tab. Some sites go further: you can "install" them like a native app,
+they keep working (at least partly) offline, and they get their own icon
+outside the browser. These are **Progressive Web Apps**, or **PWAs**.
+"Progressive" because they start as normal websites and add app-like
+features on top, with no separate app to build.
 
-Two pieces make this possible. A **manifest file** is a small JSON file
-that describes the site as an app would describe itself — its name, its
-icon, its color scheme, and how it should look when launched (like
-hiding the browser's address bar). It's what lets a browser offer to
-"install" the site and lets the resulting icon look and behave like any
-other app icon.
+Two pieces make this work:
 
-The other piece is a **service worker** — a special script that a
-browser can run in the background, separately from any particular open
-tab, even when no tab for that site is open at all. A service worker
-can intercept the network requests a page makes and decide how to
-respond — including serving a previously saved response instead of
-hitting the network at all, which is exactly what lets a PWA keep
-working, at least partially, with no connection.
+- A **manifest file** is a small JSON file describing the site the way an app describes itself: name, icon, color scheme, and how it looks when launched (like hiding the address bar). It lets the browser offer to "install" the site and makes the icon behave like any other app icon.
+- A **service worker** is a script the browser can run in the background, separate from any tab, even when no tab for the site is open. It can intercept the page's network requests and decide how to respond, including serving a saved response instead of using the network. That's what lets a PWA keep working, at least partly, offline.
   `.trim(),
     analogy:
-      "A manifest file is like a business card the site hands the operating system, saying 'here's my name, my icon, and how I want to be launched.' A service worker is like a receptionist who keeps working at the desk even when the office (an open tab) is empty, and who keeps a filing cabinet of past documents to hand out instantly instead of always calling out for a fresh copy.",
+      "A manifest is a business card the site hands the operating system: 'here's my name, my icon, and how to launch me.' A service worker is a receptionist who keeps working even when the office (an open tab) is empty, with a filing cabinet of past documents to hand out instantly instead of always sending out for a fresh copy.",
     examples: [
       {
         title: "A basic web app manifest",
@@ -380,11 +353,11 @@ working, at least partially, with no connection.
   ]
 }`,
         explanation:
-          "This JSON file, linked from the page's HTML, is what tells the browser this site can be installed as an app, what icon to use, and that it should open without the usual browser address bar (display: standalone).",
+          "Linked from the page's HTML, this JSON file tells the browser the site can be installed as an app, which icon to use, and to open without the usual address bar (display: standalone).",
         walkthrough: [
           { code: '"name": "My Task App"', explanation: "The full app name shown during installation and in app switchers." },
-          { code: '"display": "standalone"', explanation: "Tells the browser to launch this app in its own window, without the normal browser chrome like the address bar." },
-          { code: '"icons": [...]', explanation: "Specifies the icon image(s) used for the home screen or app launcher, at the given sizes." },
+          { code: '"display": "standalone"', explanation: "Launch the app in its own window, without browser chrome like the address bar." },
+          { code: '"icons": [...]', explanation: "The icon image(s) for the home screen or app launcher, at the given sizes." },
         ],
       },
       {
@@ -397,56 +370,53 @@ working, at least partially, with no connection.
   );
 });`,
         explanation:
-          "This service worker intercepts every network request the page makes. If a matching response was previously saved in the cache, it's returned immediately, even offline; otherwise, the service worker falls back to an actual network request.",
+          "The service worker intercepts every request the page makes. If a matching response is in the cache, it's returned immediately, even offline; otherwise it falls back to a real network request.",
       },
     ],
     howItWorks: `
-Once a page registers a service worker, the browser installs it to run
-independently of any specific tab, in the background, and it stays
-registered across visits. From then on, the service worker can listen
-for network requests the page makes and intercept them before they
-reach the network at all, deciding whether to serve a saved (cached)
-response, fetch a fresh one, or some combination — which is what
-enables offline support. The manifest file is used separately, mainly
-at install time, to tell the operating system how to present the app
-once a user chooses to install it.
+When a page registers a service worker, the browser installs it to run in
+the background, independent of any tab, and keeps it registered across
+visits. From then on it can intercept the page's requests before they
+reach the network and decide whether to serve a cached response, fetch a
+fresh one, or mix both. That's what enables offline support.
+
+The manifest is used separately, mainly at install time, to tell the
+operating system how to present the app once the user installs it.
   `.trim(),
     whyItExists: `
-PWAs exist to close the gap between websites and native apps without
-requiring a completely separate native app to be built and maintained
-for each platform. Offline support and installability were previously
-things only native apps could offer; service workers and manifest files
-let an ordinary website opt into those same capabilities using
-technology already built into the browser.
+PWAs close the gap between websites and native apps without building and
+maintaining a separate native app per platform. Offline support and
+installability used to be native-only. Service workers and manifests let
+an ordinary website opt into them with technology already in the
+browser.
   `.trim(),
     whenToUse: `
-Consider a PWA when users would benefit from installing your site like
-an app, or when your app needs to remain at least partially usable
-without a reliable internet connection — a good fit for things like
-note-taking apps, dashboards checked frequently, or tools used in
-places with patchy connectivity.
+Consider a PWA when users would benefit from installing your site like an
+app, or when it must stay at least partly usable without a reliable
+connection. Good fits: note-taking apps, dashboards people check often,
+and tools used where connectivity is patchy.
   `.trim(),
     whenNotToUse: `
-A simple content site with no real need for offline access or an app-
-like presence gains little from the added complexity of a service
-worker and manifest. Service workers also add real complexity around
-caching and updates — content served from a stale cache can confuse
-users if not managed carefully, so they're not worth adopting casually.
+A simple content site with no need for offline access or an app-like
+presence gains little from a service worker and manifest. Service workers
+also add real complexity around caching and updates: stale cached content
+can confuse users if it isn't managed carefully. Don't adopt them
+casually.
   `.trim(),
     commonMistakes: [
-      "Caching responses aggressively in a service worker without a plan for invalidating old data, leaving users stuck seeing stale content.",
-      "Assuming adding a manifest file alone makes a site work offline — that capability comes from the service worker, not the manifest.",
-      "Forgetting that a registered service worker keeps running and intercepting requests even after the user closes the tab, which can surprise you during development if you don't account for it.",
+      "Caching aggressively in a service worker with no plan for invalidating old data, leaving users stuck with stale content.",
+      "Assuming a manifest alone makes a site work offline. Offline support comes from the service worker, not the manifest.",
+      "Forgetting that a registered service worker stays installed and keeps intercepting requests on later visits, even after the tab is closed, which can surprise you during development.",
     ],
     exercises: [
-      { difficulty: "Easy", prompt: "Write a basic web app manifest file for a sample site, including a name, icon, and display mode." },
-      { difficulty: "Medium", prompt: "Register a simple service worker on a test page and confirm, using DevTools, that it's running independently of the open tab." },
-      { difficulty: "Hard", prompt: "Extend a service worker to cache a page's core files on install and serve them when the network is unavailable, then test it by going offline in DevTools." },
+      { difficulty: "Easy", prompt: "Write a basic web app manifest for a sample site, with a name, icon, and display mode." },
+      { difficulty: "Medium", prompt: "Register a simple service worker on a test page and use DevTools to confirm it runs independently of the open tab." },
+      { difficulty: "Hard", prompt: "Extend a service worker to cache a page's core files on install and serve them when the network is unavailable. Test it by going offline in DevTools." },
     ],
     interviewQuestions: [
-      { question: "What are the two core pieces that make a website installable and offline-capable as a PWA?", answer: "A web app manifest file, which describes the app's name, icon, and launch appearance, and a service worker, which can intercept network requests and serve cached responses even without a connection." },
-      { question: "What is a service worker, and how is it different from regular page JavaScript?", answer: "A service worker is a script that runs in the background, independently of any specific open tab, and can intercept and respond to the page's network requests — unlike regular page scripts, which only run while their tab is open." },
-      { question: "Does adding a manifest file alone make a site work offline?", answer: "No. The manifest only controls installability and how the app is presented once installed; offline behavior comes from a service worker intercepting requests and serving cached responses." },
+      { question: "What are the two core pieces that make a website installable and offline-capable as a PWA?", answer: "A web app manifest, which describes the app's name, icon, and launch appearance, and a service worker, which can intercept network requests and serve cached responses without a connection." },
+      { question: "What is a service worker, and how is it different from regular page JavaScript?", answer: "A script that runs in the background, independent of any open tab, and can intercept and respond to the page's network requests. Regular page scripts only run while their tab is open." },
+      { question: "Does adding a manifest file alone make a site work offline?", answer: "No. The manifest only controls installability and how the installed app looks. Offline behavior comes from a service worker intercepting requests and serving cached responses." },
     ],
     prerequisites: ["browser-devtools", "web-performance-basics"],
     relatedTopics: ["browser-devtools", "browser-storage"],

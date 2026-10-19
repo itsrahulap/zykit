@@ -8,8 +8,8 @@ export const greedyProblems: Problem[] = [
     category: "greedy",
     description: `
 You're given a list of numbers, which may include negatives. Find the
-*contiguous* stretch of numbers (a subarray - no skipping elements)
-whose sum is the largest possible, and return that sum.
+*contiguous* subarray (no skipped elements) with the largest sum, and
+return that sum.
 
 The subarray must contain at least one number.
     `.trim(),
@@ -32,27 +32,24 @@ The subarray must contain at least one number.
     ],
     constraints: ["1 <= nums.length <= 10^5", "-10^4 <= nums[i] <= 10^4"],
     hints: [
-      "If you're extending a running subarray sum and it's gone negative, would keeping it around ever help the sum of anything that comes after?",
-      "A negative running total only drags down whatever you add to it next - so the greedy move is to drop it and restart from the current number.",
-      "Track the best sum seen anywhere, separately from the running sum you're building.",
+      "If your running subarray sum has gone negative, can keeping it ever help what comes after?",
+      "A negative running total only drags down what you add next. The greedy move is to drop it and restart from the current number.",
+      "Track the best sum seen anywhere, separately from the running sum.",
     ],
     approachOverview: `
-Checking every possible subarray works but repeats a huge amount of
-summing. The key insight is about the running sum as you scan left to
-right: if the sum of the subarray ending at the previous position is
-negative, it can only hurt any subarray that continues past it - so
-the greedy choice is to throw that prefix away and start fresh from the
-current number.
+Checking every subarray works but repeats a lot of summing.
 
-This is **Kadane's algorithm**: walk through the array once, keeping a
-running sum that resets to the current element whenever it would
-otherwise drop below the current element's own value, and track the
-best running sum seen at any point.
+Scan left to right with a running sum. If the sum ending at the previous
+position is negative, it can only hurt anything that continues past it.
+So throw that prefix away and start fresh from the current number.
+
+This is **Kadane's algorithm**: one pass, a running sum that resets
+whenever its prefix goes negative, and the best running sum seen so far.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Check Every Subarray",
-        explanation: "For every starting index, extend the subarray one element at a time and track the running sum, comparing against the best seen so far.",
+        explanation: "From every starting index, extend the subarray one element at a time and compare its sum to the best so far.",
         code: `function maxSubArray(nums) {
   let best = -Infinity;
   for (let i = 0; i < nums.length; i++) {
@@ -69,7 +66,7 @@ best running sum seen at any point.
       },
       {
         approach: "Optimal - Kadane's Algorithm",
-        explanation: "Keep a running sum that represents the best subarray ending at the current position. Whenever that running sum turns negative, reset it to 0 (drop the prefix), since a negative prefix can never help a future sum.",
+        explanation: "Keep a running sum for the best subarray ending at the current position. When it turns negative, reset it to 0, since a negative prefix never helps a later sum.",
         code: `function maxSubArray(nums) {
   let best = nums[0];
   let curr = 0;
@@ -83,10 +80,10 @@ best running sum seen at any point.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "let best = nums[0];", explanation: "Start the answer at the first element in case every number is negative." },
-          { code: "if (curr < 0) curr = 0;", explanation: "A negative running sum only drags down what comes next, so drop it and restart from here." },
-          { code: "curr += num;", explanation: "Extend the running subarray to include the current number." },
-          { code: "best = Math.max(best, curr);", explanation: "Record the best sum seen at any point, not just the final one." },
+          { code: "let best = nums[0];", explanation: "Starts the answer at the first element, in case every number is negative." },
+          { code: "if (curr < 0) curr = 0;", explanation: "A negative running sum only drags down what comes next, so restart here." },
+          { code: "curr += num;", explanation: "Extends the running subarray with the current number." },
+          { code: "best = Math.max(best, curr);", explanation: "Records the best sum seen at any point, not just at the end." },
         ],
       },
     ],
@@ -99,13 +96,11 @@ best running sum seen at any point.
     difficulty: "Medium",
     category: "greedy",
     description: `
-You start at index 0 of an array of numbers. The number at each index
-tells you the *maximum* number of steps you're allowed to jump forward
-from that index (you can jump anywhere from 1 up to that many steps, or
-stay put by not jumping at all if you don't need to).
+You start at index 0 of an array of numbers. Each number is the
+*maximum* jump length from that index: you can jump forward anywhere
+from 1 up to that many steps.
 
-Determine whether you can reach the last index of the array, starting
-from index 0.
+Return whether you can reach the last index.
     `.trim(),
     examples: [
       {
@@ -126,21 +121,20 @@ from index 0.
     ],
     constraints: ["1 <= nums.length <= 10^4", "0 <= nums[i] <= 10^5"],
     hints: [
-      "You don't need to track every possible sequence of jumps - just the furthest index you could possibly reach so far.",
-      "Scan left to right, updating the furthest reachable index as you go. What happens if you reach a position beyond what's currently reachable?",
-      "If the current index is ever further than the furthest reach you've built up, you can never get there, so you can stop early.",
+      "You don't need every sequence of jumps, just the furthest index you can reach so far.",
+      "Scan left to right, updating the furthest reachable index. What if you reach a position beyond it?",
+      "If the current index is past the furthest reach, you can never get there, so stop early.",
     ],
     approachOverview: `
-Trying every combination of jump lengths explodes combinatorially.
-Instead, notice that all you actually need to know at any position is
-the single furthest index reachable *so far* from everything to its
-left - not which specific jumps got you there.
+Trying every combination of jump lengths explodes quickly. You only need
+the furthest index reachable *so far*, not which jumps got you there.
 
-Greedily scan left to right, keeping a running "furthest reach". At
-each index i, if i is beyond the furthest reach, you could never have
-gotten here, so it's unreachable and the whole thing fails. Otherwise,
-update the furthest reach to \`max(furthest, i + nums[i])\`. If the
-furthest reach ever covers the last index, you're done.
+Scan left to right with a running "furthest reach". At each index i:
+
+- If i is beyond the furthest reach, it's unreachable, so return false.
+- Otherwise, update the reach to \`max(furthest, i + nums[i])\`.
+
+If the reach ever covers the last index, you're done.
     `.trim(),
     solutions: [
       {
@@ -162,7 +156,7 @@ furthest reach ever covers the last index, you're done.
       },
       {
         approach: "Optimal - Greedy Furthest Reach",
-        explanation: "Track the furthest index reachable so far while scanning left to right. If the current index ever exceeds that reach, the end is unreachable.",
+        explanation: "Track the furthest reachable index while scanning left to right. If the current index ever exceeds it, the end is unreachable.",
         code: `function canJump(nums) {
   let furthest = 0;
   for (let i = 0; i < nums.length; i++) {
@@ -174,9 +168,9 @@ furthest reach ever covers the last index, you're done.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "let furthest = 0;", explanation: "Nothing but the start is reachable yet." },
-          { code: "if (i > furthest) return false;", explanation: "If this index is beyond everything reachable so far, it's a dead end." },
-          { code: "furthest = Math.max(furthest, i + nums[i]);", explanation: "Extend the reach using the best jump available from this index." },
+          { code: "let furthest = 0;", explanation: "Only the start is reachable so far." },
+          { code: "if (i > furthest) return false;", explanation: "This index is beyond the reach, so it's a dead end." },
+          { code: "furthest = Math.max(furthest, i + nums[i]);", explanation: "Extends the reach with the longest jump from this index." },
         ],
       },
     ],
@@ -189,11 +183,9 @@ furthest reach ever covers the last index, you're done.
     difficulty: "Medium",
     category: "greedy",
     description: `
-Same setup as before: you start at index 0 of an array, and the number
-at each index is the *maximum* number of steps you can jump forward
-from there. This time, it's guaranteed you can always reach the last
-index - your job is to find the *minimum* number of jumps needed to
-get there.
+Same setup as Jump Game: you start at index 0, and each number is the
+*maximum* jump length from that index. This time you can always reach
+the last index. Return the *minimum* number of jumps to get there.
     `.trim(),
     examples: [
       {
@@ -214,28 +206,26 @@ get there.
     ],
     constraints: ["1 <= nums.length <= 10^4", "0 <= nums[i] <= 1000", "You're guaranteed you can always reach the last index."],
     hints: [
-      "Think of the array as a series of 'levels' - all the positions reachable using exactly k jumps form one level.",
-      "Within the current level, you don't need to jump immediately - you can look ahead at every position in the level to find the furthest the *next* jump could reach.",
-      "You only need to actually 'use' a jump when you've exhausted every position reachable at the current jump count.",
+      "Think of the array as 'levels': all positions reachable in exactly k jumps form one level.",
+      "Within a level, look at every position to find the furthest the *next* jump could reach.",
+      "You only 'use' a jump once you've passed every position reachable with the current jump count.",
     ],
     approachOverview: `
-You could search every combination of jumps and take the shortest path,
-but that revisits the same positions over and over. Instead, think in
-terms of **levels**, like a breadth-first search: level 0 is just index
-0; level 1 is every index reachable in one jump from level 0; level 2
-is every index reachable in one more jump from anywhere in level 1; and
-so on.
+Searching every combination of jumps revisits the same positions over
+and over. Instead, think in **levels**, like breadth-first search:
 
-Greedily scan through the current level's range, and while doing so,
-track the furthest index reachable from *any* position in it. When you
-reach the end of the current level's range, you're forced to take
-another jump - so increment the jump count and the level's range
-becomes "up to that furthest index".
+- Level 0 is index 0.
+- Level 1 is every index reachable in one jump from level 0.
+- Level 2 is every index reachable in one more jump from level 1, and so on.
+
+Scan the current level's range and track the furthest index reachable
+from *any* position in it. At the end of the range, you must jump: add 1
+to the jump count, and the next range ends at that furthest index.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Try Every Jump (Recursion)",
-        explanation: "From each index, recursively try every possible jump length and take the path that reaches the end in the fewest jumps.",
+        explanation: "From each index, recursively try every jump length and keep the path with the fewest jumps.",
         code: `function jump(nums) {
   function minJumpsFrom(pos) {
     if (pos >= nums.length - 1) return 0;
@@ -254,7 +244,7 @@ becomes "up to that furthest index".
       },
       {
         approach: "Optimal - Greedy Level-by-Level (BFS-style)",
-        explanation: "Scan through the current jump's reachable range, tracking the furthest index the next jump could reach. When the scan hits the end of the current range, commit to another jump.",
+        explanation: "Scan the current jump's range, tracking the furthest index the next jump could reach. At the end of the range, take another jump.",
         code: `function jump(nums) {
   let jumps = 0;
   let currentEnd = 0;
@@ -272,9 +262,9 @@ becomes "up to that furthest index".
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "furthest = Math.max(furthest, i + nums[i]);", explanation: "While inside the current jump's range, track the furthest the next jump could reach." },
-          { code: "if (i === currentEnd)", explanation: "We've used up everything reachable with the current number of jumps." },
-          { code: "jumps++; currentEnd = furthest;", explanation: "Commit to one more jump, and the reachable range grows to the furthest point found." },
+          { code: "furthest = Math.max(furthest, i + nums[i]);", explanation: "Tracks the furthest the next jump could reach." },
+          { code: "if (i === currentEnd)", explanation: "Every position reachable with the current jump count has been checked." },
+          { code: "jumps++; currentEnd = furthest;", explanation: "Takes one more jump; the range grows to the furthest point found." },
         ],
       },
     ],
@@ -287,15 +277,12 @@ becomes "up to that furthest index".
     difficulty: "Medium",
     category: "greedy",
     description: `
-There are several gas stations arranged in a circle. At station \`i\`,
-you can pick up \`gas[i]\` amount of fuel, and it costs \`cost[i]\` fuel to
-drive from station \`i\` to the next station. You start with an empty
-tank at whichever station you choose.
+Gas stations are arranged in a circle. At station \`i\` you pick up
+\`gas[i]\` fuel, and driving to the next station costs \`cost[i]\` fuel.
+You start with an empty tank at a station of your choice.
 
-Determine the index of the station you should start at so that you can
-complete the entire circuit (visiting every station and returning to
-the start) without your tank ever going negative. If it's impossible
-from any starting station, return -1. You're guaranteed that if an
+Return the starting station's index that lets you drive the full circle
+without the tank going negative. If no start works, return -1. If an
 answer exists, it's unique.
     `.trim(),
     examples: [
@@ -312,28 +299,25 @@ answer exists, it's unique.
     ],
     constraints: ["n == gas.length == cost.length", "1 <= n <= 10^5", "0 <= gas[i], cost[i] <= 10^4"],
     hints: [
-      "If the total gas across all stations is less than the total cost, no start can possibly work - rule that out first.",
-      "If you start driving from some station and your tank goes negative at station j, could any station between your start and j have worked instead?",
-      "None of them could - if the tank was still non-negative just before reaching j from any of those starts, adding station j's deficit would drop it below zero regardless of where you started counting from. So the next candidate start is the station right after j.",
+      "If total gas is less than total cost, no start can work. Rule that out first.",
+      "If you start at some station and the tank goes negative at station j, could any station between your start and j have worked instead?",
+      "None could. Starting later only gives a smaller-or-equal tank at each point, so you'd still run dry by j. The next candidate start is the station after j.",
     ],
     approachOverview: `
-Trying every possible starting station and simulating the whole loop
-for each one works but is slow. There's a greedy shortcut: if the total
-gas available across the whole circuit is less than the total cost,
-it's impossible no matter where you start, so check that first.
+Simulating the loop from every station works but is slow.
 
-Otherwise, a solution is guaranteed to exist, and you can find it in
-one pass. Walk around once from station 0, keeping a running tank
-total. Whenever the running total goes negative at some station, none
-of the stations you've passed through since your current candidate
-start could have worked either (starting a bit later only ever means a
-smaller-or-equal running total up to any point) - so the failure
-"resets" your candidate start to the very next station.
+First, if total gas is less than total cost, no start works. Otherwise
+a solution exists, and one pass finds it.
+
+Walk around once from station 0 with a running tank. When it goes
+negative, none of the stations since the current candidate start could
+work either: starting later only gives a smaller-or-equal tank at each
+point. So move the candidate start to the next station.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Simulate From Every Start",
-        explanation: "Try starting at every station, and simulate a full trip around the circuit, giving up as soon as the tank goes negative.",
+        explanation: "From every station, simulate a full trip, giving up as soon as the tank goes negative.",
         code: `function canCompleteCircuit(gas, cost) {
   const n = gas.length;
   for (let start = 0; start < n; start++) {
@@ -353,7 +337,7 @@ smaller-or-equal running total up to any point) - so the failure
       },
       {
         approach: "Optimal - Greedy One Pass",
-        explanation: "Check feasibility using the total gas vs total cost, then find the start by resetting the candidate start every time the running tank dips negative.",
+        explanation: "Compare total gas to total cost to see if any start works. Find the start by moving the candidate forward each time the running tank goes negative.",
         code: `function canCompleteCircuit(gas, cost) {
   let totalTank = 0;
   let currTank = 0;
@@ -374,10 +358,10 @@ smaller-or-equal running total up to any point) - so the failure
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "totalTank += diff;", explanation: "Tracks whether a solution can exist at all, across the whole circuit." },
-          { code: "currTank += diff;", explanation: "Tracks the running tank from the current candidate start." },
-          { code: "if (currTank < 0) { start = i + 1; currTank = 0; }", explanation: "This candidate start failed, and so did every station since it - move the candidate to the next station and start counting fresh." },
-          { code: "return totalTank < 0 ? -1 : start;", explanation: "If total gas can't cover total cost it's impossible overall; otherwise the surviving candidate start is the answer." },
+          { code: "totalTank += diff;", explanation: "Tracks whether any solution can exist." },
+          { code: "currTank += diff;", explanation: "Tracks the tank from the current candidate start." },
+          { code: "if (currTank < 0) { start = i + 1; currTank = 0; }", explanation: "This start failed, and so did every station since it. Move to the next station and reset the tank." },
+          { code: "return totalTank < 0 ? -1 : start;", explanation: "If total gas can't cover total cost, it's impossible. Otherwise the remaining candidate is the answer." },
         ],
       },
     ],
@@ -390,10 +374,9 @@ smaller-or-equal running total up to any point) - so the failure
     difficulty: "Medium",
     category: "greedy",
     description: `
-You're given a hand of cards, each with a number on it, and a group
-size \`groupSize\`. Determine whether the hand can be split entirely into
-groups of exactly \`groupSize\` cards each, where every group's numbers
-are *consecutive* (like 3, 4, 5), using every card exactly once.
+You're given a hand of numbered cards and a \`groupSize\`. Return whether
+you can split every card into groups of exactly \`groupSize\` *consecutive*
+numbers (like 3, 4, 5), using each card once.
     `.trim(),
     examples: [
       {
@@ -414,27 +397,25 @@ are *consecutive* (like 3, 4, 5), using every card exactly once.
     ],
     constraints: ["1 <= hand.length <= 10^4", "0 <= hand[i] <= 10^9", "1 <= groupSize <= hand.length"],
     hints: [
-      "If the total number of cards isn't divisible by groupSize, it's immediately impossible.",
-      "Think about the smallest-numbered card still left in your hand. Whatever group it ends up in, it *has* to be the smallest number in that group - there's no smaller card left to pair it with below it.",
-      "So greedily start a run at the smallest remaining card each time, and consume groupSize consecutive values starting there. Use a count of how many of each card value you have, so you can check availability and consume quickly.",
+      "If the number of cards isn't divisible by groupSize, it's impossible.",
+      "Look at the smallest card left. It *has* to be the smallest number in its group, since there's no smaller card to go before it.",
+      "So start each run at the smallest remaining card and use up groupSize consecutive values from there. Keep a count of each value so you can check and consume quickly.",
     ],
     approachOverview: `
-The trick is to always look at the smallest card value still remaining
-in the hand. That card can only ever be the *start* of a consecutive
-run in whatever group it belongs to - since no smaller value exists in
-the hand to place before it. This removes any ambiguity about which
-group a card should join, so you can build groups greedily.
+Always look at the smallest card value left. It can only be the *start*
+of its run, since no smaller value is left to go before it. That removes
+any doubt about which group a card joins, so you can build groups
+greedily.
 
-Count how many copies of each value you hold. Repeatedly take the
-smallest value with a remaining count greater than zero, and consume
-one card each of that value and the next \`groupSize - 1\` consecutive
-values. If at any point a needed consecutive value isn't available,
-the hand can't be split.
+Count the copies of each value. Repeatedly take the smallest value with
+a count above zero, and use one card each of that value and the next
+\`groupSize - 1\` values. If a needed value is missing, the hand can't be
+split.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort and Greedily Remove",
-        explanation: "Sort the cards. Repeatedly take the smallest remaining card and try to remove groupSize consecutive values from the sorted list, re-searching the array each time.",
+        explanation: "Sort the cards. Take the smallest remaining card and remove groupSize consecutive values from the list, searching the array again each time.",
         code: `function isNStraightHand(hand, groupSize) {
   if (hand.length % groupSize !== 0) return false;
   const remaining = [...hand].sort((a, b) => a - b);
@@ -457,7 +438,7 @@ the hand can't be split.
       },
       {
         approach: "Optimal - Count Map + Smallest-First Greedy",
-        explanation: "Count each value's frequency. Always start a new group at the smallest value with a positive count, and consume groupSize consecutive values from the count map.",
+        explanation: "Count each value. Start each group at the smallest value with a positive count, and use up groupSize consecutive values from the count map.",
         code: `function isNStraightHand(hand, groupSize) {
   if (hand.length % groupSize !== 0) return false;
 
@@ -481,10 +462,10 @@ the hand can't be split.
         timeComplexity: "O(n log n), dominated by sorting the distinct values",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "const sortedValues = [...count.keys()].sort((a, b) => a - b);", explanation: "Process distinct values from smallest to largest, since the smallest remaining card must start its group." },
-          { code: "const need = count.get(value);", explanation: "How many groups still need to start here - if it's 0, this value was already fully consumed by earlier groups." },
-          { code: "if (have < need) return false;", explanation: "Not enough copies of the next consecutive value to complete `need` groups, so it's impossible." },
-          { code: "count.set(v, have - need);", explanation: "Consume one card of value v for each of the `need` groups being built starting at `value`." },
+          { code: "const sortedValues = [...count.keys()].sort((a, b) => a - b);", explanation: "Processes distinct values from smallest to largest, since the smallest remaining card must start its group." },
+          { code: "const need = count.get(value);", explanation: "How many groups must start here. If 0, earlier groups already used up this value." },
+          { code: "if (have < need) return false;", explanation: "Not enough copies of this value to complete `need` groups." },
+          { code: "count.set(v, have - need);", explanation: "Uses one card of value v for each of the `need` groups starting at `value`." },
         ],
       },
     ],
@@ -497,15 +478,11 @@ the hand can't be split.
     difficulty: "Medium",
     category: "greedy",
     description: `
-You have a list of triplets, where each triplet is 3 numbers
-\`[x, y, z]\`, and you're given one target triplet. You can pick any
-subset of your triplets and *merge* them: merging combines triplets by
-taking the maximum of each position across all the triplets you picked
-(so merging \`[2, 5, 3]\` and \`[1, 7, 5]\` gives \`[2, 7, 5]\`).
+You have a list of triplets \`[x, y, z]\` and one target triplet. You can
+*merge* any subset of triplets by taking the maximum at each position
+(merging \`[2, 5, 3]\` and \`[1, 7, 5]\` gives \`[2, 7, 5]\`).
 
-Determine whether it's possible to choose some triplets (you can use as
-many or as few as you like, in any order) so that merging them produces
-exactly the target triplet.
+Return whether some subset, of any size, merges into exactly the target.
     `.trim(),
     examples: [
       {
@@ -530,27 +507,24 @@ exactly the target triplet.
       "1 <= triplets[i][j], target[j] <= 1000",
     ],
     hints: [
-      "Merging only ever takes maximums, so a triplet with any position bigger than the target's corresponding position can never be used - including it would overshoot.",
-      "Throw out every triplet that has a value exceeding the target in any position - it can only hurt, never help.",
-      "Among the triplets left, check whether each target position is actually achieved by at least one of them.",
+      "Merging takes maximums, so a triplet bigger than the target in any position can never be used. It would overshoot.",
+      "Throw out every triplet that exceeds the target in any position. It can only hurt.",
+      "Among the triplets left, check that each target position is hit by at least one of them.",
     ],
     approachOverview: `
-Since merging only takes maximums, it can never *lower* a value - so
-any triplet with a position that exceeds the target in that same
-position is immediately disqualified, because using it would push that
-position above the target with no way to bring it back down.
+Merging takes maximums, so it can never *lower* a value. A triplet that
+exceeds the target in any position is out: using it would push that
+position too high, with no way back down.
 
-That means the greedy filter is simple: discard every triplet that
-overshoots the target anywhere. Among the triplets that remain (every
-value in every position is <= the target), check whether, for each of
-the 3 positions, at least one surviving triplet actually hits the
-target's value there. If all 3 positions are covered, merging all the
-surviving triplets together reproduces the target.
+So discard every triplet that overshoots anywhere. Among the rest (every
+value is <= the target), check that each of the 3 positions is hit
+exactly by at least one triplet. If all 3 are covered, merging all the
+remaining triplets gives the target.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Try Every Subset",
-        explanation: "Try every possible subset of triplets, merge each subset, and check if any subset's merge equals the target.",
+        explanation: "Merge every subset of triplets and check whether any equals the target.",
         code: `function mergeTriplets(triplets, target) {
   const n = triplets.length;
   for (let mask = 1; mask < (1 << n); mask++) {
@@ -573,7 +547,7 @@ surviving triplets together reproduces the target.
       },
       {
         approach: "Optimal - Filter Then Check Coverage",
-        explanation: "Discard any triplet that overshoots the target in some position, since merging can never lower a value. Then check whether each target position is matched by at least one surviving triplet.",
+        explanation: "Discard triplets that overshoot the target anywhere, since merging can't lower a value. Then check each target position is matched by at least one remaining triplet.",
         code: `function mergeTriplets(triplets, target) {
   const achieved = [false, false, false];
 
@@ -591,9 +565,9 @@ surviving triplets together reproduces the target.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "if (triplet[0] > target[0] || triplet[1] > target[1] || triplet[2] > target[2]) continue;", explanation: "This triplet would overshoot the target somewhere if used, so it's disqualified entirely." },
-          { code: "if (triplet[j] === target[j]) achieved[j] = true;", explanation: "A surviving triplet that exactly matches the target in position j proves that position is reachable." },
-          { code: "return achieved[0] && achieved[1] && achieved[2];", explanation: "The target is reachable only if every one of its 3 positions is matched by some surviving triplet." },
+          { code: "if (triplet[0] > target[0] || triplet[1] > target[1] || triplet[2] > target[2]) continue;", explanation: "This triplet would overshoot the target somewhere, so skip it." },
+          { code: "if (triplet[j] === target[j]) achieved[j] = true;", explanation: "A remaining triplet matching the target at position j proves that position is reachable." },
+          { code: "return achieved[0] && achieved[1] && achieved[2];", explanation: "The target is reachable only if all 3 positions are matched." },
         ],
       },
     ],
@@ -606,10 +580,9 @@ surviving triplets together reproduces the target.
     difficulty: "Medium",
     category: "greedy",
     description: `
-You're given a string made of lowercase letters. Split it into as many
+You're given a string of lowercase letters. Split it into as many
 contiguous parts as possible so that each letter appears in *only one*
-part (every occurrence of a letter must stay within the same part).
-Return the length of each part, in order.
+part. Return the length of each part, in order.
     `.trim(),
     examples: [
       {
@@ -630,27 +603,23 @@ Return the length of each part, in order.
     ],
     constraints: ["1 <= S.length <= 500", "S consists of lowercase English letters"],
     hints: [
-      "For a part to be valid, it must extend at least as far as the *last* occurrence of every letter that appears inside it.",
-      "First, record the last index at which each letter appears anywhere in the string.",
-      "Scan left to right, growing the end of the current part to cover the last occurrence of every letter you've seen so far in it. When your scan position finally catches up to that end, the part is complete.",
+      "A part must reach at least the *last* occurrence of every letter inside it.",
+      "First, record the last index of each letter in the string.",
+      "Scan left to right, pushing the current part's end out to the last occurrence of each letter you see. When the scan reaches that end, the part is complete.",
     ],
     approachOverview: `
-A part is only valid once it stretches far enough to include the very
-last occurrence of *every* letter that shows up inside it - cutting it
-any shorter would strand a repeat of one of those letters in a later
-part. So first record, for every letter, the index of its last
-occurrence in the string.
+A part is valid only if it includes the last occurrence of *every*
+letter inside it. Cutting it shorter would leave a repeat in a later
+part. So first record each letter's last index.
 
-Then greedily grow a window from left to right: as you extend the
-window's end, keep expanding it to the last occurrence of each new
-letter encountered. Once your current scan position reaches that end,
-you know no letter inside the window reappears later, so the window
-is a complete, valid part - close it and start a new one.
+Then scan left to right, extending the current part's end to the last
+occurrence of each letter you see. When the scan reaches that end, no
+letter inside reappears later. Close the part and start a new one.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Grow and Verify Each Part",
-        explanation: "For each starting position, keep extending the candidate part until no letter inside it appears again later in the string.",
+        explanation: "From each start, extend the part until no letter inside it appears later in the string.",
         code: `function partitionLabels(s) {
   const result = [];
   let start = 0;
@@ -673,7 +642,7 @@ is a complete, valid part - close it and start a new one.
       },
       {
         approach: "Optimal - Precompute Last Occurrences",
-        explanation: "Record each letter's last index up front in one pass. Then scan once, growing the current part's end to the last occurrence of every letter seen, and cutting a part whenever the scan catches up to that end.",
+        explanation: "Record each letter's last index in one pass. Then scan again, extending the part's end to each letter's last occurrence, and cut a part when the scan reaches that end.",
         code: `function partitionLabels(s) {
   const lastIndex = new Map();
   for (let i = 0; i < s.length; i++) lastIndex.set(s[i], i);
@@ -694,10 +663,10 @@ is a complete, valid part - close it and start a new one.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1) since there are at most 26 lowercase letters",
         walkthrough: [
-          { code: "for (let i = 0; i < s.length; i++) lastIndex.set(s[i], i);", explanation: "One pass records the last index at which each letter appears anywhere." },
-          { code: "end = Math.max(end, lastIndex.get(s[i]));", explanation: "Grow the current part's boundary to cover the last occurrence of the letter just seen." },
-          { code: "if (i === end)", explanation: "The scan has caught up to the furthest boundary required so far - no letter inside the part reappears later." },
-          { code: "result.push(end - start + 1); start = i + 1;", explanation: "Close off the current part and start the next one right after it." },
+          { code: "for (let i = 0; i < s.length; i++) lastIndex.set(s[i], i);", explanation: "Records each letter's last index." },
+          { code: "end = Math.max(end, lastIndex.get(s[i]));", explanation: "Extends the part to cover this letter's last occurrence." },
+          { code: "if (i === end)", explanation: "The scan reached the part's end, so no letter inside reappears later." },
+          { code: "result.push(end - start + 1); start = i + 1;", explanation: "Closes the part and starts the next one." },
         ],
       },
     ],
@@ -710,14 +679,12 @@ is a complete, valid part - close it and start a new one.
     difficulty: "Medium",
     category: "greedy",
     description: `
-You're given a string containing only three kinds of characters:
-\`'('\`, \`')'\`, and \`'*'\`. Each \`'*'\` is a wildcard that can be treated as
-*either* \`'('\`, or \`')'\`, or an empty string (nothing at all) - you
-choose, independently for each \`'*'\`.
+You're given a string of \`'('\`, \`')'\`, and \`'*'\`. Each \`'*'\` is a
+wildcard: you choose whether it's \`'('\`, \`')'\`, or an empty string,
+separately for each one.
 
-Determine whether there's *some* way to resolve all the wildcards so
-that the resulting string is a valid parentheses string (every open
-paren has a matching close paren later, properly nested).
+Return whether *some* choice of wildcards makes the string valid: every
+open paren has a matching close paren later, properly nested.
     `.trim(),
     examples: [
       { input: 's = "()"', output: "true", explanation: "Already valid with no wildcards involved." },
@@ -734,30 +701,30 @@ paren has a matching close paren later, properly nested).
     ],
     constraints: ["1 <= s.length <= 100", "s[i] is '(', ')', or '*'"],
     hints: [
-      "Instead of trying every combination of wildcard meanings, track the *range* of possible open-paren counts you could have at each point.",
-      "A '(' raises both the lowest and highest possible count; a ')' lowers both; a '*' widens the range, since it could be either.",
-      "If the highest possible count ever drops below 0, no combination of choices can recover, so fail immediately - and if the lowest possible count ever goes negative, clamp it to 0 (that particular low path over-closed, but others didn't).",
+      "Instead of trying every wildcard combination, track the *range* of possible open-paren counts at each point.",
+      "A '(' raises both the lowest and highest count, a ')' lowers both, and a '*' widens the range.",
+      "If the highest count drops below 0, nothing can recover, so fail. If the lowest count goes negative, clamp it to 0: that path over-closed, but others didn't.",
     ],
     approachOverview: `
-Trying every combination of wildcard meanings is exponential. Instead
-of tracking one exact count of unmatched open parens, track a *range*
-of possible counts: the minimum and maximum number of unmatched \`'('\`
-you could have after processing each character, given every valid
-choice made so far for the wildcards seen.
+Trying every wildcard combination is exponential. Instead of one exact
+count of unmatched \`'('\`, track a *range*: the minimum and maximum
+unmatched count possible after each character.
 
-Scanning left to right: \`'('\` increases both the low and high bound;
-\`')'\` decreases both; \`'*'\` decreases the low bound (treat it as \`')'\`)
-and increases the high bound (treat it as \`'('\`). If the high bound ever
-drops below 0, some \`')'\` had nothing to match no matter what - fail
-immediately. If the low bound drops below 0, clamp it to 0, since a
-count can't really be negative - it just means not every path down that
-low is still viable, but higher paths might be. At the end, it's valid
-if the low bound can reach exactly 0.
+Scan left to right:
+
+- \`'('\` raises both bounds.
+- \`')'\` lowers both.
+- \`'*'\` lowers the low bound (as \`')'\`) and raises the high bound (as \`'('\`).
+
+If the high bound drops below 0, some \`')'\` can't be matched whatever
+you choose, so fail. If the low bound drops below 0, clamp it to 0: that
+low path is dead, but higher ones may still work. At the end, the string
+is valid if the low bound is 0.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Try Every Wildcard Resolution (Recursion)",
-        explanation: "At each '*', branch into all 3 possible interpretations and recursively check if any full resolution produces a valid string.",
+        explanation: "At each '*', branch into all 3 choices and recursively check whether any leads to a valid string.",
         code: `function checkValidString(s) {
   function isValid(i, openCount) {
     if (openCount < 0) return false;
@@ -780,7 +747,7 @@ if the low bound can reach exactly 0.
       },
       {
         approach: "Optimal - Track Range of Possible Open Counts",
-        explanation: "Instead of one open-paren count, track the minimum and maximum possible open count as you scan, widening the range for '*' and narrowing it for '(' and ')'.",
+        explanation: "Track the minimum and maximum possible open count as you scan. '(' and ')' shift the range; '*' widens it.",
         code: `function checkValidString(s) {
   let low = 0;
   let high = 0;
@@ -806,10 +773,10 @@ if the low bound can reach exactly 0.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "low--; high++;", explanation: "A '*' could be ')' (lowering the count) or '(' (raising it), so the range widens on both ends." },
-          { code: "if (high < 0) return false;", explanation: "Even in the best-case interpretation, unmatched ')' outnumber '(' - no wildcard choice can fix this." },
-          { code: "if (low < 0) low = 0;", explanation: "The worst-case interpretation over-closed, but that just means that particular path is no longer viable - other choices might still work, so clamp rather than fail." },
-          { code: "return low === 0;", explanation: "Valid only if there's some interpretation where every open paren is exactly matched by the end." },
+          { code: "low--; high++;", explanation: "A '*' could be ')' (lower) or '(' (higher), so the range widens both ways." },
+          { code: "if (high < 0) return false;", explanation: "Even at best, ')' outnumbers '('. No wildcard choice can fix this." },
+          { code: "if (low < 0) low = 0;", explanation: "The lowest path over-closed and is dead, but other choices may still work, so clamp instead of failing." },
+          { code: "return low === 0;", explanation: "Valid only if some choice matches every open paren by the end." },
         ],
       },
     ],

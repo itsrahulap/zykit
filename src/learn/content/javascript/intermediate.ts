@@ -232,7 +232,7 @@ plain object.
       { question: "How would you loop over both the keys and values of an object at once?", answer: "`for (const [key, value] of Object.entries(obj)) { ... }`. `Object.entries()` gives `[key, value]` pairs, which `for...of` destructures on each pass." },
       { question: "What happens if you try to use an object as a property key on another plain object?", answer: "Plain object keys are strings (or symbols), so the object is converted to the string `\"[object Object]\"`. Different objects used as keys silently collide on the same property. Use a `Map` when you need real objects as keys." },
       { question: "What happens if you destructure a property that doesn't exist on the object, and no default is given?", answer: "The variable is `undefined`, just like reading a missing property (`obj.missing`). It doesn't throw." },
-      { question: "Can an object property's default value in destructuring reference another property being destructured in the same pattern?", answer: "No — each default expression is evaluated independently and can only see variables already in scope outside the pattern (or earlier parameters, in a function signature); it can't reference a sibling property from the same destructuring pattern." },
+      { question: "Can an object property's default value in destructuring reference another property being destructured in the same pattern?", answer: "Yes, if that property comes earlier in the pattern. Defaults run left to right, so `const { a = 1, b = a } = {}` gives `b === 1`. Referring to a later one (`const { b = a, a = 1 } = {}`) throws a `ReferenceError`, because `a` isn't initialized yet." },
     ],
     prerequisites: ["arrays"],
     relatedTopics: ["arrays", "scope", "prototypes", "destructuring-and-spread", "map-and-set", "json"],
@@ -487,7 +487,7 @@ one extra parameter.
       { question: "How does memoization rely on closures?", answer: "A memoized function pairs the real computation with a cache object held in a closure. Each call checks the cache first, and because the cache is closed over, it persists across calls instead of being recreated." },
       { question: "How do `debounce` and `throttle` use closures?", answer: "Both return a function that closes over state that must persist between calls, usually a timer id or a \"last run\" timestamp. Each call checks and updates the state the previous call left behind." },
       { question: "What does this log? `const obj = { name: \"Amara\", greetLater() { setTimeout(() => console.log(this.name), 0); } }; obj.greetLater();`", answer: "`\"Amara\"`. The arrow function has no own `this`, so it closes over `greetLater`'s `this` like any other variable. `greetLater` was called as `obj.greetLater()`, so that `this` is `obj`." },
-      { question: "What does this log, and how does it differ from the arrow-function version? `const obj = { name: \"Amara\", greetLater() { setTimeout(function () { console.log(this.name); }, 0); } }; obj.greetLater();`", answer: "`undefined` (or a `TypeError` in strict mode). A regular `function` gets its own `this` from how it's called, and `setTimeout` calls it with no receiver, so `this` isn't `obj`. The arrow function has no `this` of its own to override." },
+      { question: "What does this log, and how does it differ from the arrow-function version? `const obj = { name: \"Amara\", greetLater() { setTimeout(function () { console.log(this.name); }, 0); } }; obj.greetLater();`", answer: "Not `\"Amara\"`. A regular `function` gets its own `this` from how it's called, and `setTimeout` doesn't call it on `obj`. In a browser `this` is `window`, so it logs `window.name` (usually `\"\"`); in Node.js `this` is the timer object, so it logs `undefined`. The arrow version has no `this` of its own, so it uses `greetLater`'s `this`, which is `obj`." },
       { question: "Can closures cause memory leaks, and how?", answer: "Yes. While a closure is reachable (say, still registered as an event listener), every variable it closes over stays alive. A closure holding a large object (cached DOM nodes, big data) longer than needed keeps that memory from being freed." },
       { question: "Do modern JS engines keep an entire outer scope alive just because one closure references it?", answer: "Not necessarily. Many engines keep only the variables the inner function actually uses. But that's an implementation detail; don't rely on it for correctness." },
       { question: "What's the difference between 'a function has its own scope' and 'a function is a closure'?", answer: "Every function has its own scope; that's normal. It becomes a meaningful closure when it's used *after* the scope that created it would otherwise be gone, i.e. it outlives the call that defined it." },
@@ -696,19 +696,17 @@ passes; one loop that does everything in a single pass can be faster.
     level: "intermediate",
     description: "The built-in tools for reading, searching, and reshaping text.",
     explanation: `
-Text shows up everywhere in a program — a name, a message, a URL — and
-you constantly need to answer small questions about it: how long is it?
-does it contain this word? what does it look like in uppercase?
-JavaScript strings come with a large set of built-in methods that answer
-exactly these kinds of questions, so you rarely need to process text
-character-by-character yourself.
+Text is everywhere in a program: a name, a message, a URL. You often need
+to ask small questions about it. How long is it? Does it contain this word?
+What does it look like in uppercase? Strings have built-in methods for
+these, so you rarely process text character by character.
 
-A few you'll reach for constantly: \`length\` (a property, not a method,
-but just as essential), \`slice\`, \`includes\`, \`split\`, \`trim\`, \`replace\`,
-and template literals for building strings out of pieces.
+The ones you'll use most: \`length\` (a property, not a method), \`slice\`,
+\`includes\`, \`split\`, \`trim\`, \`replace\`, and template literals for
+building strings from pieces.
     `.trim(),
     analogy:
-      "If a string is a train of connected train cars, string methods are the tools a train inspector carries — one to count the cars (length), one to pull out a section (slice), one to check if a car of a certain type exists (includes), one to uncouple the whole train into individual cars (split).",
+      "If a string is a train of cars, string methods are the inspector's tools: one counts the cars (length), one pulls out a section (slice), one checks whether a certain car exists (includes), one uncouples the train into single cars (split).",
     examples: [
       {
         title: "Common string operations",
@@ -724,11 +722,11 @@ console.log(\`Hi, \${name}!\`);             // "Hi, Amara!" — a template liter
 
 const parts = "2026-08-29".split("-");  // ["2026", "08", "29"]`,
         walkthrough: [
-          { code: "message.length", explanation: "Counts every character, including the spaces at the start and end." },
+          { code: "message.length", explanation: "Counts every character, including the spaces at both ends." },
           { code: "message.trim()", explanation: "Returns a new string with whitespace removed from both ends." },
-          { code: 'message.includes("World")', explanation: 'Checks whether "World" appears anywhere inside the string.' },
-          { code: "`Hi, ${name}!`", explanation: "A template literal — the ${...} slot is replaced with the value of name." },
-          { code: '"2026-08-29".split("-")', explanation: 'Breaks the string into an array wherever a "-" appears.' },
+          { code: 'message.includes("World")', explanation: 'Checks whether "World" appears anywhere in the string.' },
+          { code: "`Hi, ${name}!`", explanation: "A template literal: the ${...} slot is replaced with the value of name." },
+          { code: '"2026-08-29".split("-")', explanation: 'Splits the string into an array at every "-".' },
         ],
       },
       {
@@ -740,34 +738,30 @@ console.log(sentence.replace("cat", "dog"));  // "The dog sat on the mat"
 console.log(sentence.startsWith("The"));      // true
 console.log(sentence.slice(4, 7));            // "cat"`,
         explanation:
-          "`indexOf` finds a position, `replace` swaps text, `startsWith` checks the beginning, and `slice` pulls out a substring by position — all without touching the original string.",
+          "`indexOf` finds a position, `replace` swaps text, `startsWith` checks the beginning, and `slice` pulls out a substring by position. None of them change the original string.",
       },
     ],
     howItWorks: `
-Because strings are immutable in JavaScript, every one of these methods
-returns a brand-new string (or array) rather than modifying the
-original — \`trim()\` doesn't change \`message\`, it hands you back a new,
-trimmed copy. \`length\` is different: it's a property, not a method, so
-you read it without parentheses.
+Strings are immutable, so every method returns a new string (or array)
+instead of changing the original. \`trim()\` doesn't change \`message\`; it
+returns a trimmed copy. \`length\` is a property, not a method, so you read
+it without parentheses.
     `.trim(),
     whyItExists: `
-Handling text by hand — walking character by character to search or
-reshape it — is slow to write and easy to get wrong. Built-in string
-methods cover the overwhelming majority of everyday text tasks with one
-clear, well-tested call.
+Walking through text character by character to search or reshape it is
+slow to write and easy to get wrong. Built-in methods handle most everyday
+text tasks in one clear, well-tested call.
     `.trim(),
     whenToUse: `
-Reach for these whenever you're validating, searching, formatting, or
-reshaping text — checking a username's length, confirming an email
-contains "@", splitting a comma-separated list, or building a message
-from variables with a template literal.
+Use them to validate, search, format or reshape text: checking a
+username's length, confirming an email contains "@", splitting a
+comma-separated list, or building a message with a template literal.
     `.trim(),
     whenNotToUse: `
-For very heavy text processing — parsing a complex format, matching
-flexible patterns — plain string methods can get unwieldy; that's when a
-regular expression is worth reaching for instead. And building a large
-string through many small concatenations in a loop is slower than
-assembling an array of pieces and joining it once.
+For heavy text processing (parsing complex formats, matching flexible
+patterns), plain string methods get unwieldy; use a regular expression.
+And building a large string from many small concatenations in a loop is
+slower than collecting pieces in an array and joining once.
     `.trim(),
     commonMistakes: [
       "Forgetting that string methods don't mutate — `str.trim()` does nothing unless you use or store its return value.",
@@ -780,33 +774,33 @@ assembling an array of pieces and joining it once.
       { difficulty: "Hard", prompt: "Write a function that checks whether a string is a valid-looking email (contains exactly one \"@\" and at least one \".\" after it) using only string methods." },
     ],
     interviewQuestions: [
-      { question: "Why do string methods like `trim()` or `toUpperCase()` never modify the original string?", answer: "Strings are immutable in JavaScript — every string method returns a brand-new string; there's no way to change the characters of an existing string value in place." },
-      { question: "What does this log? `let str = \"hello\"; str.toUpperCase(); console.log(str);`", answer: "`\"hello\"`, unchanged — `toUpperCase()` returns a new uppercase string but doesn't alter `str` itself; the return value is thrown away because it was never assigned back, e.g. `str = str.toUpperCase();`." },
-      { question: "What's the difference between `slice()` and `substring()` on a string?", answer: "Both extract a range, but `slice()` accepts negative indexes to count from the end of the string, while `substring()` treats a negative argument as `0` and automatically swaps the two arguments if the start is greater than the end." },
-      { question: "What does this log? `const s = \"Hello, World!\"; console.log(s.slice(-6));`", answer: "`\"World!\"` — a negative index in `slice()` counts backward from the end of the string, so `-6` starts six characters before the end." },
-      { question: "Are string comparisons with `includes()`, `startsWith()`, and `endsWith()` case-sensitive?", answer: "Yes, all of them compare exact character codes — `\"Hello\".includes(\"hello\")` is `false`. A case-insensitive check needs an explicit `.toLowerCase()` (or `.toUpperCase()`) on both sides first." },
-      { question: "What does this log? `console.log(\"Hello\".includes(\"hello\"));`", answer: "`false` — string methods compare characters exactly as written; `\"H\"` and `\"h\"` are different code points, so nothing about `includes()` normalizes case automatically." },
-      { question: "What can a template literal do that regular quoted strings can't?", answer: "It can span multiple lines without escape characters, and it can embed any JavaScript expression directly inside a `${...}` placeholder, which gets evaluated and converted to a string — replacing manual concatenation with `+`." },
-      { question: "What does `String(null)` return, compared to `null + \"\"`?", answer: "Both produce `\"null\"` — explicit `String()` conversion and implicit coercion via `+` follow the same underlying string-conversion rules for primitives, unlike `JSON.stringify(null)`, which also returns `\"null\"` but for the unrelated reason of serializing the JSON value `null`." },
-      { question: "What is a tagged template literal?", answer: "A function call written directly in front of a template literal — instead of interpolating automatically, the tag function receives the literal string pieces and the interpolated values as separate arguments, letting it process or escape them however it wants before building the final string." },
-      { question: "What does this log, and why? `console.log(\"2\" > \"10\");`", answer: "`true`. Comparing strings with `>`/`<` is lexicographic (character by character, by Unicode code point), not numeric — the first character `\"2\"` is greater than `\"1\"`, so the comparison stops there and returns `true`, regardless of what follows." },
-      { question: "What does this log? `console.log(1 + \"1\"); console.log(\"1\" + 1); console.log(1 + 1 + \"1\"); console.log(\"1\" + 1 + 1);`", answer: "`\"11\"`, `\"11\"`, `\"21\"`, `\"111\"`. `+` evaluates left to right; the moment either operand of a given `+` is a string, that operation becomes concatenation. `1 + 1 + \"1\"` adds the two numbers first (`2`), then concatenates with `\"1\"`; `\"1\" + 1 + 1` concatenates immediately at the first `+`, so every following `+` is string concatenation too." },
-      { question: "What do `padStart()` and `padEnd()` do?", answer: "They pad a string to a target length by adding a given fill string at the start or end (repeated as needed) until it reaches that length — commonly used to zero-pad numbers or align text in columns." },
-      { question: "What does this log? `console.log(\"5\".padStart(3, \"0\"));`", answer: "`\"005\"` — `padStart` adds copies of `\"0\"` to the front until the string reaches a total length of 3." },
-      { question: "Why might `.length` not match the number of visible characters in a string?", answer: "`.length` counts UTF-16 code units, not visible characters (grapheme clusters). Characters outside the Basic Multilingual Plane — many emoji included — are represented as a pair of code units (a surrogate pair), so they count as 2 even though they display as one character." },
-      { question: "What does `console.log(\"😀\".length);` log, and why isn't it `1`?", answer: "`2` — that emoji falls outside the Basic Multilingual Plane and is stored internally as a UTF-16 surrogate pair (two 16-bit code units), and `.length` counts code units, not the single visual character they represent together." },
-      { question: "What's the difference between `trim()`, `trimStart()`, and `trimEnd()`?", answer: "`trim()` removes whitespace from both ends of a string; `trimStart()` removes it only from the beginning, and `trimEnd()` only from the end." },
-      { question: "What does this log? `console.log(\"abc\".split(\"\"));`", answer: "`[\"a\", \"b\", \"c\"]` — splitting on an empty string separator breaks the string apart between every character, producing an array of individual characters." },
-      { question: "What's the difference between `replace()` and `replaceAll()`?", answer: "`replace(search, value)` with a plain string only replaces the first match; to replace every occurrence with `replace`, you'd need a regex with the global flag. `replaceAll()` replaces every occurrence directly, even with a plain string search term." },
-      { question: "What does this log? `console.log(\"cat cat cat\".replace(\"cat\", \"dog\"));`", answer: "`\"dog cat cat\"` — with a plain string (not a global regex), `replace()` stops after the first match and leaves the rest of the string untouched." },
-      { question: "Why is repeatedly concatenating strings with `+=` inside a large loop considered inefficient?", answer: "Because strings are immutable, every `+=` creates an entirely new string and copies all the previous characters into it — for `n` concatenations that's roughly O(n squared) total copying. Pushing pieces into an array and calling `.join(\"\")` once at the end avoids the repeated copying." },
-      { question: "Why can you safely compare two string primitives with `===`, unlike two objects?", answer: "Strings are primitive values compared by their actual content, not by reference — two variables holding the identical sequence of characters are `===`, whereas two objects (even with identical contents) are only `===` if they're literally the same object in memory." },
-      { question: "What does this log? `const a = \"hi\"; const b = \"hi\"; console.log(a === b);`", answer: "`true` — string literals with the same characters are equal by value, since strings are primitives, not reference types like arrays or objects." },
-      { question: "What's the difference between `charAt(i)`, `str[i]`, and `str.at(i)` for reading a character?", answer: "All three read the character at index `i` for a valid index. Out of range, `charAt` returns an empty string `\"\"`, while bracket notation and `.at()` return `undefined`; `.at()` additionally supports negative indexes to count from the end, which neither of the other two does." },
-      { question: "How would you check if a string is a palindrome using only built-in string and array methods?", answer: "Split it into characters (`str.split(\"\")`), reverse that array (`.reverse()`), join it back into a string (`.join(\"\")`), and compare the result to the original — strings don't have their own `.reverse()`, so this detour through an array is the standard approach." },
-      { question: "What does `split(separator, limit)`'s second argument do?", answer: "It caps how many pieces the resulting array can contain — the string is still split at every occurrence of the separator, but the array is truncated to at most `limit` entries, discarding anything past that." },
-      { question: "Can `split()` take a regular expression as its separator?", answer: "Yes — splitting on a regex lets you break a string apart on a pattern rather than a fixed substring, for example splitting on any run of whitespace with `str.split(/\\s+/)`." },
-      { question: "Why is the risk with using `+` to build a dynamic string versus a template literal more than just readability?", answer: "Beyond being harder to read with many pieces, `+` chains are easy to get wrong around operator precedence and type coercion — numbers sliding into unintended string concatenation, as with `1 + 1 + \"1\"` — while a template literal makes every interpolated value's boundary explicit and evaluates each `${...}` independently." },
+      { question: "Why do string methods like `trim()` or `toUpperCase()` never modify the original string?", answer: "Strings are immutable. Every string method returns a new string; you can't change an existing string's characters in place." },
+      { question: "What does this log? `let str = \"hello\"; str.toUpperCase(); console.log(str);`", answer: "`\"hello\"`, unchanged. `toUpperCase()` returns a new string, but its result is thrown away. You'd need `str = str.toUpperCase();`." },
+      { question: "What's the difference between `slice()` and `substring()` on a string?", answer: "Both extract a range. `slice()` accepts negative indexes, counting from the end. `substring()` treats negatives as `0` and swaps the arguments if start is greater than end." },
+      { question: "What does this log? `const s = \"Hello, World!\"; console.log(s.slice(-6));`", answer: "`\"World!\"`. A negative index in `slice()` counts back from the end, so `-6` starts six characters before the end." },
+      { question: "Are string comparisons with `includes()`, `startsWith()`, and `endsWith()` case-sensitive?", answer: "Yes; they compare exact characters, so `\"Hello\".includes(\"hello\")` is `false`. For a case-insensitive check, call `.toLowerCase()` (or `.toUpperCase()`) on both sides first." },
+      { question: "What does this log? `console.log(\"Hello\".includes(\"hello\"));`", answer: "`false`. `\"H\"` and `\"h\"` are different code points, and `includes()` doesn't normalize case." },
+      { question: "What can a template literal do that regular quoted strings can't?", answer: "It can span multiple lines without escapes, and it can embed any expression in a `${...}` placeholder, which is evaluated and turned into a string. That replaces manual `+` concatenation." },
+      { question: "What does `String(null)` return, compared to `null + \"\"`?", answer: "Both give `\"null\"`: `String()` and `+` coercion use the same conversion rules for primitives. `JSON.stringify(null)` also returns `\"null\"`, but for an unrelated reason: it serializes the JSON value `null`." },
+      { question: "What is a tagged template literal?", answer: "A function written directly before a template literal. Instead of interpolating automatically, the tag function receives the literal string pieces and the interpolated values separately, so it can process or escape them before building the final string." },
+      { question: "What does this log, and why? `console.log(\"2\" > \"10\");`", answer: "`true`. Comparing strings with `>`/`<` goes character by character by Unicode code point, not numerically. `\"2\"` is greater than `\"1\"`, so the comparison stops there." },
+      { question: "What does this log? `console.log(1 + \"1\"); console.log(\"1\" + 1); console.log(1 + 1 + \"1\"); console.log(\"1\" + 1 + 1);`", answer: "`\"11\"`, `\"11\"`, `\"21\"`, `\"111\"`. `+` runs left to right, and any `+` with a string operand concatenates. `1 + 1 + \"1\"` adds first (`2`), then joins `\"1\"`. `\"1\" + 1 + 1` concatenates from the first `+`, so every following `+` does too." },
+      { question: "What do `padStart()` and `padEnd()` do?", answer: "They add a fill string (repeated as needed) to the start or end until the string reaches a target length. Common for zero-padding numbers or aligning text in columns." },
+      { question: "What does this log? `console.log(\"5\".padStart(3, \"0\"));`", answer: "`\"005\"`. `padStart` adds `\"0\"`s to the front until the length is 3." },
+      { question: "Why might `.length` not match the number of visible characters in a string?", answer: "`.length` counts UTF-16 code units, not visible characters (grapheme clusters). Characters outside the Basic Multilingual Plane, including many emoji, use two code units (a surrogate pair), so they count as 2 but display as one." },
+      { question: "What does `console.log(\"😀\".length);` log, and why isn't it `1`?", answer: "`2`. That emoji is outside the Basic Multilingual Plane and is stored as a UTF-16 surrogate pair (two 16-bit code units). `.length` counts code units, not visible characters." },
+      { question: "What's the difference between `trim()`, `trimStart()`, and `trimEnd()`?", answer: "`trim()` removes whitespace from both ends; `trimStart()` only from the start; `trimEnd()` only from the end." },
+      { question: "What does this log? `console.log(\"abc\".split(\"\"));`", answer: "`[\"a\", \"b\", \"c\"]`. Splitting on an empty string splits between every character." },
+      { question: "What's the difference between `replace()` and `replaceAll()`?", answer: "`replace(search, value)` with a plain string replaces only the first match; to replace all with `replace`, you need a regex with the global flag. `replaceAll()` replaces every match, even with a plain string." },
+      { question: "What does this log? `console.log(\"cat cat cat\".replace(\"cat\", \"dog\"));`", answer: "`\"dog cat cat\"`. With a plain string (not a global regex), `replace()` stops after the first match." },
+      { question: "Why is repeatedly concatenating strings with `+=` inside a large loop considered inefficient?", answer: "Strings are immutable, so each `+=` creates a new string and copies all previous characters: roughly O(n squared) copying for `n` concatenations. Pushing pieces into an array and calling `.join(\"\")` once avoids that." },
+      { question: "Why can you safely compare two string primitives with `===`, unlike two objects?", answer: "Strings are primitives compared by content, so two identical character sequences are `===`. Two objects are only `===` if they're the same object, even with identical contents." },
+      { question: "What does this log? `const a = \"hi\"; const b = \"hi\"; console.log(a === b);`", answer: "`true`. Strings are primitives, so the same characters mean equal values." },
+      { question: "What's the difference between `charAt(i)`, `str[i]`, and `str.at(i)` for reading a character?", answer: "For a valid index, all three return the character. Out of range, `charAt` returns `\"\"`, while brackets and `.at()` return `undefined`. Only `.at()` supports negative indexes counted from the end." },
+      { question: "How would you check if a string is a palindrome using only built-in string and array methods?", answer: "Split into characters (`str.split(\"\")`), reverse the array (`.reverse()`), join it back (`.join(\"\")`) and compare with the original. Strings have no `.reverse()`, so the detour through an array is the standard approach." },
+      { question: "What does `split(separator, limit)`'s second argument do?", answer: "It caps the number of pieces in the result. The array is cut to at most `limit` entries, and anything after that is dropped." },
+      { question: "Can `split()` take a regular expression as its separator?", answer: "Yes. A regex splits on a pattern instead of a fixed substring, e.g. any run of whitespace with `str.split(/\\s+/)`." },
+      { question: "Why is the risk with using `+` to build a dynamic string versus a template literal more than just readability?", answer: "`+` chains are easy to get wrong with precedence and type coercion, e.g. numbers adding before concatenation in `1 + 1 + \"1\"`. A template literal makes each value's boundary explicit and evaluates each `${...}` on its own." },
     ],
     prerequisites: ["data-types"],
     relatedTopics: ["data-types", "array-methods"],
@@ -818,18 +812,15 @@ assembling an array of pieces and joining it once.
     level: "intermediate",
     description: "A function you pass into another function, to be called later — often once some work finishes.",
     explanation: `
-Functions are values in JavaScript, which means you can hand one function
-to another as an argument. A **callback** is exactly that: a function you
-pass into another function, with the expectation that it will be called
-at the right moment — after a click, after a timer finishes, after every
-item in an array.
+Functions are values, so you can pass one function to another as an
+argument. A **callback** is a function you pass in to be called at the
+right moment: after a click, after a timer, or for every item in an array.
 
-You've already been using callbacks without necessarily naming them — the
-function you pass to \`.map()\`, \`addEventListener()\`, or \`setTimeout()\` is
-a callback.
+You've already used callbacks: the function you pass to \`.map()\`,
+\`addEventListener()\` or \`setTimeout()\` is one.
     `.trim(),
     analogy:
-      "It's like leaving a note with a restaurant host: 'Call this number when our table is ready.' You don't wait at the counter — you hand over instructions (the callback) and get on with your day, trusting it'll be used at the right moment.",
+      "It's like telling a restaurant host: 'Call this number when our table is ready.' You don't wait at the counter. You hand over instructions (the callback) and get on with your day.",
     examples: [
       {
         title: "A function that accepts a callback",
@@ -842,10 +833,10 @@ greetUser("Amara", (message) => {
   console.log(message); // "Hi, Amara!"
 });`,
         walkthrough: [
-          { code: "function greetUser(name, onDone) {", explanation: "Accepts a callback, onDone, as its second parameter." },
+          { code: "function greetUser(name, onDone) {", explanation: "Takes a callback, onDone, as its second parameter." },
           { code: 'const message = "Hi, " + name + "!";', explanation: "Builds the greeting." },
-          { code: "onDone(message);", explanation: "Calls the callback, handing it the result." },
-          { code: 'greetUser("Amara", (message) => {...});', explanation: "Passes an arrow function as the callback, which runs once greetUser calls it." },
+          { code: "onDone(message);", explanation: "Calls the callback with the result." },
+          { code: 'greetUser("Amara", (message) => {...});', explanation: "Passes an arrow function as the callback; it runs when greetUser calls it." },
         ],
       },
       {
@@ -865,34 +856,30 @@ checkAge(
 );
 // logs "Access granted"`,
         explanation:
-          "A function can accept more than one callback — here, exactly one of the two runs, depending on the outcome.",
+          "A function can take more than one callback. Here exactly one of the two runs, depending on the outcome.",
       },
     ],
     howItWorks: `
-Nothing special happens under the hood — a callback is just a regular
-function value, stored in a parameter and called like any other
-function, whenever the code inside decides to call it. The only thing
-that makes it a "callback" is the role it's playing: being called back
-later, by someone else's code, instead of being called directly by
-yours.
+Nothing special happens underneath. A callback is a regular function
+value, stored in a parameter and called whenever the receiving code
+decides. What makes it a "callback" is its role: someone else's code calls
+it back later, instead of your code calling it directly.
     `.trim(),
     whyItExists: `
-Callbacks let a function's behavior stay flexible without knowing the
-details in advance — \`.map()\` doesn't know what transformation you want,
+Callbacks keep a function flexible without it knowing the details in
+advance. \`.map()\` doesn't know what transformation you want;
 \`addEventListener\` doesn't know what should happen on click. The callback
-is how you supply that missing piece.
+supplies that missing piece.
     `.trim(),
     whenToUse: `
-Use a callback whenever you want to customize what happens at a specific
-point inside another function's logic — reacting to an event, running
-code once per array item, or defining what should happen once an
-asynchronous task finishes.
+Use a callback to customize what happens at a point inside another
+function: reacting to an event, running code for each array item, or
+deciding what happens when an async task finishes.
     `.trim(),
     whenNotToUse: `
-If you're nesting many callbacks inside each other for a sequence of
-asynchronous steps, that's exactly the pattern promises and async/await
-were built to replace — reach for those instead of deeply nested
-callbacks.
+If you're nesting many callbacks for a sequence of async steps, use
+promises and async/await instead. They were built to replace exactly that
+pattern.
     `.trim(),
     commonMistakes: [
       "Confusing `callback` with `callback()` — passing the function itself, not the result of calling it.",
@@ -905,22 +892,22 @@ callbacks.
       { difficulty: "Hard", prompt: "Write a function that takes a callback and calls it after a 1-second delay, using `setTimeout`." },
     ],
     interviewQuestions: [
-      { question: "What is a callback function?", answer: "A function passed as an argument into another function, with the expectation that the receiving function will call it at the appropriate moment — after an event, after a delay, or once per item in a collection." },
-      { question: "Are all callbacks asynchronous?", answer: "No — a callback just describes the role a function plays (being called by someone else's code), not when it runs. Callbacks passed to array methods like `map`/`forEach` run synchronously, immediately, during the call; callbacks passed to `setTimeout` or event listeners run later, asynchronously." },
-      { question: "What does this log, in order? `console.log(\"start\"); [1, 2, 3].forEach((n) => console.log(n)); console.log(\"end\");`", answer: "`start`, `1`, `2`, `3`, `end` — `forEach`'s callback runs synchronously and completes entirely before the line after it executes; there's nothing asynchronous about it." },
-      { question: "What does this log, in order? `console.log(\"start\"); setTimeout(() => console.log(\"timeout\"), 0); console.log(\"end\");`", answer: "`start`, `end`, `timeout` — even a `0`ms delay doesn't run the callback immediately; it's deferred to the event loop's task queue and only runs after all currently queued synchronous code (including `console.log(\"end\")`) has finished." },
-      { question: "What is the 'error-first callback' convention?", answer: "A pattern (common in Node.js-style APIs) where a callback's first parameter is reserved for an error object (`null` if none occurred) and the actual result comes second — `(err, data) => {}` — so callers check `err` before trusting `data`, and every callback handles errors the same consistent way." },
-      { question: "What is 'callback hell', and what causes it?", answer: "A pyramid of deeply nested callbacks, each one representing the next step of a sequence of asynchronous operations. It happens because each step can only run inside the previous step's callback, and error handling has to be duplicated at every level — promises and `async`/`await` exist largely to flatten this back out." },
-      { question: "What's the difference between passing `fn` and `fn()` as a callback?", answer: "`fn` passes the function itself, to be called later by the receiving code; `fn()` calls it immediately and passes whatever it returns instead — a very common bug when the intent was to defer the call." },
-      { question: "What does this log? `function greet() { console.log(\"hi\"); } setTimeout(greet(), 1000);`", answer: "`\"hi\"` is logged immediately, synchronously — `greet()` calls the function right there while building the arguments for `setTimeout`, and whatever it returns (`undefined`) is what actually gets scheduled, which does nothing a second later." },
-      { question: "What's the bug here? `const counter = { count: 0, increment() { this.count++; } }; setTimeout(counter.increment, 0);`", answer: "Passing `counter.increment` hands over the bare function, detached from `counter` — when `setTimeout` calls it later, it's called as a plain function with no receiver, so `this` inside it isn't `counter` and `this.count++` doesn't update what you expect. Fixing it needs `.bind(counter)` or wrapping it in an arrow function: `() => counter.increment()`." },
-      { question: "How do promises address the problems that deeply nested callbacks create?", answer: "A promise represents a single eventual result and lets you chain `.then()` calls at the same nesting level instead of inside one another, with errors propagating to a single `.catch()` instead of needing to be checked manually at every level." },
-      { question: "How would you write a function that accepts an optional callback safely?", answer: "Check that it's actually a function before calling it — `if (typeof callback === \"function\") callback(result);` — or give the parameter a no-op default function, so calling the function without providing a callback doesn't throw." },
-      { question: "What happens here? `function fetchData(callback) { const data = { id: 1 }; callback(data); } fetchData();`", answer: "It throws `TypeError: callback is not a function`. No argument was passed for `callback`, so it's `undefined` inside the function, and `undefined` can't be invoked — the function needed to guard against a missing callback before calling it." },
-      { question: "Does a callback's return value always matter to the code that calls it?", answer: "It depends entirely on the caller. `Array.prototype.map`'s callback return value builds the new array, and `reduce`'s becomes the next accumulator — but a callback passed to `forEach`, `addEventListener`, or `setTimeout` has its return value completely ignored." },
-      { question: "What's the difference between a 'callback' and an 'event handler'?", answer: "An event handler is really just a callback used in a specific role — a function registered to be called when a particular event (a click, a message, a timer) occurs. 'Callback' is the general term for any function handed to other code to be called later; 'event handler' names that specific use case." },
-      { question: "Why does naming a callback function instead of passing it as an inline anonymous function sometimes help debugging?", answer: "A named function shows up by that name in stack traces and profiler output, and can be reused or tested independently — an anonymous inline callback just shows as `<anonymous>` in a trace, which makes tracking down which callback threw an error harder in code with many similar-looking inline callbacks." },
-      { question: "If a function accepts multiple callbacks, like `onSuccess` and `onError`, what determines which one runs?", answer: "Whatever logic the function itself contains — the two callbacks are just ordinary parameters, and the function's own code decides, based on some condition it checks, which one (if any) it calls." },
+      { question: "What is a callback function?", answer: "A function passed into another function, which calls it at the right moment: after an event, after a delay, or once per item in a collection." },
+      { question: "Are all callbacks asynchronous?", answer: "No. \"Callback\" describes a role (being called by other code), not timing. Callbacks for array methods like `map`/`forEach` run synchronously during the call; callbacks for `setTimeout` or event listeners run later, asynchronously." },
+      { question: "What does this log, in order? `console.log(\"start\"); [1, 2, 3].forEach((n) => console.log(n)); console.log(\"end\");`", answer: "`start`, `1`, `2`, `3`, `end`. `forEach`'s callback runs synchronously and finishes before the next line runs." },
+      { question: "What does this log, in order? `console.log(\"start\"); setTimeout(() => console.log(\"timeout\"), 0); console.log(\"end\");`", answer: "`start`, `end`, `timeout`. Even a `0`ms delay doesn't run immediately: the callback goes to the event loop's task queue and runs only after the current synchronous code (including `console.log(\"end\")`) finishes." },
+      { question: "What is the 'error-first callback' convention?", answer: "A pattern (common in Node.js-style APIs) where the callback's first parameter is an error (`null` if none) and the result comes second: `(err, data) => {}`. Callers check `err` before trusting `data`, so every callback handles errors the same way." },
+      { question: "What is 'callback hell', and what causes it?", answer: "A pyramid of deeply nested callbacks, one per step of an async sequence. Each step can only run inside the previous step's callback, and error handling is repeated at every level. Promises and `async`/`await` exist largely to flatten this." },
+      { question: "What's the difference between passing `fn` and `fn()` as a callback?", answer: "`fn` passes the function itself, to be called later. `fn()` calls it now and passes its return value instead, a very common bug when you meant to defer the call." },
+      { question: "What does this log? `function greet() { console.log(\"hi\"); } setTimeout(greet(), 1000);`", answer: "`\"hi\"` logs immediately. `greet()` runs while building `setTimeout`'s arguments, and its return value (`undefined`) is what gets scheduled, which does nothing a second later." },
+      { question: "What's the bug here? `const counter = { count: 0, increment() { this.count++; } }; setTimeout(counter.increment, 0);`", answer: "`counter.increment` passes the bare function, detached from `counter`. `setTimeout` calls it with no receiver, so `this` isn't `counter` and `this.count++` doesn't update it. Fix with `.bind(counter)` or an arrow function: `() => counter.increment()`." },
+      { question: "How do promises address the problems that deeply nested callbacks create?", answer: "A promise represents one eventual result. You chain `.then()` calls at the same level instead of nesting them, and errors flow to a single `.catch()` instead of being checked at every level." },
+      { question: "How would you write a function that accepts an optional callback safely?", answer: "Check it's a function before calling it (`if (typeof callback === \"function\") callback(result);`), or give the parameter a no-op default, so calling without a callback doesn't throw." },
+      { question: "What happens here? `function fetchData(callback) { const data = { id: 1 }; callback(data); } fetchData();`", answer: "It throws `TypeError: callback is not a function`. No callback was passed, so it's `undefined`, which can't be called. The function should guard against a missing callback." },
+      { question: "Does a callback's return value always matter to the code that calls it?", answer: "It depends on the caller. `map`'s callback return values build the new array, and `reduce`'s becomes the next accumulator. Callbacks passed to `forEach`, `addEventListener` or `setTimeout` have their return values ignored." },
+      { question: "What's the difference between a 'callback' and an 'event handler'?", answer: "An event handler is a callback in a specific role: registered to run when an event (a click, a message, a timer) occurs. \"Callback\" is the general term for any function handed to other code to call later." },
+      { question: "Why does naming a callback function instead of passing it as an inline anonymous function sometimes help debugging?", answer: "A named function appears by name in stack traces and profiler output, and can be reused or tested on its own. An anonymous inline callback shows as `<anonymous>`, making it harder to find which one threw among many similar callbacks." },
+      { question: "If a function accepts multiple callbacks, like `onSuccess` and `onError`, what determines which one runs?", answer: "The function's own logic. The callbacks are ordinary parameters, and the function's code decides, based on a condition it checks, which one (if any) to call." },
     ],
     prerequisites: ["functions"],
     relatedTopics: ["higher-order-functions", "array-methods", "promises"],
@@ -932,18 +919,15 @@ callbacks.
     level: "intermediate",
     description: "A function that takes another function as input, returns one as output, or both.",
     explanation: `
-In JavaScript, functions are values — you can store them in variables,
-put them in arrays, and pass them around just like a number or a string.
-A **higher-order function** is simply a function that takes advantage of
-this: it either accepts another function as a parameter, returns a
-function as its result, or does both.
+Functions are values: you can store them in variables, put them in arrays
+and pass them around like numbers or strings. A **higher-order function**
+uses this: it takes a function as a parameter, returns a function, or both.
 
-You've already met several: \`.map()\`, \`.filter()\`, and \`.reduce()\` are all
-higher-order functions, because each one accepts a callback function as
-an argument.
+You've met several already. \`.map()\`, \`.filter()\` and \`.reduce()\` are
+higher-order because each takes a callback.
     `.trim(),
     analogy:
-      "A higher-order function is like a manager who doesn't do the specific task themselves — they take instructions (a function) from you and apply them, or they hand you back a customized set of instructions (a function) built for a specific situation.",
+      "A higher-order function is like a manager who doesn't do the task directly. They take your instructions (a function) and apply them, or hand you back custom instructions (a function) built for a specific situation.",
     examples: [
       {
         title: "A function that returns a function",
@@ -959,10 +943,10 @@ const triple = multiplyBy(3);
 console.log(double(5)); // 10
 console.log(triple(5)); // 15`,
         walkthrough: [
-          { code: "function multiplyBy(factor) {", explanation: "A function that will build and return another function." },
-          { code: "return function (n) { return n * factor; };", explanation: "Returns a new function, customized with whatever factor was passed in." },
-          { code: "const double = multiplyBy(2);", explanation: "double is now a function that always multiplies by 2." },
-          { code: "double(5);", explanation: "Calls that customized function, giving 10." },
+          { code: "function multiplyBy(factor) {", explanation: "A function that builds and returns another function." },
+          { code: "return function (n) { return n * factor; };", explanation: "Returns a new function, customized with the factor passed in." },
+          { code: "const double = multiplyBy(2);", explanation: "double is now a function that multiplies by 2." },
+          { code: "double(5);", explanation: "Calls the customized function, giving 10." },
         ],
       },
       {
@@ -975,31 +959,29 @@ const addOne = (n) => n + 1;
 
 console.log(applyTwice(addOne, 5)); // 7 — addOne(addOne(5))`,
         explanation:
-          "`applyTwice` doesn't know or care what `fn` actually does — it just applies whatever function it's given, twice. That flexibility is the whole point of accepting a function as a parameter.",
+          "`applyTwice` doesn't care what `fn` does; it applies whatever function it gets, twice. That flexibility is the point of taking a function as a parameter.",
       },
     ],
     howItWorks: `
-Because functions are ordinary values, returning one from another
-function works exactly like returning a number or a string — the
-returned function just happens to be callable, and (thanks to closures)
-it remembers the variables from where it was created, like \`factor\`
-above.
+Functions are ordinary values, so returning one works like returning a
+number or string. The returned function is callable, and (thanks to
+closures) it remembers the variables from where it was created, like
+\`factor\` above.
     `.trim(),
     whyItExists: `
-Higher-order functions let you write general-purpose logic once (like
-"multiply by some factor") and customize it on demand, instead of
-writing a separate, nearly-identical function for every specific case.
+Higher-order functions let you write general logic once (like "multiply by
+some factor") and customize it on demand, instead of writing a nearly
+identical function for every case.
     `.trim(),
     whenToUse: `
-Reach for a higher-order function when you want to generate specialized
-functions from a general pattern (like \`multiplyBy\`), or when you're
-designing an API where the caller should supply custom behavior (like
-\`.map()\` accepting any transformation).
+Use one to generate specialized functions from a general pattern (like
+\`multiplyBy\`), or when designing an API where the caller supplies custom
+behavior (like \`.map()\` accepting any transformation).
     `.trim(),
     whenNotToUse: `
-If a plain function with a couple of parameters would do the same job
-just as clearly, wrapping it in another layer of functions-returning-
-functions just adds indirection without benefit.
+If a plain function with a couple of parameters does the job just as
+clearly, an extra layer of functions returning functions only adds
+indirection.
     `.trim(),
     commonMistakes: [
       "Confusing a higher-order function with a callback — a higher-order function is the one accepting/returning functions; a callback is the function being passed in.",
@@ -1012,23 +994,23 @@ functions just adds indirection without benefit.
       { difficulty: "Hard", prompt: "Write a function `debounce(fn, delay)` that returns a version of `fn` which only runs after it hasn't been called for `delay` milliseconds." },
     ],
     interviewQuestions: [
-      { question: "What makes a function 'higher-order'?", answer: "It accepts another function as an argument, returns a function as its result, or both — treating functions the same way as any other value, like a number or string, rather than needing a special mechanism to work with them." },
-      { question: "What's the difference between a higher-order function and a callback?", answer: "They're two ends of the same relationship: the higher-order function is the one that accepts or returns a function; the callback is the function being passed in to it. In `arr.map(fn)`, `map` is the higher-order function, and `fn` is the callback." },
-      { question: "Besides array methods, what are some built-in higher-order functions?", answer: "`setTimeout`/`setInterval` (accept a function to run later), `addEventListener` (accepts a handler function), and promise methods like `.then()` (accept functions to run on resolution/rejection) are all higher-order — they take a function as one of their arguments." },
-      { question: "What does this log? `function greaterThan(n) { return (m) => m > n; } const greaterThan10 = greaterThan(10); console.log(greaterThan10(15)); console.log([5, 12, 8, 20].filter(greaterThan10));`", answer: "`true` then `[12, 20]` — `greaterThan(10)` returns a specialized function that closes over `n = 10`; that returned function is then reused both standalone and as a `filter` callback." },
-      { question: "What is function composition, and what does `compose(f, g)` typically mean?", answer: "Combining two (or more) functions so the output of one feeds directly into the input of the next. `compose(f, g)` conventionally means 'apply `g` first, then feed its result into `f`' — right to left — as opposed to `pipe(f, g)`, which usually runs them left to right." },
-      { question: "What does this log? `const compose = (f, g) => (x) => f(g(x)); const double = (n) => n * 2; const increment = (n) => n + 1; const doubleThenIncrement = compose(increment, double); console.log(doubleThenIncrement(3));`", answer: "`7` — `compose(increment, double)` applies `double` first (`3 * 2 = 6`), then feeds that into `increment` (`6 + 1 = 7`); despite the name `doubleThenIncrement`, the order inside `compose` runs right-to-left, which is exactly what happened." },
-      { question: "What is currying, and how is it different from ordinary partial application?", answer: "Currying transforms a function of several arguments into a chain of functions that each take exactly one argument. Partial application is more general — fixing some arguments ahead of time and returning a function that still takes the rest, whether one at a time or several at once." },
-      { question: "What does this log? `const add = (a) => (b) => (c) => a + b + c; console.log(add(1)(2)(3));`", answer: "`6` — each call is itself a higher-order function returning the next function in the chain, closing over the argument it was just given, until the final call has all three available to add together." },
-      { question: "Why do higher-order functions that return other functions rely on closures to be useful?", answer: "The returned function usually needs to remember something from the call that created it, like a fixed multiplier or a running cache. Without a closure over that outer scope, the returned function would have no way to access those values once the outer call finished." },
-      { question: "What is a decorator/wrapper pattern implemented as a higher-order function?", answer: "A function that takes another function and returns a new function with extra behavior layered around it — for example, `withLogging(fn)` returning a function that logs the arguments and then calls `fn(...args)` — the original function's behavior is preserved but wrapped with logging on every call." },
-      { question: "How does memoization work as a higher-order function?", answer: "`memoize(fn)` returns a new function that checks a cache (closed over between calls) for the given arguments before calling `fn` — if a cached result exists it's returned directly, otherwise `fn` runs once, its result is stored in the cache, and then returned." },
-      { question: "Why are higher-order functions considered a core building block of functional programming?", answer: "Functional programming treats functions as regular, first-class values that can be composed, passed around, and generated dynamically — higher-order functions are exactly the mechanism that makes composing small, reusable functions into bigger behavior possible." },
-      { question: "What's the practical difference between `return fn;` and `return fn();` inside a higher-order function?", answer: "`return fn;` hands back the function itself, to be called later by whoever receives it; `return fn();` calls it immediately and hands back its result instead — mixing these up is a common source of 'why is this a function instead of a value' (or vice versa) bugs." },
-      { question: "How would you build a `debounce(fn, delay)` higher-order function?", answer: "Return a new function that, on every call, clears any previously scheduled timer (stored in a variable closed over between calls) and starts a fresh `setTimeout` to call `fn` after `delay` — so `fn` only actually runs once the calls stop coming for that long." },
-      { question: "What does it mean for JavaScript to have 'first-class functions', and why does that matter for higher-order functions?", answer: "It means functions can be stored in variables, put in data structures, passed as arguments, and returned from other functions — exactly like any other value. Higher-order functions couldn't exist at all in a language where functions were treated specially and couldn't be passed around this way." },
-      { question: "How would you implement a `once(fn)` higher-order function that only lets `fn` run a single time?", answer: "Close over a flag (and optionally a cached result) in the returned function; on the first call, run `fn`, store its result, and flip the flag; every call after that skips calling `fn` again and just returns the stored result." },
-      { question: "Is a callback ever itself a higher-order function?", answer: "Yes, whenever the callback being passed in itself accepts or returns a function — a callback built by `greaterThan(10)` is a callback in relation to `filter`, but it's also higher-order in its own right, since those two classifications describe independent things about it." },
+      { question: "What makes a function 'higher-order'?", answer: "It takes a function as an argument, returns a function, or both, treating functions like any other value." },
+      { question: "What's the difference between a higher-order function and a callback?", answer: "They're two sides of one relationship. The higher-order function accepts or returns a function; the callback is the function passed in. In `arr.map(fn)`, `map` is higher-order and `fn` is the callback." },
+      { question: "Besides array methods, what are some built-in higher-order functions?", answer: "`setTimeout`/`setInterval` (take a function to run later), `addEventListener` (takes a handler) and promise methods like `.then()` (take functions to run on resolve/reject). Each takes a function as an argument." },
+      { question: "What does this log? `function greaterThan(n) { return (m) => m > n; } const greaterThan10 = greaterThan(10); console.log(greaterThan10(15)); console.log([5, 12, 8, 20].filter(greaterThan10));`", answer: "`true` then `[12, 20]`. `greaterThan(10)` returns a function that closes over `n = 10`, used both on its own and as a `filter` callback." },
+      { question: "What is function composition, and what does `compose(f, g)` typically mean?", answer: "Combining functions so one's output feeds the next one's input. `compose(f, g)` usually means \"apply `g`, then `f`\" (right to left), while `pipe(f, g)` usually runs left to right." },
+      { question: "What does this log? `const compose = (f, g) => (x) => f(g(x)); const double = (n) => n * 2; const increment = (n) => n + 1; const doubleThenIncrement = compose(increment, double); console.log(doubleThenIncrement(3));`", answer: "`7`. `compose(increment, double)` applies `double` first (`3 * 2 = 6`), then `increment` (`6 + 1 = 7`). `compose` runs right to left, which matches the name `doubleThenIncrement`." },
+      { question: "What is currying, and how is it different from ordinary partial application?", answer: "Currying turns a multi-argument function into a chain of functions that each take exactly one argument. Partial application is more general: fix some arguments now and return a function that takes the rest, one at a time or several at once." },
+      { question: "What does this log? `const add = (a) => (b) => (c) => a + b + c; console.log(add(1)(2)(3));`", answer: "`6`. Each call returns the next function in the chain, closing over the argument just given, so the last call has all three to add." },
+      { question: "Why do higher-order functions that return other functions rely on closures to be useful?", answer: "The returned function usually needs to remember something from the call that created it, like a multiplier or a cache. Without a closure, it couldn't reach those values once the outer call ended." },
+      { question: "What is a decorator/wrapper pattern implemented as a higher-order function?", answer: "A function that takes a function and returns a new one with extra behavior around it. For example, `withLogging(fn)` returns a function that logs the arguments and then calls `fn(...args)`, keeping the original behavior but adding logging." },
+      { question: "How does memoization work as a higher-order function?", answer: "`memoize(fn)` returns a function that checks a closed-over cache for the arguments before calling `fn`. On a hit it returns the cached result; otherwise it runs `fn`, stores the result and returns it." },
+      { question: "Why are higher-order functions considered a core building block of functional programming?", answer: "Functional programming treats functions as first-class values to compose, pass around and generate. Higher-order functions are the mechanism for combining small, reusable functions into bigger behavior." },
+      { question: "What's the practical difference between `return fn;` and `return fn();` inside a higher-order function?", answer: "`return fn;` returns the function itself, to be called later. `return fn();` calls it now and returns its result. Mixing them up causes \"why is this a function instead of a value\" bugs (or the reverse)." },
+      { question: "How would you build a `debounce(fn, delay)` higher-order function?", answer: "Return a function that, on every call, clears the previous timer (kept in a closed-over variable) and starts a new `setTimeout` to call `fn` after `delay`. So `fn` runs only once calls have stopped for that long." },
+      { question: "What does it mean for JavaScript to have 'first-class functions', and why does that matter for higher-order functions?", answer: "Functions can be stored in variables and data structures, passed as arguments and returned, like any value. Without that, higher-order functions couldn't exist." },
+      { question: "How would you implement a `once(fn)` higher-order function that only lets `fn` run a single time?", answer: "Close over a flag (and optionally a cached result) in the returned function. The first call runs `fn`, stores the result and flips the flag; later calls skip `fn` and return the stored result." },
+      { question: "Is a callback ever itself a higher-order function?", answer: "Yes, when the callback itself takes or returns a function, for example passing `memoize` or `compose` as an argument. Being a callback and being higher-order are independent. Note that the function returned by `greaterThan(10)` is not higher-order: `(m) => m > n` takes a number and returns a boolean. `greaterThan` is the higher-order one." },
     ],
     prerequisites: ["callbacks", "closures"],
     relatedTopics: ["callbacks", "closures", "array-methods"],
@@ -1040,16 +1022,15 @@ functions just adds indirection without benefit.
     level: "intermediate",
     description: "Quick ways to pull values out of arrays/objects, and to expand or collect values using ...",
     explanation: `
-Reading a few properties out of an object, or the first couple of items
-from an array, usually meant writing \`const name = user.name; const age =
-user.age;\` one line at a time. **Destructuring** lets you pull multiple
-values out in a single line, matching the shape of what you're reading
-from. Its close relative, the **spread/rest** operator (\`...\`), lets you
-expand a collection into individual values, or collect several
-individual values back into one.
+Reading a few properties from an object used to mean one line each:
+\`const name = user.name; const age = user.age;\`. **Destructuring** pulls
+several values out in one line, matching the shape of the data.
+
+Its relative, the **spread/rest** operator (\`...\`), expands a collection
+into individual values, or collects individual values into one.
     `.trim(),
     analogy:
-      "Destructuring is like unpacking a delivery box by naming exactly which items you want handed to you directly, instead of carrying the whole box around. Spread is like dumping the entire contents of one box into a bigger one; rest is the opposite — sweeping up 'everything else' into a single box of leftovers.",
+      "Destructuring is like unpacking a delivery box by naming exactly the items you want, instead of carrying the whole box. Spread empties one box into a bigger one; rest does the opposite, sweeping up \"everything else\" into one box of leftovers.",
     examples: [
       {
         title: "Destructuring objects and arrays",
@@ -1066,9 +1047,9 @@ function greet({ name, age }) {
 }
 greet(user); // "Hi Amara, age 28"`,
         walkthrough: [
-          { code: "const { name, age } = user;", explanation: "Pulls out just the name and age properties, matching them by key name." },
-          { code: "const [first, second] = numbers;", explanation: "Pulls out array items by position instead of by name." },
-          { code: "function greet({ name, age }) {...}", explanation: "Destructures directly in the parameter list, extracting exactly what the function needs." },
+          { code: "const { name, age } = user;", explanation: "Pulls out the name and age properties, matched by key." },
+          { code: "const [first, second] = numbers;", explanation: "Pulls out array items by position, not name." },
+          { code: "function greet({ name, age }) {...}", explanation: "Destructures in the parameter list, taking exactly what the function needs." },
         ],
       },
       {
@@ -1083,32 +1064,29 @@ console.log(sum(1, 2, 3, 4)); // 10`,
       },
     ],
     howItWorks: `
-Destructuring is really just special syntax for a series of individual
-assignments, matched by object key or array position, done all at once.
-Spread (\`...\` used when producing a new value) copies each
-element/property out one at a time into the new array/object. Rest
-(\`...\` used in a parameter list or destructuring pattern) does the
-opposite — it gathers up any remaining values into a single array.
+Destructuring is shorthand for several assignments at once, matched by
+object key or array position.
+
+Spread (\`...\` when building a new value) copies each element or property
+into the new array or object. Rest (\`...\` in a parameter list or
+destructuring pattern) does the opposite: it gathers the remaining values
+into one array (or object).
     `.trim(),
     whyItExists: `
-Both features exist to remove repetitive, line-by-line extraction and
-combination code. Destructuring makes "give me these specific pieces" a
-single readable line; spread/rest make "combine everything" or "gather
-the rest" equally short, especially common when copying objects/arrays
-immutably or writing flexible functions.
+Both remove repetitive line-by-line code. Destructuring makes "give me
+these pieces" one readable line; spread/rest make "combine everything" or
+"gather the rest" just as short. They're common when copying objects and
+arrays without mutation, and in flexible functions.
     `.trim(),
     whenToUse: `
-Use destructuring anytime you only need a few named pieces out of an
-object or array — especially in function parameters. Use spread whenever
-you want to copy or merge objects/arrays without mutating the originals.
-Use rest whenever a function should accept any number of arguments, or
-you want "everything else" from an object/array.
+- Destructuring: when you need a few named pieces from an object or array, especially in function parameters.
+- Spread: to copy or merge objects/arrays without changing the originals.
+- Rest: when a function should take any number of arguments, or you want "everything else" from an object/array.
     `.trim(),
     whenNotToUse: `
-Deeply nested destructuring patterns can become harder to read than a
-couple of plain property accesses — don't force it if it hurts clarity.
-And remember spread only makes a shallow copy — for nested objects,
-those nested values are still shared references, not fully cloned.
+Deeply nested destructuring can be harder to read than a couple of plain
+property reads, so don't force it. And spread makes only a shallow copy:
+nested values are still shared, not cloned.
     `.trim(),
     commonMistakes: [
       "Assuming spread makes a deep copy — it only copies one level; nested objects/arrays are still shared.",
@@ -1121,24 +1099,24 @@ those nested values are still shared references, not fully cloned.
       { difficulty: "Hard", prompt: "Write a function `sum(...numbers)` using rest parameters that adds any number of arguments together." },
     ],
     interviewQuestions: [
-      { question: "What's the difference between destructuring an array and destructuring an object?", answer: "Array destructuring matches by position — `const [a, b] = arr` always takes the first two elements regardless of name; object destructuring matches by property name — `const { x, y } = obj` pulls out whichever keys are named, in any order." },
-      { question: "What does this log? `const { count = 10 } = { count: undefined }; const { total = 10 } = { total: null }; console.log(count, total);`", answer: "`10` then `null` — a destructuring default only applies when the corresponding value is exactly `undefined` (missing or explicitly `undefined`); any other falsy value, including `null`, is used as-is." },
-      { question: "How do you rename a variable while destructuring an object?", answer: "`const { name: userName } = user;` extracts the `name` property but binds it locally as `userName` instead of `name` — useful for avoiding a naming collision or for a clearer local name." },
-      { question: "How does nested destructuring work?", answer: "The pattern mirrors the shape of the data being pulled apart — `const { address: { city } } = user;` reaches into `user.address` and pulls out just its `city` property, without needing an intermediate `const address = user.address;` step." },
-      { question: "What does this log? `const { id, ...details } = { id: 1, name: \"Amara\", age: 28 }; console.log(id, details);`", answer: "`1` then `{ name: \"Amara\", age: 28 }` — `id` is pulled out individually, and the rest pattern (`...details`) collects every remaining property into a new object." },
-      { question: "What does this log? `let a = 1, b = 2; [a, b] = [b, a]; console.log(a, b);`", answer: "`2` then `1` — the right side builds a temporary array `[b, a]` (i.e. `[2, 1]`) first, and array destructuring then assigns its elements back to `a` and `b` in order, swapping them without a manual temporary variable." },
-      { question: "Why is destructuring especially useful in function parameters?", answer: "It lets a function declare exactly which named properties it needs from an object argument right in the signature — `function greet({ name, age }) {}` — making the function's dependencies visible at a glance instead of buried in `user.name`/`user.age` lookups inside the body." },
-      { question: "Does spreading an object or array make a deep copy?", answer: "No — spread only copies one level. Any nested object or array inside is still the exact same reference in both the original and the copy, so mutating a nested value through the copy is visible through the original too." },
-      { question: "If spread only makes a shallow copy, how would you actually deep-clone a value?", answer: "`structuredClone(value)` deep-clones most data (objects, arrays, dates, even circular references) natively; `JSON.parse(JSON.stringify(value))` is an older alternative but silently drops functions and `undefined`, and throws on circular references." },
-      { question: "What does spreading an array into a function call do?", answer: "It expands the array's elements into individual arguments — `Math.max(...numbers)` calls `Math.max` with each number as its own argument, which is otherwise impossible to do with an array in one call since `Math.max` doesn't accept an array directly." },
-      { question: "What does this log? `const nums = [4, 2, 9, 1]; console.log(Math.max(...nums));`", answer: "`9` — spreading `nums` passes `4, 2, 9, 1` as four separate arguments to `Math.max`, which then returns the largest of them." },
-      { question: "What's the difference between rest parameters and the old `arguments` object?", answer: "A rest parameter (`function f(...args)`) collects extra arguments into a genuine array with every array method available; `arguments` is only array-like (it has indexes and `length` but no `map`/`filter`/etc.), and arrow functions don't have their own `arguments` at all, unlike rest parameters which work in any function." },
-      { question: "What does this log? `function outer() { const inner = () => console.log(arguments[0]); inner(); } outer(\"hi\");`", answer: "`\"hi\"` — the arrow function `inner` has no `arguments` object of its own, so referencing `arguments` inside it looks outward along the scope chain to `outer`'s `arguments`, the same lexical lookup mechanism a closure uses for any other variable." },
-      { question: "Where must a rest parameter appear in a function's parameter list?", answer: "Last — `function f(a, ...rest)` is valid, but `function f(...rest, a)` is a `SyntaxError`, because a rest parameter has to be able to greedily collect every remaining argument, which only makes sense as the final parameter." },
-      { question: "How would you split an array into its first element and 'everything else' using destructuring?", answer: "`const [first, ...rest] = arr;` — `first` gets the element at index 0, and the rest pattern collects every remaining element into a new array called `rest`." },
-      { question: "When merging two objects with spread, which properties win if both objects share a key?", answer: "Whichever object is spread later — `{ ...a, ...b }` lets `b`'s properties overwrite any matching keys from `a`, since each spread is applied left to right and later assignments to the same key simply replace earlier ones." },
-      { question: "What's the difference between `Object.assign(target, source)` and object spread `{ ...source }`?", answer: "`Object.assign` mutates and returns its first argument, copying `source`'s properties directly into it; spread always produces a brand-new object and leaves every input completely untouched — passing `{}` as `Object.assign`'s target is what makes it behave non-destructively, like spread." },
-      { question: "Can a destructuring pattern's default value reference another variable being destructured in the very same pattern?", answer: "No — each default expression can only see variables already established in an outer scope (or earlier parameters in a function signature); it can't reach across to a sibling property being destructured alongside it in the same pattern." },
+      { question: "What's the difference between destructuring an array and destructuring an object?", answer: "Array destructuring matches by position: `const [a, b] = arr` takes the first two elements. Object destructuring matches by name: `const { x, y } = obj` takes those keys, in any order." },
+      { question: "What does this log? `const { count = 10 } = { count: undefined }; const { total = 10 } = { total: null }; console.log(count, total);`", answer: "`10` then `null`. A default applies only when the value is `undefined` (missing or explicit). Other falsy values, including `null`, are used as-is." },
+      { question: "How do you rename a variable while destructuring an object?", answer: "`const { name: userName } = user;` takes the `name` property and stores it as `userName`. Useful to avoid a name clash or use a clearer name." },
+      { question: "How does nested destructuring work?", answer: "The pattern mirrors the data's shape. `const { address: { city } } = user;` reaches into `user.address` and takes its `city`, with no intermediate `const address = user.address;`." },
+      { question: "What does this log? `const { id, ...details } = { id: 1, name: \"Amara\", age: 28 }; console.log(id, details);`", answer: "`1` then `{ name: \"Amara\", age: 28 }`. `id` is pulled out, and the rest pattern (`...details`) collects the remaining properties into a new object." },
+      { question: "What does this log? `let a = 1, b = 2; [a, b] = [b, a]; console.log(a, b);`", answer: "`2` then `1`. The right side builds a temporary array `[2, 1]`, then destructuring assigns it back to `a` and `b`, swapping them without a temp variable." },
+      { question: "Why is destructuring especially useful in function parameters?", answer: "The signature lists exactly which properties the function needs (`function greet({ name, age }) {}`), so its dependencies are visible at a glance instead of buried in `user.name`/`user.age` reads in the body." },
+      { question: "Does spreading an object or array make a deep copy?", answer: "No, only one level. Nested objects and arrays are the same references in the original and the copy, so changing one through the copy shows in the original." },
+      { question: "If spread only makes a shallow copy, how would you actually deep-clone a value?", answer: "`structuredClone(value)` deep-clones most data natively (objects, arrays, dates, even circular references). `JSON.parse(JSON.stringify(value))` is older; it silently drops functions and `undefined`, and throws on circular references." },
+      { question: "What does spreading an array into a function call do?", answer: "It passes each element as its own argument. `Math.max(...numbers)` works even though `Math.max` doesn't accept an array directly." },
+      { question: "What does this log? `const nums = [4, 2, 9, 1]; console.log(Math.max(...nums));`", answer: "`9`. Spread passes `4, 2, 9, 1` as four arguments, and `Math.max` returns the largest." },
+      { question: "What's the difference between rest parameters and the old `arguments` object?", answer: "A rest parameter (`function f(...args)`) collects extra arguments into a real array with all array methods, and works in any function. `arguments` is only array-like (indexes and `length`, no `map`/`filter`/etc.), and arrow functions don't have their own." },
+      { question: "What does this log? `function outer() { const inner = () => console.log(arguments[0]); inner(); } outer(\"hi\");`", answer: "`\"hi\"`. The arrow function has no `arguments` of its own, so the lookup goes out to `outer`'s `arguments`, the same lexical lookup closures use for any variable." },
+      { question: "Where must a rest parameter appear in a function's parameter list?", answer: "Last. `function f(a, ...rest)` is valid; `function f(...rest, a)` is a `SyntaxError`, since rest collects every remaining argument." },
+      { question: "How would you split an array into its first element and 'everything else' using destructuring?", answer: "`const [first, ...rest] = arr;`. `first` gets index 0, and `rest` gets a new array of the remaining elements." },
+      { question: "When merging two objects with spread, which properties win if both objects share a key?", answer: "The one spread later. In `{ ...a, ...b }`, `b`'s values overwrite matching keys from `a`, since spreads apply left to right." },
+      { question: "What's the difference between `Object.assign(target, source)` and object spread `{ ...source }`?", answer: "`Object.assign` copies `source`'s properties into its first argument, mutating and returning it. Spread always creates a new object and changes nothing. Passing `{}` as the target makes `Object.assign` non-mutating, like spread." },
+      { question: "Can a destructuring pattern's default value reference another variable being destructured in the very same pattern?", answer: "Yes, as long as that variable comes earlier in the pattern. Defaults are evaluated left to right, so `const [x = 1, y = x] = []` gives `y === 1`. Referring to a later one throws a `ReferenceError` (temporal dead zone)." },
     ],
     prerequisites: ["objects", "arrays"],
     relatedTopics: ["objects", "arrays", "functions"],

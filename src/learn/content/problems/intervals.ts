@@ -7,13 +7,11 @@ export const intervalsProblems: Problem[] = [
     difficulty: "Medium",
     category: "intervals",
     description: `
-You're given a list of intervals that's already sorted by start time, and no
-two of them overlap or touch. Someone now hands you one more interval to add
-to the list.
+You're given a list of intervals sorted by start time, where no two overlap
+or touch. Insert one new interval in the right position.
 
-Add it in the correct position. If the new interval overlaps with one or more
-existing intervals, merge all of them into a single combined interval so the
-final list is still sorted and still has no overlaps.
+If it overlaps any existing intervals, merge them all into one, so the list
+stays sorted with no overlaps.
     `.trim(),
     examples: [
       {
@@ -38,30 +36,29 @@ final list is still sorted and still has no overlaps.
       "0 <= start <= end <= 10^5",
     ],
     hints: [
-      "The list is already sorted, so you never need to re-sort the whole thing — think of the result as three chunks: intervals entirely before the new one, intervals that overlap it, and intervals entirely after it.",
-      "While you're inside the 'overlapping' chunk, keep expanding a running start/end pair instead of merging pairwise.",
-      "An interval overlaps the new one as long as its start is not past the new interval's current end.",
+      "The list is already sorted, so don't re-sort. Think of three chunks: intervals before the new one, intervals that overlap it, and intervals after it.",
+      "In the overlapping chunk, keep widening one running start/end pair instead of merging pairwise.",
+      "An interval overlaps the new one if its start isn't past the new interval's current end.",
     ],
     approachOverview: `
-A quick way to solve this is to just add the new interval to the pile, sort
-everything by start time, and then merge overlapping neighbors — the same
-technique you'd use for a generic "merge all overlapping intervals" problem.
-It works, but it throws away the fact that the input was already sorted.
+The quick way: add the new interval, sort by start time, and merge
+overlapping neighbors, as in Merge Intervals. It works, but it ignores that
+the input was already sorted.
 
-Since the list is already ordered and non-overlapping, you can do it in a
-single left-to-right pass: copy over every interval that ends before the new
-interval begins (they can't possibly overlap it), then absorb every interval
-that does overlap by growing the new interval's start and end to cover them,
-and finally copy over everything that's left.
+Since the list is sorted and non-overlapping, one left-to-right pass is
+enough:
+
+- Copy every interval that ends before the new one starts.
+- Absorb every overlapping interval by widening the new interval to cover it.
+- Copy everything left.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Sort and Merge",
         explanation: `
-Treat this exactly like the general "merge overlapping intervals" problem:
-drop the new interval into the list, sort everything by start time, then walk
-through once, merging any interval into the last one in your result whenever
-they overlap.
+Treat it like Merge Intervals: add the new interval, sort by start time, then
+walk through once, merging each interval into the last result whenever they
+overlap.
         `.trim(),
         code: `function insert(intervals, newInterval) {
   const merged = [...intervals, newInterval];
@@ -84,17 +81,13 @@ they overlap.
       {
         approach: "Optimal — Single Pass (Before / Overlap / After)",
         explanation: `
-Because the input is already sorted and non-overlapping, you can skip sorting
-entirely. Walk through the intervals once:
+The input is already sorted and non-overlapping, so skip sorting. Walk
+through once:
 
-- First, copy across any interval that ends before the new interval even
-  starts — it can't overlap, so it goes straight into the answer.
-- Next, for every interval whose start is not past the new interval's current
-  end, absorb it: shrink or grow the new interval's start/end to cover it.
-  Keep doing this as long as intervals keep overlapping.
-- Once that stops, push the now-fully-merged new interval into the answer.
-- Finally, copy across everything that's left — none of it can overlap the
-  new interval anymore.
+- Copy every interval that ends before the new interval starts. It can't overlap.
+- Absorb every interval whose start isn't past the new interval's current end, widening the new interval's start/end to cover it.
+- Push the merged interval.
+- Copy everything left. None of it can overlap.
         `.trim(),
         code: `function insert(intervals, newInterval) {
   const result = [];
@@ -126,19 +119,19 @@ entirely. Walk through the intervals once:
         walkthrough: [
           {
             code: "while (i < n && intervals[i][1] < start) { result.push(intervals[i]); i++; }",
-            explanation: "Copies over every interval that ends before the new interval starts — untouched, no overlap possible.",
+            explanation: "Copies every interval that ends before the new one starts. No overlap is possible.",
           },
           {
             code: "while (i < n && intervals[i][0] <= end) { start = Math.min(...); end = Math.max(...); i++; }",
-            explanation: "Absorbs every interval whose start falls within reach, growing the merged range to cover all of them.",
+            explanation: "Absorbs every overlapping interval, widening the merged range to cover it.",
           },
           {
             code: "result.push([start, end]);",
-            explanation: "Pushes the fully-merged interval once no more overlaps remain.",
+            explanation: "Pushes the merged interval once no overlaps remain.",
           },
           {
             code: "while (i < n) { result.push(intervals[i]); i++; }",
-            explanation: "Copies over whatever is left — all of it starts after the merged interval ends.",
+            explanation: "Copies the rest. It all starts after the merged interval ends.",
           },
         ],
       },
@@ -153,13 +146,12 @@ entirely. Walk through the intervals once:
     difficulty: "Medium",
     category: "intervals",
     description: `
-You're given a list of intervals, in no particular order, where each interval
-is a *start* and *end* pair. Some of them overlap — meaning they share at
-least one point in time. Combine every group of overlapping intervals into a
-single interval that spans all of them, and return the resulting list.
+You're given an unsorted list of intervals, each a *start* and *end* pair.
+Some overlap: they share at least one point. Merge every group of overlapping
+intervals into one interval that spans them all, and return the result.
 
-Two intervals that merely touch (one ends exactly where the other begins) are
-treated as overlapping here, since that shared point belongs to both.
+Intervals that just touch (one ends where the other begins) count as
+overlapping, since they share that point.
     `.trim(),
     examples: [
       {
@@ -184,32 +176,27 @@ treated as overlapping here, since that shared point belongs to both.
       "0 <= start <= end <= 10^4",
     ],
     hints: [
-      "Comparing every interval against every other interval to look for overlaps works, but it's wasteful — is there an order that guarantees overlaps only ever happen between neighbors?",
-      "If you sort by start time, once you place an interval into your answer, the only interval it could still merge with is the very last one you placed.",
-      "Two sorted intervals overlap exactly when the next one's start is less than or equal to the current merged interval's end.",
+      "Comparing every pair works but is wasteful. Is there an order where overlaps only happen between neighbors?",
+      "Sort by start time. Then each new interval can only merge with the last one you placed.",
+      "Two sorted intervals overlap exactly when the next start is less than or equal to the current merged end.",
     ],
     approachOverview: `
-A direct way to solve this is to repeatedly scan the list for any two
-intervals that overlap and merge them, starting over each time you find a
-merge, until nothing overlaps anymore. It's correct, but slow, because you
-keep re-checking pairs that were never going to overlap in the first place.
+The direct way: repeatedly find two overlapping intervals, merge them, and
+start over, until nothing overlaps. It's correct but slow, because it keeps
+re-checking pairs that will never overlap.
 
-The key realization is that if you first **sort the intervals by start
-time**, an overlap can only ever happen between an interval and the one right
-before it in that sorted order — nothing further back needs to be
-reconsidered. That turns the problem into a single scan: keep a "current
-merged interval," and every time the next interval's start creeps back into
-it, stretch it to cover that interval too; otherwise, close it out and start
-a new one.
+If you first **sort by start time**, an interval can only overlap the one
+right before it. That makes it a single scan: keep a "current merged
+interval." If the next interval starts inside it, stretch it to cover that
+interval. Otherwise, close it and start a new one.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Repeated Pairwise Merging",
         explanation: `
-Keep scanning the list for any pair of intervals that overlap. Whenever you
-find one, merge it into a single interval, remove the two originals, and
-start scanning again from the top. Stop once a full pass finds nothing left
-to merge.
+Scan for any overlapping pair. Merge it into one interval, replacing the two
+originals, and start scanning again from the top. Stop when a full pass finds
+nothing to merge.
         `.trim(),
         code: `function merge(intervals) {
   const result = intervals.map((iv) => [...iv]);
@@ -239,12 +226,10 @@ to merge.
       {
         approach: "Optimal — Sort by Start, Then Scan",
         explanation: `
-Sort the intervals by their start value. Now walk through them left to right,
-keeping the last interval you've added to the answer. If the next interval's
-start is at or before that last interval's end, they overlap (or touch), so
-stretch the last interval's end to cover it. Otherwise, the next interval
-can't reach back to anything already merged, so it starts a fresh entry in
-the answer.
+Sort by start, then walk left to right. If the next interval starts at or
+before the last result's end, they overlap (or touch), so stretch the last
+result's end to cover it. Otherwise it can't reach anything already merged,
+so it starts a new entry.
         `.trim(),
         code: `function merge(intervals) {
   const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
@@ -268,15 +253,15 @@ the answer.
         walkthrough: [
           {
             code: "const sorted = [...intervals].sort((a, b) => a[0] - b[0]);",
-            explanation: "Sorting by start guarantees any overlap can only involve the most recently placed interval.",
+            explanation: "After sorting by start, any overlap can only involve the most recently placed interval.",
           },
           {
             code: "if (current[0] <= last[1]) { last[1] = Math.max(last[1], current[1]); }",
-            explanation: "The next interval starts inside (or right at the edge of) the last one, so it stretches the last interval instead of becoming a new one.",
+            explanation: "The next interval starts inside (or at the edge of) the last one, so it stretches the last interval.",
           },
           {
             code: "else { result.push(current); }",
-            explanation: "The next interval starts after everything merged so far ends, so it opens a brand-new group.",
+            explanation: "The next interval starts after everything merged so far, so it opens a new group.",
           },
         ],
       },
@@ -291,12 +276,11 @@ the answer.
     difficulty: "Medium",
     category: "intervals",
     description: `
-You're given a list of intervals, and some of them overlap with each other.
-Find the smallest number of intervals you'd need to remove so that none of
-the remaining intervals overlap.
+You're given a list of intervals, some overlapping. Return the fewest
+intervals you must remove so the rest don't overlap.
 
-Here, two intervals that only touch at a single point (one ends exactly where
-the other starts) are **not** considered overlapping — they can both stay.
+Here, intervals that only touch (one ends where the other starts) do **not**
+overlap. Both can stay.
     `.trim(),
     examples: [
       {
@@ -321,36 +305,33 @@ the other starts) are **not** considered overlapping — they can both stay.
       "-5 * 10^4 <= start < end <= 5 * 10^4",
     ],
     hints: [
-      "This is really the same as asking: what is the largest group of intervals you can keep with none overlapping? Whatever's left over is what you remove.",
-      "If you sort by *end time* instead of start time, a simple greedy rule works: always keep the interval that finishes earliest, because it leaves the most room for everything after it.",
-      "Once you've kept an interval, any later interval that starts before that interval's end has to be thrown away — it's the one causing the overlap.",
+      "Flip the question: what's the largest set of non-overlapping intervals you can keep? Remove the rest.",
+      "Sort by *end time*. Then a greedy rule works: keep the interval that finishes earliest, because it leaves the most room for the rest.",
+      "Once you keep an interval, any later one that starts before its end must go. It's the one causing the overlap.",
     ],
     approachOverview: `
-One way to attack this is with dynamic programming: sort by start time, and
-for each interval work out the longest chain of non-overlapping intervals
-that could end there, by checking every earlier interval that doesn't
-conflict with it. The answer is then the total count minus the longest such
-chain. It's correct, but it's checking a lot of pairs that a smarter order
-would let you skip.
+One option is dynamic programming. Sort by start time, and for each interval
+find the longest chain of non-overlapping intervals ending there, checking
+every earlier interval that doesn't conflict. The answer is the total minus
+the longest chain. It's correct but checks many pairs a better order would
+skip.
 
-The faster route is a classic greedy trick: **sort by end time**. Then walk
-through the intervals keeping track of the end time of the last interval you
-decided to keep. Whenever the next interval starts before that end time, it
-overlaps, so it's the one you remove (never the one you already kept — it
-had the earliest possible end, so it's always the safer one to hang onto).
-Every time you don't need to remove one, update your "last kept end" to the
-new interval's end.
+The faster route is a classic greedy trick: **sort by end time**. Walk
+through, tracking the end of the last interval you kept:
+
+- If the next interval starts before that end, it overlaps, so remove it. Never remove the kept one: it ends earliest, so it's the safer one to keep.
+- Otherwise, keep it and update the "last kept end" to its end.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — DP on Longest Non-overlapping Chain",
         explanation: `
-Sort intervals by start time. For each interval i, look at every earlier
-interval j that ends at or before interval i starts — those two could both
-be kept together. \`dp[i]\` stores the length of the longest chain of
-mutually non-overlapping intervals that ends with interval i. The largest
-value in \`dp\` is the most intervals you can keep overall, so the number to
-remove is the total count minus that maximum.
+Sort by start time. \`dp[i]\` is the longest chain of non-overlapping
+intervals ending with interval i. To compute it, check every earlier interval
+j that ends at or before i starts, since both can be kept.
+
+The largest value in \`dp\` is the most you can keep, so remove the total
+minus that maximum.
         `.trim(),
         code: `function eraseOverlapIntervals(intervals) {
   const n = intervals.length;
@@ -377,15 +358,11 @@ remove is the total count minus that maximum.
       {
         approach: "Optimal — Greedy, Sort by End Time",
         explanation: `
-Sort the intervals by their end time. Walk through them left to right,
-tracking the end time of the last interval you've decided to keep (start with
-the first interval always kept, since it has the earliest possible end).
+Sort by end time and walk left to right, tracking the end of the last kept
+interval. Always keep the first one, since it ends earliest.
 
-For each next interval, if its start is at or after that tracked end time, it
-doesn't overlap what you've kept — keep it too, and update the tracked end.
-If its start is before that end time, it overlaps, so it must be removed;
-count it, but leave the tracked end alone, since the interval you already
-kept still ends earlier and stays the better anchor.
+- If the next interval starts at or after the tracked end, keep it and update the end.
+- If it starts before, it overlaps, so remove it. Leave the tracked end alone: the kept interval ends earlier and is the better anchor.
         `.trim(),
         code: `function eraseOverlapIntervals(intervals) {
   if (intervals.length === 0) return 0;
@@ -408,15 +385,15 @@ kept still ends earlier and stays the better anchor.
         walkthrough: [
           {
             code: "const sorted = [...intervals].sort((a, b) => a[1] - b[1]);",
-            explanation: "Sorting by end time means the interval that frees up room soonest always comes first.",
+            explanation: "Sorting by end time puts the interval that frees up room soonest first.",
           },
           {
             code: "if (sorted[i][0] >= lastEnd) { keptCount++; lastEnd = sorted[i][1]; }",
-            explanation: "The next interval starts after the last kept one ends, so it's safe to keep — extend the tracked end.",
+            explanation: "The next interval starts after the last kept one ends, so keep it and move the tracked end.",
           },
           {
             code: "// else: overlap, leave lastEnd untouched",
-            explanation: "The next interval overlaps what's already kept, so it's the one that must be removed; the previously kept end is still the best anchor.",
+            explanation: "The next interval overlaps, so it's removed. The kept end is still the best anchor.",
           },
         ],
       },
@@ -431,13 +408,11 @@ kept still ends earlier and stays the better anchor.
     difficulty: "Easy",
     category: "intervals",
     description: `
-You're given a list of meeting time intervals for one person's calendar,
-each with a start and end time. Determine whether this person could
-realistically attend every single meeting — that is, whether any two
-meetings overlap.
+You're given one person's meeting times, each with a start and end. Return
+whether they can attend every meeting, meaning no two meetings overlap.
 
-Meetings that just touch (one ends exactly when the next begins) are fine —
-back-to-back meetings don't count as a conflict.
+Back-to-back meetings (one ends exactly when the next begins) don't count as
+a conflict.
     `.trim(),
     examples: [
       {
@@ -462,27 +437,24 @@ back-to-back meetings don't count as a conflict.
       "0 <= start < end <= 10^6",
     ],
     hints: [
-      "Comparing every meeting against every other meeting for a conflict will work, but you can avoid most of those comparisons.",
-      "If you sort the meetings by start time, a conflict can only ever appear between a meeting and the one immediately before it.",
+      "Comparing every pair of meetings works, but you can skip most of those comparisons.",
+      "Sort by start time. Then a conflict can only appear between a meeting and the one right before it.",
       "Two sorted meetings conflict exactly when the next one starts before the previous one ends.",
     ],
     approachOverview: `
-The direct approach is to compare every pair of meetings and check if they
-overlap in time — if any pair does, the person can't attend everything.
+The direct approach compares every pair of meetings. If any pair overlaps,
+the person can't attend everything.
 
-A faster approach sorts the meetings **by start time** first. Once sorted, if
-any two meetings are going to conflict, they must be neighbors in that sorted
-order — a meeting can't skip over another one to conflict with something
-further away. So a single pass comparing each meeting to the one right before
-it is enough to catch every possible conflict.
+Faster: sort **by start time** first. If there's any conflict at all, some
+pair of neighbors in that order will conflict. So one pass comparing each
+meeting to the one before it catches every conflict.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Compare Every Pair",
         explanation: `
-For every pair of meetings, check whether they overlap. Two intervals
-[a, b] and [c, d] overlap (not just touch) exactly when a < d and c < b. If
-any pair overlaps, the person can't make every meeting.
+Check every pair of meetings. Intervals [a, b] and [c, d] overlap (not just
+touch) exactly when a < d and c < b. If any pair overlaps, return false.
         `.trim(),
         code: `function canAttendMeetings(intervals) {
   for (let i = 0; i < intervals.length; i++) {
@@ -501,10 +473,9 @@ any pair overlaps, the person can't make every meeting.
       {
         approach: "Optimal — Sort by Start, Check Neighbors",
         explanation: `
-Sort the meetings by start time. Then check each meeting against the one
-right before it — if the current meeting starts before the previous one
-ends, they conflict, so the person can't attend both. If every neighboring
-pair is conflict-free, the whole schedule is conflict-free.
+Sort by start time, then check each meeting against the one before it. If a
+meeting starts before the previous one ends, they conflict. If no neighbors
+conflict, the whole schedule is fine.
         `.trim(),
         code: `function canAttendMeetings(intervals) {
   const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
@@ -522,11 +493,11 @@ pair is conflict-free, the whole schedule is conflict-free.
         walkthrough: [
           {
             code: "const sorted = [...intervals].sort((a, b) => a[0] - b[0]);",
-            explanation: "Sorting by start time means any conflict must show up between adjacent meetings.",
+            explanation: "After sorting by start time, any conflict shows up between adjacent meetings.",
           },
           {
             code: "if (sorted[i][0] < sorted[i - 1][1]) return false;",
-            explanation: "If the next meeting starts before the previous one finishes, the schedule is impossible to attend in full.",
+            explanation: "The next meeting starts before the previous one ends, so not every meeting can be attended.",
           },
         ],
       },
@@ -541,13 +512,11 @@ pair is conflict-free, the whole schedule is conflict-free.
     difficulty: "Medium",
     category: "intervals",
     description: `
-You're given a list of meeting time intervals. This time, instead of one
-person's calendar, imagine you're scheduling rooms for all these meetings at
-once. Some of them overlap in time and would need separate rooms running
-simultaneously.
+You're given a list of meeting times, and you're booking rooms for all of
+them. Overlapping meetings need separate rooms.
 
-Find the minimum number of rooms needed so that every meeting can happen,
-with no two overlapping meetings sharing the same room.
+Return the minimum number of rooms so every meeting can happen, with no two
+overlapping meetings in the same room.
     `.trim(),
     examples: [
       {
@@ -572,33 +541,32 @@ with no two overlapping meetings sharing the same room.
       "0 <= start < end <= 10^6",
     ],
     hints: [
-      "The answer is really: at the single busiest moment in time, how many meetings are happening at once? That's how many rooms you need.",
-      "You can check 'how many meetings are active' at every meeting's start time and take the maximum — but that means rescanning the whole list each time.",
-      "Instead of thinking meeting by meeting, think event by event: sort all the start times and all the end times separately, then sweep through — every start needs a room, every end frees one up.",
+      "At the busiest moment, how many meetings run at once? That's how many rooms you need.",
+      "You could count active meetings at every start time and take the maximum, but that rescans the whole list each time.",
+      "Think in events, not meetings: sort start times and end times separately, then sweep. Each start needs a room; each end frees one.",
     ],
     approachOverview: `
-A direct way to find the busiest moment is: for every meeting's start time,
-count how many meetings are actually in progress right then (start <= t <
-end), and keep the largest count you see across all of them. That's the
-minimum number of rooms.
+The direct way: at each meeting's start time t, count the meetings in
+progress (start <= t < end). The largest count is the minimum number of
+rooms.
 
-The faster approach separates all the **start times** and all the **end
-times** into two sorted lists, and sweeps through them like a timeline of
-events. Walk the start times in order; each time you're about to admit a
-new meeting, first check whether an earlier meeting has already ended by
-then — if so, that room is free and can be reused, so no new room is
-needed. Otherwise, you need to open a new room. Tracking the running count
-of rooms in use (and its peak) as you sweep gives you the answer in one pass
-over the sorted events.
+Faster: put all **start times** and all **end times** in two sorted lists
+and sweep them like a timeline. Before admitting each new meeting, check
+whether an earlier meeting has already ended:
+
+- If so, reuse its room.
+- If not, open a new room.
+
+Track the rooms in use and their peak. The peak is the answer, found in one
+pass over the sorted events.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Count Active Meetings at Each Start Time",
         explanation: `
-For every meeting's start time, scan the whole list and count how many
-meetings are actually in progress at that moment (their start is at or
-before it, and their end is after it). The largest count found across all
-start times is the number of rooms needed, since that's the busiest instant.
+At each meeting's start time, count the meetings in progress (start at or
+before it, end after it). The largest count is the busiest moment, and the
+number of rooms needed.
         `.trim(),
         code: `function minMeetingRooms(intervals) {
   let maxRooms = 0;
@@ -622,16 +590,14 @@ start times is the number of rooms needed, since that's the busiest instant.
       {
         approach: "Optimal — Sweep Sorted Starts and Ends",
         explanation: `
-Split the meetings into two separate sorted arrays: all the start times and
-all the end times. Now walk through the start times in order with one
-pointer, and the end times in order with another pointer.
+Sort the start times and end times into two arrays, and walk each with its
+own pointer. At each step, compare the current start with the earliest
+remaining end:
 
-At each step, compare the current start against the earliest end still
-outstanding. If the start comes before that end, a brand-new room is needed
-right now (increment rooms in use). If the start is at or after that end,
-some earlier meeting has already finished, so that room can be reused
-instead (decrement rooms in use, and move to the next end). Track the
-highest "rooms in use" value seen — that peak is the answer.
+- Start is before that end: a new room is needed (rooms in use + 1).
+- Start is at or after that end: a meeting has finished, so its room is freed (rooms in use - 1, move to the next end).
+
+The highest "rooms in use" seen is the answer.
         `.trim(),
         code: `function minMeetingRooms(intervals) {
   const n = intervals.length;
@@ -663,19 +629,19 @@ highest "rooms in use" value seen — that peak is the answer.
         walkthrough: [
           {
             code: "const starts = ...sort(...); const ends = ...sort(...);",
-            explanation: "Separating and sorting starts and ends turns the schedule into a clean timeline of 'room needed' and 'room freed' events.",
+            explanation: "Sorted starts and ends form a timeline of 'room needed' and 'room freed' events.",
           },
           {
             code: "if (starts[startPtr] < ends[endPtr]) { roomsInUse++; startPtr++; }",
-            explanation: "A new meeting begins before the earliest ongoing one finishes, so a new room is required right now.",
+            explanation: "A meeting starts before the earliest ongoing one ends, so it needs a new room.",
           },
           {
             code: "else { roomsInUse--; endPtr++; }",
-            explanation: "An earlier meeting has already ended by this point, so its room is free to be reused instead of opening a new one.",
+            explanation: "An earlier meeting has ended, so its room is freed for reuse.",
           },
           {
             code: "maxRooms = Math.max(maxRooms, roomsInUse);",
-            explanation: "Tracks the busiest moment across the whole sweep — that peak is the minimum number of rooms required.",
+            explanation: "Tracks the busiest moment. That peak is the minimum number of rooms.",
           },
         ],
       },
@@ -690,13 +656,12 @@ highest "rooms in use" value seen — that peak is the answer.
     difficulty: "Hard",
     category: "intervals",
     description: `
-You're given a list of intervals, where each interval covers a range of
-integers from its start to its end (inclusive), and a list of query points.
+You're given intervals, each covering the integers from start to end
+(inclusive), and a list of query points.
 
-For each query, look at every interval that contains that point, and find the
-**size** of the smallest one among them (size meaning end - start + 1, i.e.
-how many integers it covers). If no interval contains the query point at all,
-the answer for that query is -1.
+For each query, return the **size** of the smallest interval that contains
+it. Size is end - start + 1, the number of integers covered. If no interval
+contains the query, its answer is -1.
     `.trim(),
     examples: [
       {
@@ -718,32 +683,28 @@ the answer for that query is -1.
       "1 <= query <= 10^7",
     ],
     hints: [
-      "Checking every interval against every query directly works, but with up to 10^5 of each, that's too slow.",
-      "Try answering the queries in sorted order instead of the order they were given — as the query value grows, only intervals with a small enough start ever need to be considered, and you only ever add them, never remove and re-check from scratch.",
-      "Keep the currently 'available' intervals (ones that have started but might not have ended yet) in a structure that can hand you the smallest one instantly — a min-heap keyed by size, discarding any interval whose end has already passed the current query.",
+      "Checking every interval against every query works, but with up to 10^5 of each, it's too slow.",
+      "Answer queries in sorted order. As the query value grows, intervals with a small enough start become relevant, and you only add them, never re-check from scratch.",
+      "Keep 'available' intervals (started, maybe not ended) in a min-heap keyed by size, so the smallest is instant. Discard any whose end is before the current query.",
     ],
     approachOverview: `
-The straightforward approach checks, for every single query, every interval
-to see if it contains that point and keeps the smallest one that does. That
-works but redoes a full scan for every query.
+The straightforward approach scans every interval for every query and keeps
+the smallest one that contains it. It works, but repeats a full scan per
+query.
 
-The faster approach processes queries in **sorted order** (remembering their
-original positions so the answers can be placed back correctly) alongside
-intervals sorted by start time. As the query value increases, sweep forward
-through the intervals: any interval whose start is at or before the current
-query becomes "available" and goes into a **min-heap ordered by size**.
-Before answering each query, pop off any available interval whose end is
-already behind the current query — it's expired and can never help this or
-any later query. Whatever remains at the top of the heap is the smallest
-interval currently containing the query — exactly the answer needed.
+Faster: process queries in **sorted order** (remembering their original
+positions for the answers), with intervals sorted by start. For each query:
+
+- Push every interval whose start is at or before the query into a **min-heap ordered by size**.
+- Pop any interval whose end is before the query. It has expired and can't help this or any later query.
+- The top of the heap is the smallest interval containing the query.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Interval per Query",
         explanation: `
-For each query, scan every interval. If the interval contains the query
-point, compute its size and keep track of the smallest one seen. If nothing
-contains the query, its answer is -1.
+For each query, scan every interval and keep the smallest size among those
+containing the query. If none contain it, the answer is -1.
         `.trim(),
         code: `function minInterval(intervals, queries) {
   const result = [];
@@ -769,17 +730,14 @@ contains the query, its answer is -1.
       {
         approach: "Optimal — Sort + Min-Heap Sweep",
         explanation: `
-Sort the intervals by start time, and sort the queries by value while
-remembering each query's original index (so the final answers can be placed
-back in the right slots).
+Sort intervals by start, and sort queries by value, keeping each query's
+original index so answers go back in the right slots.
 
-Sweep through the sorted queries. For each one: first, push every interval
-whose start is at or before this query into a min-heap keyed by interval
-size (breaking ties doesn't matter, but the end is stored too so expired
-entries can be recognized). Then, pop off any interval at the top of the
-heap whose end has already fallen behind the current query — it's no longer
-relevant to this or any future (larger) query. Whatever's left on top of the
-heap, if anything, is the smallest interval still covering this query.
+For each sorted query:
+
+- Push every interval whose start is at or before it into a min-heap keyed by size. Store the end too, so expired entries can be spotted. Tie order doesn't matter.
+- Pop any top interval whose end is before the query. It can't help this or any larger query.
+- The top of the heap, if any, is the smallest interval covering the query.
         `.trim(),
         code: `function minInterval(intervals, queries) {
   const sortedIntervals = [...intervals].sort((a, b) => a[0] - b[0]);
@@ -845,19 +803,19 @@ heap, if anything, is the smallest interval still covering this query.
         walkthrough: [
           {
             code: "const sortedQueries = queries.map((q, index) => [q, index]).sort(...);",
-            explanation: "Queries are answered in increasing order, but the original index is kept so answers land back in the right place.",
+            explanation: "Answers queries in increasing order, keeping the original index so answers land in the right place.",
           },
           {
             code: "while (i < sortedIntervals.length && sortedIntervals[i][0] <= q) { heapPush([r - l + 1, r]); i++; }",
-            explanation: "Every interval that has 'started' by the current query value becomes available and enters the min-heap, keyed by its size.",
+            explanation: "Every interval that has started by this query enters the min-heap, keyed by size.",
           },
           {
             code: "while (heap.length > 0 && heap[0][1] < q) { heapPop(); }",
-            explanation: "Any available interval whose end is already behind the current query has expired and is discarded — it can't help this or any larger query.",
+            explanation: "Discards expired intervals that end before this query. They can't help any larger query either.",
           },
           {
             code: "if (heap.length > 0) { answer[originalIndex] = heap[0][0]; }",
-            explanation: "Whatever remains on top of the heap is the smallest interval that still contains this query point.",
+            explanation: "The top of the heap is the smallest interval containing this query.",
           },
         ],
       },

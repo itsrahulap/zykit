@@ -418,7 +418,7 @@ export const catalog: LearnCatalog = {
           "id": "basic-types",
           "title": "Basic Types",
           "level": "beginner",
-          "description": "The small set of built-in labels TypeScript uses to describe strings, numbers, booleans, arrays, and fixed-shape lists.",
+          "description": "The built-in labels TypeScript uses for strings, numbers, booleans, arrays and fixed-shape lists.",
           "prerequisites": [
             "what-is-typescript"
           ],
@@ -432,7 +432,7 @@ export const catalog: LearnCatalog = {
           "id": "interfaces",
           "title": "Interfaces",
           "level": "beginner",
-          "description": "A named description of what properties an object must have, and what type each one holds.",
+          "description": "A named description of the properties an object must have and the type of each.",
           "prerequisites": [
             "basic-types"
           ],
@@ -446,7 +446,7 @@ export const catalog: LearnCatalog = {
           "id": "type-aliases",
           "title": "Type Aliases",
           "level": "beginner",
-          "description": "Giving any type — not just object shapes — a reusable name.",
+          "description": "Give any type, not just an object shape, a reusable name.",
           "prerequisites": [
             "interfaces"
           ],
@@ -460,7 +460,7 @@ export const catalog: LearnCatalog = {
           "id": "functions-with-types",
           "title": "Functions with Types",
           "level": "beginner",
-          "description": "Annotating a function's parameters and return value so TypeScript can check every call against them.",
+          "description": "Annotate a function's parameters and return value so TypeScript can check every call.",
           "prerequisites": [
             "type-aliases"
           ],
@@ -474,7 +474,7 @@ export const catalog: LearnCatalog = {
           "id": "union-intersection-types",
           "title": "Union & Intersection Types",
           "level": "intermediate",
-          "description": "Combining types with `|` to mean \"one of these\" and with `&` to mean \"all of these, merged.\"",
+          "description": "Combine types with `|` for \"one of these\" and with `&` for \"all of these, merged.\"",
           "prerequisites": [
             "interfaces",
             "type-aliases"
@@ -489,7 +489,7 @@ export const catalog: LearnCatalog = {
           "id": "generics",
           "title": "Generics",
           "level": "intermediate",
-          "description": "Writing a function or type once so it works with whatever type you feed it, while still keeping that type checked.",
+          "description": "Write a function or type once so it works with any type, while keeping that type checked.",
           "prerequisites": [
             "functions-with-types",
             "union-intersection-types"
@@ -504,7 +504,7 @@ export const catalog: LearnCatalog = {
           "id": "enums",
           "title": "Enums",
           "level": "intermediate",
-          "description": "A named set of related constant values, grouped under one type so you can refer to them by name instead of a raw value.",
+          "description": "A named set of related constants under one type, so you refer to them by name instead of a raw value.",
           "prerequisites": [
             "union-intersection-types"
           ],
@@ -517,7 +517,7 @@ export const catalog: LearnCatalog = {
           "id": "type-narrowing",
           "title": "Type Narrowing",
           "level": "intermediate",
-          "description": "How TypeScript figures out, step by step, which specific branch of a union type you're actually holding at a given point in the code.",
+          "description": "How TypeScript works out which branch of a union you're holding at each point in the code.",
           "prerequisites": [
             "union-intersection-types"
           ],
@@ -531,7 +531,7 @@ export const catalog: LearnCatalog = {
           "id": "utility-types",
           "title": "Utility Types",
           "level": "intermediate",
-          "description": "Built-in generic types that transform an existing type into a new one, so you don't have to redefine similar shapes by hand.",
+          "description": "Built-in generic types that turn an existing type into a new one, so you don't redefine similar shapes by hand.",
           "prerequisites": [
             "generics",
             "interfaces"
@@ -546,7 +546,7 @@ export const catalog: LearnCatalog = {
           "id": "classes-access-modifiers",
           "title": "Classes & Access Modifiers",
           "level": "intermediate",
-          "description": "Marking a class's properties and methods as `public`, `private`, or `protected` to control what code outside the class is allowed to touch.",
+          "description": "Mark class properties and methods `public`, `private` or `protected` to control what outside code can touch.",
           "prerequisites": [
             "interfaces",
             "functions-with-types"
@@ -560,7 +560,7 @@ export const catalog: LearnCatalog = {
           "id": "mapped-types",
           "title": "Mapped Types",
           "level": "advanced",
-          "description": "Building a brand-new type by looping over every property of an existing type and transforming each one the same way.",
+          "description": "Build a new type by looping over every property of an existing type and transforming each one the same way.",
           "prerequisites": [
             "generics",
             "utility-types"
@@ -575,7 +575,7 @@ export const catalog: LearnCatalog = {
           "id": "conditional-types",
           "title": "Conditional Types",
           "level": "advanced",
-          "description": "A type that resolves to one of two different types, chosen based on a check performed entirely at compile time.",
+          "description": "A type that resolves to one of two types, chosen by a check done at compile time.",
           "prerequisites": [
             "generics",
             "mapped-types"
@@ -590,7 +590,7 @@ export const catalog: LearnCatalog = {
           "id": "declaration-files",
           "title": "Declaration Files (.d.ts)",
           "level": "advanced",
-          "description": "A file that describes the shape of existing JavaScript code, without containing any actual implementation, so TypeScript can check code that uses it.",
+          "description": "A file that describes the shape of existing JavaScript code, with no implementation, so TypeScript can check code that uses it.",
           "prerequisites": [
             "interfaces",
             "functions-with-types"
@@ -604,7 +604,7 @@ export const catalog: LearnCatalog = {
           "id": "tsconfig-strict-mode",
           "title": "tsconfig & Strict Mode",
           "level": "advanced",
-          "description": "The configuration file that controls how the TypeScript compiler behaves, and the single setting that turns on its strongest safety checks.",
+          "description": "The file that configures the TypeScript compiler, and the one setting that turns on its strongest safety checks.",
           "prerequisites": [
             "declaration-files",
             "union-intersection-types"
@@ -637,7 +637,7 @@ export const catalog: LearnCatalog = {
           "id": "arrays",
           "title": "Arrays",
           "level": "beginner",
-          "description": "The most fundamental way to store an ordered list of items in memory.",
+          "description": "The most basic way to store an ordered list of items in memory.",
           "prerequisites": [
             "big-o"
           ],
@@ -651,7 +651,7 @@ export const catalog: LearnCatalog = {
           "id": "strings",
           "title": "Strings",
           "level": "beginner",
-          "description": "A sequence of characters, and the special rules for working with them efficiently.",
+          "description": "A sequence of characters, and how to work with them efficiently.",
           "prerequisites": [
             "arrays"
           ],
@@ -705,7 +705,7 @@ export const catalog: LearnCatalog = {
           "id": "hash-tables",
           "title": "Hash Tables",
           "level": "intermediate",
-          "description": "A structure that lets you look up a value almost instantly using a key, instead of searching through everything.",
+          "description": "A structure that finds a value almost instantly by its key, without searching everything.",
           "prerequisites": [
             "arrays"
           ],
@@ -747,7 +747,7 @@ export const catalog: LearnCatalog = {
           "id": "sorting",
           "title": "Sorting",
           "level": "advanced",
-          "description": "Arranging a list of items into order — and why different approaches to it matter a lot at scale.",
+          "description": "Putting a list in order, and why the approach matters a lot at scale.",
           "prerequisites": [
             "recursion",
             "arrays",
@@ -765,13 +765,13 @@ export const catalog: LearnCatalog = {
     {
       "id": "web-fundamentals",
       "title": "Web Fundamentals",
-      "description": "How browsers, HTML, CSS, and the web platform actually work.",
+      "description": "How browsers, HTML, CSS, and the web platform work.",
       "topics": [
         {
           "id": "how-the-web-works",
           "title": "How the Web Works",
           "level": "beginner",
-          "description": "What actually happens, step by step, between typing a web address and seeing a page appear on screen.",
+          "description": "What happens, step by step, between typing a web address and seeing the page.",
           "prerequisites": [],
           "relatedTopics": [
             "html-basics",
@@ -782,7 +782,7 @@ export const catalog: LearnCatalog = {
           "id": "html-basics",
           "title": "HTML Basics",
           "level": "beginner",
-          "description": "The language used to describe what's on a page and how it's structured — not what it looks like.",
+          "description": "The language that describes what's on a page and how it's structured, not how it looks.",
           "prerequisites": [],
           "relatedTopics": [
             "how-the-web-works",
@@ -794,7 +794,7 @@ export const catalog: LearnCatalog = {
           "id": "css-basics",
           "title": "CSS Basics",
           "level": "beginner",
-          "description": "The language used to control how a page looks, kept deliberately separate from what the page contains.",
+          "description": "The language that controls how a page looks, kept separate from what the page contains.",
           "prerequisites": [],
           "relatedTopics": [
             "html-basics",
@@ -806,7 +806,7 @@ export const catalog: LearnCatalog = {
           "id": "the-dom",
           "title": "The DOM",
           "level": "beginner",
-          "description": "The live, in-memory version of a page's structure that a browser builds and that JavaScript can read and change.",
+          "description": "The live, in-memory version of a page that the browser builds and JavaScript can read and change.",
           "prerequisites": [
             "html-basics"
           ],
@@ -819,7 +819,7 @@ export const catalog: LearnCatalog = {
           "id": "browser-rendering",
           "title": "Browser Rendering",
           "level": "beginner",
-          "description": "The step-by-step process a browser follows to turn HTML and CSS into the pixels you actually see on screen.",
+          "description": "How a browser turns HTML and CSS into the pixels you see on screen.",
           "prerequisites": [
             "html-basics",
             "css-basics",
@@ -835,7 +835,7 @@ export const catalog: LearnCatalog = {
           "id": "css-layout",
           "title": "CSS Layout (Flexbox & Grid)",
           "level": "intermediate",
-          "description": "Two modern CSS tools for arranging elements on a page without relying on old workarounds like floats.",
+          "description": "Two modern CSS tools for arranging elements on a page, without old workarounds like floats.",
           "prerequisites": [
             "css-basics"
           ],
@@ -848,7 +848,7 @@ export const catalog: LearnCatalog = {
           "id": "responsive-design",
           "title": "Responsive Design",
           "level": "intermediate",
-          "description": "Designing a single page so it still looks and works well on a huge range of screen sizes, from phones to large monitors.",
+          "description": "Build one page that looks and works well on every screen size, from phones to large monitors.",
           "prerequisites": [
             "css-basics",
             "css-layout"
@@ -862,7 +862,7 @@ export const catalog: LearnCatalog = {
           "id": "browser-storage",
           "title": "Browser Storage",
           "level": "intermediate",
-          "description": "Different ways a website can save small pieces of data directly in the user's browser, so it's still there the next time they visit.",
+          "description": "Ways a website can save small pieces of data in your browser so they're still there next visit.",
           "prerequisites": [],
           "relatedTopics": [
             "web-security-basics"
@@ -872,7 +872,7 @@ export const catalog: LearnCatalog = {
           "id": "web-accessibility",
           "title": "Web Accessibility (a11y)",
           "level": "intermediate",
-          "description": "Designing and building a site so people using assistive technology, like screen readers or keyboard-only navigation, can actually use it.",
+          "description": "Build sites that people using assistive technology, like screen readers or keyboard-only navigation, can use.",
           "prerequisites": [
             "html-basics"
           ],
@@ -885,7 +885,7 @@ export const catalog: LearnCatalog = {
           "id": "web-performance-basics",
           "title": "Web Performance Basics",
           "level": "intermediate",
-          "description": "What actually makes a page feel slow to use, and the basic techniques for making it feel fast.",
+          "description": "What makes a page feel slow, and the basic techniques for making it fast.",
           "prerequisites": [
             "browser-rendering"
           ],
@@ -898,7 +898,7 @@ export const catalog: LearnCatalog = {
           "id": "web-security-basics",
           "title": "Web Security Basics",
           "level": "advanced",
-          "description": "Two of the most common ways attackers abuse a website's trust of its own content or its users, and why they work.",
+          "description": "Two of the most common ways attackers abuse a site's trust in its own content or its users, and why they work.",
           "prerequisites": [],
           "relatedTopics": [
             "cors",
@@ -909,7 +909,7 @@ export const catalog: LearnCatalog = {
           "id": "cors",
           "title": "CORS",
           "level": "advanced",
-          "description": "Why a browser blocks a webpage from freely talking to a different website's server, and how that server can explicitly allow it.",
+          "description": "Why a browser stops a page from freely reading another site's responses, and how that site's server can allow it.",
           "prerequisites": [
             "how-the-web-works"
           ],
@@ -922,7 +922,7 @@ export const catalog: LearnCatalog = {
           "id": "browser-devtools",
           "title": "Browser DevTools & Debugging",
           "level": "advanced",
-          "description": "The built-in browser tools for inspecting, debugging, and understanding exactly what a page is doing, beyond just what it shows.",
+          "description": "The browser's built-in tools for inspecting and debugging what a page is really doing, beyond what it shows.",
           "prerequisites": [],
           "relatedTopics": [
             "the-dom",
@@ -934,7 +934,7 @@ export const catalog: LearnCatalog = {
           "id": "progressive-web-apps",
           "title": "Progressive Web Apps (PWA)",
           "level": "advanced",
-          "description": "What lets an ordinary website behave more like a native app — installable, working offline, and launchable from a home screen.",
+          "description": "What lets a website act more like a native app: installable, working offline, and launchable from a home screen.",
           "prerequisites": [
             "browser-devtools",
             "web-performance-basics"
@@ -955,7 +955,7 @@ export const catalog: LearnCatalog = {
           "id": "what-is-backend",
           "title": "What is Backend Development?",
           "level": "beginner",
-          "description": "The part of an application that runs on a server rather than in the user's browser — handling logic, data, and rules the user should never see or control directly.",
+          "description": "The part of an app that runs on a server, not in the browser. It handles the logic, data and rules users should never see or control.",
           "prerequisites": [],
           "relatedTopics": [
             "servers-and-web-frameworks",
@@ -966,7 +966,7 @@ export const catalog: LearnCatalog = {
           "id": "servers-and-web-frameworks",
           "title": "Servers & Web Frameworks",
           "level": "beginner",
-          "description": "What a web framework like Express actually does for you, versus the raw, repetitive plumbing you'd otherwise have to write by hand.",
+          "description": "What a web framework like Express does for you, compared with the repetitive plumbing you'd otherwise write by hand.",
           "prerequisites": [
             "what-is-backend"
           ],
@@ -980,7 +980,7 @@ export const catalog: LearnCatalog = {
           "id": "routing",
           "title": "Routing",
           "level": "beginner",
-          "description": "The way a server decides which piece of code should handle a given URL and HTTP method.",
+          "description": "How a server decides which code handles a given URL and HTTP method.",
           "prerequisites": [
             "servers-and-web-frameworks"
           ],
@@ -994,7 +994,7 @@ export const catalog: LearnCatalog = {
           "id": "middleware",
           "title": "Middleware",
           "level": "beginner",
-          "description": "Small functions that run before a request reaches its final route handler, each able to inspect, modify, or stop the request.",
+          "description": "Small functions that run before a request reaches its route handler. Each one can inspect, change or stop the request.",
           "prerequisites": [
             "routing"
           ],
@@ -1008,7 +1008,7 @@ export const catalog: LearnCatalog = {
           "id": "request-response-lifecycle",
           "title": "Request/Response Lifecycle",
           "level": "beginner",
-          "description": "The complete journey a request takes from the moment it arrives at your server to the moment a response is sent back.",
+          "description": "The full journey of a request, from arriving at your server to the response being sent back.",
           "prerequisites": [
             "middleware"
           ],
@@ -1022,7 +1022,7 @@ export const catalog: LearnCatalog = {
           "id": "nodejs-runtime",
           "title": "How Node.js Works",
           "level": "beginner",
-          "description": "The JavaScript runtime that lets JavaScript run outside a browser, and the single-threaded, event-driven model behind it.",
+          "description": "The runtime that lets JavaScript run outside a browser, and the single-threaded, event-driven model behind it.",
           "prerequisites": [
             "servers-and-web-frameworks"
           ],
@@ -1036,7 +1036,7 @@ export const catalog: LearnCatalog = {
           "id": "project-structure",
           "title": "Backend Project Structure",
           "level": "beginner",
-          "description": "The folder and file layout that keeps routes, business logic, and data access separated as a backend app grows.",
+          "description": "The folder layout that keeps routes, business logic and data access apart as a backend grows.",
           "prerequisites": [
             "routing",
             "middleware"
@@ -1052,7 +1052,7 @@ export const catalog: LearnCatalog = {
           "id": "npm-and-packages",
           "title": "npm & Package Management",
           "level": "beginner",
-          "description": "How Node.js projects declare, install, and lock their external dependencies using npm and package.json.",
+          "description": "How Node.js projects declare, install and lock their dependencies with npm and package.json.",
           "prerequisites": [
             "servers-and-web-frameworks"
           ],
@@ -1066,7 +1066,7 @@ export const catalog: LearnCatalog = {
           "id": "env-vars-and-config",
           "title": "Environment Variables & Config",
           "level": "intermediate",
-          "description": "Keeping secrets and settings that differ between environments out of your code, so the same code can run safely in development, testing, and production.",
+          "description": "Keep secrets and per-environment settings out of your code, so the same code runs safely in development, testing, and production.",
           "prerequisites": [
             "request-response-lifecycle"
           ],
@@ -1079,7 +1079,7 @@ export const catalog: LearnCatalog = {
           "id": "error-handling-apis",
           "title": "Error Handling in APIs",
           "level": "intermediate",
-          "description": "Catching errors in one central place and returning consistent, safe responses, instead of letting the server crash or leak internal details to callers.",
+          "description": "Catch errors in one central place and return consistent, safe responses, instead of crashing the server or leaking internal details.",
           "prerequisites": [
             "middleware",
             "env-vars-and-config"
@@ -1094,7 +1094,7 @@ export const catalog: LearnCatalog = {
           "id": "validation-and-sanitization",
           "title": "Validation & Sanitization",
           "level": "intermediate",
-          "description": "Checking that incoming data is well-formed and expected before your code uses it, and cleaning up anything unsafe it might contain.",
+          "description": "Check that incoming data has the shape you expect before your code uses it, and clean out anything unsafe.",
           "prerequisites": [
             "error-handling-apis"
           ],
@@ -1107,7 +1107,7 @@ export const catalog: LearnCatalog = {
           "id": "file-uploads",
           "title": "File Uploads",
           "level": "intermediate",
-          "description": "How a server receives a file sent from a form or client, at a conceptual level — and what happens to it once it arrives.",
+          "description": "How a server receives a file sent from a form or client, and what happens to it once it arrives.",
           "prerequisites": [
             "validation-and-sanitization"
           ],
@@ -1120,7 +1120,7 @@ export const catalog: LearnCatalog = {
           "id": "logging",
           "title": "Logging",
           "level": "intermediate",
-          "description": "Recording what a running server is doing in a structured, searchable way, so problems can be understood after the fact instead of only while watching a terminal.",
+          "description": "Record what a running server does in a structured, searchable way, so you can understand problems after the fact.",
           "prerequisites": [
             "error-handling-apis"
           ],
@@ -1133,7 +1133,7 @@ export const catalog: LearnCatalog = {
           "id": "background-jobs",
           "title": "Background Jobs",
           "level": "intermediate",
-          "description": "Running work outside the normal request/response cycle, so a slow task doesn't force a user to sit and wait for it to finish.",
+          "description": "Run work outside the normal request/response cycle, so users don't wait for slow tasks to finish.",
           "prerequisites": [
             "logging"
           ],
@@ -1146,7 +1146,7 @@ export const catalog: LearnCatalog = {
           "id": "connecting-to-a-database",
           "title": "Connecting to a Database",
           "level": "intermediate",
-          "description": "The different ways backend code can talk to a database — raw drivers, query builders, and ORMs — and how a connection is actually established.",
+          "description": "The ways backend code talks to a database (raw drivers, query builders, and ORMs) and how a connection is made.",
           "prerequisites": [
             "env-vars-and-config"
           ],
@@ -1159,7 +1159,7 @@ export const catalog: LearnCatalog = {
           "id": "python-web-frameworks",
           "title": "FastAPI & Python Web Frameworks",
           "level": "intermediate",
-          "description": "How backend concepts like routing and middleware look in Python, using FastAPI as an example of a modern, async, type-driven framework.",
+          "description": "How routing and middleware look in Python, using FastAPI, a modern async, type-driven framework.",
           "prerequisites": [
             "servers-and-web-frameworks",
             "routing"
@@ -1175,7 +1175,7 @@ export const catalog: LearnCatalog = {
           "id": "authentication-and-passwords",
           "title": "Authentication & Password Hashing",
           "level": "intermediate",
-          "description": "How a backend verifies who's making a request — never storing raw passwords, and remembering that someone is logged in across future requests.",
+          "description": "How a backend verifies who's making a request, without storing raw passwords, and keeps recognizing a logged-in user on later requests.",
           "prerequisites": [
             "middleware",
             "validation-and-sanitization"
@@ -1206,7 +1206,7 @@ export const catalog: LearnCatalog = {
           "id": "api-versioning",
           "title": "API Versioning",
           "level": "advanced",
-          "description": "How to change an API's shape over time without breaking the other applications and clients already relying on it.",
+          "description": "How to change an API over time without breaking the apps and clients that already use it.",
           "prerequisites": [
             "routing",
             "error-handling-apis"
@@ -1220,7 +1220,7 @@ export const catalog: LearnCatalog = {
           "id": "dependency-injection",
           "title": "Dependency Injection",
           "level": "advanced",
-          "description": "Handing a function or class the things it needs from outside, rather than letting it create those things itself — making it far easier to swap or test.",
+          "description": "Give a function or class the things it needs from outside, instead of letting it create them, so they're easy to swap or test.",
           "prerequisites": [
             "error-handling-apis"
           ],
@@ -1232,7 +1232,7 @@ export const catalog: LearnCatalog = {
           "id": "testing-backend-code",
           "title": "Testing Backend Code",
           "level": "advanced",
-          "description": "The difference between checking one small piece of logic in isolation and checking that a real request flows correctly through the whole app.",
+          "description": "Checking one small piece of logic on its own versus checking that a real request flows correctly through the whole app.",
           "prerequisites": [
             "dependency-injection"
           ],
@@ -1247,7 +1247,7 @@ export const catalog: LearnCatalog = {
           "id": "deployment-and-cicd",
           "title": "Deployment & CI/CD Basics",
           "level": "advanced",
-          "description": "What actually happens between pushing a code change and that change running live for real users, at a conceptual level.",
+          "description": "What happens between pushing a code change and that change running live for real users.",
           "prerequisites": [
             "testing-backend-code",
             "background-jobs"
@@ -1261,7 +1261,7 @@ export const catalog: LearnCatalog = {
           "id": "websockets-in-practice",
           "title": "Building with WebSockets",
           "level": "advanced",
-          "description": "What actually changes on the server when a connection stays open — handling events, pushing messages, broadcasting, and what happens when a client drops.",
+          "description": "What changes on the server when a connection stays open: handling events, pushing messages, broadcasting, and handling clients that drop.",
           "prerequisites": [
             "routing",
             "background-jobs"
@@ -1283,7 +1283,7 @@ export const catalog: LearnCatalog = {
           "id": "what-is-a-database",
           "title": "What is a Database?",
           "level": "beginner",
-          "description": "A system that stores your data in an organized shape you can search, filter, and change directly — not just a file you save data into.",
+          "description": "Software that stores data in an organized shape you can search, filter, and change directly.",
           "prerequisites": [],
           "relatedTopics": [
             "tables-rows-columns",
@@ -1294,7 +1294,7 @@ export const catalog: LearnCatalog = {
           "id": "tables-rows-columns",
           "title": "Tables, Rows & Columns",
           "level": "beginner",
-          "description": "The basic grid shape — like a spreadsheet — that relational databases use to organize data.",
+          "description": "The spreadsheet-like grid that relational databases use to organize data.",
           "prerequisites": [
             "what-is-a-database"
           ],
@@ -1308,7 +1308,7 @@ export const catalog: LearnCatalog = {
           "id": "primary-and-foreign-keys",
           "title": "Primary Keys & Foreign Keys",
           "level": "beginner",
-          "description": "How a database uniquely identifies one specific row, and how rows in different tables point to each other.",
+          "description": "How a database identifies one exact row, and how rows in different tables point to each other.",
           "prerequisites": [
             "tables-rows-columns"
           ],
@@ -1323,7 +1323,7 @@ export const catalog: LearnCatalog = {
           "id": "basic-sql-queries",
           "title": "Basic SQL Queries",
           "level": "beginner",
-          "description": "The four core commands — SELECT, INSERT, UPDATE, DELETE — used to read and change data in a database.",
+          "description": "The four core commands (SELECT, INSERT, UPDATE, DELETE) for reading and changing data.",
           "prerequisites": [
             "tables-rows-columns"
           ],
@@ -1337,7 +1337,7 @@ export const catalog: LearnCatalog = {
           "id": "filtering-and-sorting",
           "title": "Filtering & Sorting",
           "level": "beginner",
-          "description": "Narrowing a query down to the rows you actually want with WHERE, and controlling the order results come back in with ORDER BY.",
+          "description": "Pick the rows you want with WHERE, and set the order they come back in with ORDER BY.",
           "prerequisites": [
             "basic-sql-queries"
           ],
@@ -1351,7 +1351,7 @@ export const catalog: LearnCatalog = {
           "id": "joins",
           "title": "Joins",
           "level": "intermediate",
-          "description": "Combining matching rows from two or more tables into a single set of results, using the foreign keys that link them.",
+          "description": "Combine matching rows from two or more tables into one result, using the foreign keys that link them.",
           "prerequisites": [
             "primary-and-foreign-keys",
             "basic-sql-queries"
@@ -1366,7 +1366,7 @@ export const catalog: LearnCatalog = {
           "id": "aggregation",
           "title": "Aggregation",
           "level": "intermediate",
-          "description": "Collapsing many rows down into a single summary value — a count, a total, an average — instead of listing every individual row.",
+          "description": "Turn many rows into a summary value, like a count, total, or average.",
           "prerequisites": [
             "basic-sql-queries",
             "filtering-and-sorting"
@@ -1381,7 +1381,7 @@ export const catalog: LearnCatalog = {
           "id": "indexes",
           "title": "Indexes",
           "level": "intermediate",
-          "description": "A separate lookup structure the database maintains so it can jump straight to matching rows instead of scanning the whole table.",
+          "description": "A lookup structure that lets the database jump to matching rows instead of scanning the whole table.",
           "prerequisites": [
             "filtering-and-sorting"
           ],
@@ -1395,7 +1395,7 @@ export const catalog: LearnCatalog = {
           "id": "normalization",
           "title": "Normalization",
           "level": "intermediate",
-          "description": "Organizing tables so each piece of information is stored in exactly one place, instead of copied and repeated everywhere it's needed.",
+          "description": "Organize tables so each fact is stored in exactly one place, not copied everywhere it's needed.",
           "prerequisites": [
             "primary-and-foreign-keys",
             "joins"
@@ -1410,7 +1410,7 @@ export const catalog: LearnCatalog = {
           "id": "constraints",
           "title": "Constraints",
           "level": "intermediate",
-          "description": "Rules attached directly to a table's columns that the database itself enforces, so invalid data can never be saved in the first place.",
+          "description": "Rules on a table's columns that the database enforces, so invalid data can't be saved.",
           "prerequisites": [
             "primary-and-foreign-keys"
           ],
@@ -1424,7 +1424,7 @@ export const catalog: LearnCatalog = {
           "id": "transactions-and-acid",
           "title": "Transactions & ACID",
           "level": "intermediate",
-          "description": "Grouping several database operations into one all-or-nothing unit, so a failure partway through never leaves data half-changed.",
+          "description": "Group several operations into one all-or-nothing unit, so a failure never leaves data half-changed.",
           "prerequisites": [
             "basic-sql-queries"
           ],
@@ -1437,7 +1437,7 @@ export const catalog: LearnCatalog = {
           "id": "orms",
           "title": "ORMs",
           "level": "intermediate",
-          "description": "A library that lets application code work with database rows as regular objects, generating SQL behind the scenes instead of you writing it by hand.",
+          "description": "A library that lets your code work with database rows as objects and writes the SQL for you.",
           "prerequisites": [
             "basic-sql-queries"
           ],
@@ -1451,7 +1451,7 @@ export const catalog: LearnCatalog = {
           "id": "postgresql-deep-dive",
           "title": "PostgreSQL in Depth",
           "level": "intermediate",
-          "description": "The PostgreSQL-specific features beyond standard SQL — richer data types, auto-incrementing ids, and the psql command-line client.",
+          "description": "PostgreSQL features beyond standard SQL: richer data types, auto-incrementing ids, and the psql client.",
           "prerequisites": [
             "basic-sql-queries",
             "tables-rows-columns"
@@ -1466,7 +1466,7 @@ export const catalog: LearnCatalog = {
           "id": "subqueries-and-ctes",
           "title": "Subqueries & CTEs",
           "level": "intermediate",
-          "description": "Nesting one query inside another, or naming a step with WITH, to break a complex question into smaller, readable pieces.",
+          "description": "Nest one query in another, or name a step with WITH, to split a complex question into readable pieces.",
           "prerequisites": [
             "joins",
             "aggregation"
@@ -1481,7 +1481,7 @@ export const catalog: LearnCatalog = {
           "id": "pagination",
           "title": "Pagination",
           "level": "intermediate",
-          "description": "Returning a large result set in smaller pages instead of all at once, using LIMIT/OFFSET or a keyset approach.",
+          "description": "Return a large result in smaller pages, using LIMIT/OFFSET or keyset pagination.",
           "prerequisites": [
             "filtering-and-sorting",
             "indexes"
@@ -1496,7 +1496,7 @@ export const catalog: LearnCatalog = {
           "id": "database-migrations",
           "title": "Database Migrations",
           "level": "advanced",
-          "description": "Small, versioned scripts that change a database's schema over time, so every environment ends up with the same structure in the same order.",
+          "description": "Small, versioned scripts that change a schema over time, so every environment gets the same structure in the same order.",
           "prerequisites": [
             "orms"
           ],
@@ -1509,7 +1509,7 @@ export const catalog: LearnCatalog = {
           "id": "query-optimization",
           "title": "Query Optimization",
           "level": "advanced",
-          "description": "Reading what a database actually plans to do to execute a query, and using that to figure out why it's slow and how to speed it up.",
+          "description": "Read the database's plan for a query to find out why it's slow and how to speed it up.",
           "prerequisites": [
             "indexes",
             "joins"
@@ -1524,7 +1524,7 @@ export const catalog: LearnCatalog = {
           "id": "connection-pooling",
           "title": "Connection Pooling",
           "level": "advanced",
-          "description": "Keeping a small set of already-open database connections ready to reuse, instead of opening (and closing) a brand-new one for every request.",
+          "description": "Keep a small set of open database connections to reuse, instead of opening a new one for every request.",
           "prerequisites": [
             "transactions-and-acid"
           ],
@@ -1537,7 +1537,7 @@ export const catalog: LearnCatalog = {
           "id": "nosql-data-modeling",
           "title": "NoSQL Data Modeling",
           "level": "advanced",
-          "description": "Designing the shape of a document to match how it'll actually be read, often by embedding related data together instead of splitting it across normalized tables.",
+          "description": "Shape documents around how they'll be read, often embedding related data instead of splitting it across tables.",
           "prerequisites": [
             "normalization"
           ],
@@ -1550,7 +1550,7 @@ export const catalog: LearnCatalog = {
           "id": "window-functions",
           "title": "Window Functions",
           "level": "advanced",
-          "description": "Calculations across a set of related rows — like a running total or a rank — without collapsing them into a single row the way GROUP BY does.",
+          "description": "Calculate across related rows, like a running total or a rank, without collapsing them as GROUP BY does.",
           "prerequisites": [
             "aggregation",
             "subqueries-and-ctes"
@@ -1565,7 +1565,7 @@ export const catalog: LearnCatalog = {
           "id": "upsert-and-conflicts",
           "title": "Upsert & Conflict Handling",
           "level": "advanced",
-          "description": "Inserting a row, or updating it instead if it already exists, in a single atomic statement.",
+          "description": "Insert a row, or update it if it already exists, in one atomic statement.",
           "prerequisites": [
             "transactions-and-acid"
           ],
@@ -1585,7 +1585,7 @@ export const catalog: LearnCatalog = {
           "id": "what-is-system-design",
           "title": "What is System Design?",
           "level": "beginner",
-          "description": "Planning how the different parts of a real software system fit together and work at scale.",
+          "description": "Planning how the parts of a software system fit together and work at scale.",
           "prerequisites": [],
           "relatedTopics": [
             "client-and-server",
@@ -1596,7 +1596,7 @@ export const catalog: LearnCatalog = {
           "id": "client-and-server",
           "title": "Client and Server",
           "level": "beginner",
-          "description": "The basic relationship between the app you use and the machine that does the real work behind it.",
+          "description": "How the app you use relates to the machine that does the work behind it.",
           "prerequisites": [
             "what-is-system-design"
           ],
@@ -1609,7 +1609,7 @@ export const catalog: LearnCatalog = {
           "id": "http",
           "title": "HTTP",
           "level": "beginner",
-          "description": "The common language that lets clients and servers talk to each other over the web.",
+          "description": "The shared language clients and servers use to talk over the web.",
           "prerequisites": [
             "client-and-server"
           ],
@@ -1624,7 +1624,7 @@ export const catalog: LearnCatalog = {
           "id": "rest-apis",
           "title": "REST APIs",
           "level": "beginner",
-          "description": "A common, predictable way to structure requests so different apps can talk to a server the same way.",
+          "description": "A common, predictable way to design APIs so any app can talk to a server the same way.",
           "prerequisites": [
             "http"
           ],
@@ -1638,7 +1638,7 @@ export const catalog: LearnCatalog = {
           "id": "proxy-and-reverse-proxy",
           "title": "Proxy & Reverse Proxy",
           "level": "beginner",
-          "description": "A middle server that sits between a client and the real destination, on behalf of one side or the other.",
+          "description": "A middle server between a client and the real destination, working for one side or the other.",
           "prerequisites": [
             "client-and-server"
           ],
@@ -1651,7 +1651,7 @@ export const catalog: LearnCatalog = {
           "id": "authentication-and-sessions",
           "title": "Authentication & Sessions",
           "level": "beginner",
-          "description": "How a server remembers who you are across multiple requests, even though HTTP itself doesn't.",
+          "description": "How a server remembers who you are across requests, even though HTTP doesn't.",
           "prerequisites": [
             "http",
             "client-and-server"
@@ -1665,7 +1665,7 @@ export const catalog: LearnCatalog = {
           "id": "databases",
           "title": "Databases",
           "level": "intermediate",
-          "description": "Where an application's data actually lives, safely, between requests.",
+          "description": "Where an app's data lives safely between requests.",
           "prerequisites": [
             "rest-apis"
           ],
@@ -1680,7 +1680,7 @@ export const catalog: LearnCatalog = {
           "id": "sql-vs-nosql",
           "title": "SQL vs NoSQL",
           "level": "intermediate",
-          "description": "Two different philosophies for organizing and storing data, each suited to different problems.",
+          "description": "Two ways to organize and store data, each suited to different problems.",
           "prerequisites": [
             "databases"
           ],
@@ -1693,7 +1693,7 @@ export const catalog: LearnCatalog = {
           "id": "caching",
           "title": "Caching",
           "level": "intermediate",
-          "description": "Keeping a copy of frequently-needed data somewhere much faster to access, so you don't redo expensive work every time.",
+          "description": "Keep a copy of often-needed data somewhere fast, so you don't redo expensive work.",
           "prerequisites": [
             "databases"
           ],
@@ -1707,7 +1707,7 @@ export const catalog: LearnCatalog = {
           "id": "database-replication",
           "title": "Database Replication",
           "level": "intermediate",
-          "description": "Keeping multiple copies of the same database in sync, so no single database is a single point of failure.",
+          "description": "Keep several copies of a database in sync, so no single database is a point of failure.",
           "prerequisites": [
             "databases"
           ],
@@ -1721,7 +1721,7 @@ export const catalog: LearnCatalog = {
           "id": "sharding",
           "title": "Database Sharding",
           "level": "intermediate",
-          "description": "Splitting one huge dataset across multiple databases, so no single database has to hold all of it.",
+          "description": "Split one huge dataset across several databases, so no single database holds all of it.",
           "prerequisites": [
             "databases",
             "database-replication"
@@ -1736,7 +1736,7 @@ export const catalog: LearnCatalog = {
           "id": "consistency-models",
           "title": "Consistency Models",
           "level": "intermediate",
-          "description": "How quickly, and how strictly, every copy of your data has to agree with every other copy.",
+          "description": "How quickly and how strictly every copy of your data must agree.",
           "prerequisites": [
             "database-replication"
           ],
@@ -1750,7 +1750,7 @@ export const catalog: LearnCatalog = {
           "id": "rate-limiting",
           "title": "Rate Limiting",
           "level": "intermediate",
-          "description": "Deliberately capping how many requests a client can make in a given time window.",
+          "description": "Cap how many requests a client can make in a set time window.",
           "prerequisites": [
             "rest-apis"
           ],
@@ -1763,7 +1763,7 @@ export const catalog: LearnCatalog = {
           "id": "microservices-vs-monolith",
           "title": "Microservices vs Monolith",
           "level": "intermediate",
-          "description": "Two different ways to structure an application's codebase and deployment — as one unit, or as many independent pieces.",
+          "description": "Two ways to structure and deploy an app: as one unit, or as many independent pieces.",
           "prerequisites": [
             "scalability"
           ],
@@ -1777,7 +1777,7 @@ export const catalog: LearnCatalog = {
           "id": "pub-sub",
           "title": "Publish/Subscribe (Pub/Sub)",
           "level": "intermediate",
-          "description": "Letting one event be broadcast to many interested listeners, without the sender needing to know who they are.",
+          "description": "Broadcast one event to many listeners, without the sender knowing who they are.",
           "prerequisites": [
             "queues"
           ],
@@ -1790,7 +1790,7 @@ export const catalog: LearnCatalog = {
           "id": "load-balancing",
           "title": "Load Balancing",
           "level": "advanced",
-          "description": "Spreading incoming requests across multiple servers so no single one gets overwhelmed.",
+          "description": "Spreading requests across several servers so no single one gets overwhelmed.",
           "prerequisites": [
             "caching"
           ],
@@ -1806,7 +1806,7 @@ export const catalog: LearnCatalog = {
           "id": "queues",
           "title": "Queues",
           "level": "advanced",
-          "description": "Letting one part of a system hand off work to be done later, without waiting around for it.",
+          "description": "Handing off work to be done later, without waiting for it.",
           "prerequisites": [
             "load-balancing"
           ],
@@ -1820,7 +1820,7 @@ export const catalog: LearnCatalog = {
           "id": "cdn",
           "title": "CDN",
           "level": "advanced",
-          "description": "A network of servers around the world that deliver content from the location closest to each user.",
+          "description": "Servers around the world that deliver content from the location closest to each user.",
           "prerequisites": [
             "caching"
           ],
@@ -1833,7 +1833,7 @@ export const catalog: LearnCatalog = {
           "id": "scalability",
           "title": "Scalability",
           "level": "advanced",
-          "description": "A system's ability to keep working well as usage grows — more users, more data, more requests.",
+          "description": "A system's ability to keep working well as usage grows: more users, data, and requests.",
           "prerequisites": [
             "load-balancing",
             "queues"
@@ -1848,7 +1848,7 @@ export const catalog: LearnCatalog = {
           "id": "cap-theorem",
           "title": "CAP Theorem",
           "level": "advanced",
-          "description": "A rule that says a distributed system can't fully guarantee consistency and availability at the same time during a network problem.",
+          "description": "A distributed system can't fully guarantee both consistency and availability during a network failure.",
           "prerequisites": [
             "consistency-models"
           ],
@@ -1862,7 +1862,7 @@ export const catalog: LearnCatalog = {
           "id": "consistent-hashing",
           "title": "Consistent Hashing",
           "level": "advanced",
-          "description": "A hashing technique that keeps most data in place even when servers are added or removed.",
+          "description": "A hashing technique that keeps most data in place when servers are added or removed.",
           "prerequisites": [
             "sharding"
           ],
@@ -1876,7 +1876,7 @@ export const catalog: LearnCatalog = {
           "id": "api-gateway",
           "title": "API Gateway",
           "level": "advanced",
-          "description": "A single entry point in front of many backend services, handling shared concerns so each service doesn't have to.",
+          "description": "One entry point in front of many backend services that handles shared concerns for all of them.",
           "prerequisites": [
             "proxy-and-reverse-proxy",
             "microservices-vs-monolith"
@@ -1891,7 +1891,7 @@ export const catalog: LearnCatalog = {
           "id": "websockets",
           "title": "WebSockets & Real-Time Communication",
           "level": "advanced",
-          "description": "A way for a server to push data to a client the moment something happens, instead of waiting for the client to ask.",
+          "description": "Lets a server push data to a client the moment something happens, without waiting to be asked.",
           "prerequisites": [
             "http"
           ],
@@ -1904,7 +1904,7 @@ export const catalog: LearnCatalog = {
           "id": "circuit-breaker",
           "title": "Circuit Breaker & Retries",
           "level": "advanced",
-          "description": "Protecting a system from a failing dependency, instead of letting that failure cascade everywhere.",
+          "description": "Protecting a system from a failing dependency so the failure doesn't spread.",
           "prerequisites": [
             "microservices-vs-monolith"
           ],
@@ -1917,7 +1917,7 @@ export const catalog: LearnCatalog = {
           "id": "idempotency",
           "title": "Idempotency",
           "level": "advanced",
-          "description": "Designing an operation so that doing it more than once has the exact same effect as doing it once.",
+          "description": "Designing an operation so doing it more than once has the same effect as doing it once.",
           "prerequisites": [
             "rest-apis"
           ],
@@ -1930,7 +1930,7 @@ export const catalog: LearnCatalog = {
           "id": "monitoring-and-observability",
           "title": "Monitoring & Observability",
           "level": "advanced",
-          "description": "Being able to tell what your system is actually doing, and why something went wrong, without guessing.",
+          "description": "Knowing what your system is doing, and why something went wrong, without guessing.",
           "prerequisites": [
             "microservices-vs-monolith"
           ],
@@ -1950,7 +1950,7 @@ export const catalog: LearnCatalog = {
           "id": "what-is-software-architecture",
           "title": "What is Software Architecture?",
           "level": "beginner",
-          "description": "The high-level decisions about how a codebase is organized and how its pieces fit together — decided before a single function gets written.",
+          "description": "The big decisions about how a codebase is organized and how its pieces fit together.",
           "prerequisites": [],
           "relatedTopics": [
             "separation-of-concerns",
@@ -1962,7 +1962,7 @@ export const catalog: LearnCatalog = {
           "id": "separation-of-concerns",
           "title": "Separation of Concerns",
           "level": "beginner",
-          "description": "Keeping different responsibilities — like displaying data, fetching it, and validating it — in different places instead of tangled together.",
+          "description": "Keep different jobs, like fetching, validating, and displaying data, in separate places instead of tangled together.",
           "prerequisites": [
             "what-is-software-architecture"
           ],
@@ -1976,7 +1976,7 @@ export const catalog: LearnCatalog = {
           "id": "coupling-and-cohesion",
           "title": "Coupling & Cohesion",
           "level": "beginner",
-          "description": "How tightly pieces of code depend on each other (coupling) versus how well a single piece of code focuses on one clear job (cohesion).",
+          "description": "How much pieces of code depend on each other (coupling) versus how well one piece focuses on one clear job (cohesion).",
           "prerequisites": [
             "separation-of-concerns"
           ],
@@ -1990,7 +1990,7 @@ export const catalog: LearnCatalog = {
           "id": "layered-architecture",
           "title": "Layered Architecture",
           "level": "beginner",
-          "description": "Organizing code into layers — like presentation, business logic, and data access — where each layer only talks to the one next to it.",
+          "description": "Organize code into layers, like presentation, business logic, and data access, where each layer only talks to the one next to it.",
           "prerequisites": [
             "separation-of-concerns",
             "coupling-and-cohesion"
@@ -2006,7 +2006,7 @@ export const catalog: LearnCatalog = {
           "id": "solid-principles",
           "title": "SOLID Principles",
           "level": "intermediate",
-          "description": "Five plain-language guidelines for keeping object-oriented code flexible and easy to change, bundled together under one acronym.",
+          "description": "Five guidelines, grouped under one acronym, for keeping object-oriented code flexible and easy to change.",
           "prerequisites": [
             "coupling-and-cohesion",
             "layered-architecture"
@@ -2021,7 +2021,7 @@ export const catalog: LearnCatalog = {
           "id": "dependency-inversion",
           "title": "Dependency Inversion",
           "level": "intermediate",
-          "description": "Making important code depend on an abstraction — an interface describing what it needs — instead of on one specific, concrete implementation.",
+          "description": "Make important code depend on an abstraction (an interface describing what it needs) instead of one concrete implementation.",
           "prerequisites": [
             "solid-principles"
           ],
@@ -2035,7 +2035,7 @@ export const catalog: LearnCatalog = {
           "id": "clean-architecture",
           "title": "Clean Architecture / Hexagonal Architecture",
           "level": "intermediate",
-          "description": "Keeping business logic independent of frameworks, databases, and UI, so any of those can be swapped without touching the core logic.",
+          "description": "Keep business logic independent of frameworks, databases, and UI, so you can swap any of them without touching the core.",
           "prerequisites": [
             "dependency-inversion",
             "layered-architecture"
@@ -2051,7 +2051,7 @@ export const catalog: LearnCatalog = {
           "id": "domain-driven-design-basics",
           "title": "Domain-Driven Design (DDD) Basics",
           "level": "intermediate",
-          "description": "Organizing code around the real-world business concepts it models — entities, value objects, and a shared vocabulary with domain experts — rather than around technical convenience.",
+          "description": "Organize code around the real business concepts it models, with entities, value objects, and a vocabulary shared with domain experts, not around technical convenience.",
           "prerequisites": [
             "clean-architecture"
           ],
@@ -2065,7 +2065,7 @@ export const catalog: LearnCatalog = {
           "id": "monorepo-vs-polyrepo",
           "title": "Monorepo vs Polyrepo",
           "level": "intermediate",
-          "description": "Deciding whether to keep multiple projects or packages in one shared repository, or spread across separate repositories, and weighing the tradeoffs.",
+          "description": "Choosing whether to keep multiple projects or packages in one shared repository or in separate ones, and the tradeoffs of each.",
           "prerequisites": [],
           "relatedTopics": [
             "layered-architecture",
@@ -2076,7 +2076,7 @@ export const catalog: LearnCatalog = {
           "id": "event-sourcing-and-cqrs",
           "title": "Event Sourcing & CQRS",
           "level": "advanced",
-          "description": "Storing every change that happened instead of just the current state, and separating the model used to write data from the model used to read it.",
+          "description": "Store every change that happened instead of just the current state, and use separate models for writing and reading data.",
           "prerequisites": [
             "clean-architecture",
             "domain-driven-design-basics"
@@ -2090,7 +2090,7 @@ export const catalog: LearnCatalog = {
           "id": "architectural-decision-records",
           "title": "Architectural Decision Records (ADRs)",
           "level": "advanced",
-          "description": "Writing down significant architecture decisions and the reasoning behind them, so future maintainers understand why a choice was made, not just what was chosen.",
+          "description": "Write down major architecture decisions and the reasons behind them, so future maintainers know why a choice was made, not just what it was.",
           "prerequisites": [],
           "relatedTopics": [
             "technical-debt"
@@ -2100,7 +2100,7 @@ export const catalog: LearnCatalog = {
           "id": "technical-debt",
           "title": "Technical Debt",
           "level": "advanced",
-          "description": "The tradeoff between shipping a faster, less-ideal solution now and the ongoing cost of maintaining or fixing it later — much like financial debt.",
+          "description": "The tradeoff between shipping a faster, less-ideal solution now and the ongoing cost of living with or fixing it later, much like financial debt.",
           "prerequisites": [],
           "relatedTopics": [
             "architectural-decision-records"
@@ -2110,7 +2110,7 @@ export const catalog: LearnCatalog = {
           "id": "anti-corruption-layer",
           "title": "Anti-Corruption Layer",
           "level": "advanced",
-          "description": "A translation layer that protects your system's clean internal model from a messy or incompatible external system, so its quirks don't leak inward.",
+          "description": "A translation layer that keeps a messy or incompatible external system's quirks out of your clean internal model.",
           "prerequisites": [
             "clean-architecture",
             "domain-driven-design-basics"
@@ -2667,7 +2667,7 @@ export const catalog: LearnCatalog = {
           "id": "prompting-basics",
           "title": "Prompt Engineering Basics",
           "level": "beginner",
-          "description": "How to write prompts that work: system vs user messages, clear instructions, context, examples (few-shot), XML-tag structure and asking for step-by-step reasoning.",
+          "description": "Write prompts that work: system vs user messages, clear instructions, context, few-shot examples, XML tags and step-by-step reasoning.",
           "prerequisites": [
             "how-llms-work"
           ],
@@ -2717,7 +2717,7 @@ export const catalog: LearnCatalog = {
           "id": "hallucinations-and-limitations",
           "title": "Hallucinations and Limitations",
           "level": "beginner",
-          "description": "Why LLMs produce confident falsehoods, the other built-in limits (cutoff, no memory, arithmetic, bias, injection), and the engineering patterns that reduce the damage.",
+          "description": "Why LLMs state falsehoods confidently, their other built-in limits (cutoff, no memory, arithmetic, bias, injection), and the patterns that reduce the damage.",
           "prerequisites": [
             "how-llms-work",
             "prompting-basics"
@@ -2735,7 +2735,7 @@ export const catalog: LearnCatalog = {
           "id": "structured-output",
           "title": "Structured Output: JSON, Schemas and Validation",
           "level": "beginner",
-          "description": "Getting machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
+          "description": "Get machine-readable output from an LLM: JSON, JSON Schema, Pydantic models, the SDK's parse helper, validation and retry.",
           "prerequisites": [
             "calling-an-llm-api",
             "prompting-basics"
@@ -2752,7 +2752,7 @@ export const catalog: LearnCatalog = {
           "id": "embeddings",
           "title": "Embeddings and Vector Similarity",
           "level": "beginner",
-          "description": "Turning text into vectors of numbers that capture meaning, and comparing them with cosine similarity and dot product - the foundation of semantic search and RAG.",
+          "description": "Turn text into vectors of numbers that capture meaning, and compare them with cosine similarity and dot product: the foundation of semantic search and RAG.",
           "prerequisites": [
             "how-llms-work"
           ],
@@ -2768,7 +2768,7 @@ export const catalog: LearnCatalog = {
           "id": "what-is-rag",
           "title": "What is RAG and Why It Exists",
           "level": "beginner",
-          "description": "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, private-data-aware and citable - compared with fine-tuning and long context.",
+          "description": "Retrieval-Augmented Generation: fetch relevant passages from your own data and give them to the model, so answers are current, use private data and can cite sources. Compared with fine-tuning and long context.",
           "prerequisites": [
             "embeddings",
             "prompting-basics",
@@ -4318,7 +4318,7 @@ export const catalog: LearnCatalog = {
       "id": "url-shortener",
       "title": "URL Shortener",
       "difficulty": "Easy",
-      "summary": "Turn a long URL into a short code that redirects back to it — the classic first system design interview question.",
+      "summary": "Turn a long URL into a short code that redirects back to it. The classic first system design question.",
       "relatedTopics": [
         "caching",
         "database-replication",
@@ -4332,7 +4332,7 @@ export const catalog: LearnCatalog = {
       "id": "instagram",
       "title": "Instagram",
       "difficulty": "Hard",
-      "summary": "Design a photo-sharing social network: users post images, follow other users, and see a personalized feed of posts from the people they follow.",
+      "summary": "Design a photo-sharing network where users post images, follow others, and see a feed of posts from people they follow.",
       "relatedTopics": [
         "caching",
         "cdn",
@@ -4349,7 +4349,7 @@ export const catalog: LearnCatalog = {
       "id": "twitter",
       "title": "Twitter / X",
       "difficulty": "Hard",
-      "summary": "Design a microblogging platform: users post short messages ('tweets'), follow other users, and see a timeline of tweets from the people they follow.",
+      "summary": "Design a microblogging platform where users post short messages ('tweets'), follow others, and see a timeline of tweets from people they follow.",
       "relatedTopics": [
         "caching",
         "queues",
@@ -4366,7 +4366,7 @@ export const catalog: LearnCatalog = {
       "id": "whatsapp",
       "title": "WhatsApp",
       "difficulty": "Hard",
-      "summary": "Design a real-time messaging system: one-to-one and group chats with reliable delivery, delivery/read receipts, and end-to-end encryption.",
+      "summary": "Design real-time messaging: one-to-one and group chats with reliable delivery, read receipts, and end-to-end encryption.",
       "relatedTopics": [
         "websockets",
         "queues",
@@ -4383,7 +4383,7 @@ export const catalog: LearnCatalog = {
       "id": "uber",
       "title": "Uber",
       "difficulty": "Hard",
-      "summary": "Design a ride-hailing system: riders request a trip, nearby drivers get matched to them in real time, and both sides track the trip's location and price live.",
+      "summary": "Design ride-hailing: riders request a trip, get matched with a nearby driver in real time, and both track the trip's location and price live.",
       "relatedTopics": [
         "consistent-hashing",
         "caching",
@@ -4400,7 +4400,7 @@ export const catalog: LearnCatalog = {
       "id": "youtube",
       "title": "YouTube",
       "difficulty": "Hard",
-      "summary": "Design a video platform where anyone can upload a video and anyone else can watch it instantly, at whatever quality their connection supports.",
+      "summary": "Design a video platform where anyone can upload a video and anyone can watch it instantly, at the quality their connection supports.",
       "relatedTopics": [
         "cdn",
         "caching",
@@ -4416,7 +4416,7 @@ export const catalog: LearnCatalog = {
       "id": "google-drive",
       "title": "Google Drive",
       "difficulty": "Medium",
-      "summary": "Design a cloud file storage and sync service: upload any file, access it from any device, share it with others, and have edits stay consistent even when made offline or from multiple places at once.",
+      "summary": "Design cloud file storage and sync: upload any file, access it from any device, share it, and keep edits consistent even when made offline or from several places at once.",
       "relatedTopics": [
         "consistent-hashing",
         "caching",
@@ -4432,7 +4432,7 @@ export const catalog: LearnCatalog = {
       "id": "ecommerce",
       "title": "E-commerce Platform",
       "difficulty": "Hard",
-      "summary": "Design an online storefront: browse and search a catalog, hold items in a cart, and check out reliably — without overselling inventory or charging a customer twice.",
+      "summary": "Design an online store: browse and search a catalog, keep items in a cart, and check out reliably without overselling stock or charging twice.",
       "relatedTopics": [
         "idempotency",
         "queues",
@@ -4449,7 +4449,7 @@ export const catalog: LearnCatalog = {
       "id": "netflix",
       "title": "Netflix",
       "difficulty": "Hard",
-      "summary": "Design a subscription video-streaming service: a fixed, licensed catalog watched by tens of millions of people simultaneously, on every device, with playback that resumes exactly where you left off.",
+      "summary": "Design a subscription streaming service: a fixed, licensed catalog watched by tens of millions at once, on any device, resuming exactly where you left off.",
       "relatedTopics": [
         "cdn",
         "caching",

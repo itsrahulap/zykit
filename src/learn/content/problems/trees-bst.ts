@@ -7,14 +7,13 @@ export const treesBstProblems: Problem[] = [
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given the root of a **binary search tree** (a tree where, at every
-node, everything in the left subtree is smaller and everything in the right
-subtree is larger), along with two nodes \`p\` and \`q\` that are guaranteed to
-already exist somewhere in the tree.
+You're given the root of a **binary search tree** (at every node, the
+left subtree is smaller and the right subtree is larger) and two nodes
+\`p\` and \`q\` that exist in the tree.
 
-Find their **lowest common ancestor** — the deepest node in the tree that has
-both \`p\` and \`q\` as descendants. A node counts as a descendant of itself, so
-if \`p\` happens to be an ancestor of \`q\`, then \`p\` itself is the answer.
+Find their **lowest common ancestor**: the deepest node that has both
+\`p\` and \`q\` as descendants. A node counts as its own descendant, so if
+\`p\` is an ancestor of \`q\`, the answer is \`p\`.
     `.trim(),
     examples: [
       {
@@ -34,32 +33,30 @@ if \`p\` happens to be an ancestor of \`q\`, then \`p\` itself is the answer.
       "p and q both exist in the tree and p != q.",
     ],
     hints: [
-      "In a general binary tree you'd have to search both subtrees blindly. What extra information does the BST ordering give you for free?",
-      "At any node, compare both values to the node's value. If both are smaller, the answer must be in the left subtree. If both are larger, it must be in the right subtree.",
-      "If the two values fall on different sides (or one equals the current node), you've found the split point — that node is the answer.",
+      "In a general binary tree you'd search both subtrees blindly. What does the BST ordering tell you for free?",
+      "At each node, compare both values to the node's value. Both smaller means the answer is on the left; both larger means it's on the right.",
+      "If the values fall on different sides (or one equals the current node), that node is the split point and the answer.",
     ],
     approachOverview: `
-A solution that works on *any* binary tree has to recursively search the left
-and right subtrees and see where \`p\` and \`q\` each turn up. That works here
-too, but it ignores something powerful: this tree is sorted.
+A solution for *any* binary tree searches both subtrees to see where
+\`p\` and \`q\` turn up. That works here too, but ignores that this tree
+is sorted.
 
-Because it's a BST, you can tell which subtree a value lives in just by
-comparing it to the current node — no searching required. Walking down from
-the root, the first node where \`p\` and \`q\` stop agreeing on "which side" is
-exactly the split point, and therefore the lowest common ancestor.
+In a BST, comparing a value to the current node tells you which subtree
+it's in, with no searching. Walking down from the root, the first node
+where \`p\` and \`q\` go different ways is the split point: the lowest
+common ancestor.
     `.trim(),
     solutions: [
       {
         approach: "General Tree Approach — Recursive Search",
         explanation: `
-This approach ignores the BST property entirely and treats the tree as an
-arbitrary binary tree, which makes it correct everywhere but not the fastest
-option available here.
+This ignores the BST property and treats the tree as any binary tree. It's
+always correct, but not the fastest option here.
 
-At each node, recurse into the left and right subtrees looking for \`p\` and
-\`q\`. If a node itself is \`p\` or \`q\`, or if the search comes back
-"found something" from both children, then this node is the split point —
-return it upward. Otherwise pass along whichever side actually found
+At each node, search the left and right subtrees for \`p\` and \`q\`. If
+the node is \`p\` or \`q\`, or both children found something, this node is
+the split point, so return it. Otherwise pass up whichever side found
 something.
         `.trim(),
         code: `class TreeNode {
@@ -85,14 +82,13 @@ function lowestCommonAncestor(root, p, q) {
       {
         approach: "Optimal — Use BST Ordering",
         explanation: `
-Instead of searching both subtrees, use the fact that a BST tells you exactly
-where a value belongs just from comparisons.
+A BST tells you where a value belongs from comparisons alone, so you don't
+need to search both subtrees.
 
 Start at the root. If both \`p.val\` and \`q.val\` are smaller than the
-current node's value, the split point must be somewhere in the left
-subtree, so move left. If both are larger, move right. The moment that's no
-longer true — one value is smaller and the other isn't, or one of them
-equals the current node — you're standing on the lowest common ancestor.
+node's value, move left. If both are larger, move right. As soon as
+neither is true (they split, or one equals the node), you're at the lowest
+common ancestor.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -120,9 +116,9 @@ function lowestCommonAncestor(root, p, q) {
         timeComplexity: "O(h) — one pass down the tree, where h is its height",
         spaceComplexity: "O(1) — iterative, no recursion stack",
         walkthrough: [
-          { code: "if (p.val < node.val && q.val < node.val) node = node.left;", explanation: "Both targets are smaller than this node, so the split point (if any) is further left." },
-          { code: "else if (p.val > node.val && q.val > node.val) node = node.right;", explanation: "Both targets are larger, so move right instead." },
-          { code: "else return node;", explanation: "The targets disagree on direction (or one matches this node exactly) — this is the split point." },
+          { code: "if (p.val < node.val && q.val < node.val) node = node.left;", explanation: "Both targets are smaller, so the split point is further left." },
+          { code: "else if (p.val > node.val && q.val > node.val) node = node.right;", explanation: "Both targets are larger, so move right." },
+          { code: "else return node;", explanation: "The targets go different ways (or one matches this node), so this is the split point." },
         ],
       },
     ],
@@ -136,13 +132,12 @@ function lowestCommonAncestor(root, p, q) {
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given the root of a binary tree. A node is called **good** if, when
-you look at the path from the root down to that node, no node along the way
-has a value greater than the node itself. In other words, the node's value
-must be greater than or equal to every value that came before it on the way
-down (its own value counts, so the root is always good).
+You're given the root of a binary tree. A node is **good** if no node on
+the path from the root to it has a greater value. In other words, its
+value is at least every value above it on that path. The root is always
+good.
 
-Count how many good nodes are in the tree.
+Count the good nodes in the tree.
     `.trim(),
     examples: [
       {
@@ -166,24 +161,22 @@ Count how many good nodes are in the tree.
       "Each node's value is between -10^4 and 10^4.",
     ],
     hints: [
-      "You need to know the largest value seen so far on the current path — that's information from above, not below.",
-      "Carry the running maximum down as you recurse, and compare each node against it before updating it.",
+      "You need the largest value seen so far on the current path. That comes from above, not below.",
+      "Carry the running maximum down as you recurse. Compare each node to it before updating it.",
     ],
     approachOverview: `
-This is a top-down problem: whether a node is good depends only on its
-ancestors, not on anything below it. So as you walk down from the root,
-carry along the maximum value seen so far on the current path. At each node,
-compare its value to that running maximum — if it's greater than or equal,
-it's good, and it also becomes the new running maximum for its children.
+Whether a node is good depends only on its ancestors, so work top-down.
+Walk down from the root, carrying the largest value seen on the current
+path. If a node's value is greater than or equal to it, the node is good
+and becomes the new maximum for its children.
     `.trim(),
     solutions: [
       {
         approach: "Recursive DFS (Top-Down)",
         explanation: `
-Do a depth-first traversal, passing the maximum value seen so far on the
-path down to each recursive call. At each node, check if its value is
-greater than or equal to that maximum — if so, count it as good, and use
-its value as the new maximum for the children below it.
+Do a depth-first traversal, passing the path's maximum so far into each
+call. If a node's value is greater than or equal to it, count the node as
+good and pass its value down as the new maximum.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -211,17 +204,17 @@ function goodNodes(root) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(h) — recursion stack, where h is the tree's height",
         walkthrough: [
-          { code: "function dfs(node, maxSoFar) {", explanation: "maxSoFar carries the largest value seen on the path from the root down to (but not including) this node." },
-          { code: "if (node.val >= maxSoFar) { count = 1; maxSoFar = node.val; }", explanation: "This node is good if it beats everything above it — and if so, it raises the bar for its own children." },
-          { code: "return count + dfs(node.left, maxSoFar) + dfs(node.right, maxSoFar);", explanation: "Add up good nodes found in this node plus both subtrees." },
+          { code: "function dfs(node, maxSoFar) {", explanation: "maxSoFar is the largest value on the path from the root to this node (not including it)." },
+          { code: "if (node.val >= maxSoFar) { count = 1; maxSoFar = node.val; }", explanation: "The node is good if it's at least everything above it. If so, it raises the bar for its children." },
+          { code: "return count + dfs(node.left, maxSoFar) + dfs(node.right, maxSoFar);", explanation: "Adds this node's count to the good nodes in both subtrees." },
         ],
       },
       {
         approach: "Optimal — Iterative BFS",
         explanation: `
-The same idea works without recursion by using an explicit queue, where each
-queue entry carries a node along with the running maximum for the path that
-led to it. This avoids recursion-depth concerns on very deep, skewed trees.
+The same idea without recursion: use a queue where each entry holds a node
+and the maximum on the path to it. This avoids recursion-depth problems on
+very deep, skewed trees.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -262,11 +255,10 @@ function goodNodes(root) {
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given the root of a binary tree. Determine whether it's a valid
-**binary search tree (BST)**: every node's value must be strictly greater
-than *every* value in its left subtree and strictly less than *every* value
-in its right subtree — not just its immediate children, but the entire
-subtree beneath it.
+Given the root of a binary tree, decide whether it's a valid **binary
+search tree (BST)**. Each node's value must be strictly greater than
+*every* value in its left subtree and strictly less than *every* value in
+its right subtree, not just its direct children.
     `.trim(),
     examples: [
       {
@@ -290,30 +282,28 @@ subtree beneath it.
       "Node values are in the range [-2^31, 2^31 - 1].",
     ],
     hints: [
-      "Comparing each node only to its direct children isn't enough — a node far down the left branch could still be too large compared to some ancestor further up.",
-      "Every node actually lives inside a valid range, set by its ancestors. What's the allowed range for the root? How does that range change as you move into the left or right child?",
-      "Alternatively: an in-order traversal of a valid BST always visits values in strictly increasing order. Does that give you a shortcut?",
+      "Comparing each node only to its children isn't enough. A node deep in the left branch could still be larger than an ancestor higher up.",
+      "Each node must fall in a range set by its ancestors. What's the root's range? How does it change for the left or right child?",
+      "Alternatively: an in-order traversal of a valid BST visits values in strictly increasing order. Is that a shortcut?",
     ],
     approachOverview: `
-The key mistake is checking a node only against its immediate children —
-that misses violations that come from further up the tree. Instead, each
-node must fall within a valid **range** determined by its ancestors: a left
-child must be less than its parent *and* still within whatever upper bound
-the parent inherited, and similarly for right children.
+The common mistake is checking a node only against its children, which
+misses violations from higher up. Instead, each node must fall in a
+**range** set by its ancestors. A left child must be less than its parent
+*and* within the parent's inherited upper bound; right children work the
+same way.
 
-A different way to see the same idea: an in-order traversal (left, node,
-right) of a valid BST visits values in strictly increasing order. So
-checking that the in-order sequence never goes flat or backwards is an
-equally valid test.
+Another view: an in-order traversal (left, node, right) of a valid BST
+gives strictly increasing values. So checking that the sequence never
+stays flat or goes backwards is an equally valid test.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — In-Order Traversal into an Array",
         explanation: `
-Collect every value via an in-order traversal (left, node, right). If the
-tree really is a valid BST, this sequence must come out strictly
-increasing. So after collecting it, just walk through and confirm each
-value is bigger than the one before it.
+Collect every value with an in-order traversal (left, node, right). In a
+valid BST this sequence is strictly increasing, so check that each value
+is bigger than the one before it.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -346,12 +336,13 @@ function isValidBST(root) {
       {
         approach: "Optimal — Recursive Range Checking",
         explanation: `
-Give every node a valid range \`(lower, upper)\` it must fall strictly
-inside, inherited from its ancestors. The root's range is unbounded. When
-you move into a left child, that child's upper bound tightens to the
-parent's value (it must stay less than the parent). When you move into a
-right child, its lower bound tightens to the parent's value instead. If any
-node ever falls outside its inherited range, the tree is invalid.
+Give each node a range \`(lower, upper)\` it must fall strictly inside,
+inherited from its ancestors. The root's range is unbounded.
+
+- A left child's upper bound becomes the parent's value.
+- A right child's lower bound becomes the parent's value.
+
+If any node falls outside its range, the tree is invalid.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -376,9 +367,9 @@ function isValidBST(root) {
         spaceComplexity: "O(h) — recursion stack, where h is the tree's height",
         walkthrough: [
           { code: "function validate(node, lower, upper) {", explanation: "lower and upper are the strict bounds this node must fall inside, inherited from its ancestors." },
-          { code: "if (lower !== null && node.val <= lower) return false;", explanation: "This node must be strictly greater than every ancestor whose left subtree it's part of." },
-          { code: "if (upper !== null && node.val >= upper) return false;", explanation: "It must also be strictly less than every ancestor whose right subtree it's part of." },
-          { code: "validate(node.left, lower, node.val) && validate(node.right, node.val, upper)", explanation: "The left child inherits a tighter upper bound (this node's value); the right child inherits a tighter lower bound." },
+          { code: "if (lower !== null && node.val <= lower) return false;", explanation: "The node must be strictly greater than every ancestor whose right subtree it's in." },
+          { code: "if (upper !== null && node.val >= upper) return false;", explanation: "It must be strictly less than every ancestor whose left subtree it's in." },
+          { code: "validate(node.left, lower, node.val) && validate(node.right, node.val, upper)", explanation: "The left child gets this node's value as its upper bound; the right child gets it as its lower bound." },
         ],
       },
     ],
@@ -392,9 +383,8 @@ function isValidBST(root) {
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given the root of a binary search tree and an integer \`k\`. Find the
-\`k\`th smallest value stored in the tree (with \`k = 1\` meaning the very
-smallest value).
+Given the root of a binary search tree and an integer \`k\`, find the
+\`k\`th smallest value in the tree (\`k = 1\` is the smallest).
     `.trim(),
     examples: [
       {
@@ -413,23 +403,21 @@ smallest value).
       "1 <= k <= number of nodes.",
     ],
     hints: [
-      "An in-order traversal (left, node, right) of a BST visits every value in sorted order for free.",
-      "You don't have to visit the whole tree — once you've counted off k values during the traversal, you can stop immediately.",
+      "An in-order traversal (left, node, right) of a BST visits values in sorted order.",
+      "You don't have to visit the whole tree. Stop as soon as you've counted k values.",
     ],
     approachOverview: `
-The defining fact about a BST is that its in-order traversal (left, then
-node, then right) produces values in strictly increasing order. So the
-\`k\`th smallest value is simply the \`k\`th value produced by that
-traversal — the only question is whether you collect everything first or
-stop as soon as you've counted \`k\` values.
+A BST's in-order traversal (left, node, right) gives values in strictly
+increasing order. So the \`k\`th smallest value is the \`k\`th value it
+produces. The only question is whether you collect everything first or
+stop after \`k\` values.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Collect All Values, Then Index",
         explanation: `
-Run a full in-order traversal, collecting every value into an array in
-sorted order. Once that's done, the answer is simply the value at index
-\`k - 1\`.
+Run a full in-order traversal to collect every value in sorted order. The
+answer is the value at index \`k - 1\`.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -458,10 +446,9 @@ function kthSmallest(root, k) {
       {
         approach: "Optimal — Iterative In-Order with Early Stop",
         explanation: `
-Do the same in-order traversal, but iteratively with an explicit stack, and
-stop the instant you've produced the \`k\`th value instead of visiting the
-rest of the tree. This matters a lot when \`k\` is small relative to the
-size of the tree.
+Do the same in-order traversal with an explicit stack, and stop at the
+\`k\`th value instead of visiting the rest of the tree. This matters most
+when \`k\` is small compared to the tree.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -493,9 +480,9 @@ function kthSmallest(root, k) {
         timeComplexity: "O(h + k) — descends to the leftmost node, then advances k times",
         spaceComplexity: "O(h) — the explicit stack, where h is the tree's height",
         walkthrough: [
-          { code: "while (node !== null) { stack.push(node); node = node.left; }", explanation: "Push every node down the left spine — the smallest unvisited value is always at the top of the stack once this stops." },
-          { code: "node = stack.pop(); k--;", explanation: "Popping visits the next value in sorted order. Each pop counts down toward k." },
-          { code: "if (k === 0) return node.val;", explanation: "As soon as k reaches zero, this popped node is the k-th smallest — return immediately without visiting the rest of the tree." },
+          { code: "while (node !== null) { stack.push(node); node = node.left; }", explanation: "Pushes every node down the left spine. The smallest unvisited value is then on top of the stack." },
+          { code: "node = stack.pop(); k--;", explanation: "Each pop visits the next value in sorted order and counts down k." },
+          { code: "if (k === 0) return node.val;", explanation: "When k reaches zero, this node is the k-th smallest. Return without visiting the rest of the tree." },
         ],
       },
     ],
@@ -509,12 +496,10 @@ function kthSmallest(root, k) {
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given two arrays describing the same binary tree: \`preorder\`, the
-sequence of values visited by a preorder traversal (node, then left, then
-right), and \`inorder\`, the sequence visited by an in-order traversal (left,
-then node, then right). All values in the tree are unique.
+You're given two traversals of the same binary tree: \`preorder\` (node,
+left, right) and \`inorder\` (left, node, right). All values are unique.
 
-Rebuild the original tree and return its root.
+Rebuild the tree and return its root.
     `.trim(),
     examples: [
       {
@@ -534,31 +519,27 @@ Rebuild the original tree and return its root.
       "All values in preorder and inorder are unique, and every value in inorder also appears in preorder.",
     ],
     hints: [
-      "Preorder always visits the root first. So preorder[0] tells you the root's value immediately.",
-      "Once you know the root's value, find it inside inorder — everything to its left in that array belongs to the left subtree, and everything to its right belongs to the right subtree.",
-      "Recursing this way rebuilds the tree one root at a time. Can you avoid re-searching inorder from scratch on every call?",
+      "Preorder visits the root first, so preorder[0] is the root's value.",
+      "Find the root in inorder. Everything to its left is the left subtree; everything to its right is the right subtree.",
+      "Recursing this way rebuilds the tree one root at a time. Can you avoid searching inorder from scratch on every call?",
     ],
     approachOverview: `
-Preorder's first element is always the current subtree's root. Once you know
-the root's value, look it up in the inorder array: everything to its left
-in that array is the entire left subtree (in inorder order), and everything
-to its right is the entire right subtree. Recursing on those two pieces
-rebuilds the tree.
+Preorder's first element is the current subtree's root. Find it in
+inorder: everything left of it is the left subtree, and everything right
+of it is the right subtree. Recurse on both pieces to rebuild the tree.
 
-The direct version of this re-searches the inorder array and copies
-sub-arrays on every call, which adds up. The optimized version precomputes
-where every value sits in inorder, and tracks subtree boundaries with plain
-indices instead of copying arrays.
+The direct version searches inorder and copies sub-arrays on every call,
+which adds up. The optimized version precomputes each value's position
+in inorder and tracks subtree boundaries with indices instead of copies.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Search and Slice",
         explanation: `
-At each recursive call, take the first element of the current preorder
-slice as the root, use \`indexOf\` to find that value's position in the
-current inorder slice, and slice both arrays into "left part" and "right
-part" for the recursive calls. Simple to follow, but repeatedly searching
-and copying arrays adds real overhead.
+Take the first preorder element as the root, find it in inorder with
+\`indexOf\`, and slice both arrays into left and right parts for the
+recursive calls. Simple, but the repeated searching and copying adds real
+overhead.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -586,12 +567,13 @@ function buildTree(preorder, inorder) {
       {
         approach: "Optimal — Index Map with Boundary Pointers",
         explanation: `
-First, build a map from value to its index in \`inorder\`, so finding the
-root's split point is instant instead of a linear search. Then, instead of
-slicing arrays, track the current subtree using just a range of indices
-into \`inorder\`, and a single shared pointer into \`preorder\` that always
-points at the next root to place (preorder never needs to be re-sliced,
-since its values are consumed strictly in order as you recurse).
+First, map each value to its index in \`inorder\`, so finding the split is
+instant instead of a linear search.
+
+Instead of slicing, track the current subtree with a range of indices
+into \`inorder\`, plus one shared pointer into \`preorder\` for the next
+root. Preorder never needs slicing, because its values are used strictly
+in order as you recurse.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -626,9 +608,9 @@ function buildTree(preorder, inorder) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(n) — the index map, plus O(h) recursion stack",
         walkthrough: [
-          { code: "inorder.forEach((val, idx) => indexOfInorder.set(val, idx));", explanation: "Precompute every value's position in inorder so the split point is a single lookup instead of a search." },
-          { code: "const rootVal = preorder[preorderIndex]; preorderIndex++;", explanation: "Preorder values are consumed strictly left to right as subtrees are built, so a single shared pointer tracks 'the next root' across all recursive calls." },
-          { code: "root.left = build(inorderLeft, mid - 1); root.right = build(mid + 1, inorderRight);", explanation: "Everything left of the root's inorder position is the left subtree's index range; everything right of it is the right subtree's." },
+          { code: "inorder.forEach((val, idx) => indexOfInorder.set(val, idx));", explanation: "Precomputes each value's position in inorder, so the split point is one lookup." },
+          { code: "const rootVal = preorder[preorderIndex]; preorderIndex++;", explanation: "Preorder values are used left to right as subtrees are built, so one shared pointer tracks the next root across all calls." },
+          { code: "root.left = build(inorderLeft, mid - 1); root.right = build(mid + 1, inorderRight);", explanation: "Indexes left of the root's inorder position form the left subtree; indexes right of it form the right subtree." },
         ],
       },
     ],
@@ -642,12 +624,12 @@ function buildTree(preorder, inorder) {
     difficulty: "Hard",
     category: "trees",
     description: `
-You're given the root of a binary tree, where node values can be negative.
-A **path** is any sequence of nodes connected by edges where no node
-appears more than once — it can start and end at any two nodes, and
-crucially, it does **not** have to pass through the root at all.
+You're given the root of a binary tree; node values can be negative. A
+**path** is a sequence of nodes connected by edges, with no node used
+twice. It can start and end anywhere and does **not** have to pass
+through the root.
 
-Find the maximum possible sum of values along any path in the tree.
+Find the maximum sum of values along any path.
     `.trim(),
     examples: [
       {
@@ -666,36 +648,34 @@ Find the maximum possible sum of values along any path in the tree.
       "Node values are in the range [-1000, 1000].",
     ],
     hints: [
-      "A path can 'bend' at exactly one node — the highest point it reaches — and go straight down into at most one child on each side from there.",
-      "For any node, what's the most it can contribute if a path is only allowed to continue downward through it into one of its children (not both)?",
-      "If a subtree's best downward contribution would be negative, it's better to leave that branch out of the path entirely — treat it as contributing 0.",
+      "A path 'bends' at one node, its highest point, and goes down into at most one child on each side.",
+      "What's the most a node can contribute if the path only continues down through it into one child (not both)?",
+      "If a subtree's best downward sum is negative, leave that branch out and treat it as 0.",
     ],
     approachOverview: `
-Every possible path has exactly one highest point — the node where it stops
-going up one side and starts going down the other (a path can also just go
-straight down one side, which is the same idea with one side contributing
-nothing).
+Every path has one highest point, where it stops going up one side and
+starts down the other. (A path that goes straight down is the same idea,
+with one side adding nothing.)
 
-For a candidate "highest point," the best path through it is: its own value,
-plus the best downward-only sum from its left child, plus the best
-downward-only sum from its right child (treating either side as 0 if going
-into it would only hurt). The tricky part is that a node can only pass
-*one* of those two downward sums up to its own parent, since a path can't
-branch in two directions and still continue upward.
+The best path through a highest point is its value plus the best
+downward-only sum from each child, counting a side as 0 if it would only
+hurt.
+
+The tricky part: a node can pass only *one* of those downward sums up to
+its parent, since a path can't branch two ways and still continue up.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Recompute Downward Sums at Every Node",
         explanation: `
-Write a helper \`maxDownward(node)\` that returns the best sum you can get
-starting at \`node\` and going straight down through one child (clamped to
-0, since it's always fine to skip a branch that would only subtract).
+A helper \`maxDownward(node)\` returns the best sum starting at \`node\` and
+going straight down through one child, clamped to 0 (you can always skip
+a branch that would only subtract).
 
-Then, for every node in the tree, treat it as the path's highest point:
-its value plus \`maxDownward\` of its left child plus \`maxDownward\` of its
-right child. Take the best value found over every node. This is correct,
-but \`maxDownward\` gets recomputed from scratch for every node it's called
-on, redoing a lot of work.
+Treat every node as the path's highest point: its value plus
+\`maxDownward\` of each child. Take the best over all nodes. This is
+correct, but \`maxDownward\` is recomputed from scratch each time, redoing
+a lot of work.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -725,13 +705,14 @@ function maxPathSum(root) {
       {
         approach: "Optimal — Single Pass with a Running Global Maximum",
         explanation: `
-Do a single post-order traversal (children before parent). The recursive
-function returns the best *downward-only* sum through a node — exactly what
-a parent needs to extend a path upward. But while computing that, at every
-node it also checks the best "bend here" path (value + both children's
-downward sums) and updates one shared running maximum. That running maximum
-is never returned to the caller — it only gets read at the very end — so
-every node's contribution is computed exactly once.
+Do one post-order traversal (children before parent). The function
+returns the best *downward-only* sum through a node, which is what a
+parent needs to extend a path upward.
+
+Along the way, at each node it also checks the best "bend here" path
+(value plus both children's downward sums) and updates one shared
+maximum. That maximum is only read at the end, so each node is computed
+exactly once.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -761,9 +742,9 @@ function maxPathSum(root) {
         timeComplexity: "O(n) — every node is visited exactly once",
         spaceComplexity: "O(h) — recursion stack, where h is the tree's height",
         walkthrough: [
-          { code: "const leftGain = Math.max(0, maxDownward(node.left));", explanation: "The best a path can gain by dipping into the left child and continuing straight down — clamped to 0, since a negative branch is better left out entirely." },
-          { code: "maxSum = Math.max(maxSum, node.val + leftGain + rightGain);", explanation: "Treats this node as the path's 'bend point', using both children at once, and updates the one shared answer if it's the best seen so far." },
-          { code: "return node.val + Math.max(leftGain, rightGain);", explanation: "But only one side can be handed up to this node's own parent, since a path can't branch in two directions and keep going." },
+          { code: "const leftGain = Math.max(0, maxDownward(node.left));", explanation: "The best gain from going down into the left child, clamped to 0 because a negative branch is better left out." },
+          { code: "maxSum = Math.max(maxSum, node.val + leftGain + rightGain);", explanation: "Treats this node as the path's bend point, using both children, and updates the shared answer if it's the best so far." },
+          { code: "return node.val + Math.max(leftGain, rightGain);", explanation: "Only one side can be passed up to the parent, since a path can't branch two ways and keep going." },
         ],
       },
     ],
@@ -777,15 +758,13 @@ function maxPathSum(root) {
     difficulty: "Hard",
     category: "trees",
     description: `
-Design a way to convert a binary tree into a single string (**serialize**),
-and a matching way to rebuild the exact same tree structure and values back
-from that string (**deserialize**). "Exact same" means the round trip has to
-preserve the shape of the tree too, not just the set of values — so you
-need some way to encode where the \`null\` children are, not just the
-non-null ones.
+Design a way to turn a binary tree into a string (**serialize**) and to
+rebuild the exact same tree from it (**deserialize**). The round trip must
+keep the tree's shape, not just its values, so you need to encode where
+the \`null\` children are.
 
-There's no single required string format — any encoding works, as long as
-\`deserialize(serialize(root))\` always reproduces an equivalent tree.
+Any string format works, as long as \`deserialize(serialize(root))\`
+always gives an equivalent tree.
     `.trim(),
     examples: [
       {
@@ -804,33 +783,29 @@ There's no single required string format — any encoding works, as long as
       "Node values are in the range [-1000, 1000].",
     ],
     hints: [
-      "If you only record non-null values, you lose the shape of the tree — [1,2] and [1,null,2] would look identical. You need explicit markers for missing children.",
-      "A traversal that records a marker for every null child (not just skipping them) can be replayed step by step to rebuild the same structure unambiguously.",
-      "Preorder (node, then left, then right) works well for this because the very next unread value always tells you what to build next.",
+      "Recording only non-null values loses the shape: [1,2] and [1,null,2] would look the same. You need markers for missing children.",
+      "A traversal that writes a marker for every null child can be replayed step by step to rebuild the same structure.",
+      "Preorder (node, left, right) works well because the next unread value always tells you what to build next.",
     ],
     approachOverview: `
-The core trick is encoding \`null\` children explicitly, as real entries in
-the output, rather than just omitting them — that's what makes the shape of
-the tree recoverable, not just its values.
+The key trick is writing \`null\` children as real entries instead of
+leaving them out. That's what makes the shape recoverable.
 
-Two traversal orders both work well for this: a level-order (BFS) traversal
-that records a child slot even when it's empty, or a preorder (DFS)
-traversal that does the same. Either one can be replayed in the same order
-during deserialization to rebuild the identical structure, one node (or
-"empty slot") at a time.
+Two traversals work: level-order (BFS) or preorder (DFS), each recording
+empty child slots. Deserialize replays the same order to rebuild the
+structure one node (or empty slot) at a time.
     `.trim(),
     solutions: [
       {
         approach: "Level-Order (BFS) with Null Markers",
         explanation: `
-Serialize by doing a breadth-first walk with a queue: for every node
-dequeued, record its value (or \`"null"\` if the slot is empty), and if it
-wasn't empty, enqueue its two children (which may themselves be \`null\`).
+Serialize with a breadth-first walk using a queue. For each dequeued node,
+record its value (or \`"null"\` for an empty slot). If it isn't empty,
+enqueue both children (which may be \`null\`).
 
-Deserialize by reversing the process: read the first value as the root,
-then walk through the rest of the string in order, using a queue of "nodes
-still waiting for their two children" to know where each subsequent value
-belongs.
+Deserialize in reverse: the first value is the root. Read the rest in
+order, using a queue of nodes still waiting for their two children to
+know where each value goes.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -892,18 +867,16 @@ function deserialize(data) {
       {
         approach: "Preorder (DFS) with Null Markers",
         explanation: `
-Serialize with a preorder traversal (visit the node itself first, then
-recurse left, then right), writing \`"null"\` whenever a child is missing.
-Because null markers are written for *every* missing child, the resulting
-sequence unambiguously describes the tree's shape.
+Serialize with a preorder traversal (node, then left, then right),
+writing \`"null"\` for each missing child. Because *every* missing child
+gets a marker, the sequence describes the shape exactly.
 
-Deserialize by reading that same sequence back in order with a single
-shared position pointer: the next token is always either \`"null"\` (this
-subtree is empty) or a value (build a node, then recursively read its left
-subtree, then its right subtree from the tokens that follow). This is
-equally efficient, and some find it a little more direct to reason about
-than the BFS version, since serialize and deserialize mirror each other
-line for line.
+Deserialize by reading the sequence in order with one shared pointer. The
+next token is either \`"null"\` (empty subtree) or a value: build a node,
+then read its left subtree, then its right.
+
+This is just as efficient as BFS, and some find it more direct, since
+serialize and deserialize mirror each other line for line.
         `.trim(),
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
@@ -950,9 +923,9 @@ function deserialize(data) {
         timeComplexity: "O(n) for both serialize and deserialize",
         spaceComplexity: "O(n) — the output string, plus O(h) recursion stack",
         walkthrough: [
-          { code: "if (node === null) { values.push(\"null\"); return; }", explanation: "Every missing child gets an explicit marker, not just a gap — this is what lets deserialize know exactly where each branch ends." },
-          { code: "const val = values[index]; index++;", explanation: "A single shared pointer advances through the tokens in the same order serialize wrote them, so each call reads exactly the tokens meant for its subtree." },
-          { code: "node.left = dfs(); node.right = dfs();", explanation: "Preorder means the left subtree's entire token sequence comes immediately next, followed by the right subtree's — recursing in this order rebuilds the same shape." },
+          { code: "if (node === null) { values.push(\"null\"); return; }", explanation: "Each missing child gets a marker, so deserialize knows exactly where each branch ends." },
+          { code: "const val = values[index]; index++;", explanation: "One shared pointer reads the tokens in the order serialize wrote them, so each call reads exactly its subtree's tokens." },
+          { code: "node.left = dfs(); node.right = dfs();", explanation: "In preorder, the left subtree's tokens come next, then the right's. Recursing in this order rebuilds the same shape." },
         ],
       },
     ],

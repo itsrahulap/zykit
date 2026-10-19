@@ -30,7 +30,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'With **serverless functions** such as AWS Lambda, AWS manages the servers and runtime environment and you pay only while your code executes. Dedicated servers, EC2 virtual machines and self-managed container hosts all require you to provision and pay for capacity whether or not it is used.',
+      'With **serverless functions** such as AWS Lambda, AWS manages the servers and runtime and you pay only while your code runs. With dedicated servers, EC2 virtual machines and self-managed container hosts, you provision and pay for capacity whether or not it is used.',
   },
   {
     id: 'cr-003',
@@ -150,7 +150,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      'The **recovery point objective (RPO)** is the maximum acceptable data loss, measured as time since the last recovery point, so it drives how often data is backed up or replicated. The RTO is the maximum acceptable downtime, an SLA is a provider\'s uptime commitment, and MTTR measures average repair time rather than tolerable data loss.',
+      'The **recovery point objective (RPO)** is the maximum acceptable data loss, measured as time since the last recovery point, so it sets how often data is backed up or replicated. The RTO is the maximum acceptable downtime, an SLA is a provider\'s uptime commitment, and MTTR is average repair time.',
   },
   {
     id: 'cr-011',
@@ -270,7 +270,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS GovCloud (US)** Regions are isolated Regions built for sensitive US government and regulated workloads such as ITAR and FedRAMP High, operated by screened US citizens. Standard commercial Regions, Local Zones and Wavelength Zones do not carry these specific operating guarantees.',
+      '**AWS GovCloud (US)** Regions are isolated Regions for sensitive US government and regulated workloads such as ITAR and FedRAMP High, operated by screened US citizens. Commercial Regions, Local Zones and Wavelength Zones lack these guarantees.',
   },
   {
     id: 'cr-019',
@@ -436,7 +436,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'Zero trust assumes no user or device is trusted by default, so **identity** (with controls like MFA and context-based conditions) becomes the primary perimeter. Firewalls, VPNs and physical security are network-centric or physical controls that zero trust adds to rather than relies on.',
+      'Zero trust trusts no user or device by default, so **identity** (with controls like MFA and context-based conditions) becomes the primary perimeter. Firewalls, VPNs and physical security are network or physical controls that zero trust builds on rather than relies on.',
   },
   {
     id: 'cr-030',
@@ -467,7 +467,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [1, 3],
     explanation:
-      'Changing **account settings such as the root email address** and **closing the account** are root-user-only tasks. Creating IAM groups, attaching policies and creating VPCs can be done by any IAM identity with the right permissions, and the root user should not be used for them.',
+      'Changing **account settings such as the root email address** and **closing the account** are root-user-only tasks. Any IAM identity with the right permissions can create IAM groups, attach policies and create VPCs, and the root user should not be used for them.',
   },
   {
     id: 'cr-032',
@@ -561,7 +561,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [0, 4],
     explanation:
-      'The main factors are **compliance/data residency**, **latency to end users**, cost in that Region and which services are available there. IAM is a global service available everywhere, while IAM user counts and the billing team\'s time zone have no bearing on Region choice.',
+      'The main factors are **compliance/data residency**, **latency to end users**, cost in that Region and which services it offers. IAM is global and available everywhere, and IAM user counts or the billing team\'s time zone do not matter.',
   },
   {
     id: 'cr-038',
@@ -1016,7 +1016,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'By default an Auto Scaling group uses **EC2 status checks**, which only confirm the instance is running. Enabling **ELB health checks** makes it use the load balancer\'s application-level check and replace instances that fail it. Capacity changes, scale-in protection and instance size do not detect a failed application.',
+      'By default an Auto Scaling group uses **EC2 status checks**, which only confirm the instance is running. With **ELB health checks** on, it uses the load balancer\'s application-level check and replaces instances that fail it. Capacity changes, scale-in protection and instance size do not detect a failed application.',
   },
   {
     id: 'cr-068',
@@ -1155,7 +1155,7 @@ export const courseReviewQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Migration Evaluator** (formerly TSO Logic) collects on-premises utilisation, often with an agentless collector, and projects AWS costs for a migration business case. DMS moves databases, VM Import/Export converts VM images to AMIs, and Trusted Advisor reviews existing AWS accounts.',
+      '**Migration Evaluator** (formerly TSO Logic) collects on-premises utilization, often with an agentless collector, and projects AWS costs for a migration business case. DMS moves databases, VM Import/Export converts VM images to AMIs, and Trusted Advisor reviews existing AWS accounts.',
   },
   {
     id: 'cr-077',

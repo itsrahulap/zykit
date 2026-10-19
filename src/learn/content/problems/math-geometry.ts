@@ -205,7 +205,7 @@ boundaries cross. Every cell is visited once, with no "visited" grid.
 
     if (left <= right) {
       for (let r = bottom; r >= top; r--) result.push(matrix[r][left]);
-      left--;
+      left++;
     }
   }
 
@@ -217,7 +217,7 @@ boundaries cross. Every cell is visited once, with no "visited" grid.
           { code: "for (let c = left; c <= right; c++) result.push(matrix[top][c]); top++;", explanation: "Sweeps the top row left to right, then moves the top boundary down." },
           { code: "for (let r = top; r <= bottom; r++) result.push(matrix[r][right]); right--;", explanation: "Sweeps the right column top to bottom, then moves the right boundary inward." },
           { code: "if (top <= bottom) { ...matrix[bottom][c]... bottom--; }", explanation: "Sweeps the bottom row right to left. The guard stops a single remaining row from being visited twice." },
-          { code: "if (left <= right) { ...matrix[r][left]... left--; }", explanation: "Sweeps the left column bottom to top, similarly guarded for a single remaining column." },
+          { code: "if (left <= right) { ...matrix[r][left]... left++; }", explanation: "Sweeps the left column bottom to top, similarly guarded for a single remaining column." },
         ],
       },
     ],
