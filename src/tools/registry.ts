@@ -121,6 +121,7 @@ import ageCalculator from './age-calculator';
 import postgresQueryBuilder from './postgres-query-builder';
 import gitCommandBuilder from './git-command-builder';
 import dockerfileGenerator from './dockerfile-generator';
+import webhookPayloadBuilder from './webhook-payload-builder';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -242,6 +243,7 @@ export const TOOLS: ToolDefinition[] = [
   postgresQueryBuilder,
   gitCommandBuilder,
   dockerfileGenerator,
+  webhookPayloadBuilder,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
