@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_OPTIONS, generate, type NginxOptions } from '../../../src/tools/nginx-config-generator/features/nginx-config-generator';
+import { DEFAULT_OPTIONS, generate, lintConfig, validServerName, validUpstream, type NginxOptions } from '../../../src/tools/nginx-config-generator/features/nginx-config-generator';
 
 const gen = (o: Partial<NginxOptions>) => generate({ ...DEFAULT_OPTIONS, ...o });
 
@@ -64,5 +64,47 @@ describe('nginx Config Generator', () => {
     expect(config).not.toContain('} server {');
     expect(config).not.toContain('/x;}');
     expect(config).toContain('server_name server listen 1;');
+  });
+});
+
+describe('input validation', () => {
+  it('accepts real hostnames and rejects junk', () => {
+    for (const n of ['example.com', 'www.example.com', '*.example.com', 'example.*', '_', '~^(www\\.)?ex\\.com$', 'localhost', '[::1]']) expect(validServerName(n), n).toBe(true);
+    for (const n of ['-bad.com', 'a..b', 'ex/ample', 'user@host']) expect(validServerName(n), n).toBe(false);
+    expect(gen({ serverName: 'example.com user@host' }).warnings.join(' ')).toMatch(/Ignored server name "user@host"/);
+  });
+  it('checks upstream host:port', () => {
+    for (const u of ['127.0.0.1:3000', 'api.internal:8080', 'backend', '[::1]:9000', 'unix:/run/app.sock']) expect(validUpstream(u), u).toBe(true);
+    for (const u of ['127.0.0.1:0', 'host:70000', 'host:abc', 'unix:', 'a:b:c', 'http://x:1']) expect(validUpstream(u), u).toBe(false);
+    const r = gen({ preset: 'proxy', upstreams: '127.0.0.1:3000\nhost:99999' });
+    expect(r.warnings.join(' ')).toMatch(/Ignored upstream "host:99999"/);
+    expect(r.config).not.toContain('99999');
+  });
+  it('never lets a value inject a directive', () => {
+    const r = gen({ preset: 'proxy', serverName: 'a.com;evil', upstreams: '1.2.3.4:80; include /etc/passwd', root: '/x;y', maxBody: '1m; return 200' });
+    expect(r.config).not.toMatch(/evil|passwd|return 200/);
+  });
+});
+
+describe('lintConfig', () => {
+  it('finds nothing wrong in any generated config', () => {
+    const presets = ['static', 'spa', 'proxy', 'php', 'redirect'] as const;
+    for (const preset of presets)
+      for (const tls of [true, false])
+        for (const extra of [{}, { websocket: true, rateLimit: true, http3: true }, { redirectMode: 'to-www' as const }]) {
+          const { config } = gen({ preset, tls, ...extra });
+          expect(lintConfig(config), `${preset} tls=${tls} ${JSON.stringify(extra)}`).toEqual([]);
+        }
+  });
+  it('flags common mistakes with line numbers', () => {
+    const msgs = (t: string) => lintConfig(t).map((i) => `${i.line}: ${i.message}`).join('\n');
+    expect(msgs('server {\n  listen 80\n}')).toMatch(/^2: .*semicolon/);
+    expect(msgs('server {\n  listen 80;\n')).toMatch(/never closed/);
+    expect(msgs('}\n')).toMatch(/no matching/);
+    expect(msgs('server {\n  location / {\n    proxy_pass http://b;\n  }\n}')).toMatch(/^2: .*proxy_set_header Host/);
+    expect(msgs('server {\n  location /api {\n    proxy_pass http://b;\n    proxy_set_header Host $host;\n    expires 30d;\n  }\n}')).toMatch(/caches responses from a backend/);
+    expect(msgs('server {\n  ssl_protocols TLSv1 TLSv1.2;\n}')).toMatch(/insecure/);
+    expect(msgs('server {\n  ssl_protocols TLSv1.2 TLSv1.3;\n}')).toBe('');
+    expect(msgs('server {\n  root /srv;\n  index index.html;\n  location / {\n    expires 1h;\n  }\n}')).toMatch(/^4: .*try_files/);
   });
 });

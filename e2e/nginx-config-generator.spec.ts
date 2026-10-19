@@ -14,16 +14,16 @@ test('nginx Config Generator works locally', async ({ page, context }) => {
 
   await page.goto('/tools/nginx-config-generator');
   await expect(page).toHaveTitle(/nginx Config Generator/);
-  const pre = page.getByRole('region', { name: 'Output' }).locator('pre');
-  await expect(pre).toContainText('try_files $uri $uri/ =404;');
+  const pre = page.getByLabel('Edit nginx.conf');
+  await expect(pre).toHaveValue(/try_files \$uri \$uri\/ =404;/);
 
   await page.getByRole('textbox', { name: /^server_name/ }).fill('app.test');
-  await expect(pre).toContainText('server_name app.test;');
+  await expect(pre).toHaveValue(/server_name app\.test;/);
   await page.getByRole('button', { name: 'Reverse proxy' }).click();
   await page.getByLabel('Upstreams').fill('127.0.0.1:8000\n127.0.0.1:8001');
   await page.getByLabel('WebSocket headers').check();
-  await expect(pre).toContainText('server 127.0.0.1:8001;');
-  await expect(pre).toContainText('proxy_set_header Upgrade $http_upgrade;');
+  await expect(pre).toHaveValue(/server 127\.0\.0\.1:8001;/);
+  await expect(pre).toHaveValue(/proxy_set_header Upgrade \$http_upgrade;/);
 
   await page.getByRole('region', { name: 'Output' }).getByRole('button', { name: 'Copy' }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('proxy_pass http://app_test_backend;');
@@ -33,6 +33,17 @@ test('nginx Config Generator works locally', async ({ page, context }) => {
 
   await page.getByRole('textbox', { name: /^server_name/ }).fill('bad; } name');
   await expect(page.getByText(/Ignored server name/).first()).toBeVisible();
+
+  // Hand edits are linted, kept across option changes, and reset on demand.
+  await expect(page.getByRole('region', { name: 'Config checks' })).toHaveCount(0);
+  const edited = (await pre.inputValue()).replace('proxy_set_header Host $host;', '');
+  await pre.fill(edited);
+  await expect(page.getByRole('region', { name: 'Config checks' })).toContainText('proxy_set_header Host');
+  await page.getByLabel('gzip').uncheck();
+  await expect(page.getByText('Options changed since you edited')).toBeVisible();
+  await page.getByRole('button', { name: 'Reset to generated' }).click();
+  await expect(pre).toHaveValue(/proxy_set_header Host \$host;/);
+  await expect(page.getByRole('region', { name: 'Config checks' })).toHaveCount(0);
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

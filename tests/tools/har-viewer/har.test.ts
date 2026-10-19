@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRows, entryDetail, parseHar, summarize, typeOf, viewRows } from '../../../src/tools/har-viewer/features/har';
+import { buildRows, entryDetail, isSensitiveHeader, isSensitiveParam, parseHar, redactHar, redactUrl, summarize, typeOf, viewRows } from '../../../src/tools/har-viewer/features/har';
 
 const entry = (over: Record<string, unknown> = {}) => ({
   startedDateTime: '2025-01-01T00:00:00.000Z',
@@ -76,5 +76,74 @@ describe('entryDetail', () => {
 describe('typeOf', () => {
   it.each([['text/html; charset=utf-8', 'html'], ['application/javascript', 'js'], ['image/webp', 'image'], ['font/woff2', 'font'], ['', 'other']])('%s', (m, t) => {
     expect(typeOf(m)).toBe(t);
+  });
+});
+
+describe('redaction', () => {
+  it('detects sensitive header and parameter names', () => {
+    for (const h of ['Cookie', 'set-cookie', 'Authorization', 'Proxy-Authorization', 'X-API-Key', 'x-auth-token', 'X-CSRF-Token']) expect(isSensitiveHeader(h), h).toBe(true);
+    for (const h of ['Accept', 'Content-Type', 'Cache-Control', 'Host']) expect(isSensitiveHeader(h), h).toBe(false);
+    for (const p of ['access_token', 'api_key', 'apiKey', 'code', 'sig', 'password', 'client_secret']) expect(isSensitiveParam(p), p).toBe(true);
+    for (const p of ['page', 'q', 'lang', 'id']) expect(isSensitiveParam(p), p).toBe(false);
+  });
+
+  it('redacts URLs without touching the rest', () => {
+    expect(redactUrl('https://a.com/x?page=2&access_token=abc&q=hi')).toBe('https://a.com/x?page=2&access_token=[REDACTED]&q=hi');
+    expect(redactUrl('https://user:pw@a.com/x')).toBe('https://user:[REDACTED]@a.com/x');
+    expect(redactUrl('https://a.com/cb#access_token=abc&state=1')).toBe('https://a.com/cb#access_token=[REDACTED]&state=[REDACTED]');
+    expect(redactUrl('https://a.com/x?api%5Fkey=1')).toBe('https://a.com/x?api%5Fkey=[REDACTED]');
+    expect(redactUrl('https://a.com/#section')).toBe('https://a.com/#section');
+    expect(redactUrl('Not a URL? token=1')).toBe('Not a URL? token=1');
+  });
+
+  it('produces a valid HAR with secrets replaced', () => {
+    const doc = {
+      log: {
+        version: '1.2',
+        pages: [{ id: 'p', title: 'https://a.com/?token=t1' }],
+        entries: [
+          {
+            startedDateTime: '2024-01-01T00:00:00Z',
+            time: 10,
+            request: {
+              method: 'POST',
+              url: 'https://a.com/login?token=t2&page=1',
+              headers: [{ name: 'Authorization', value: 'Bearer t3' }, { name: 'Accept', value: '*/*' }, { name: 'Referer', value: 'https://a.com/?code=t4' }],
+              cookies: [{ name: 'sid', value: 't5' }],
+              queryString: [{ name: 'token', value: 't2' }, { name: 'page', value: '1' }],
+              postData: { mimeType: 'application/x-www-form-urlencoded', text: 'password=t6', params: [{ name: 'password', value: 't6' }] },
+            },
+            response: {
+              status: 200,
+              headers: [{ name: 'Set-Cookie', value: 'sid=t7' }],
+              cookies: [{ name: 'sid', value: 't7' }],
+              content: { size: 9, mimeType: 'application/json', text: '{"jwt":"t8"}' },
+              redirectURL: '',
+            },
+            timings: { send: 1, wait: 8, receive: 1 },
+          },
+        ],
+      },
+    };
+    const original = JSON.stringify(doc);
+    const keep = redactHar(doc, false);
+    expect(JSON.stringify(doc)).toBe(original); // input untouched
+    for (const t of ['t1', 't2', 't3', 't4', 't5', 't6', 't7']) expect(keep, t).not.toMatch(new RegExp(`\\b${t}\\b`));
+    expect(keep).toContain('t8'); // response bodies kept unless asked
+    expect(keep).toContain('*/*');
+    const parsed = parseHar(keep);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) expect(buildRows(parsed.entries)[0].url).toBe('https://a.com/login?token=[REDACTED]&page=1');
+    const noBodies = redactHar(doc, true);
+    expect(noBodies).not.toContain('t8');
+    expect(JSON.parse(noBodies).log.entries[0].response.content).toEqual({ size: 9, mimeType: 'application/json' });
+  });
+
+  it('marks missing sizes and times as unknown', () => {
+    const rows = buildRows([
+      { startedDateTime: '2024-01-01T00:00:00Z', time: -1, request: { url: 'https://a.com' }, response: { status: 0, bodySize: -1, content: { size: -1 } } },
+      { startedDateTime: '2024-01-01T00:00:00Z', time: 5, request: { url: 'https://a.com' }, response: { status: 200, bodySize: 0, content: { size: 0 } } },
+    ]);
+    expect(rows.map((r) => [r.sizeKnown, r.timeKnown])).toEqual([[false, false], [true, true]]);
   });
 });

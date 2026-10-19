@@ -70,6 +70,21 @@ export function splitNames(v: string): string[] {
   return v.split(/\s+/).filter(Boolean);
 }
 
+const HOST = /^(\*\.)?[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*(\.\*)?$/;
+
+/** A server_name entry nginx accepts: a hostname (optionally with a leading `*.` or trailing `.*`), an IP, `_`, or a `~regex`. */
+export function validServerName(n: string): boolean {
+  return n === '_' || n.startsWith('~') || HOST.test(n) || /^\[[0-9a-fA-F:.]+\]$/.test(n);
+}
+
+/** An upstream address: `unix:/path`, or a host / IPv4 / [IPv6] with an optional port from 1 to 65535. */
+export function validUpstream(u: string): boolean {
+  if (u.startsWith('unix:')) return /^unix:\/\S+$/.test(u);
+  const m = /^(\[[0-9a-fA-F:.]+\]|[^:\s]+)(?::(\d{1,5}))?$/.exec(u);
+  if (!m || !(m[1].startsWith('[') || HOST.test(m[1]))) return false;
+  return m[2] === undefined || (Number(m[2]) >= 1 && Number(m[2]) <= 65535);
+}
+
 export function parseUpstreams(v: string): string[] {
   return v.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
 }
@@ -86,9 +101,10 @@ const SEC_HEADERS = [
 export function generate(o: NginxOptions): NginxResult {
   const warnings: string[] = [];
   const names = splitNames(o.serverName).filter((n) => {
-    const ok = isSafe(n);
-    if (!ok) warnings.push(`Ignored server name "${n}": it contains characters nginx would read as syntax.`);
-    return ok;
+    if (!isSafe(n)) warnings.push(`Ignored server name "${n}": it contains characters nginx would read as syntax.`);
+    else if (!validServerName(n)) warnings.push(`Ignored server name "${n}": use a hostname such as example.com, *.example.com or a ~regex.`);
+    else return true;
+    return false;
   });
   if (!names.length) names.push('_');
   const primary = names[0] === '_' ? 'app' : names[0];
@@ -113,8 +129,8 @@ export function generate(o: NginxOptions): NginxResult {
     maxBody = '';
   }
   const ups = parseUpstreams(o.upstreams).filter((u) => {
-    const ok = isSafe(u);
-    if (!ok) warnings.push(`Ignored upstream "${u}".`);
+    const ok = isSafe(u) && validUpstream(u);
+    if (!ok) warnings.push(`Ignored upstream "${u}": use host:port (port 1–65535), [IPv6]:port or unix:/path.`);
     return ok;
   });
   if (o.preset === 'proxy' && !ups.length) {
@@ -241,4 +257,57 @@ export function generate(o: NginxOptions): NginxResult {
   }
   add('}');
   return { config: out.join('\n') + '\n', warnings };
+}
+
+export interface LintIssue {
+  /** 1-based line, or 0 for the whole file. */
+  line: number;
+  message: string;
+}
+
+/**
+ * Quick checks for common mistakes in a config (generated or edited by hand). Not a parser: it
+ * reads lines and braces, so it can miss problems; `nginx -t` is the real test.
+ */
+export function lintConfig(text: string): LintIssue[] {
+  const issues: LintIssue[] = [];
+  const lines = text.split(/\r?\n/);
+  // Each open block: its header line and the directives seen in it.
+  const stack: { head: string; line: number; body: string[] }[] = [];
+  const blocks: { head: string; line: number; body: string[] }[] = [];
+  lines.forEach((raw, i) => {
+    const line = raw.replace(/(^|\s)#.*$/, '').trim();
+    if (!line) return;
+    if (!/[;{}]$/.test(line)) issues.push({ line: i + 1, message: 'This line doesn’t end with “;”, “{” or “}”. A missing semicolon makes nginx read the next line as part of this directive.' });
+    for (const part of line.split(/(?<=[{};])/)) {
+      const t = part.trim();
+      if (t.endsWith('{')) stack.push({ head: t.slice(0, -1).trim(), line: i + 1, body: [] });
+      else if (t === '}') {
+        const b = stack.pop();
+        if (!b) issues.push({ line: i + 1, message: 'This “}” has no matching “{”.' });
+        else blocks.push(b);
+      } else if (t) stack.at(-1)?.body.push(t);
+    }
+  });
+  for (const b of stack) issues.push({ line: b.line, message: `The block “${b.head}” is never closed with “}”.` });
+
+  for (const b of blocks) {
+    const has = (re: RegExp) => b.body.some((d) => re.test(d));
+    if (has(/^proxy_pass\s/) && !has(/^proxy_set_header\s+Host\s/i)) {
+      issues.push({ line: b.line, message: `“${b.head}” proxies without “proxy_set_header Host $host;”, so the backend sees the upstream name instead of the site’s hostname.` });
+    }
+    if (has(/^(proxy_pass|fastcgi_pass)\s/) && has(/^expires\s|immutable/)) {
+      issues.push({ line: b.line, message: `“${b.head}” caches responses from a backend for a long time. Dynamic pages usually shouldn’t be cached like static files.` });
+    }
+    if (b.head.startsWith('server') && has(/^ssl_protocols\s.*\b(SSLv[23]|TLSv1|TLSv1\.1)\b(?!\.)/)) {
+      issues.push({ line: b.line, message: 'ssl_protocols allows SSL or TLS 1.0/1.1, which are insecure and disabled by modern browsers. Use “TLSv1.2 TLSv1.3”.' });
+    }
+    if (b.head.startsWith('server') && has(/^index\s.*index\.html/) && !has(/^(proxy_pass|fastcgi_pass)\s/)) {
+      const root = blocks.find((x) => x.head === 'location /' && x.line > b.line);
+      if (root && !root.body.some((d) => /^(try_files|return|proxy_pass)\s/.test(d))) {
+        issues.push({ line: root.line, message: '“location /” has no try_files. For a single-page app, add “try_files $uri $uri/ /index.html;” or client-side routes will 404 on reload.' });
+      }
+    }
+  }
+  return issues.sort((a, b) => a.line - b.line);
 }

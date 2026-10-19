@@ -6,13 +6,13 @@ const docs: ToolDocs = {
     'Paste text into **Test text**, drop a file on it or use **Open file**. Matches are highlighted in **Matches** as you type.',
     'Check the match table for each match’s index, text and capture groups, including named groups.',
     'Enter a **Replacement** such as `$1`, `$<name>`, `$&` or `$$` to preview the replaced text, then copy it or use **Send to…**.',
-    'Read **Pattern explained** for a one-line description of each part of the pattern.',
+    'Read **Pattern explained**: **Tokens** gives a one-line description of each part of the pattern, and **Structure** shows it as a tree (groups contain their parts, quantifiers contain what they repeat, alternatives are listed as options). Click a row with an arrow to fold it.',
   ],
   howItWorks:
     'The pattern is compiled with your browser’s own `RegExp`, so syntax and behaviour are exactly JavaScript’s. That includes named groups, lookbehind and, with the `u` flag, `\\p{…}` Unicode properties.\n\n' +
     'Matches are found with `RegExp.prototype.exec`. The replacement preview uses `String.prototype.replace`, so it replaces every match with `g` and only the first without it.\n\n' +
     'Matching runs in a Web Worker shortly after you stop typing. If it doesn’t finish within 1 second, the worker is terminated (the only way to stop a pattern that backtracks catastrophically) and a fresh one is used next time. Empty matches advance by one character (one code point with `u`), so patterns such as `a*` can’t loop forever.\n\n' +
-    '**Pattern explained** is a best-effort tokenizer, not a full parser. It describes escapes, classes, groups, quantifiers, anchors and back-references one by one.',
+    'The **Tokens** view is a quick best-effort tokenizer. The **Structure** view is a real parser for JavaScript’s regex syntax (including nested `v`-flag sets with `&&`, `--` and `\\q{…}`), and points at the exact position of a syntax error. It explains JavaScript regexes only: other flavours (PCRE, Python, .NET) differ, and the browser’s own engine still decides what is valid. Groups nested more than 200 deep aren’t explained.',
   limits: [
     'JavaScript regex syntax only. PCRE, Python or .NET features such as possessive quantifiers, atomic groups, inline `(?i)` flags or `\\A` / `\\Z` aren’t supported unless your browser’s `RegExp` accepts them.',
     'Flags `g`, `i`, `m`, `s`, `u`, `y` and `d` are available; the `v` (unicodeSets) flag isn’t offered.',

@@ -78,17 +78,17 @@ Work through it one item per session. Each item is sized to finish, test and rev
 
 - [x] I-2 Gitignore: editable output
 - [x] I-1 .env Diff: validator features
-- [ ] I-5 JSON Tree Viewer: path formats
-- [ ] I-3 JSON to Code: Zod and Valibot
-- [ ] I-7 HAR Viewer: redaction
-- [ ] I-4 nginx: editable output
-- [ ] N-1 Git Command Builder
-- [ ] N-2 Dockerfile Generator
-- [ ] N-3 Webhook Payload Builder
+- [x] I-5 JSON Tree Viewer: path formats
+- [x] I-3 JSON to Code: Zod and Valibot
+- [x] I-7 HAR Viewer: redaction
+- [x] I-4 nginx: editable output
+- [x] N-1 Git Command Builder
+- [x] N-2 Dockerfile Generator
+- [x] N-3 Webhook Payload Builder
 
 **Medium:**
 
-- [ ] I-6 Regex Tester: structure tree
+- [x] I-6 Regex Tester: structure tree
 - [ ] I-8 JSON Schema: builder tab
 - [ ] I-9 Compose: service builder
 - [ ] I-10 cURL: request builder

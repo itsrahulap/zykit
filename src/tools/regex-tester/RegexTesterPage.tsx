@@ -1,6 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import regexTester from './index';
 import { explain, FLAGS, MAX_MATCHES, MAX_TEXT, segments, type Match } from './features/regex';
+import { parseRegex, RegexSyntaxError, type RegexNode } from './features/regex-tree';
 import { useRegex } from './hooks/useRegex';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { useShareState } from '../../shared/hooks/useShareState';
@@ -9,7 +10,7 @@ import { OpenFileButton } from '../../shared/ui/convert';
 import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Panel } from '../../shared/ui/Panel';
-import { Breadcrumb, CodeArea, CodeBlock, CopyButton } from '../../shared/ui/tool';
+import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { pluralize } from '../../shared/utils/format.utils';
 import { useOverflow } from '../../shared/hooks/useOverflow';
@@ -85,6 +86,61 @@ function Highlighted({ text, matches }: { text: string; matches: Match[] }) {
   );
 }
 
+function TreeNode({ node }: { node: RegexNode }) {
+  const head = (
+    <>
+      <code className="mr-2 break-all rounded-md bg-slate-100 px-1.5 py-0.5 text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">{node.text || '(empty)'}</code>
+      <span className="text-slate-700 dark:text-slate-300">{node.label}</span>
+    </>
+  );
+  if (!node.children.length) return <li className="py-0.5 pl-5">{head}</li>;
+  return (
+    <li className="py-0.5">
+      <details open className="group">
+        <summary className="cursor-pointer list-none pl-0 marker:hidden pointer-coarse:min-h-11 [&::-webkit-details-marker]:hidden">
+          <span aria-hidden="true" className="inline-block w-5 text-slate-500 transition-transform group-open:rotate-90">
+            ▸
+          </span>
+          {head}
+        </summary>
+        <ul className="ml-2 border-l border-slate-200 pl-3 dark:border-slate-700">
+          {node.children.map((c, i) => (
+            <TreeNode key={i} node={c} />
+          ))}
+        </ul>
+      </details>
+    </li>
+  );
+}
+
+function Structure({ pattern, flags }: { pattern: string; flags: string }) {
+  let root: RegexNode;
+  try {
+    root = parseRegex(pattern, flags);
+  } catch (e) {
+    if (!(e instanceof RegexSyntaxError)) throw e;
+    return (
+      <div role="alert" className="space-y-2 text-sm text-red-700 dark:text-red-400">
+        <p>
+          Position {e.index + 1}: {e.message}
+        </p>
+        <pre className="overflow-x-auto font-mono text-xs text-slate-800 dark:text-slate-200" tabIndex={0} aria-label="Error position">
+          {pattern}
+          {'\n'}
+          {' '.repeat(e.index)}^
+        </pre>
+      </div>
+    );
+  }
+  return (
+    <ul aria-label="Pattern structure" className="text-sm">
+      {root.children.map((c, i) => (
+        <TreeNode key={i} node={c} />
+      ))}
+    </ul>
+  );
+}
+
 export default function RegexTesterPage() {
   const [pattern, setPattern] = useState('');
   const [flags, setFlags] = useState('g');
@@ -95,6 +151,7 @@ export default function RegexTesterPage() {
   const tooLarge = deferredText.length > MAX_TEXT;
   const state = useRegex(pattern, flags, tooLarge ? '' : deferredText, replacement ? replacement : undefined);
   const tokens = useMemo(() => explain(pattern), [pattern]);
+  const [view, setView] = useState<'tokens' | 'structure'>('tokens');
 
   const toggle = (f: string) =>
     setFlags((cur) =>
@@ -332,8 +389,23 @@ export default function RegexTesterPage() {
         </Panel>
 
         <Panel eyebrow="Pattern explained" icon="lightbulb" className="min-w-0">
+          {tokens.length > 0 && (
+            <div className="mb-4">
+              <Segmented<'tokens' | 'structure'>
+                label="View"
+                options={[
+                  { value: 'tokens', label: 'Tokens' },
+                  { value: 'structure', label: 'Structure' },
+                ]}
+                value={view}
+                onChange={setView}
+              />
+            </div>
+          )}
           {tokens.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">Each part of your pattern is explained here.</p>
+          ) : view === 'structure' ? (
+            <Structure pattern={pattern} flags={flags} />
           ) : (
             <ol aria-label="Pattern tokens" className="space-y-2 text-sm">
               {tokens.map((t, i) => (

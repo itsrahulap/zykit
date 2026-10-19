@@ -81,6 +81,100 @@ export function jsonPath(f: Frame): string {
   return '$' + parts.reverse().join('');
 }
 
+function keys(f: Frame): (string | number)[] {
+  const out: (string | number)[] = [];
+  for (let c: Frame | null = f; c && c.parent; c = c.parent) out.push(c.key!);
+  return out.reverse();
+}
+
+/** RFC 6901 JSON Pointer such as `/a/0/b` (`~` → `~0`, `/` → `~1`); the root is the empty string. */
+export function jsonPointer(f: Frame): string {
+  return keys(f)
+    .map((k) => '/' + String(k).replace(/~/g, '~0').replace(/\//g, '~1'))
+    .join('');
+}
+
+/** JavaScript optional chaining such as `data?.a?.[0]?.["b c"]`. */
+export function jsAccess(f: Frame, root = 'data'): string {
+  return root + keys(f).map((k) => (typeof k === 'number' ? `?.[${k}]` : IDENT.test(k) ? `?.${k}` : `?.[${JSON.stringify(k)}]`)).join('');
+}
+
+/** Reads one quoted key starting at s[i] (a quote); returns the key and the index after the closing quote. */
+function quoted(s: string, i: number): [string, number] {
+  const q = s[i];
+  let out = '';
+  for (let j = i + 1; j < s.length; j++) {
+    if (s[j] === '\\') {
+      if (q === '"') {
+        // Double-quoted: full JSON string escapes.
+        const m = /^\\(u[0-9a-fA-F]{4}|.)/.exec(s.slice(j));
+        if (!m) break;
+        out += JSON.parse(`"${m[0]}"`) as string;
+        j += m[0].length - 1;
+      } else out += s[++j] ?? '';
+    } else if (s[j] === q) return [out, j + 1];
+    else out += s[j];
+  }
+  throw new Error('A quoted key is never closed.');
+}
+
+/**
+ * Parses a JSONPath (`$.a[0]['b c']`), JSON Pointer (`/a/0/b c`) or JavaScript accessor
+ * (`data?.a?.[0]?.["b c"]`) into keys. Pointer segments stay strings; `findPath` matches them to array indexes.
+ */
+export function parsePath(input: string): (string | number)[] {
+  const s = input.trim();
+  if (!s) throw new Error('Type a path.');
+  if (s.startsWith('/')) return s.slice(1).split('/').map((seg) => seg.replace(/~1/g, '/').replace(/~0/g, '~'));
+  const head = /^(\$|[A-Za-z_$][\w$]*)/.exec(s);
+  if (!head) throw new Error('Start with $ (JSONPath), / (JSON Pointer) or a variable name.');
+  const out: (string | number)[] = [];
+  let i = head[0].length;
+  while (i < s.length) {
+    if (s.startsWith('?.', i)) i += 2;
+    else if (s[i] === '.') i++;
+    else if (s[i] !== '[') throw new Error(`Unexpected “${s[i]}” at position ${i + 1}.`);
+    if (s[i] === '[') {
+      const n = /^\[\s*(\d+)\s*\]/.exec(s.slice(i));
+      if (n) {
+        out.push(Number(n[1]));
+        i += n[0].length;
+        continue;
+      }
+      if (s[i + 1] !== '"' && s[i + 1] !== "'") throw new Error(`Expected a number or a quoted key at position ${i + 2}.`);
+      const [key, end] = quoted(s, i + 1);
+      if (s[end] !== ']') throw new Error(`Expected “]” at position ${end + 1}.`);
+      out.push(key);
+      i = end + 1;
+    } else {
+      const id = /^[A-Za-z_$][\w$]*/.exec(s.slice(i));
+      if (!id) throw new Error(`Expected a property name at position ${i + 1}.`);
+      out.push(id[0]);
+      i += id[0].length;
+    }
+  }
+  return out;
+}
+
+/** The frame at `path`, or the error describing the first key that doesn't exist. Duplicate keys resolve to the last one, as JSON.parse does. */
+export function findPath(root: JsonNode, path: (string | number)[]): Frame | string {
+  let f: Frame = { node: root, key: null, depth: 0, parent: null };
+  for (const k of path) {
+    const n = f.node;
+    let next: Frame | null = null;
+    if (n.type === 'array') {
+      const idx = typeof k === 'number' ? k : /^(0|[1-9]\d*)$/.test(k) ? Number(k) : -1;
+      if (idx >= 0 && idx < n.items.length) next = { node: n.items[idx], key: idx, depth: f.depth + 1, parent: f };
+    } else if (n.type === 'object') {
+      const e = n.entries.findLast((x) => x.key === String(k));
+      if (e) next = { node: e.value, key: e.key, depth: f.depth + 1, parent: f };
+    }
+    if (!next) return `${jsonPath(f)} has no ${typeof k === 'number' ? `item [${k}]` : `key “${k}”`}.`;
+    f = next;
+  }
+  return f;
+}
+
 export function ancestors(f: Frame): JsonNode[] {
   const out: JsonNode[] = [];
   for (let c = f.parent; c; c = c.parent) out.push(c.node);
@@ -108,8 +202,10 @@ export function truncate(s: string, max: number): { text: string; cut: boolean }
   return { text: s.slice(0, end), cut: true };
 }
 
-/** Case-insensitive search of keys and scalar values, in document order. */
-export function searchTree(root: JsonNode, query: string, max = MAX_MATCHES): { matches: Frame[]; truncated: boolean } {
+export type SearchIn = 'both' | 'keys' | 'values';
+
+/** Case-insensitive search of keys and/or scalar values, in document order. */
+export function searchTree(root: JsonNode, query: string, max = MAX_MATCHES, scope: SearchIn = 'both'): { matches: Frame[]; truncated: boolean } {
   const q = query.toLowerCase();
   const matches: Frame[] = [];
   if (!q) return { matches, truncated: false };
@@ -117,8 +213,8 @@ export function searchTree(root: JsonNode, query: string, max = MAX_MATCHES): { 
   while (stack.length) {
     const f = stack.pop()!;
     const n = f.node;
-    const keyHit = typeof f.key === 'string' && f.key.toLowerCase().includes(q);
-    const valHit = !isContainer(n) && scalarText(n).toLowerCase().includes(q);
+    const keyHit = scope !== 'values' && typeof f.key === 'string' && f.key.toLowerCase().includes(q);
+    const valHit = scope !== 'keys' && !isContainer(n) && scalarText(n).toLowerCase().includes(q);
     if (keyHit || valHit) {
       if (matches.length >= max) return { matches, truncated: true };
       matches.push(f);

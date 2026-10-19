@@ -24,6 +24,13 @@ test('JSON to Code generates models locally', async ({ page, context }) => {
   const lang = page.getByRole('group', { name: 'Language' });
   await lang.getByRole('button', { name: 'Rust' }).click();
   await expect(page.getByRole('region', { name: 'Rust output' }).locator('pre')).toContainText('pub user_id: i64');
+  await lang.getByRole('button', { name: 'Zod' }).click();
+  const zod = page.getByRole('region', { name: 'Zod output' }).locator('pre');
+  await expect(zod).toContainText('user_id: z.number().int(),');
+  await expect(zod).toContainText('nick: z.string().nullable(),');
+  await expect(page.getByLabel('Field names')).toHaveCount(0);
+  await page.getByLabel('Strict objects (reject unknown keys)').check();
+  await expect(zod).toContainText('export const RootSchema = z.strictObject({');
   await lang.getByRole('button', { name: 'Python' }).click();
   await page.getByRole('group', { name: 'Python style' }).getByRole('button', { name: 'Pydantic v2' }).click();
   await expect(page.getByRole('region', { name: 'Python output' }).locator('pre')).toContainText('class Root(BaseModel):');

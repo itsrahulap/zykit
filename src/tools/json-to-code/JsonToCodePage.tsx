@@ -4,7 +4,7 @@ import { DEFAULT_OPTIONS, generateCode, LANGS, type CodeOptions, type Lang } fro
 import { errorSnippet } from '../../shared/lib/textpos';
 import { parseJson } from '../json-formatter/features/json';
 import { Select } from '../../shared/ui/Select';
-import { OpenFileButton } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton } from '../../shared/ui/convert';
 import { SendToMenu } from '../../shared/ui/SendToMenu';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { useShareState } from '../../shared/hooks/useShareState';
@@ -131,15 +131,20 @@ export default function JsonToTypescriptPage() {
             onChange={(csStyle) => set({ csStyle })}
           />
         )}
-        <Select
-          label="Field names"
-          options={[
-            { value: 'idiomatic' as const, label: 'Language convention' },
-            { value: 'original' as const, label: 'Keep JSON names' },
-          ]}
-          value={opts.naming}
-          onChange={(naming) => set({ naming })}
-        />
+        {(opts.lang === 'zod' || opts.lang === 'valibot') && (
+          <Checkbox label="Strict objects (reject unknown keys)" checked={opts.strict} onChange={(strict) => set({ strict })} />
+        )}
+        {opts.lang !== 'zod' && opts.lang !== 'valibot' && (
+          <Select
+            label="Field names"
+            options={[
+              { value: 'idiomatic' as const, label: 'Language convention' },
+              { value: 'original' as const, label: 'Keep JSON names' },
+            ]}
+            value={opts.naming}
+            onChange={(naming) => set({ naming })}
+          />
+        )}
         <label className="inline-flex min-w-0 items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
           Root name
           <input

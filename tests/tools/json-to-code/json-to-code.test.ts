@@ -162,3 +162,47 @@ describe('options', () => {
     expect(gen({ lang: 'python' }, '{}').code).toContain('class Root:\n    pass');
   });
 });
+
+describe('Zod', () => {
+  const { code, fileName } = gen({ lang: 'zod' });
+  it('declares child schemas before parents with inferred types', () => {
+    expect(fileName).toBe('schemas.ts');
+    expect(code.startsWith("import { z } from 'zod';")).toBe(true);
+    expect(code).toContain('export type Root = z.infer<typeof RootSchema>;');
+    expect(code.indexOf('export const UserSchema')).toBeLessThan(code.indexOf('export const RootSchema'));
+    expect(code).toContain('  id: z.number().int(),');
+    expect(code).toContain('  price: z.number(),');
+    expect(code).toContain('  users: z.array(UserSchema),');
+    expect(code).toContain('  misc: z.array(z.unknown()),');
+  });
+  it('handles nullable, optional, quoted keys and strict mode', () => {
+    expect(code).toContain('  email: z.string().nullable(),');
+    expect(code).toContain('  nickname: z.string().optional(),');
+    expect(code).toContain('  "site-url": z.unknown(),');
+    expect(code).toContain('z.object({');
+    expect(gen({ lang: 'zod', strict: true }).code).toContain('= z.strictObject({');
+  });
+  it('aliases root arrays and empty objects', () => {
+    const arr = gen({ lang: 'zod' }, '[{"a":1}]').code;
+    expect(arr).toContain('export const RootSchema = z.array(');
+    expect(arr).toContain('export type Root = z.infer<typeof RootSchema>;');
+    expect(gen({ lang: 'zod' }, '{}').code).toContain('export const RootSchema = z.object({});');
+  });
+});
+
+describe('Valibot', () => {
+  const { code } = gen({ lang: 'valibot' });
+  it('uses the v1 pipe API and InferOutput', () => {
+    expect(code.startsWith("import * as v from 'valibot';")).toBe(true);
+    expect(code).toContain('  id: v.pipe(v.number(), v.integer()),');
+    expect(code).toContain('  email: v.nullable(v.string()),');
+    expect(code).toContain('  nickname: v.optional(v.string()),');
+    expect(code).toContain('  "site-url": v.unknown(),');
+    expect(code).toContain('export type Root = v.InferOutput<typeof RootSchema>;');
+    expect(gen({ lang: 'valibot', strict: true }).code).toContain('= v.strictObject({');
+  });
+  it('wraps optional nullable as optional(nullable(...))', () => {
+    expect(gen({ lang: 'valibot' }, '[{"a":null},{"a":"x"},{}]').code).toContain('  a: v.optional(v.nullable(v.string())),');
+    expect(gen({ lang: 'zod' }, '[{"a":null},{"a":"x"},{}]').code).toContain('  a: z.string().nullable().optional(),');
+  });
+});

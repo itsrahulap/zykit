@@ -150,7 +150,7 @@ const ESCAPES: Record<string, string> = {
   '0': 'NUL character',
 };
 
-function readEscape(p: string, i: number): Token {
+export function readEscape(p: string, i: number): Token {
   const c = p[i + 1];
   if (c === undefined) return { text: '\\', kind: 'escape', info: 'Trailing backslash (invalid)' };
   if (c in ESCAPES)
@@ -212,7 +212,7 @@ function readEscape(p: string, i: number): Token {
   return { text: `\\${c}`, kind: 'literal', info: `The character “${c}”` };
 }
 
-function quantifierInfo(q: string): string {
+export function quantifierInfo(q: string): string {
   const lazy = q.length > 1 && q.endsWith('?') ? ' (lazy: as few as possible)' : '';
   const base = lazy ? q.slice(0, -1) : q;
   if (base === '*') return `Zero or more times${lazy}`;

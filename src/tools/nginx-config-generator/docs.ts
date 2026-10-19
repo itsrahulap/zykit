@@ -5,7 +5,7 @@ const docs: ToolDocs = {
   howToUse: [
     'Choose a **preset**: Static site, SPA (unknown paths fall back to `index.html`), Reverse proxy, PHP-FPM, or Redirect.',
     'Fill in the `server_name`, the document root or upstreams, and turn on the options you want: HTTPS with HTTP/2 or HTTP/3, HSTS, gzip, asset caching, security headers, rate limiting, WebSocket headers and logs.',
-    'Read any **warnings** under the output, then copy the config or download it as `nginx.conf`.',
+    'Read any **warnings** and **Possible problems** under the output. Edit the config right in the output box if you need to (**Reset to generated** undoes your edits), then copy it or download it as `nginx.conf`.',
     'Put it in `/etc/nginx/conf.d/` (or `sites-available`), run `nginx -t` to check it, then `nginx -s reload`.',
   ],
   howItWorks:
@@ -15,9 +15,11 @@ const docs: ToolDocs = {
     '- PHP passes `.php` to `fastcgi_pass`.\n' +
     '- The reverse proxy writes an `upstream` block (round robin, `least_conn` or `ip_hash`) and the usual `Host`, `X-Real-IP`, `X-Forwarded-For` and `X-Forwarded-Proto` headers.\n\n' +
     'With HTTPS on, a separate port-80 server keeps the ACME challenge path open and redirects everything else with a 301. TLS is limited to TLSv1.2 and TLSv1.3.\n\n' +
-    'Values you type are checked before they are written, so a quote, semicolon or brace can’t end a directive or open a new block.',
+    'Values you type are checked before they are written, so a quote, semicolon or brace can’t end a directive or open a new block. Server names must be hostnames (`*.example.com`, `example.*`, an IP, `_` or a `~regex`), and upstreams must be `host:port` with a port from 1 to 65535, `[IPv6]:port` or `unix:/path`.\n\n' +
+    'Whatever is in the output box, generated or edited, is checked for common mistakes: a line missing its semicolon, unbalanced braces, a `proxy_pass` without `proxy_set_header Host`, long caching on a location that passes to a backend, `ssl_protocols` allowing SSL or TLS 1.0/1.1, and a site with `index.html` whose `location /` has no `try_files` (needed for single-page apps).',
   limits: [
-    'The config is generated, not tested: nginx never runs here. Always check it with `nginx -t` on your server.',
+    'The config is generated, not tested: nginx never runs here. The mistake checks read lines and braces, not nginx’s full grammar, so they can miss problems. Always check the config with `nginx -t` on your server.',
+    'Edits you make in the output box are kept when you change options, but they aren’t merged with the new output: press **Reset to generated** to start again. Edits aren’t included in share links.',
     'Output is one `server` block (plus an optional `upstream`, `map` and `limit_req_zone` in the `http` context), meant for `conf.d`, not a complete `nginx.conf` with `events` and `http`.',
     'Brotli needs the `ngx_brotli` module, so only a comment is written. HTTP/3 needs nginx 1.25 or newer built with QUIC, and UDP port 443 open.',
     '`http2 on;` needs nginx 1.25.1 or newer; on older versions put `http2` after `ssl` on the `listen` line.',

@@ -33,8 +33,16 @@ test('highlights matches, lists groups and previews replacements', async ({ page
   await expect(tokens).toContainText('Start of capture group 1 named “y”');
   await expect(tokens).toContainText('Exactly 4 times');
 
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Structure' }).click();
+  const structure = page.getByRole('list', { name: 'Pattern structure' });
+  await expect(structure).toContainText('Capture group 1 named “y”');
+  await expect(structure).toContainText('Exactly 4 times');
+  await structure.locator('summary').first().click(); // collapse group 1
+  await expect(structure.getByText('Exactly 4 times')).toBeHidden();
+
   await page.getByLabel('Pattern', { exact: true }).fill('(');
   await expect(page.getByText(/^Invalid pattern:/)).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Position 1' })).toContainText('never closed');
 
   for (const r of requests) {
     expect(r.method).toBe('GET');
