@@ -15,6 +15,7 @@ export function useHar() {
   const [state, setState] = useState<HarState>({ rows: null, summary: null, busy: false, error: null, detail: null });
   const worker = useRef<Worker | null>(null);
   const id = useRef(0);
+  const pending = useRef<((text: string) => void) | null>(null);
 
   useEffect(() => () => worker.current?.terminate(), []);
 
@@ -30,6 +31,10 @@ export function useHar() {
       if (m.id !== id.current) return;
       if (m.type === 'loaded') setState({ rows: m.rows, summary: m.summary, busy: false, error: null, detail: null });
       else if (m.type === 'detail') setState((s) => ({ ...s, detail: { index: m.index, data: m.detail } }));
+      else if (m.type === 'redacted') {
+        pending.current?.(m.text);
+        pending.current = null;
+      }
       else setState({ rows: null, summary: null, busy: false, error: m.line ? `${m.message} (line ${m.line}, column ${m.column})` : m.message, detail: null });
     };
     w.onerror = () => setState({ rows: null, summary: null, busy: false, error: 'Parsing stopped unexpectedly (the file may be too large).', detail: null });
@@ -41,5 +46,15 @@ export function useHar() {
     worker.current?.postMessage({ type: 'detail', id: id.current, index } satisfies HarRequest);
   }, []);
 
-  return { ...state, load, open };
+  /** The loaded HAR with secrets replaced (built in the worker, which holds the full document). */
+  const redacted = useCallback(
+    (bodies: boolean) =>
+      new Promise<string>((resolve) => {
+        pending.current = resolve;
+        worker.current?.postMessage({ type: 'redact', id: id.current, bodies } satisfies HarRequest);
+      }),
+    [],
+  );
+
+  return { ...state, load, open, redacted };
 }

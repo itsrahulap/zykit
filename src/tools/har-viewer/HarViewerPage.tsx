@@ -1,13 +1,14 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type UIEvent } from 'react';
 import harViewer from './index';
 import { useHar } from './hooks/useHar';
-import { PHASES, viewRows, type Group, type HarRow, type Phase, type Sort, type SortKey } from './features/har';
+import { isSensitiveHeader, isSensitiveParam, PHASES, redactUrl, viewRows, type Group, type HarRow, type Phase, type Sort, type SortKey } from './features/har';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { DetailRows, Panel } from '../../shared/ui/Panel';
 import { Breadcrumb, CodeBlock } from '../../shared/ui/tool';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
-import { Notices, OpenFileButton } from '../../shared/ui/convert';
+import { Checkbox, Notices, OpenFileButton } from '../../shared/ui/convert';
 import { DropZone } from '../../shared/ui/DropZone';
+import { downloadText } from '../../shared/utils/dom.utils';
 import { formatBytes, pluralize } from '../../shared/utils/format.utils';
 
 const ROW_H = 36;
@@ -93,7 +94,7 @@ function statusTone(s: number): 'green' | 'blue' | 'neutral' {
   return s >= 400 || s === 0 ? 'neutral' : s >= 300 ? 'blue' : 'green';
 }
 
-function Table({ rows, indices, sort, onSort, selected, onSelect, span }: { rows: HarRow[]; indices: number[]; sort: Sort | null; onSort: (k: SortKey) => void; selected: number | null; onSelect: (i: number) => void; span: number }) {
+function Table({ rows, indices, sort, onSort, selected, onSelect, span, urlOf }: { rows: HarRow[]; indices: number[]; sort: Sort | null; onSort: (k: SortKey) => void; selected: number | null; onSelect: (i: number) => void; span: number; urlOf: (url: string) => string }) {
   const [top, setTop] = useState(0);
   const frame = useRef(0);
   useEffect(() => () => cancelAnimationFrame(frame.current), []);
@@ -155,16 +156,16 @@ function Table({ rows, indices, sort, onSort, selected, onSelect, span }: { rows
                 <td className="border-b border-slate-100 px-3 text-right font-mono text-xs text-slate-500 dark:border-slate-800">{r.i + 1}</td>
                 <td className="border-b border-slate-100 px-3 font-mono text-xs dark:border-slate-800">{r.method}</td>
                 <td className="overflow-hidden border-b border-slate-100 p-0 dark:border-slate-800">
-                  <button type="button" onClick={() => onSelect(r.i)} title={r.url} className="block w-full truncate px-3 text-left text-emerald-700 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400">
-                    {r.url}
+                  <button type="button" onClick={() => onSelect(r.i)} title={urlOf(r.url)} className="block w-full truncate px-3 text-left text-emerald-700 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400">
+                    {urlOf(r.url)}
                   </button>
                 </td>
                 <td className="border-b border-slate-100 px-3 dark:border-slate-800">
                   <Badge tone={statusTone(r.status)}>{r.status || 'failed'}</Badge>
                 </td>
                 <td className="border-b border-slate-100 px-3 dark:border-slate-800">{r.type}</td>
-                <td className="border-b border-slate-100 px-3 text-right tabular-nums dark:border-slate-800">{formatBytes(r.size)}</td>
-                <td className="border-b border-slate-100 px-3 text-right tabular-nums dark:border-slate-800">{ms(r.time)}</td>
+                <td className="border-b border-slate-100 px-3 text-right tabular-nums dark:border-slate-800">{r.sizeKnown ? formatBytes(r.size) : 'n/a'}</td>
+                <td className="border-b border-slate-100 px-3 text-right tabular-nums dark:border-slate-800">{r.timeKnown ? ms(r.time) : 'n/a'}</td>
                 <td className="border-b border-slate-100 px-3 dark:border-slate-800">
                   <div className="relative h-3" role="img" aria-label={`Starts at ${ms(r.start)}, takes ${ms(r.time)}`}>
                     {PHASES.map((p) => {
@@ -190,7 +191,26 @@ function Table({ rows, indices, sort, onSort, selected, onSelect, span }: { rows
   );
 }
 
-function Pairs({ title, items }: { title: string; items: [string, string][] }) {
+interface Secrets {
+  /** "Show sensitive values" is on. */
+  show: boolean;
+  revealed: ReadonlySet<string>;
+  reveal: (id: string) => void;
+}
+
+function Masked({ id, secrets, children }: { id: string; secrets: Secrets; children: string }) {
+  if (secrets.show || secrets.revealed.has(id)) return <>{children}</>;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span className="text-slate-500 dark:text-slate-400">•••••••• (hidden)</span>
+      <button type="button" onClick={() => secrets.reveal(id)} className="font-sans text-xs font-semibold text-emerald-700 underline pointer-coarse:min-h-11 dark:text-emerald-400" aria-label={`Reveal ${id}`}>
+        Reveal
+      </button>
+    </span>
+  );
+}
+
+function Pairs({ title, items, isSecret, secrets }: { title: string; items: [string, string][]; isSecret: (name: string) => boolean; secrets: Secrets }) {
   if (!items.length) return null;
   return (
     <section className="min-w-0">
@@ -201,7 +221,15 @@ function Pairs({ title, items }: { title: string; items: [string, string][] }) {
         {items.map(([k, v], n) => (
           <div key={n} className="flex flex-col gap-0.5 py-1.5 sm:flex-row sm:gap-3">
             <dt className="shrink-0 font-semibold text-slate-700 sm:w-48 dark:text-slate-300">{k}</dt>
-            <dd className="min-w-0 break-all text-slate-600 dark:text-slate-400">{v}</dd>
+            <dd className="min-w-0 break-all text-slate-600 dark:text-slate-400">
+              {isSecret(k) ? (
+                <Masked id={`${title}: ${k}`} secrets={secrets}>
+                  {v}
+                </Masked>
+              ) : (
+                v
+              )}
+            </dd>
           </div>
         ))}
       </dl>
@@ -216,6 +244,11 @@ export default function HarViewerPage() {
   const [sort, setSort] = useState<Sort | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [showSecrets, setShowSecrets] = useState(false);
+  const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
+  const [dropBodies, setDropBodies] = useState(true);
+  const secrets: Secrets = { show: showSecrets, revealed, reveal: (id) => setRevealed((s) => new Set(s).add(id)) };
+  const urlOf = (u: string) => (showSecrets ? u : redactUrl(u));
 
   const dFilter = useDeferredValue(filter);
   const { rows, summary } = har;
@@ -233,7 +266,12 @@ export default function HarViewerPage() {
   const onFile = (f: File) => load({ file: f }, f.name, f.size);
   const select = (i: number) => {
     setSelected(i);
+    setRevealed(new Set());
     har.open(i);
+  };
+  const downloadRedacted = async () => {
+    const text = await har.redacted(dropBodies);
+    downloadText(text, `${(file?.name ?? 'recording').replace(/\.(har|json)$/i, '')}-redacted.har`, 'application/json');
   };
   const onSort = (key: SortKey) => setSort((s) => (s?.key !== key ? { key, dir: 'asc' } : s.dir === 'asc' ? { key, dir: 'desc' } : null));
   const row = selected !== null && rows ? rows[selected] : null;
@@ -258,7 +296,7 @@ export default function HarViewerPage() {
         </div>
       </div>
 
-      <Notices items={['HAR files can contain cookies, authorization headers, tokens and request bodies. This file stays in your browser and is never uploaded, but think twice before sharing a HAR with anyone.']} />
+      <Notices items={['HAR files can contain cookies, authorization headers, tokens and request bodies. They are hidden below until you reveal them, and the file never leaves your browser. To share a recording, use Download redacted HAR.']} />
 
       <StatusStrip status={status} tone={har.busy ? 'busy' : rows ? 'good' : 'neutral'} />
 
@@ -281,7 +319,14 @@ export default function HarViewerPage() {
                 className="w-full min-w-0 rounded-xl border border-field-edge bg-white px-3 py-2 text-slate-900 pointer-coarse:min-h-11 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 dark:bg-slate-900 dark:text-slate-100"
               />
             </label>
-            <Table rows={rows} indices={indices} sort={sort} onSort={onSort} selected={selected} onSelect={select} span={summary.span} />
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <Checkbox label="Show sensitive values" checked={showSecrets} onChange={setShowSecrets} />
+              <Button variant="secondary" onClick={downloadRedacted}>
+                <Icon name="download" className="h-4 w-4" /> Download redacted HAR
+              </Button>
+              <Checkbox label="Also remove response bodies" checked={dropBodies} onChange={setDropBodies} />
+            </div>
+            <Table rows={rows} indices={indices} sort={sort} onSort={onSort} selected={selected} onSelect={select} span={summary.span} urlOf={urlOf} />
             <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
               {PHASES.map((p) => (
                 <span key={p} className="inline-flex items-center gap-1.5">
@@ -296,17 +341,25 @@ export default function HarViewerPage() {
       {row && (
         <Panel eyebrow={`Request ${row.i + 1}`} icon="info">
           <div className="space-y-6">
-            <DetailRows rows={[['URL', row.url], ['Method', row.method], ['Status', row.status || 'failed'], ['Type', row.type], ['Size', formatBytes(row.size)], ['Total time', ms(row.time)], ...PHASES.filter((p) => row.phases[p] > 0).map((p): [string, string] => [p, ms(row.phases[p])])]} />
+            <DetailRows rows={[['URL', urlOf(row.url)], ['Method', row.method], ['Status', row.status || 'failed'], ['Type', row.type], ['Size', row.sizeKnown ? formatBytes(row.size) : 'n/a'], ['Total time', row.timeKnown ? ms(row.time) : 'n/a'], ...PHASES.filter((p) => row.phases[p] > 0).map((p): [string, string] => [p, ms(row.phases[p])])]} />
             {!detail && <p className="text-sm text-slate-500 dark:text-slate-400">Loading details…</p>}
             {detail && (
               <>
-                <Pairs title="Query string" items={detail.query} />
-                <Pairs title="Request headers" items={detail.requestHeaders} />
-                <Pairs title="Response headers" items={detail.responseHeaders} />
+                <Pairs title="Query string" items={detail.query} isSecret={isSensitiveParam} secrets={secrets} />
+                <Pairs title="Request headers" items={detail.requestHeaders} isSecret={isSensitiveHeader} secrets={secrets} />
+                <Pairs title="Response headers" items={detail.responseHeaders} isSecret={isSensitiveHeader} secrets={secrets} />
                 {detail.postData && (
                   <section className="min-w-0">
                     <h3 className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">Post data ({detail.postData.mimeType || 'unknown type'})</h3>
-                    <CodeBlock label="Post data">{detail.postData.text || '(empty)'}</CodeBlock>
+                    {secrets.show || revealed.has('post data') ? (
+                      <CodeBlock label="Post data">{detail.postData.text || '(empty)'}</CodeBlock>
+                    ) : (
+                      <p className="font-mono text-xs">
+                        <Masked id="post data" secrets={secrets}>
+                          {detail.postData.text}
+                        </Masked>
+                      </p>
+                    )}
                   </section>
                 )}
                 {detail.preview && (
@@ -331,8 +384,8 @@ export default function HarViewerPage() {
               <ol className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
                 {summary.slowest.map((r) => (
                   <li key={r.i} className="flex items-baseline justify-between gap-3 py-1.5">
-                    <button type="button" onClick={() => select(r.i)} title={r.url} className="min-w-0 truncate text-left text-emerald-700 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400">
-                      {r.method} {r.url}
+                    <button type="button" onClick={() => select(r.i)} title={urlOf(r.url)} className="min-w-0 truncate text-left text-emerald-700 pointer-coarse:min-h-11 hover:underline dark:text-emerald-400">
+                      {r.method} {urlOf(r.url)}
                     </button>
                     <span className="shrink-0 text-slate-500 tabular-nums dark:text-slate-400">{ms(r.time)}</span>
                   </li>

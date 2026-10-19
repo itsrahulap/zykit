@@ -16,7 +16,7 @@ Opens a HAR file and shows requests with filter, sort, a timing waterfall, per-r
 
 ## Core Logic
 
-The worker reads the `File` itself (no copy through the main thread), parses it with `parseJsonText` (errors get line/column) and checks `log.entries`. Only lean `HarRow`s and the summary are posted back; headers, post data and body previews are built on demand for the selected entry. The table uses fixed-height rows with spacer rows (the csv-viewer pattern). Waterfall segments are positioned by `start` and phase durations as a percentage of the total span.
+The worker reads the `File` itself (no copy through the main thread), parses it with `parseJsonText` (errors get line/column) and checks `log.entries`. Only lean `HarRow`s and the summary are posted back; headers, post data and body previews are built on demand for the selected entry. The table uses fixed-height rows with spacer rows (the csv-viewer pattern). Waterfall segments are positioned by `start` and phase durations as a percentage of the total span. `isSensitiveHeader` / `isSensitiveParam` decide what the page masks (`Masked`, per-value reveal reset on each selection, or the global switch); `redactUrl` masks sensitive query and fragment parameters and URL passwords, and is used for every URL shown. `redactHar` runs in the worker on a `structuredClone` of the full document (kept as `doc`), replacing sensitive headers, all cookies, sensitive `queryString` items, URLs, `Referer`/`Location`/`Origin`, page titles and request bodies, and optionally deleting response `content.text`. `HarRow.sizeKnown` / `timeKnown` let the UI show “n/a”.
 
 ## Limits
 

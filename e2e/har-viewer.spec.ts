@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 const entry = (url: string, status: number, time: number, at: number, extra = {}) => ({
   startedDateTime: new Date(Date.parse('2025-01-01T00:00:00Z') + at).toISOString(),
@@ -46,6 +47,42 @@ test('opens a HAR, filters, sorts and shows detail', async ({ page }) => {
     expect(r.url.startsWith(origin) || r.url.startsWith('blob:') || r.url.startsWith('data:')).toBe(true);
   }
   expect(consoleErrors).toEqual([]);
+});
+
+test('hides secrets until revealed and downloads a redacted HAR', async ({ page }) => {
+  const secret = entry('https://a.test/cb?access_token=SECRET1&page=2', 200, 40, 0, {
+    request: {
+      method: 'POST',
+      url: 'https://a.test/cb?access_token=SECRET1&page=2',
+      headers: [{ name: 'Authorization', value: 'Bearer SECRET2' }, { name: 'Accept', value: 'text/html' }],
+      queryString: [{ name: 'access_token', value: 'SECRET1' }],
+      postData: { mimeType: 'application/json', text: '{"password":"SECRET3"}' },
+    },
+  });
+  await page.goto('/tools/har-viewer');
+  await page.getByTestId('file-input').setInputFiles({ name: 'cap.har', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ log: { entries: [secret] } })) });
+  const table = page.getByRole('region', { name: 'Requests' });
+  await expect(table).toContainText('access_token=[REDACTED]&page=2');
+  await table.getByRole('button', { name: /a\.test\/cb/ }).click();
+  const detail = page.getByRole('region', { name: 'Requests' }).locator('xpath=following::section[1]');
+  await expect(detail).toContainText('text/html');
+  await expect(page.locator('body')).not.toContainText(/SECRET[123]/);
+
+  await page.getByRole('button', { name: 'Reveal Request headers: Authorization' }).click();
+  await expect(detail).toContainText('Bearer SECRET2');
+  await expect(page.locator('body')).not.toContainText('SECRET3');
+  await page.getByLabel('Show sensitive values').check();
+  await expect(page.locator('body')).toContainText('SECRET3');
+  await expect(table).toContainText('access_token=SECRET1');
+
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download redacted HAR' }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('cap-redacted.har');
+  const text = await readFile((await file.path())!, 'utf8');
+  expect(text).not.toMatch(/SECRET[123]/);
+  expect(text).not.toContain('{\\"hello\\":\\"world\\"}');
+  expect(JSON.parse(text).log.entries).toHaveLength(1);
 });
 
 test('rejects non-HAR JSON', async ({ page }) => {
