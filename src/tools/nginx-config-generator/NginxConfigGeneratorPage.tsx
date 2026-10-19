@@ -1,11 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import nginxConfigGenerator from './index';
-import { DEFAULT_OPTIONS, generate, type LbMethod, type NginxOptions, type Preset, type RedirectMode } from './features/nginx-config-generator';
+import { DEFAULT_OPTIONS, generate, lintConfig, type LbMethod, type NginxOptions, type Preset, type RedirectMode } from './features/nginx-config-generator';
 import { Checkbox, Notices, OptionsCard, OutputPanel } from '../../shared/ui/convert';
 import { useShareState } from '../../shared/hooks/useShareState';
 import { Headline, StatusStrip } from '../../shared/ui/page';
-import { Breadcrumb, Segmented } from '../../shared/ui/tool';
+import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
+import { Select } from '../../shared/ui/Select';
+import { Button } from '../../shared/ui/ui';
 
 const field =
   'w-full rounded-xl border border-field-edge bg-white px-3 py-2 text-sm text-slate-900 pointer-coarse:min-h-11 dark:bg-slate-900 dark:text-slate-100';
@@ -32,6 +34,10 @@ export default function NginxConfigGeneratorPage() {
   const [o, setO] = useState<NginxOptions>(DEFAULT_OPTIONS);
   const set = <K extends keyof NginxOptions>(k: K, v: NginxOptions[K]) => setO((p) => ({ ...p, [k]: v }));
   const { config, warnings } = useMemo(() => generate(o), [o]);
+  // Hand edits plus the generated text they started from, to notice when options change underneath.
+  const [edit, setEdit] = useState<{ text: string; base: string } | null>(null);
+  const output = edit?.text ?? config;
+  const lint = useMemo(() => lintConfig(output), [output]);
 
   useShareState(
     { ...o },
@@ -78,25 +84,31 @@ export default function NginxConfigGeneratorPage() {
                 <Field label="Upstreams" hint="One per line: host:port or unix:/path.">
                   <textarea className={`${field} font-mono`} rows={3} value={o.upstreams} onChange={(e) => set('upstreams', e.target.value)} spellCheck={false} />
                 </Field>
-                <Field label="Load balancing">
-                  <select className={field} value={o.lbMethod} onChange={(e) => set('lbMethod', e.target.value as LbMethod)}>
-                    <option value="round-robin">Round robin</option>
-                    <option value="least_conn">Least connections</option>
-                    <option value="ip_hash">IP hash (sticky)</option>
-                  </select>
-                </Field>
+                <Select<LbMethod>
+                  label="Load balancing"
+                  options={[
+                    { value: 'round-robin', label: 'Round robin' },
+                    { value: 'least_conn', label: 'Least connections' },
+                    { value: 'ip_hash', label: 'IP hash (sticky)' },
+                  ]}
+                  value={o.lbMethod}
+                  onChange={(v) => set('lbMethod', v)}
+                />
               </>
             )}
             {isRedirect && (
               <>
-                <Field label="Redirect type">
-                  <select className={field} value={o.redirectMode} onChange={(e) => set('redirectMode', e.target.value as RedirectMode)}>
-                    <option value="https">HTTP to HTTPS</option>
-                    <option value="to-www">Bare domain to www</option>
-                    <option value="from-www">www to bare domain</option>
-                    <option value="domain">To another domain</option>
-                  </select>
-                </Field>
+                <Select<RedirectMode>
+                  label="Redirect type"
+                  options={[
+                    { value: 'https', label: 'HTTP to HTTPS' },
+                    { value: 'to-www', label: 'Bare domain to www' },
+                    { value: 'from-www', label: 'www to bare domain' },
+                    { value: 'domain', label: 'To another domain' },
+                  ]}
+                  value={o.redirectMode}
+                  onChange={(v) => set('redirectMode', v)}
+                />
                 {o.redirectMode === 'domain' && text('redirectDomain', 'Target', 'For example https://new.example.com')}
               </>
             )}
@@ -141,8 +153,41 @@ export default function NginxConfigGeneratorPage() {
         </div>
 
         <div className="min-w-0 space-y-6">
-          <OutputPanel title="nginx.conf" icon="server" text={config} fileName="nginx.conf" mime="text/plain" kind="code" />
+          <OutputPanel title="nginx.conf" icon="server" text={output} fileName="nginx.conf" mime="text/plain" kind="code">
+            <CodeArea
+              label="Edit nginx.conf"
+              hint={edit ? 'edited by you' : 'type to edit'}
+              value={output}
+              onChange={(e) => setEdit({ text: e.target.value, base: edit?.base ?? config })}
+              rows={24}
+            />
+          </OutputPanel>
+          {edit && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="secondary" onClick={() => setEdit(null)}>
+                Reset to generated
+              </Button>
+              {edit.base !== config && (
+                <p role="status" className="text-sm text-amber-800 dark:text-amber-300">
+                  Options changed since you edited. Your edits are kept; reset to regenerate.
+                </p>
+              )}
+            </div>
+          )}
           <Notices items={warnings} />
+          {lint.length > 0 && (
+            <section aria-label="Config checks" className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+              <h2 className="font-semibold">Possible problems</h2>
+              <ul className="space-y-1">
+                {lint.map((l, i) => (
+                  <li key={i} className="break-words">
+                    {l.line > 0 && <strong>Line {l.line}: </strong>}
+                    {l.message}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </div>
     </div>
