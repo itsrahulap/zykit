@@ -42,6 +42,8 @@ test('JSON Tree Viewer: expand, search, copy path and keyboard work locally', as
   await page.keyboard.press('ArrowRight'); // open a[0]
   await page.keyboard.press('ArrowDown'); // b
   await expect(path).toHaveText('$.a[0].b');
+  await expect(page.getByText('/a/0/b', { exact: true })).toBeVisible();
+  await expect(page.getByText('data?.a?.[0]?.b', { exact: true })).toBeVisible();
   await page.keyboard.press('ArrowLeft'); // to parent a[0]
   await expect(path).toHaveText('$.a[0]');
 
@@ -59,6 +61,14 @@ test('JSON Tree Viewer: expand, search, copy path and keyboard work locally', as
   await expect(path).toHaveText('$.name');
   await region.getByLabel('Search').fill('zzz');
   await expect(region.getByRole('status').first()).toContainText('No matches');
+
+  // Go to path expands down to the node and selects it; bad paths show an error.
+  await page.getByLabel('Go to path').fill('/a/1');
+  await page.getByRole('button', { name: 'Go', exact: true }).click();
+  await expect(path).toHaveText('$.a[1]');
+  await page.getByLabel('Go to path').fill('$.nope');
+  await page.getByRole('button', { name: 'Go', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('has no key');
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

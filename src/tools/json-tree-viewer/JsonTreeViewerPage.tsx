@@ -5,10 +5,14 @@ import {
   ancestors,
   childCount,
   expandToDepth,
+  findPath,
   flatten,
   isContainer,
+  jsAccess,
   jsonPath,
+  jsonPointer,
   nodeType,
+  parsePath,
   scalarText,
   searchTree,
   STRING_PREVIEW,
@@ -16,9 +20,10 @@ import {
   valueText,
   type Frame,
   type NodeType,
+  type SearchIn,
 } from './features/json-tree-viewer';
 import { Headline, StatusStrip } from '../../shared/ui/page';
-import { Breadcrumb, CodeArea } from '../../shared/ui/tool';
+import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
 import { ErrorPanel, Notices, OpenFileButton, OptionsCard } from '../../shared/ui/convert';
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery';
@@ -82,6 +87,9 @@ export default function JsonTreeViewerPage() {
   const [activeNode, setActiveNode] = useState<JsonNode | null>(null);
   const [message, setMessage] = useState('');
   const [depth, setDepth] = useState(2);
+  const [searchIn, setSearchIn] = useState<SearchIn>('both');
+  const [goTo, setGoTo] = useState('');
+  const [goError, setGoError] = useState('');
   useIncomingText(jsonTreeViewer.id, (t) => {
     setBig(null);
     setInput(t);
@@ -92,7 +100,7 @@ export default function JsonTreeViewerPage() {
   const coarse = useMediaQuery('(pointer: coarse)');
   const ROW = coarse ? 44 : 28;
 
-  const search = useMemo(() => (root ? searchTree(root, q) : { matches: [] as Frame[], truncated: false }), [root, q]);
+  const search = useMemo(() => (root ? searchTree(root, q, undefined, searchIn) : { matches: [] as Frame[], truncated: false }), [root, q, searchIn]);
   const matches = search.matches;
   const cur = matches.length ? matchIdx % matches.length : -1;
   const matchSet = useMemo(() => new Set(matches.map((m) => m.node)), [matches]);
@@ -181,6 +189,23 @@ export default function JsonTreeViewerPage() {
     setMatchIdx(i);
     reveal.current = true;
     setActiveNode(f.node);
+  };
+
+  const goToPath = () => {
+    if (!root) return;
+    let found: Frame | string;
+    try {
+      found = findPath(root, parsePath(goTo));
+    } catch (e) {
+      found = (e as Error).message;
+    }
+    if (typeof found === 'string') return setGoError(found);
+    setGoError('');
+    const set = new Set(expanded);
+    for (const a of ancestors(found)) set.add(a);
+    commit(set);
+    reveal.current = true;
+    setActiveNode(found.node);
   };
 
   const toggle = (n: JsonNode) => {
@@ -363,10 +388,53 @@ export default function JsonTreeViewerPage() {
               <Button variant="secondary" disabled={!matches.length} onClick={() => stepMatch(1)} aria-label="Next match">
                 Next
               </Button>
+              <Segmented<SearchIn>
+                label="Match in"
+                options={[
+                  { value: 'both', label: 'Both' },
+                  { value: 'keys', label: 'Keys' },
+                  { value: 'values', label: 'Values' },
+                ]}
+                value={searchIn}
+                onChange={(v) => {
+                  setSearchIn(v);
+                  setAutoExpand(true);
+                }}
+              />
               <span role="status" className="text-sm text-slate-600 dark:text-slate-400">
                 {!q ? '' : matches.length ? `${cur + 1} of ${matches.length.toLocaleString()}${search.truncated ? '+' : ''}` : 'No matches'}
               </span>
             </div>
+            <form
+              className="flex min-w-0 flex-wrap items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                goToPath();
+              }}
+            >
+              <label htmlFor={`${uid}-goto`} className="text-sm text-slate-700 dark:text-slate-300">
+                Go to path
+              </label>
+              <input
+                id={`${uid}-goto`}
+                value={goTo}
+                placeholder="$.a[0], /a/0 or data?.a?.[0]"
+                autoComplete="off"
+                spellCheck={false}
+                aria-invalid={goError ? true : undefined}
+                aria-describedby={goError ? `${uid}-goto-error` : undefined}
+                onChange={(e) => setGoTo(e.target.value)}
+                className={`${fieldClass} w-64 max-w-full font-mono`}
+              />
+              <Button type="submit" variant="secondary" disabled={!goTo.trim()}>
+                Go
+              </Button>
+              {goError && (
+                <span id={`${uid}-goto-error`} role="alert" className="text-sm text-red-700 dark:text-red-400">
+                  {goError}
+                </span>
+              )}
+            </form>
           </OptionsCard>
 
           <div
@@ -441,14 +509,30 @@ export default function JsonTreeViewerPage() {
           </div>
 
           <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm dark:border-slate-800 dark:bg-slate-900">
-            <p className="min-w-0 break-all font-mono text-slate-800 dark:text-slate-200">
-              <span className="eyebrow mr-2 text-slate-600 dark:text-slate-400">Path</span>
-              <span data-testid="path">{activeRow ? jsonPath(activeRow) : 'Select a node (click it, or use the arrow keys).'}</span>
-            </p>
+            {activeRow ? (
+              <dl className="space-y-2">
+                {(
+                  [
+                    ['JSONPath', jsonPath(activeRow)],
+                    ['JSON Pointer', jsonPointer(activeRow)],
+                    ['JavaScript', jsAccess(activeRow)],
+                  ] as const
+                ).map(([name, value]) => (
+                  <div key={name} className="flex min-w-0 flex-wrap items-center gap-2">
+                    <dt className="eyebrow w-28 shrink-0 text-slate-600 dark:text-slate-400">{name}</dt>
+                    <dd className="min-w-0 flex-1 break-all font-mono text-slate-800 dark:text-slate-200" data-testid={name === 'JSONPath' ? 'path' : undefined}>
+                      {value || '(root: empty pointer)'}
+                    </dd>
+                    <Button variant="secondary" onClick={() => copy(name, () => value)} aria-label={`Copy ${name}`}>
+                      Copy
+                    </Button>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="text-slate-600 dark:text-slate-400">Select a node (click it, or use the arrow keys) to see its path.</p>
+            )}
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="secondary" disabled={!activeRow} onClick={() => activeRow && copy('path', () => jsonPath(activeRow))}>
-                Copy path
-              </Button>
               <Button variant="secondary" disabled={!activeRow} onClick={() => activeRow && copy('value', () => valueText(activeRow.node))}>
                 Copy value
               </Button>

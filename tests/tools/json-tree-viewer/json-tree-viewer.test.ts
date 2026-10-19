@@ -4,8 +4,12 @@ import {
   ancestors,
   childCount,
   expandToDepth,
+  findPath,
   flatten,
+  jsAccess,
   jsonPath,
+  jsonPointer,
+  parsePath,
   nodeType,
   searchTree,
   truncate,
@@ -102,5 +106,60 @@ describe('searchTree', () => {
     expect(searchTree(r, 'a', 2)).toMatchObject({ truncated: true });
     expect(searchTree(r, 'a', 2).matches).toHaveLength(2);
     expect(searchTree(r, '').matches).toEqual([]);
+  });
+});
+
+describe('path formats and go-to-path', () => {
+  const doc = '{"users":[{"first name":"Ada","a/b~c":1,"ünï":2,"it\'s":3,"q\\"x":4}],"":{"e":true},"dup":1,"dup":2}';
+  const root = (parseJson(doc) as { ok: true; value: JsonNode }).value;
+  const at = (path: (string | number)[]) => {
+    const f = findPath(root, path);
+    if (typeof f === 'string') throw new Error(f);
+    return f;
+  };
+
+  it('writes JSONPath, JSON Pointer and optional chaining with escaping', () => {
+    const f = at(['users', 0, 'first name']);
+    expect(jsonPath(f)).toBe("$.users[0]['first name']");
+    expect(jsonPointer(f)).toBe('/users/0/first name');
+    expect(jsAccess(f)).toBe('data?.users?.[0]?.["first name"]');
+    expect(jsonPointer(at(['users', 0, 'a/b~c']))).toBe('/users/0/a~1b~0c');
+    expect(jsAccess(at(['users', 0, 'q"x']))).toBe('data?.users?.[0]?.["q\\"x"]');
+    expect(jsonPointer(at([]))).toBe('');
+    expect(jsonPointer(at(['', 'e']))).toBe('//e');
+  });
+
+  it('round-trips every node through all three formats', () => {
+    const keys: (string | number)[][] = [['users'], ['users', 0], ['users', 0, 'first name'], ['users', 0, 'a/b~c'], ['users', 0, 'ünï'], ['users', 0, "it's"], ['users', 0, 'q"x'], ['', 'e'], ['dup']];
+    for (const k of keys) {
+      const f = at(k);
+      for (const p of [jsonPath(f), jsonPointer(f), jsAccess(f)]) {
+        if (!p) continue;
+        const back = findPath(root, parsePath(p));
+        expect(typeof back === 'string' ? back : back.node, p).toBe(f.node);
+      }
+    }
+  });
+
+  it('resolves duplicate keys to the last one and reports missing keys', () => {
+    expect(valueText(at(['dup']).node)).toBe('2');
+    expect(findPath(root, ['users', 5])).toMatch(/has no item \[5\]/);
+    expect(findPath(root, ['nope'])).toMatch(/has no key “nope”/);
+    expect(typeof findPath(root, parsePath('/users/0'))).toBe('object');
+  });
+
+  it('rejects malformed paths', () => {
+    expect(() => parsePath('')).toThrow();
+    expect(() => parsePath('$..a')).toThrow();
+    expect(() => parsePath("$['open")).toThrow(/never closed/);
+    expect(() => parsePath('$[x]')).toThrow();
+    expect(() => parsePath('1abc')).toThrow();
+  });
+
+  it('limits search to keys or values', () => {
+    const r = (parseJson('{"ada":"x","b":"ada"}') as { ok: true; value: JsonNode }).value;
+    expect(searchTree(r, 'ada', undefined, 'keys').matches.map((m) => m.key)).toEqual(['ada']);
+    expect(searchTree(r, 'ada', undefined, 'values').matches.map((m) => m.key)).toEqual(['b']);
+    expect(searchTree(r, 'ada').matches).toHaveLength(2);
   });
 });
