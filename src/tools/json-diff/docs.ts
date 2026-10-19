@@ -8,8 +8,8 @@ const docs: ToolDocs = {
     'Use **Copy as JSON** for a list of the changes, or **Copy JSON Patch** for an RFC 6902 patch that turns the left document into the right one.',
   ],
   howItWorks:
-    'Both documents are parsed with the same strict parser as the JSON Formatter, which keeps numbers and strings exactly as written, then compared as trees. Objects are matched key by key, so key order and whitespace never count as differences, and strings are compared after their escapes are decoded.\n\n' +
-    'Arrays are compared in order by default. Equal items at the start and end are matched first, then the rest is aligned with a longest-common-subsequence match on each item’s content, so inserting one item doesn’t make every later item look changed. Unmatched items at the same spot are paired up and diffed, so an edited object inside an array shows as a change to its fields. With **Ignore array order**, items are matched by content wherever they are.\n\n' +
+    'Both documents are parsed with the JSON Formatter’s strict parser, which keeps numbers and strings exactly as written, then compared as trees. Objects are matched key by key, so key order and whitespace never count as differences. Strings are compared after their escapes are decoded.\n\n' +
+    'Arrays are compared in order by default. Equal items at the start and end are matched first. The rest is aligned with a longest-common-subsequence match on item content, so inserting one item doesn’t make every later item look changed. Unmatched items at the same spot are paired and diffed, so an edited object in an array shows as changes to its fields. With **Ignore array order**, items are matched by content wherever they are.\n\n' +
     'Each change is shown with its JSONPath, such as `$.users[2].name`. The JSON Patch uses JSON Pointer paths (RFC 6901) and `add`, `remove` and `replace` operations. Everything runs on the page in your browser.',
   limits: [
     'Each side can be up to 5,000,000 characters (about 5 MB).',

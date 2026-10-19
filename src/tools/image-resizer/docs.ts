@@ -9,8 +9,8 @@ const docs: ToolDocs = {
     'Download a single image, or **Download all (ZIP)** for the whole batch.',
   ],
   howItWorks:
-    'Each image is decoded by your browser with `createImageBitmap` (EXIF orientation applied), and the new size is worked out from the mode. With the lock on, the side you typed last sets the size and the other follows each image’s own aspect ratio. **Fit inside** scales the image to fit within the box, **Cover (crop)** fills the box and crops the overflow from the centre, and **Stretch** uses the box size exactly.\n\n' +
-    'When shrinking, the browser’s high-quality resampler is used; if that isn’t available, the image is halved step by step before the final draw so edges don’t go jagged. The result is re-encoded with the browser’s own encoder. When the browser supports `OffscreenCanvas`, this runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread. Changing a setting resizes the whole batch again.',
+    'Your browser decodes each image with `createImageBitmap` (EXIF orientation applied) and the mode sets the new size. With the lock on, the side you typed last sets the size and the other side follows each image’s own aspect ratio. **Fit inside** fits the image within the box, **Cover (crop)** fills the box and crops the overflow from the centre, and **Stretch** uses the box size exactly.\n\n' +
+    'Shrinking uses the browser’s high-quality resampler. Where that isn’t available, the image is halved step by step first so edges don’t go jagged. The browser’s own encoder then saves the result. With `OffscreenCanvas` support this runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread. Changing a setting resizes the whole batch again.',
   limits: [
     'Up to 50 MB per file, 100 megapixels and 16,384 pixels on either side, for both the original and the resized image, and up to 100 images per batch.',
     'Width and height fields accept 1–16,384 pixels. Images can be enlarged as well as shrunk, but enlarging can’t add detail.',

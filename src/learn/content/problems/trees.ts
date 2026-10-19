@@ -7,11 +7,10 @@ export const treesProblems: Problem[] = [
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the root of a binary tree. Flip the tree into its mirror
-image - for every node, its left and right children should swap places,
-all the way down the tree.
+You're given the root of a binary tree. Flip it into its mirror image:
+swap the left and right children of every node, all the way down.
 
-Return the root of the tree after the flip.
+Return the root of the flipped tree.
     `.trim(),
     examples: [
       {
@@ -32,25 +31,23 @@ Return the root of the tree after the flip.
     ],
     constraints: ["The number of nodes in the tree is in the range [0, 100].", "-100 <= Node.val <= 100"],
     hints: [
-      "Think about just one node at a time: if you swap its left and right children, what still needs to happen to finish the job?",
-      "Mirroring a tree means every node's children get swapped, not just the root's - so the swap has to happen at every level.",
-      "Recursion fits naturally here: mirror the left subtree, mirror the right subtree, then swap the two results at the current node.",
+      "Think about one node: if you swap its children, what's left to do?",
+      "Every node's children get swapped, not just the root's, so the swap happens at every level.",
+      "Recursion fits: mirror the left subtree, mirror the right subtree, then swap the two at the current node.",
     ],
     approachOverview: `
-A tree is mirrored when every single node - not just the root - has its
-left and right children swapped. That "do the same thing at every
-level" phrasing is a strong hint to solve it recursively: invert the
-left subtree, invert the right subtree, and then swap the two
-(now-inverted) subtrees onto the current node.
+Mirroring means swapping the children of every node, not just the root.
+"Do the same thing at every level" suggests recursion: invert the left
+subtree, invert the right subtree, then swap them at the current node.
 
-The same idea also works iteratively with an explicit stack or queue:
-visit each node once, swap its children, and push those children on to
-be visited later. Both approaches touch every node exactly once.
+It also works iteratively with a stack or queue: visit each node, swap
+its children, and queue the children for later. Both approaches visit
+every node exactly once.
     `.trim(),
     solutions: [
       {
         approach: "Recursive DFS",
-        explanation: "Invert the left subtree and the right subtree first, then swap them onto the current node. The base case is an empty node, which is already its own mirror image.",
+        explanation: "Invert both subtrees, then swap them at the current node. The base case is an empty node, which is already its own mirror.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -74,14 +71,14 @@ function invertTree(root) {
         spaceComplexity: "O(h) — recursion stack depth, where h is the tree's height (O(n) worst case for a skewed tree)",
         walkthrough: [
           { code: "if (root === null) return null;", explanation: "An empty subtree has nothing to mirror." },
-          { code: "const left = invertTree(root.left);", explanation: "Recursively mirrors the left subtree first." },
-          { code: "const right = invertTree(root.right);", explanation: "Then recursively mirrors the right subtree." },
-          { code: "root.left = right;\n  root.right = left;", explanation: "Swaps the two (already-mirrored) subtrees onto this node." },
+          { code: "const left = invertTree(root.left);", explanation: "Mirrors the left subtree." },
+          { code: "const right = invertTree(root.right);", explanation: "Mirrors the right subtree." },
+          { code: "root.left = right;\n  root.right = left;", explanation: "Swaps the two mirrored subtrees at this node." },
         ],
       },
       {
         approach: "Iterative BFS",
-        explanation: "Use a queue to visit every node level by level. At each node, swap its children, then push both children onto the queue so they get swapped too.",
+        explanation: "Visit nodes level by level with a queue. Swap each node's children, then queue both children so they get swapped too.",
         code: `function invertTree(root) {
   if (root === null) return null;
 
@@ -111,9 +108,8 @@ function invertTree(root) {
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the root of a binary tree. Find its *maximum depth* - the
-number of nodes along the longest path from the root down to the
-farthest leaf.
+You're given the root of a binary tree. Return its *maximum depth*: the
+number of nodes on the longest path from the root down to a leaf.
 
 A leaf is a node with no children. The depth of an empty tree is 0.
     `.trim(),
@@ -136,19 +132,16 @@ A leaf is a node with no children. The depth of an empty tree is 0.
     ],
     constraints: ["The number of nodes in the tree is in the range [0, 10^4].", "-100 <= Node.val <= 100"],
     hints: [
-      "The depth of a tree rooted at a node is 1 (for the node itself) plus the depth of whichever child subtree is deeper.",
-      "You don't need to track a full path - just ask each subtree for its own depth and combine the two answers.",
-      "This is naturally recursive: an empty tree has depth 0, and every other node's depth depends only on its children's depths.",
+      "A node's depth is 1 (for itself) plus the depth of its deeper child subtree.",
+      "You don't need to track paths. Ask each subtree for its depth and combine the answers.",
+      "It's naturally recursive: an empty tree has depth 0, and every other node depends only on its children.",
     ],
     approachOverview: `
-The depth of a node is 1 (for itself) plus the larger of its left and
-right subtree's depths. That's a recursive definition: an empty tree
-has depth 0, and everything else is built up from its children's
-depths.
+A node's depth is 1 plus the larger of its two subtree depths. An empty
+tree has depth 0. That's a recursive definition.
 
-You can compute this top-down with plain recursion, or bottom-up with
-an iterative level-order traversal (BFS) that simply counts how many
-levels it processes before the queue empties.
+You can compute it with plain recursion, or with a level-order traversal
+(BFS) that counts how many levels it processes before the queue empties.
     `.trim(),
     solutions: [
       {
@@ -174,14 +167,14 @@ function maxDepth(root) {
         spaceComplexity: "O(h) — recursion stack depth, where h is the tree's height (O(n) worst case)",
         walkthrough: [
           { code: "if (root === null) return 0;", explanation: "An empty subtree contributes no depth." },
-          { code: "const leftDepth = maxDepth(root.left);", explanation: "Recursively finds the depth of the left subtree." },
-          { code: "const rightDepth = maxDepth(root.right);", explanation: "Recursively finds the depth of the right subtree." },
-          { code: "return 1 + Math.max(leftDepth, rightDepth);", explanation: "Adds 1 for the current node and keeps whichever side is deeper." },
+          { code: "const leftDepth = maxDepth(root.left);", explanation: "Finds the depth of the left subtree." },
+          { code: "const rightDepth = maxDepth(root.right);", explanation: "Finds the depth of the right subtree." },
+          { code: "return 1 + Math.max(leftDepth, rightDepth);", explanation: "Adds 1 for this node to the deeper side." },
         ],
       },
       {
         approach: "Iterative BFS",
-        explanation: "Process the tree level by level using a queue. Each full pass through the current level is one unit of depth; count how many passes happen before the queue is empty.",
+        explanation: "Process the tree level by level with a queue. Each level adds 1 to the depth; count levels until the queue is empty.",
         code: `function maxDepth(root) {
   if (root === null) return 0;
 
@@ -215,11 +208,11 @@ function maxDepth(root) {
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the root of a binary tree. Find the length of its
-*diameter* - the number of edges on the longest path between any two
-nodes in the tree. That path doesn't have to pass through the root.
+You're given the root of a binary tree. Return its *diameter*: the number
+of edges on the longest path between any two nodes. The path doesn't
+have to pass through the root.
 
-Report the length in edges, not the count of nodes visited.
+Count edges, not nodes.
     `.trim(),
     examples: [
       {
@@ -240,26 +233,24 @@ Report the length in edges, not the count of nodes visited.
     ],
     constraints: ["The number of nodes in the tree is in the range [1, 10^4].", "-100 <= Node.val <= 100"],
     hints: [
-      "For any single node, the longest path that passes *through* it equals the height of its left subtree plus the height of its right subtree.",
-      "The overall diameter is the largest of these 'through this node' values, taken over every node in the tree - not just the root.",
-      "You can compute subtree heights and track the best diameter seen so far in the very same recursive pass, so you never have to walk the tree twice.",
+      "For any node, the longest path *through* it is its left subtree height plus its right subtree height.",
+      "The diameter is the largest of these values over every node, not just the root.",
+      "Compute heights and track the best diameter in the same recursive pass, so you walk the tree only once.",
     ],
     approachOverview: `
-It's tempting to think the longest path must run through the root, but
-it can be tucked entirely inside one subtree. The key realization is
-that for *any* node, the longest path passing through it is exactly
-its **left subtree height plus its right subtree height**. So the
-answer is the maximum of that quantity over every node in the tree.
+The longest path doesn't have to run through the root; it can sit
+entirely inside one subtree. For *any* node, the longest path through it
+is its **left subtree height plus its right subtree height**. The answer
+is the maximum of that over every node.
 
-Rather than recomputing heights over and over (which would be slow),
-compute each subtree's height with a single recursive pass, and update
-a running "best diameter seen so far" value at every node along the
-way, using the same height numbers you just calculated.
+Don't recompute heights over and over. Compute them in one recursive
+pass, and update a running "best diameter" at each node using the
+heights you just calculated.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Height From Every Node",
-        explanation: "For each node, compute the height of its left and right subtrees separately (each a full recursive call) and combine them. This recomputes heights repeatedly, which is wasteful.",
+        explanation: "For each node, compute both subtree heights with separate recursive calls and add them. This recomputes the same heights many times.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -287,7 +278,7 @@ function diameterOfBinaryTree(root) {
       },
       {
         approach: "Optimal — Height + Diameter in One Pass",
-        explanation: "Write a helper that returns a subtree's height, but also updates a shared 'best diameter' value each time it's called, using the heights of the current node's two children.",
+        explanation: "A helper returns a subtree's height and, along the way, updates a shared 'best diameter' using the current node's two child heights.",
         code: `function diameterOfBinaryTree(root) {
   let best = 0;
 
@@ -308,10 +299,10 @@ function diameterOfBinaryTree(root) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(h) — recursion stack depth, where h is the tree's height (O(n) worst case)",
         walkthrough: [
-          { code: "let best = 0;", explanation: "Tracks the longest path (in edges) found so far, across every node visited." },
-          { code: "const leftHeight = height(node.left);\n    const rightHeight = height(node.right);", explanation: "Gets both children's heights first, from the bottom up." },
-          { code: "best = Math.max(best, leftHeight + rightHeight);", explanation: "The path through this node is leftHeight + rightHeight edges; keep it if it beats the best seen so far." },
-          { code: "return 1 + Math.max(leftHeight, rightHeight);", explanation: "Still returns this node's own height, so the parent call can use it." },
+          { code: "let best = 0;", explanation: "Tracks the longest path (in edges) found so far." },
+          { code: "const leftHeight = height(node.left);\n    const rightHeight = height(node.right);", explanation: "Gets both children's heights first, bottom up." },
+          { code: "best = Math.max(best, leftHeight + rightHeight);", explanation: "The path through this node has leftHeight + rightHeight edges. Keep it if it's the best so far." },
+          { code: "return 1 + Math.max(leftHeight, rightHeight);", explanation: "Returns this node's height for the parent to use." },
         ],
       },
     ],
@@ -324,12 +315,9 @@ function diameterOfBinaryTree(root) {
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the root of a binary tree. Determine whether it's
-*height-balanced* - meaning that for every single node in the tree, the
-heights of its left and right subtrees differ by at most 1.
-
-Return *true* if the tree is balanced everywhere, and *false* if you
-can find even one node where the two sides differ by more than 1.
+You're given the root of a binary tree. Return *true* if it's
+*height-balanced*: at every node, the heights of the left and right
+subtrees differ by at most 1. Return *false* if any node breaks this.
     `.trim(),
     examples: [
       {
@@ -350,26 +338,23 @@ can find even one node where the two sides differ by more than 1.
     ],
     constraints: ["The number of nodes in the tree is in the range [0, 5000].", "-10^4 <= Node.val <= 10^4"],
     hints: [
-      "Balance is a property that has to hold at *every* node, not just the root - a tree can look fine at the top but be unbalanced deep inside.",
-      "You already know how to compute a subtree's height recursively - the question is how to also check the balance condition without recomputing heights again and again.",
-      "Have your height function return a signal (like -1) the moment it detects an imbalance anywhere below, so that signal can bubble all the way up and short-circuit the rest of the checks.",
+      "Balance must hold at *every* node. A tree can look fine at the top but be unbalanced deep inside.",
+      "You can compute heights recursively. How can you check balance at the same time, without recomputing heights?",
+      "Have the height function return a signal (like -1) as soon as it finds an imbalance, so it bubbles up and skips the remaining checks.",
     ],
     approachOverview: `
-A naive approach checks the balance condition at the root, then
-separately recomputes the height of every subtree to check balance
-again inside them - that duplicated height work makes it slow.
+A naive approach checks balance at the root, then recomputes heights to
+check every subtree again. The repeated height work makes it slow.
 
-The efficient approach folds both jobs into one recursive traversal: a
-helper function computes a subtree's height, but if it ever finds an
-imbalance in a child subtree, it immediately reports that upward using
-a sentinel value (like -1) instead of a real height. Any parent call
-that sees that sentinel knows to also report "unbalanced" without doing
-any more work, so a single bottom-up pass is enough.
+Instead, do both in one recursive pass. A helper computes a subtree's
+height, but if it finds an imbalance below, it returns a sentinel (like
+-1) instead of a real height. Any parent that sees the sentinel passes it
+straight up, so one bottom-up pass is enough.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Height Recomputed at Every Node",
-        explanation: "At each node, compute left and right subtree heights (each its own recursive call) and check they differ by at most 1, then recurse into both children to check the same condition there.",
+        explanation: "At each node, compute both subtree heights with separate recursive calls and check they differ by at most 1. Then check both children the same way.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -397,7 +382,7 @@ function isBalanced(root) {
       },
       {
         approach: "Optimal — Height + Balance Check in One Pass",
-        explanation: "Write a helper that returns a subtree's height, but returns -1 the instant it detects an imbalance anywhere below. Any call that receives -1 from a child immediately passes -1 up too, so the whole tree only needs one pass.",
+        explanation: "A helper returns a subtree's height, or -1 as soon as it finds an imbalance below. Any call that gets -1 from a child passes it up, so one pass covers the whole tree.",
         code: `function isBalanced(root) {
   function height(node) {
     if (node === null) return 0;
@@ -418,10 +403,10 @@ function isBalanced(root) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(h) — recursion stack depth, where h is the tree's height (O(n) worst case)",
         walkthrough: [
-          { code: "const leftHeight = height(node.left);\n    if (leftHeight === -1) return -1;", explanation: "If the left subtree was already found unbalanced, stop and pass that failure straight up." },
+          { code: "const leftHeight = height(node.left);\n    if (leftHeight === -1) return -1;", explanation: "If the left subtree is unbalanced, stop and pass the failure up." },
           { code: "const rightHeight = height(node.right);\n    if (rightHeight === -1) return -1;", explanation: "Same check on the right subtree." },
-          { code: "if (Math.abs(leftHeight - rightHeight) > 1) return -1;", explanation: "This node itself is unbalanced if its two sides differ by more than 1." },
-          { code: "return 1 + Math.max(leftHeight, rightHeight);", explanation: "Otherwise, everything checked out so far - return the real height for the parent to use." },
+          { code: "if (Math.abs(leftHeight - rightHeight) > 1) return -1;", explanation: "This node is unbalanced if its sides differ by more than 1." },
+          { code: "return 1 + Math.max(leftHeight, rightHeight);", explanation: "Otherwise, return the real height for the parent to use." },
         ],
       },
     ],
@@ -434,12 +419,9 @@ function isBalanced(root) {
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the roots of two binary trees. Determine whether they're
-*structurally identical* - meaning every node lines up in the same
-position between the two trees, and every corresponding pair of nodes
-holds the same value.
-
-Return *true* if the trees are the same, and *false* otherwise.
+You're given the roots of two binary trees. Return *true* if they're
+identical: the same shape, with the same value at every matching node.
+Otherwise return *false*.
     `.trim(),
     examples: [
       {
@@ -460,22 +442,23 @@ Return *true* if the trees are the same, and *false* otherwise.
     ],
     constraints: ["The number of nodes in both trees is in the range [0, 100].", "-10^4 <= Node.val <= 10^4"],
     hints: [
-      "Two trees are the same only if their roots match *and* both pairs of corresponding subtrees are also the same - that's a recursive condition.",
-      "Handle the missing-node cases first: two empty trees match, but one empty and one non-empty never do.",
-      "Compare the current pair of nodes' values, then recursively check left-with-left and right-with-right.",
+      "Two trees are the same only if their roots match *and* both pairs of subtrees match. That's recursive.",
+      "Handle missing nodes first: two empty trees match, but one empty and one non-empty never do.",
+      "Compare the two nodes' values, then recursively check left-with-left and right-with-right.",
     ],
     approachOverview: `
-Two trees match exactly when: both roots are missing (both null - a
-match), or both roots exist with equal values *and* their left
-subtrees match each other *and* their right subtrees match each other.
-That's a clean recursive definition - compare the current pair of
-nodes, then recurse into the corresponding left and right children of
-each tree.
+Two trees match when either:
+
+- both roots are null, or
+- both roots exist with equal values, *and* their left subtrees match, *and* their right subtrees match.
+
+So compare the current pair of nodes, then recurse into the matching
+left and right children.
     `.trim(),
     solutions: [
       {
         approach: "Recursive DFS",
-        explanation: "Compare the two current nodes: if both are null, they match. If only one is null, or their values differ, they don't. Otherwise, recursively check that both left subtrees match and both right subtrees match.",
+        explanation: "If both nodes are null, they match. If only one is null, or the values differ, they don't. Otherwise, check that both left subtrees and both right subtrees match.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -494,15 +477,15 @@ function isSameTree(p, q) {
         timeComplexity: "O(n) — where n is the number of nodes in the smaller tree",
         spaceComplexity: "O(h) — recursion stack depth, where h is the shorter tree's height",
         walkthrough: [
-          { code: "if (p === null && q === null) return true;", explanation: "Two empty subtrees always match each other." },
-          { code: "if (p === null || q === null) return false;", explanation: "One tree having a node where the other has none is an immediate mismatch." },
-          { code: "if (p.val !== q.val) return false;", explanation: "Both nodes exist, so their values must be equal too." },
-          { code: "return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);", explanation: "Finally, both left subtrees and both right subtrees must also match." },
+          { code: "if (p === null && q === null) return true;", explanation: "Two empty subtrees match." },
+          { code: "if (p === null || q === null) return false;", explanation: "A node in one tree with no node in the other is a mismatch." },
+          { code: "if (p.val !== q.val) return false;", explanation: "Both nodes exist, so their values must be equal." },
+          { code: "return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);", explanation: "Both left subtrees and both right subtrees must also match." },
         ],
       },
       {
         approach: "Iterative BFS",
-        explanation: "Walk both trees in lockstep using a queue of paired nodes. At each step, pop one pair, compare them, and push their children pairs (left-with-left, right-with-right) to check later.",
+        explanation: "Walk both trees together with a queue of node pairs. Pop a pair, compare it, and queue its child pairs (left-with-left, right-with-right).",
         code: `function isSameTree(p, q) {
   const queue = [[p, q]];
 
@@ -532,13 +515,12 @@ function isSameTree(p, q) {
     difficulty: "Easy",
     category: "trees",
     description: `
-You're given the roots of two binary trees, called *root* and
-*subRoot*. Determine whether *subRoot* appears somewhere inside
-*root* as an exact subtree - meaning there's some node in *root* such
-that the tree hanging below it (that node plus everything beneath it)
-is structurally identical, value for value, to *subRoot*.
+You're given the roots of two binary trees, *root* and *subRoot*. Return
+*true* if *subRoot* appears inside *root* as an exact subtree, and
+*false* otherwise.
 
-Return *true* if such a node exists, and *false* otherwise.
+An exact subtree means some node in *root*, plus everything beneath it,
+is identical to *subRoot* in shape and values.
     `.trim(),
     examples: [
       {
@@ -563,21 +545,19 @@ Return *true* if such a node exists, and *false* otherwise.
       "-10^4 <= Node.val <= 10^4",
     ],
     hints: [
-      "You already have a way to check whether two whole trees are exactly identical - can you reuse that check at every node of the bigger tree?",
-      "Walk through root node by node. At each one, ask: 'does the subtree starting here look exactly like subRoot?'",
-      "If root has n nodes and subRoot has m nodes, checking one candidate position costs O(m), and there are O(n) positions to try.",
+      "You can already check whether two trees are identical. Can you reuse that check at every node of the bigger tree?",
+      "Walk root node by node. At each one, ask: 'is the subtree starting here identical to subRoot?'",
+      "If root has n nodes and subRoot has m, each check costs O(m), and there are O(n) positions to try.",
     ],
     approachOverview: `
-This builds directly on the "are two trees identical" check: instead of
-comparing exactly two trees, walk through every node of *root* and, at
-each one, ask whether the subtree starting there is identical to
-*subRoot*. As soon as one position matches, the answer is *true*; if no
-position ever matches, the answer is *false*.
+This builds on the "are two trees identical" check. Walk every node of
+*root* and check whether the subtree starting there is identical to
+*subRoot*. Return *true* on the first match, or *false* if none match.
     `.trim(),
     solutions: [
       {
         approach: "DFS — Same-Tree Check at Every Node",
-        explanation: "Reuse an identical-trees helper. Recursively visit every node of root; at each one, check if the subtree rooted there is identical to subRoot. If root itself runs out (null) before a match is found, there's nowhere left to check.",
+        explanation: "Reuse an identical-trees helper. Visit every node of root and check whether the subtree there is identical to subRoot. Reaching null without a match means there's nowhere left to look.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -603,14 +583,14 @@ function isSubtree(root, subRoot) {
         timeComplexity: "O(n * m) — where n is the number of nodes in root and m is the number of nodes in subRoot, since up to n positions are each checked in O(m)",
         spaceComplexity: "O(h) — recursion stack depth, where h is the height of root",
         walkthrough: [
-          { code: "if (root === null) return false;", explanation: "Ran off the bottom of root without finding a match - subRoot can't be here." },
-          { code: "if (isSameTree(root, subRoot)) return true;", explanation: "Checks whether the subtree starting exactly at this node matches subRoot." },
-          { code: "return isSubtree(root.left, subRoot) || isSubtree(root.right, subRoot);", explanation: "Otherwise, keeps looking further down in both the left and right subtrees." },
+          { code: "if (root === null) return false;", explanation: "Reached the bottom of root without a match, so subRoot isn't here." },
+          { code: "if (isSameTree(root, subRoot)) return true;", explanation: "Checks whether the subtree starting at this node matches subRoot." },
+          { code: "return isSubtree(root.left, subRoot) || isSubtree(root.right, subRoot);", explanation: "Otherwise, keeps looking in the left and right subtrees." },
         ],
       },
       {
         approach: "Serialize and Search",
-        explanation: "Convert both trees into unique string encodings (using sentinels for null children and separators so values never accidentally merge), then just check whether subRoot's encoding appears as a substring of root's encoding.",
+        explanation: "Turn both trees into unique strings, using a marker for null children and separators so values never run together. Then check whether subRoot's string appears inside root's string.",
         code: `function serialize(node, out) {
   if (node === null) {
     out.push("#");
@@ -643,11 +623,8 @@ function isSubtree(root, subRoot) {
     difficulty: "Medium",
     category: "trees",
     description: `
-You're given the root of a binary tree. Return the values of its nodes
-grouped level by level, from top to bottom - all the values from the
-root's level first, then all the values one level down, and so on.
-
-Within each level, list the values left to right.
+You're given the root of a binary tree. Return its node values grouped by
+level, from top to bottom. Within each level, list values left to right.
     `.trim(),
     examples: [
       {
@@ -668,23 +645,23 @@ Within each level, list the values left to right.
     ],
     constraints: ["The number of nodes in the tree is in the range [0, 2000].", "-1000 <= Node.val <= 1000"],
     hints: [
-      "A traversal that naturally visits nodes level by level, rather than diving deep first, is exactly what you need here - that's breadth-first search.",
-      "Use a queue. The key trick is knowing where one level ends and the next begins, so you can group the values correctly.",
-      "Before processing a level, record how many nodes are currently in the queue - that count tells you exactly how many nodes belong to this level, before any of their children get added in.",
+      "You need a traversal that visits nodes level by level instead of diving deep first. That's breadth-first search.",
+      "Use a queue. The trick is knowing where one level ends and the next begins.",
+      "Before processing a level, record the queue's size. That's exactly how many nodes belong to this level, before their children are added.",
     ],
     approachOverview: `
-Grouping values by level is exactly what breadth-first search (BFS)
-gives you for free, as long as you know where each level ends. The
-trick is: right before you start processing a level, check how many
-nodes are currently sitting in the queue - that number is exactly how
-many nodes belong to this level (since none of the next level's nodes
-have been added yet). Process exactly that many, collecting their
-values and queuing up their children, then move to the next level.
+Breadth-first search (BFS) visits nodes level by level. You just need to
+know where each level ends.
+
+Before processing a level, check the queue's size. That's exactly how
+many nodes are in this level, since none of the next level's nodes have
+been added yet. Process that many nodes, collect their values, queue
+their children, and move on.
     `.trim(),
     solutions: [
       {
         approach: "Iterative BFS",
-        explanation: "Use a queue starting with the root. At the start of each loop iteration, note the current queue size - that's how many nodes are in this level. Pop exactly that many, record their values, and enqueue their children for the next round.",
+        explanation: "Start a queue with the root. Each round, note the queue size: that's this level's node count. Pop that many, record their values, and enqueue their children.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -719,15 +696,15 @@ function levelOrder(root) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(n) — the queue and the result both hold every node's value",
         walkthrough: [
-          { code: "const levelSize = queue.length;", explanation: "Captures exactly how many nodes belong to the current level, before any children are enqueued." },
-          { code: "for (let i = 0; i < levelSize; i++) {", explanation: "Processes precisely that many nodes - no more, no less - so the next level's nodes don't leak into this one." },
-          { code: "const node = queue.shift();\n      level.push(node.val);", explanation: "Removes the next node in line for this level and records its value." },
-          { code: "if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);", explanation: "Queues up this node's children so they'll be processed as part of the next level." },
+          { code: "const levelSize = queue.length;", explanation: "Records how many nodes are in this level, before any children are enqueued." },
+          { code: "for (let i = 0; i < levelSize; i++) {", explanation: "Processes exactly that many nodes, so the next level's nodes don't leak in." },
+          { code: "const node = queue.shift();\n      level.push(node.val);", explanation: "Takes the next node in this level and records its value." },
+          { code: "if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);", explanation: "Queues the node's children for the next level." },
         ],
       },
       {
         approach: "Recursive DFS with Level Tracking",
-        explanation: "Do a normal depth-first traversal, but pass along the current depth as an argument. Use that depth as an index into the result array, creating a new sub-array the first time a depth is reached.",
+        explanation: "Do a depth-first traversal that passes the current depth along. Use the depth as an index into the result, adding a new sub-array the first time a depth is reached.",
         code: `function levelOrder(root) {
   const result = [];
 
@@ -760,13 +737,11 @@ function levelOrder(root) {
     difficulty: "Medium",
     category: "trees",
     description: `
-Imagine standing to the right of a binary tree and looking at it
-straight on - from that vantage point, you'd only be able to see the
-rightmost node at each level, since taller nodes on the right can block
-the ones behind them.
+Imagine standing to the right of a binary tree. You'd see only the
+rightmost node at each level; it hides the nodes behind it.
 
-Given the root of a binary tree, return the values of the nodes visible
-from the right side, ordered from the top level down to the bottom.
+Given the root of a binary tree, return the values you can see from the
+right side, from the top level to the bottom.
     `.trim(),
     examples: [
       {
@@ -787,25 +762,23 @@ from the right side, ordered from the top level down to the bottom.
     ],
     constraints: ["The number of nodes in the tree is in the range [0, 100].", "-100 <= Node.val <= 100"],
     hints: [
-      "The node you can see at each level is simply the last (rightmost) node visited on that level.",
-      "A level-order traversal (BFS) naturally visits every node of a level together - the last one it visits in that level is the one that's visible from the right.",
-      "You can also do this with DFS by always visiting the right child before the left child, and recording the first node your traversal reaches at each new depth.",
+      "The visible node at each level is the last (rightmost) node on that level.",
+      "A level-order traversal (BFS) visits each level's nodes together. The last one in each level is the visible one.",
+      "With DFS, visit the right child before the left, and record the first node you reach at each new depth.",
     ],
     approachOverview: `
-The visible node at each level is just the rightmost node in that
-level. A level-order (BFS) traversal already groups nodes by level, so
-the last value processed in each level's group is the answer for that
+The visible node at each level is the rightmost one. A level-order (BFS)
+traversal already groups nodes by level, so take the last value in each
 level.
 
-Alternatively, a depth-first traversal that always explores the right
-child before the left child will reach the rightmost node of each depth
-*first* - so recording the first value seen at each new depth (and
-never overwriting it) gives the same result.
+Or use a depth-first traversal that visits the right child first. It
+reaches the rightmost node of each depth *first*, so record the first
+value seen at each new depth and never overwrite it.
     `.trim(),
     solutions: [
       {
         approach: "Iterative BFS",
-        explanation: "Traverse level by level with a queue, just like a normal level-order traversal, but only keep the value of the last node processed in each level.",
+        explanation: "Do a normal level-order traversal with a queue, but keep only the last node's value in each level.",
         code: `class TreeNode {
   constructor(val, left = null, right = null) {
     this.val = val;
@@ -840,14 +813,14 @@ function rightSideView(root) {
         timeComplexity: "O(n)",
         spaceComplexity: "O(n) — the queue can hold up to a whole level of nodes",
         walkthrough: [
-          { code: "const levelSize = queue.length;", explanation: "Notes how many nodes are in the current level before processing it." },
-          { code: "if (i === levelSize - 1) {\n        result.push(node.val);\n      }", explanation: "Only the last node processed in this level - the rightmost one - gets recorded." },
-          { code: "if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);", explanation: "Queues both children (left before right) so the next level is ready to process." },
+          { code: "const levelSize = queue.length;", explanation: "Notes how many nodes are in this level." },
+          { code: "if (i === levelSize - 1) {\n        result.push(node.val);\n      }", explanation: "Records only the last (rightmost) node in this level." },
+          { code: "if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);", explanation: "Queues both children, left before right, for the next level." },
         ],
       },
       {
         approach: "Recursive DFS (Right First)",
-        explanation: "Do a depth-first traversal that visits the right child before the left child at every node. The first time the traversal reaches a given depth, that node is the rightmost one visible at that level, so record it and never overwrite it.",
+        explanation: "Do a depth-first traversal that visits the right child before the left. The first node reached at each depth is the rightmost one, so record it and never overwrite it.",
         code: `function rightSideView(root) {
   const result = [];
 

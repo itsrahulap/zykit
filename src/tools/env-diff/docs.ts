@@ -3,23 +3,25 @@ import type { ToolDocs } from '../types';
 const docs: ToolDocs = {
   howToUse: [
     'Paste the reference file (for example `.env.example`) into **File A** and the file to check (for example `.env`) into **File B**. You can also use **Open file A** / **Open file B**, drop a file on either box, or press **Try an example**.',
-    'Read the problems listed under each file: syntax errors, unclosed quotes, unquoted values with `#` or spaces, and keys set more than once.',
+    'Read the problems listed under each file: syntax errors, unclosed quotes, unquoted values with `#` or spaces, spaces around `=`, a value that looks like a second assignment, mixed `export` styles, and keys set more than once.',
     'In the differences table, use **Show** to filter to **Missing** (in A but not B), **Extra** (only in B), **Changed** or **Same** keys. Values are masked; press **Reveal** on a row to see them and **Hide all** to mask them again.',
     'Check the **Looks secret** badges, which flag values that appear to be passwords, tokens or keys.',
-    'Under **Generate .env.example from**, pick **File A** or **File B** to get the same file with every value removed, then copy or download it.',
+    'Under **Generate files from**, pick **File A** or **File B** to get the same file with every value removed, or **Download normalized .env** (one assignment per key, consistent quoting, optionally sorted). **Compare keys only** ignores values entirely, and **Masked report** downloads the problems and differences with every value hidden, ready to share.',
   ],
   howItWorks:
     'Each file is parsed with dotenv’s rules. Blank lines and lines starting with `#` are skipped, an optional `export ` prefix is accepted, and each line is `KEY=value` (or `KEY: value`). Keys start with a letter or `_` and may contain letters, digits, `_`, `.` and `-`. Double-, single- and backtick-quoted values may span several lines. In double quotes `\\n`, `\\r`, `\\t`, `\\"`, `\\\\` and `\\$` are unescaped; single-quoted values are taken literally. In an unquoted value everything from `#` on is a comment and surrounding spaces are trimmed. When a key appears more than once, the last value wins, as in dotenv.\n\n' +
-    'The comparison uses each file’s final parsed values, so `A="x"` and `A=x` count as the same. `${VAR}` and `$VAR` references are listed, not expanded. A key is flagged as secret-looking when its name contains words such as SECRET, TOKEN, PASSWORD, API_KEY or PRIVATE, when its value matches a known token format (Stripe, GitHub, Slack, AWS, Google, GitLab, npm, JWTs, PEM private keys), when it is a URL with a password, or when it is a long, random-looking string.',
+    'The comparison uses each file’s final parsed values, so `A="x"` and `A=x` count as the same. `${VAR}` and `$VAR` references are listed, not expanded. A key is flagged as secret-looking when its name contains words such as SECRET, TOKEN, PASSWORD, API_KEY or PRIVATE, when its value matches a known token format (Stripe, GitHub, Slack, AWS, Google, GitLab, npm, JWTs, PEM private keys), when it is a URL with a password, or when it is a long, random-looking string.\n\n' +
+    'The normalized file keeps the last assignment of each key (the one dotenv uses), quotes only values that need it (single quotes when a `$` must stay literal, double quotes with escapes otherwise) and is parsed again before download: if any value would read back differently, the download is disabled. Keys-only mode turns changed values into “Same” and skips value-based secret checks.',
   limits: [
     'Variable references are never expanded, and there is no support for dotenv-expand defaults or command substitution.',
     'Lines that aren’t valid assignments (no `=`, invalid key names, quotes that are never closed) are reported and left out of the comparison and the generated `.env.example`.',
     'Secret detection is a heuristic based on names, known token prefixes and randomness. It can miss secrets and flag harmless values.',
     'Masked values show between 4 and 12 dots, so a masked value still gives a rough idea of its length.',
     'Opened or dropped files must be text and at most 10 MB.',
+    'These checks prove the file is well-formed, not that a value is right for your app. Multiline edge cases and dotenv-expand behaviour are not emulated.',
   ],
   privacy:
-    'Both files are parsed and compared entirely in your browser; nothing is uploaded or saved, and the site’s Content Security Policy blocks requests to other servers. Values stay masked on screen until you reveal them. This tool has no share links, so your files never end up in a URL. Only the generated `.env.example`, which contains keys and comments but no values, can be copied, downloaded or passed on with **Send to…**, which hands it over through this tab’s session storage and removes it as soon as the other tool reads it.',
+    'Both files are parsed and compared entirely in your browser; nothing is uploaded or saved, and the site’s Content Security Policy blocks requests to other servers. Values stay masked on screen until you reveal them. This tool has no share links, so your files never end up in a URL. The masked report and the generated `.env.example` contain no values. The normalized `.env` does contain your values, so it is only offered as a download (never shown, copied or sent). Only the `.env.example` can be copied or passed on with **Send to…**, which hands it over through this tab’s session storage and removes it as soon as the other tool reads it.',
   faqs: [
     {
       question: 'Is it safe to paste a real .env file here?',

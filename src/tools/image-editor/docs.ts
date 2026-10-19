@@ -9,8 +9,13 @@ const docs: ToolDocs = {
     'Under **Export**, choose PNG, JPEG or WebP, set the quality for lossy formats and press **Download**.',
   ],
   howItWorks:
-    'The editor never changes your original. The edits are a small list of settings applied to the decoded image in a fixed order: quarter turn, flip, straighten, then crop, resize, and finally the pixel adjustments. Geometry is drawn in one canvas pass with high-quality scaling, so the image is resampled only once. Straightening grows the canvas to fit the turned picture, leaving transparent corners (white in JPEG).\n\n' +
-    'Pixel adjustments run in this order: denoise (median filter, 3×3 or 5×5), blur (box blur), then tone and colour. Exposure works in linear light, brightness adds to the value, contrast stretches around mid grey, temperature and tint scale the red, green and blue channels, saturation and vibrance blend each pixel with its grey value (vibrance favours muted colours), and sepia mixes in a sepia matrix. Sharpen is an unsharp mask applied last. When your browser supports `OffscreenCanvas` and Web Workers, all of this runs in a background worker so the page stays responsive; otherwise it runs on the main thread. The preview is a reduced copy (up to 1400 pixels) and export re-renders from the full-size original.',
+    'The editor never changes your original. Edits are a small list of settings applied to the decoded image in a fixed order: quarter turn, flip, straighten, crop, resize, and finally the pixel adjustments. Geometry is drawn in one high-quality canvas pass, so the image is resampled only once. Straightening grows the canvas to fit the turned picture, leaving transparent corners (white in JPEG).\n\n' +
+    'Pixel adjustments run in this order: denoise (median filter, 3×3 or 5×5), blur (box blur), then tone and colour:\n\n' +
+    '- Exposure works in linear light; brightness adds to the value; contrast stretches around mid grey.\n' +
+    '- Temperature and tint scale the red, green and blue channels.\n' +
+    '- Saturation and vibrance blend each pixel with its grey value (vibrance favours muted colours), and sepia mixes in a sepia matrix.\n\n' +
+    'Sharpen is an unsharp mask applied last. If your browser supports `OffscreenCanvas` and Web Workers, all of this runs in a background worker so the page stays responsive; otherwise it runs on the main thread.\n\n' +
+    'The preview is a reduced copy (up to 1400 pixels); export re-renders from the full-size original.',
   limits: [
     'Up to 50 MB per file, 100 megapixels and 16,384 pixels on either side, for both the original and the edited image. Only one image is open at a time.',
     'The edit stack keeps the last 100 steps. Rotating by a quarter turn or flipping keeps your crop; straightening clears the crop and resize.',
@@ -19,7 +24,7 @@ const docs: ToolDocs = {
     'Exporting writes a new file and removes metadata such as EXIF, GPS and colour profiles. Colours are exported as sRGB.',
   ],
   privacy:
-    'Images are decoded, edited and encoded entirely in your browser. They are never uploaded or saved to browser storage; the edited file exists only in memory until you download it or leave the page.',
+    'Images are decoded, edited and encoded entirely in your browser, and never uploaded or saved to browser storage. The edited file exists only in memory until you download it or leave the page.',
   faqs: [
     {
       question: 'Is my original file changed?',
@@ -29,7 +34,7 @@ const docs: ToolDocs = {
     {
       question: 'Why does my crop disappear when I straighten the image?',
       answer:
-        'Straightening changes the size of the canvas, so an old crop rectangle would point at different pixels. Set the angle first, then crop. Quarter turns and flips keep the crop and move it with the picture.',
+        'Straightening changes the canvas size, so an old crop would point at different pixels. Set the angle first, then crop. Quarter turns and flips keep the crop and move it with the picture.',
     },
     {
       question: 'Does exporting remove EXIF and GPS data?',

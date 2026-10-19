@@ -7,13 +7,10 @@ export const twoPointersProblems: Problem[] = [
     difficulty: "Easy",
     category: "two-pointers",
     description: `
-You're given a string. Ignoring case, and ignoring any character that
-isn't a letter or a digit, figure out whether the string reads the same
-forwards as it does backwards.
+Given a string, check whether it reads the same forwards and backwards.
 
-So punctuation, spaces, and symbols don't count at all — only letters and
-digits matter, and uppercase and lowercase letters are treated as the
-same letter.
+Only letters and digits count. Ignore punctuation, spaces and symbols,
+and treat uppercase and lowercase as the same letter.
     `.trim(),
     examples: [
       {
@@ -36,29 +33,26 @@ same letter.
     ],
     constraints: ["1 <= s.length <= 2 * 10^5", "s consists only of printable ASCII characters."],
     hints: [
-      "You don't have to build a brand-new cleaned-up string before checking anything — could you compare characters directly from the two ends of the original string?",
-      "Use two pointers, one starting at the front and one at the back, and walk them toward each other, skipping over any character that isn't a letter or digit.",
-      "When both pointers are sitting on letters/digits, compare them case-insensitively — if they ever disagree, you can stop immediately.",
+      "You don't need to build a cleaned-up string first. Can you compare characters from the two ends of the original string?",
+      "Use one pointer at the front and one at the back. Walk them toward each other, skipping any character that isn't a letter or digit.",
+      "When both pointers are on letters or digits, compare them ignoring case. If they ever differ, stop.",
     ],
     approachOverview: `
-The most straightforward way to solve this is to build a cleaned-up
-version of the string (letters and digits only, all lowercase), and then
-check whether that cleaned string equals its own reverse. This works,
-but it means allocating a whole new string just to compare it against
-another new string.
+The simplest way is to build a cleaned-up string (letters and digits
+only, lowercase) and check whether it equals its reverse. This works, but
+it allocates new strings just to compare them.
 
-A leaner way: skip building anything new. Keep one pointer at the start
-of the original string and one at the end, and walk them toward each
-other. At each step, skip past any character that isn't a letter or
-digit. Once both pointers are sitting on "real" characters, compare them
-(ignoring case) — if they ever don't match, the string isn't a
-palindrome. If the pointers meet without ever disagreeing, it is.
+A leaner way builds nothing new. Put one pointer at the start and one at
+the end, and walk them toward each other, skipping any character that
+isn't a letter or digit. When both are on "real" characters, compare
+them ignoring case. Any mismatch means it isn't a palindrome. If the
+pointers meet without a mismatch, it is.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Clean, Then Compare to Reverse",
         explanation:
-          "Build a new string containing only the lowercased letters and digits from the input, then compare that string to its own reverse. Simple to reason about, but it does extra work building and reversing a second string.",
+          "Build a new string of only the lowercased letters and digits, then compare it to its reverse. Easy to follow, but it does extra work building and reversing a second string.",
         code: `function isPalindrome(s) {
   const cleaned = s.toLowerCase().replace(/[^a-z0-9]/g, "");
   const reversed = cleaned.split("").reverse().join("");
@@ -70,7 +64,7 @@ palindrome. If the pointers meet without ever disagreeing, it is.
       {
         approach: "Optimal — Two Pointers",
         explanation:
-          "Walk one pointer in from the left and one in from the right, skipping over any character that isn't a letter or digit. Compare the two pointers' characters (case-insensitively) as they close in on the middle. No extra string is ever built.",
+          "Walk one pointer in from each end, skipping any character that isn't a letter or digit. Compare their characters (ignoring case) as they close in on the middle. No extra string is built.",
         code: `function isPalindrome(s) {
   const isAlnum = (c) => /[a-z0-9]/i.test(c);
   let left = 0;
@@ -119,15 +113,12 @@ palindrome. If the pointers meet without ever disagreeing, it is.
     difficulty: "Medium",
     category: "two-pointers",
     description: `
-You're given a list of numbers that is already sorted in increasing
-order, and a target number. Find two *different* numbers in the list
-that add up exactly to the target, and return their positions.
+Given a list of numbers sorted in increasing order and a target, find two
+*different* numbers that add up to the target and return their positions.
 
-There's a small twist compared to the usual Two Sum: positions here are
-counted starting from 1, not 0. You can assume there's always exactly
-one valid pair, you can't reuse the same element twice, and — since the
-list is already sorted — you should be able to solve this using only a
-constant amount of extra space.
+Unlike the usual Two Sum, positions start at 1, not 0. There is always
+exactly one valid pair, and you can't use the same element twice. Since
+the list is sorted, solve it using only constant extra space.
     `.trim(),
     examples: [
       {
@@ -152,28 +143,28 @@ constant amount of extra space.
       "Exactly one valid answer exists.",
     ],
     hints: [
-      "Since the list is sorted, if the sum of your current pair is too big, which of the two numbers should you change to make the sum smaller?",
-      "You could reuse the hash-map trick from the unsorted Two Sum problem, but that costs extra memory — the sorted order gives you a way to avoid that entirely.",
-      "Start with one pointer at the smallest number and one at the largest. Move the smaller-value pointer forward when the sum is too small, and the larger-value pointer backward when the sum is too big.",
+      "The list is sorted. If your current pair's sum is too big, which number should you change to make it smaller?",
+      "The hash-map trick from unsorted Two Sum works, but costs extra memory. The sorted order lets you avoid that.",
+      "Start one pointer at the smallest number and one at the largest. Move the left pointer forward when the sum is too small, and the right pointer back when it's too big.",
     ],
     approachOverview: `
-Because the list is sorted, you get a useful guarantee: moving the left
-pointer forward can only increase the sum, and moving the right pointer
-backward can only decrease it. That means you never have to backtrack —
-you always know exactly which pointer to move next.
+Because the list is sorted, moving the left pointer forward can only
+increase the sum, and moving the right pointer back can only decrease it.
+So you always know which pointer to move and never need to backtrack.
 
-Start with one pointer at the very first number and one at the very
-last. If their sum is too small, the only way to increase it is to move
-the left pointer forward (to a bigger number). If it's too big, move the
-right pointer backward (to a smaller number). If it matches, you're
-done. This finds the answer in a single pass, using no extra memory
-beyond the two pointers.
+Start with pointers at the first and last numbers:
+
+- Sum too small: move the left pointer forward (to a bigger number).
+- Sum too big: move the right pointer back (to a smaller number).
+- Sum matches: you're done.
+
+This takes one pass and no extra memory beyond the two pointers.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Pair",
         explanation:
-          "Try every possible pair of positions and check whether they sum to the target. Correct, but it doesn't use the fact that the list is sorted at all.",
+          "Try every pair and check whether it sums to the target. Correct, but it ignores the sorted order.",
         code: `function twoSum(numbers, target) {
   for (let i = 0; i < numbers.length; i++) {
     for (let j = i + 1; j < numbers.length; j++) {
@@ -190,7 +181,7 @@ beyond the two pointers.
       {
         approach: "Hash Map",
         explanation:
-          "Walk through the list once, and for each number check whether the value needed to complete the pair has already been seen, using a Map for instant lookups. This ignores the sorted order and uses O(n) extra memory, but it's faster than the brute force.",
+          "Walk the list once. For each number, check a Map to see if the value that completes the pair was already seen. Faster than brute force, but it ignores the sorted order and uses O(n) extra memory.",
         code: `function twoSum(numbers, target) {
   const seen = new Map(); // value -> index
 
@@ -210,7 +201,7 @@ beyond the two pointers.
       {
         approach: "Optimal — Two Pointers",
         explanation:
-          "Take advantage of the sorted order directly. Start one pointer at each end of the list, and move whichever pointer will move the sum in the right direction: forward from the left if the sum is too small, backward from the right if it's too big.",
+          "Use the sorted order directly. Start a pointer at each end. Move the left one forward if the sum is too small, or the right one back if it's too big.",
         code: `function twoSum(numbers, target) {
   let left = 0;
   let right = numbers.length - 1;
@@ -251,12 +242,11 @@ beyond the two pointers.
     difficulty: "Medium",
     category: "two-pointers",
     description: `
-You're given a list of integers. Find every unique set of three numbers
-in the list (a triplet) that adds up to zero.
+Given a list of integers, find every unique set of three numbers (a
+triplet) that adds up to zero.
 
-The order of numbers within a triplet doesn't matter, but you shouldn't
-return the same triplet of values more than once — even if it shows up
-using different positions in the list.
+Order within a triplet doesn't matter. Don't return the same triplet of
+values twice, even if it appears at different positions.
     `.trim(),
     examples: [
       {
@@ -277,29 +267,27 @@ using different positions in the list.
     ],
     constraints: ["3 <= nums.length <= 3000", "-10^5 <= nums[i] <= 10^5"],
     hints: [
-      "This is a lot like Two Sum, except you have to also pick a *first* number, and you need to avoid reporting the same triplet more than once.",
-      "Try sorting the array first. Sorting groups equal values together, which makes it easy to skip duplicates, and it also unlocks a two-pointer scan for the remaining two numbers.",
-      "Fix one number at a time, then use two pointers — one from just after it, one from the end of the array — to find pairs that bring the total to zero, skipping over repeated values as the pointers move.",
+      "This is like Two Sum, but you also pick a *first* number, and you must not report the same triplet twice.",
+      "Sort the array first. Equal values end up together, so duplicates are easy to skip, and you can use a two-pointer scan for the other two numbers.",
+      "Fix one number at a time. Then use two pointers, one just after it and one at the end, to find pairs that bring the total to zero. Skip repeated values as the pointers move.",
     ],
     approachOverview: `
-A direct approach is to check every possible group of three numbers and
-keep the ones that sum to zero, using a set to avoid reporting
-duplicates — but that looks at every triplet, which is a lot of wasted
+The direct approach checks every group of three and keeps those that sum
+to zero, using a set to skip duplicates. That wastes a lot of
 comparisons.
 
-A much better approach: first sort the array. Then, for each number
-(treating it as the "first" number of a triplet), use two pointers on
-the rest of the sorted array — one starting right after it, one at the
-very end — to find a pair that, together with the fixed number, sums to
-zero. Because the array is sorted, you know exactly which pointer to
-move if the running total is too big or too small, and duplicate values
-sit right next to each other, so they're easy to skip.
+A better approach sorts the array first. Then treat each number as the
+"first" of a triplet, and use two pointers on the rest (one right after
+it, one at the end) to find a pair that brings the total to zero. Since
+the array is sorted, you know which pointer to move when the total is
+too big or too small. Duplicates sit next to each other, so they're easy
+to skip.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Triplet",
         explanation:
-          "Look at every possible group of three numbers, and whenever one sums to zero, record it (using a canonical, sorted form of the triplet as a key so duplicates aren't reported twice).",
+          "Check every group of three. When one sums to zero, record it, using the sorted triplet as a key so duplicates aren't reported twice.",
         code: `function threeSum(nums) {
   const result = [];
   const seen = new Set();
@@ -328,7 +316,7 @@ sit right next to each other, so they're easy to skip.
       {
         approach: "Optimal — Sort + Two Pointers",
         explanation:
-          "Sort the array first. Then fix each number in turn as the first element of a triplet, and use two pointers on the remainder of the array to find a pair summing to its negative. Skip over duplicate values at every level so no triplet is reported twice.",
+          "Sort the array. Fix each number in turn as the first element, and use two pointers on the rest to find a pair summing to its negative. Skip duplicate values at every level so no triplet repeats.",
         code: `function threeSum(nums) {
   const result = [];
   nums.sort((a, b) => a - b);
@@ -387,14 +375,12 @@ sit right next to each other, so they're easy to skip.
     difficulty: "Medium",
     category: "two-pointers",
     description: `
-You're given the heights of a row of vertical lines, evenly spaced one
-unit apart. Pick any two of these lines — together with the ground
-between them — to form a container. The container's walls are as tall as
-the shorter of your two chosen lines (water would spill over the
-shorter side), and its width is the distance between them.
+You're given the heights of a row of vertical lines, spaced one unit
+apart. Any two lines, with the ground between them, form a container.
+Its height is the shorter of the two lines (water spills over the shorter
+side), and its width is the distance between them.
 
-Find the two lines that create the container able to hold the most
-water, and return that amount.
+Return the most water any container can hold.
     `.trim(),
     examples: [
       {
@@ -416,22 +402,19 @@ water, and return that amount.
     ],
     constraints: ["2 <= height.length <= 10^5", "0 <= height[i] <= 10^4"],
     hints: [
-      "The amount of water two lines can hold depends on the *shorter* of the two, and how far apart they are — moving the taller line inward can never help.",
-      "Start with the widest possible container: one pointer at the very first line, one at the very last.",
-      "At each step, move the pointer sitting on the shorter line inward. Moving the taller one can only ever shrink or maintain the area, since the shorter line still caps the height either way.",
+      "The water two lines hold depends on the *shorter* line and the distance between them. Moving the taller line inward never helps.",
+      "Start with the widest container: one pointer at the first line, one at the last.",
+      "At each step, move the pointer on the shorter line inward. Moving the taller one can't increase the area, since the shorter line still caps the height.",
     ],
     approachOverview: `
-The direct approach checks every possible pair of lines and keeps track
-of the best area — correct, but it repeats a lot of comparisons.
+The direct approach checks every pair of lines and keeps the best area.
+It's correct but repeats a lot of work.
 
-A faster approach uses two pointers starting at the two ends of the
-list, which gives the widest possible container to start. At each step,
-compute the area, then move whichever pointer is on the shorter line
-inward. Moving the taller line can never produce a better result: the
-width only shrinks, and the shorter line still limits the height either
-way. Moving the shorter line is the only move that has any chance of
-finding a taller wall and a bigger area, so this pass through the list
-once is enough.
+A faster approach starts two pointers at the ends, the widest container.
+At each step, compute the area, then move the pointer on the shorter line
+inward. Moving the taller line can't help: the width shrinks and the
+shorter line still limits the height. Only moving the shorter line can
+find a taller wall and a bigger area, so one pass is enough.
     `.trim(),
     solutions: [
       {
@@ -453,7 +436,7 @@ once is enough.
       {
         approach: "Optimal — Two Pointers",
         explanation:
-          "Start with one pointer at each end, the widest container possible. At each step, record the area, then move whichever pointer sits on the shorter line inward — that's the only move that could possibly improve things.",
+          "Start with a pointer at each end, the widest container. At each step, record the area, then move the pointer on the shorter line inward. That's the only move that can improve the area.",
         code: `function maxArea(height) {
   let left = 0;
   let right = height.length - 1;
@@ -495,13 +478,12 @@ once is enough.
     difficulty: "Hard",
     category: "two-pointers",
     description: `
-You're given an elevation map, represented as a list of bar heights (each
-bar has width 1, standing right next to the next one). Imagine it rains —
-figure out how many total units of water end up trapped between the
-bars.
+You're given an elevation map as a list of bar heights. Each bar has
+width 1 and sits right next to the next. After it rains, how many units
+of water are trapped between the bars?
 
-Water can only sit above a bar if there's something tall enough on both
-its left and its right to hold it in; otherwise it just runs off.
+Water can only sit above a bar if something tall enough is on both its
+left and right to hold it in. Otherwise it runs off.
     `.trim(),
     examples: [
       {
@@ -521,34 +503,31 @@ its left and its right to hold it in; otherwise it just runs off.
     ],
     constraints: ["1 <= height.length <= 2 * 10^5", "0 <= height[i] <= 10^5"],
     hints: [
-      "The water sitting above any one position is limited by the shorter of the tallest bar to its left and the tallest bar to its right.",
-      "You could precompute, for every position, the tallest bar to its left and the tallest bar to its right in two separate passes, then combine them — but that costs extra memory.",
-      "Two pointers moving inward from both ends can track a running 'tallest so far' on each side as they go, letting you compute the trapped water at each position without ever storing full left/right arrays.",
+      "The water above a position is limited by the shorter of the tallest bar to its left and the tallest bar to its right.",
+      "You could precompute the tallest bar to the left and right of every position in two passes, then combine them. But that costs extra memory.",
+      "Two pointers moving inward from both ends can track a running 'tallest so far' on each side. That lets you compute each position's water without storing full left/right arrays.",
     ],
     approachOverview: `
-The amount of water that can sit above any single bar is determined by
-the *shorter* of the tallest bar to its left and the tallest bar to its
-right — whichever side is shorter is where the water would spill out
-first. A direct approach recomputes those two values by scanning outward
-from every position, which repeats a lot of work.
+The water above a bar depends on the *shorter* of the tallest bar to its
+left and the tallest bar to its right, since water spills out over the
+shorter side first. The direct approach rescans outward from every
+position to find these, which repeats a lot of work.
 
-A better approach precomputes the tallest-bar-so-far from the left and
-from the right in two passes, storing them in two arrays, and then
-combines them in a third pass — fast, but it uses extra memory
-proportional to the input.
+A better approach precomputes the tallest bar so far from the left and
+from the right in two passes, stores them in two arrays, and combines
+them in a third pass. It's fast but uses O(n) extra memory.
 
-The optimal approach avoids storing those arrays at all. Walk two
-pointers inward from both ends, keeping a running "tallest seen so far"
-for each side. At every step, you always know for certain that the
-*smaller* of the two running maximums is the true limiting wall for
-whichever pointer is behind, which is enough information to compute
-that position's trapped water immediately and move that pointer inward.
+The optimal approach skips the arrays. Walk two pointers inward from both
+ends, keeping a running "tallest so far" for each side. The *smaller* of
+the two running maximums is always the true limiting wall for the pointer
+on that side. So you can compute that position's water right away and
+move that pointer inward.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Scan Left and Right From Every Bar",
         explanation:
-          "For each position, scan all the way left to find the tallest bar so far, and all the way right to find the tallest bar so far, then use the shorter of the two to work out how much water sits there.",
+          "For each position, scan left and right to find the tallest bar on each side. The shorter of the two sets how much water sits there.",
         code: `function trap(height) {
   let total = 0;
   const n = height.length;
@@ -571,7 +550,7 @@ that position's trapped water immediately and move that pointer inward.
       {
         approach: "Better — Precomputed Left/Right Max Arrays",
         explanation:
-          "Precompute, in one left-to-right pass, the tallest bar seen so far up to each position, and in one right-to-left pass, the tallest bar seen so far from each position onward. Then a final pass combines them.",
+          "One left-to-right pass records the tallest bar up to each position. One right-to-left pass records the tallest bar from each position onward. A final pass combines them.",
         code: `function trap(height) {
   const n = height.length;
   if (n === 0) return 0;
@@ -601,7 +580,7 @@ that position's trapped water immediately and move that pointer inward.
       {
         approach: "Optimal — Two Pointers",
         explanation:
-          "Walk two pointers inward from both ends, tracking a running maximum height seen on each side. Whichever side currently has the smaller running maximum is the one you can safely resolve next — its running maximum is guaranteed to be the true limiting wall for that position.",
+          "Walk two pointers inward from both ends, tracking the maximum height seen on each side. Resolve the side with the smaller running maximum next: that maximum is guaranteed to be the true limiting wall for its position.",
         code: `function trap(height) {
   let left = 0;
   let right = height.length - 1;
@@ -646,13 +625,11 @@ that position's trapped water immediately and move that pointer inward.
     difficulty: "Medium",
     category: "two-pointers",
     description: `
-You're given an array that contains only the values 0, 1, and 2 (think of
-them as three colors — say, red, white, and blue). Rearrange the array
-in place so that all the 0s come first, then all the 1s, then all the
-2s.
+You're given an array of only 0s, 1s and 2s (think of them as three
+colors: red, white and blue). Rearrange it in place so all 0s come
+first, then all 1s, then all 2s.
 
-Try to do this without calling a general-purpose sort function, and
-ideally in a single pass through the array.
+Try not to use a general-purpose sort, and ideally use a single pass.
     `.trim(),
     examples: [
       { input: "nums = [2, 0, 2, 1, 1, 0]", output: "[0, 0, 1, 1, 2, 2]" },
@@ -661,30 +638,29 @@ ideally in a single pass through the array.
     ],
     constraints: ["1 <= nums.length <= 300", "nums[i] is 0, 1, or 2."],
     hints: [
-      "With only three distinct values in play, is there a way to group them without falling back on a general-purpose sort?",
-      "You could count how many 0s, 1s, and 2s there are, then overwrite the array in a second pass — but can it be done in one single pass instead?",
-      "Keep three pointers: one marking the next open spot for a 0 (from the front), one marking the next open spot for a 2 (from the back), and one that scans through the array, swapping elements into place as it goes.",
+      "With only three distinct values, can you group them without a general-purpose sort?",
+      "You could count the 0s, 1s and 2s, then overwrite the array in a second pass. Can you do it in one pass?",
+      "Keep three pointers: the next spot for a 0 (from the front), the next spot for a 2 (from the back), and a scanner that swaps elements into place as it goes.",
     ],
     approachOverview: `
-Since there are only three distinct values, sorting the array with a
-general-purpose comparison sort works, but it's more machinery than the
-problem actually needs and doesn't take advantage of there being just
-three possible values.
+A general-purpose comparison sort works, but it's more than the problem
+needs and ignores that there are only three possible values.
 
-The optimal approach (often called the Dutch National Flag algorithm)
-uses three pointers: one tracking the next place a 0 should go (growing
-from the front), one tracking the next place a 2 should go (growing from
-the back), and one that scans through the array from left to right.
-Whenever the scanning pointer sees a 0, it swaps it toward the front;
-whenever it sees a 2, it swaps it toward the back; 1s are left where the
-scan finds them, since they belong in the middle. This sorts the whole
-array in a single pass, in place.
+The optimal approach, the Dutch National Flag algorithm, uses three
+pointers: the next place for a 0 (growing from the front), the next place
+for a 2 (growing from the back), and a scanner moving left to right.
+
+- When the scanner sees a 0, swap it toward the front.
+- When it sees a 2, swap it toward the back.
+- Leave 1s where they are, since they belong in the middle.
+
+This sorts the array in place in a single pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Built-in Sort",
         explanation:
-          "Just hand the array to a general-purpose comparison sort. It's correct and simple, but it doesn't take advantage of the fact that there are only three possible values.",
+          "Use a general-purpose comparison sort. Correct and simple, but it ignores that there are only three possible values.",
         code: `function sortColors(nums) {
   nums.sort((a, b) => a - b);
 }`,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diffCounts, diffEnv, entropy, maskValue, parseEnv, secretHint, toExample } from '../../../src/tools/env-diff/features/env-diff';
+import { diffCounts, diffEnv, entropy, envReport, maskValue, normalizeEnv, parseEnv, secretHint, toExample } from '../../../src/tools/env-diff/features/env-diff';
 
 const val = (text: string, key: string) => parseEnv(text).values.get(key)?.value;
 
@@ -14,7 +14,9 @@ describe('parseEnv (dotenv rules)', () => {
       COLON: 'yaml-ish',
     });
     expect(p.values.get('EXPORTED')!.exported).toBe(true);
-    expect(p.issues).toEqual([]);
+    // Only the style warnings: spaces around "=" and mixed export.
+    expect(p.issues.map((i) => i.severity)).toEqual(['warning', 'warning']);
+    expect(p.issues.map((i) => i.message).join(' ')).toMatch(/spaces around.*export/);
   });
 
   it('handles quotes, escapes and inline comments', () => {
@@ -116,5 +118,73 @@ describe('toExample', () => {
     const text = '# Database\nexport DB_URL="postgres://u:p@h/db"\n\nKEY="multi\nline"\nPORT=3000 # web\n';
     expect(toExample(text)).toBe('# Database\nexport DB_URL=\n\nKEY=\nPORT=\n');
     expect(toExample('')).toBe('');
+  });
+});
+
+describe('lint warnings', () => {
+  const warn = (t: string) => parseEnv(t).issues.map((i) => i.message).join('\n');
+  it('flags spaces around =, double assignments and mixed export', () => {
+    expect(warn('A = 1')).toMatch(/spaces around/);
+    expect(warn('A=1')).not.toMatch(/spaces around/);
+    expect(warn('A=')).toBe('');
+    expect(warn('A=B=C')).toMatch(/Two assignments/);
+    expect(warn('A="B=C"')).not.toMatch(/Two assignments/);
+    expect(warn('export A=1\nB=2')).toMatch(/export/);
+    expect(warn('export A=1\nexport B=2')).toBe('');
+  });
+});
+
+describe('normalizeEnv', () => {
+  const tricky = [
+    '# top comment',
+    'export PLAIN=abc',
+    'SPACED=hello world',
+    "SINGLE='literal $HOME'",
+    'DOUBLE="tab\\there \\"q\\" \\\\ back"',
+    'REF=${SITE_URL}/api',
+    'DOLLAR="cost \\$5 it\'s"',
+    'MULTI="line1\nline2"',
+    'EMPTY=',
+    'DUP=1',
+    'BAD LINE',
+    'DUP=2',
+    'HASH="a#b"',
+  ].join('\n');
+  it('keeps every final value and comments, drops duplicates and invalid lines', () => {
+    const p = parseEnv(tricky);
+    const n = normalizeEnv(p, tricky);
+    expect(n.safe).toBe(true);
+    expect(n.dropped).toBe(1);
+    expect(n.text).toContain('# top comment');
+    expect(n.text).not.toContain('BAD LINE');
+    expect(n.text).toContain('DUP=2');
+    expect(n.text).not.toContain('DUP=1');
+    const back = parseEnv(n.text);
+    for (const [k, e] of p.values) expect(back.values.get(k)?.value, k).toBe(e.value);
+    expect(back.values.get('DOUBLE')!.value).toBe('tab\there "q" \\ back');
+    expect(back.values.get('MULTI')!.value).toBe('line1\nline2');
+    expect(back.values.get('REF')!.refs).toEqual(['SITE_URL']);
+    expect(back.values.get('SINGLE')!.refs).toEqual([]);
+    expect(back.values.get('DOLLAR')!.refs).toEqual([]);
+    expect(back.values.get('PLAIN')!.exported).toBe(true);
+  });
+  it('sorts keys and drops comments when asked', () => {
+    const n = normalizeEnv(parseEnv('B=2\n# c\nA=1'), 'B=2\n# c\nA=1', true);
+    expect(n.text).toBe('A=1\nB=2\n');
+  });
+});
+
+describe('envReport', () => {
+  it('masks values and respects keys-only mode', () => {
+    const a = parseEnv('KEY=secret-a\nONLY_A=x');
+    const b = parseEnv('KEY=secret-b\nONLY_B=y');
+    const rows = diffEnv(a, b);
+    const full = envReport(a, b, rows, false);
+    expect(full).not.toMatch(/secret-a|secret-b/);
+    expect(full).toMatch(/changed KEY/);
+    expect(full).toMatch(/missing ONLY_A/);
+    const keys = envReport(a, b, rows, true);
+    expect(keys).not.toMatch(/changed|•/);
+    expect(keys).toMatch(/extra +ONLY_B/);
   });
 });

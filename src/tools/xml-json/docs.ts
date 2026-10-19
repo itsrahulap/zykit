@@ -9,9 +9,14 @@ const docs: ToolDocs = {
     'Copy or download the result, or press **Swap** to turn the output into the new input and convert it back.',
   ],
   howItWorks:
-    'XML is read by a small, strict parser built into the tool, not the browser’s DOM parser. Tags must be properly nested and closed, attribute values must be quoted, and there must be exactly one root element. Text is decoded for the five predefined entities (`&amp;` `&lt;` `&gt;` `&quot;` `&apos;`) and numeric references such as `&#169;`. CDATA sections are read as plain text. A DOCTYPE is skipped and never interpreted, so entities it declares are not expanded and external DTDs are never loaded.\n\n' +
-    'In the JSON, attributes become keys starting with `@` (`@id`), and repeated sibling elements become an array. An element with only text becomes a plain string. Text next to attributes or child elements goes under `#text`, and comments go under `#comment` when kept. The XML declaration becomes `?xml`, and other processing instructions at the top level become `?target` keys. Namespace prefixes stay part of the name (`dc:title`), and `xmlns` declarations are ordinary `@xmlns:…` attributes. With **Numbers and booleans**, `true`, `false` and JSON-style numbers in text and attributes become JSON values. Integers too large to store exactly, and values like `007`, stay strings.\n\n' +
-    'JSON → XML follows the same conventions in reverse. `@` keys become attributes, `#text` text, `#cdata` a CDATA section and `#comment` comments, and an array becomes one element per item. `null` and empty strings become empty elements (`<tag/>`). If the JSON doesn’t have exactly one top-level key, the content is wrapped in `<root>`. A top-level array becomes `<root>` with one `<item>` per entry. Conversion runs in the page as you type.',
+    'XML is read by the tool’s own small, strict parser, not the browser’s DOM parser. Tags must be properly nested and closed, attribute values quoted, and there must be exactly one root element. Text is decoded for the five predefined entities (`&amp;` `&lt;` `&gt;` `&quot;` `&apos;`) and numeric references such as `&#169;`. CDATA is read as plain text. A DOCTYPE is skipped and never interpreted, so its entities aren’t expanded and external DTDs are never loaded.\n\n' +
+    'In the JSON:\n\n' +
+    '- Attributes become keys starting with `@` (`@id`), and repeated sibling elements become an array.\n' +
+    '- An element with only text becomes a plain string. Text next to attributes or child elements goes under `#text`; kept comments go under `#comment`.\n' +
+    '- The XML declaration becomes `?xml`, and other top-level processing instructions become `?target` keys.\n' +
+    '- Namespace prefixes stay part of the name (`dc:title`), and `xmlns` declarations are ordinary `@xmlns:…` attributes.\n' +
+    '- With **Numbers and booleans**, `true`, `false` and JSON-style numbers in text and attributes become JSON values. Integers too large to store exactly, and values like `007`, stay strings.\n\n' +
+    'JSON → XML reverses these rules. `@` keys become attributes, `#text` text, `#cdata` a CDATA section and `#comment` comments, and an array becomes one element per item. `null` and empty strings become empty elements (`<tag/>`). If the JSON doesn’t have exactly one top-level key, the content is wrapped in `<root>`. A top-level array becomes `<root>` with one `<item>` per entry. Conversion runs in the page as you type.',
   limits: [
     'Input is limited to about 20 MB (20 million characters); opened or dropped files to 10 MB.',
     'Only the five predefined entities and numeric character references are supported. Other named entities, such as `&nbsp;`, are reported as errors.',
@@ -22,7 +27,7 @@ const docs: ToolDocs = {
     'Output longer than 1 million characters is only partly shown on screen; copy or download to get all of it.',
   ],
   privacy:
-    'Conversion happens entirely in your browser and files are read locally. Nothing is uploaded or stored, and the parser never fetches DTDs or external entities. **Share** copies a link with your input and options in the URL’s `#` fragment, which browsers don’t send to servers, though anyone with the link can read it. If you use **Send to…** to open the result in another tool, it is handed over through this tab’s session storage and removed as soon as that tool reads it.',
+    'Conversion runs in your browser and files are read locally. Nothing is uploaded or stored, and the parser never fetches DTDs or external entities. **Share** copies a link with your input and options in the URL’s `#` fragment; browsers don’t send that to servers, but anyone with the link can read it. **Send to…** passes the result through this tab’s session storage, removed as soon as the other tool reads it.',
   faqs: [
     {
       question: 'How are XML attributes represented in JSON?',

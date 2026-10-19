@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 test('.env Diff compares files with masked values', async ({ page }) => {
   const origin = new URL(test.info().project.use.baseURL!).origin;
@@ -35,6 +36,19 @@ test('.env Diff compares files with masked values', async ({ page }) => {
 
   await expect(page.getByRole('region', { name: 'Output' }).locator('pre')).toHaveText('PORT=\nSHARED=\nAPI_TOKEN=\nPORT=');
   await expect(page).not.toHaveURL(/#s=/);
+
+  // Keys-only hides values; the masked report and normalized file download without leaking on screen.
+  await page.getByLabel('Compare keys only').check();
+  await expect(page.getByText('1 missing · 1 extra · 0 changed · 2 same')).toBeVisible();
+  await expect(diff.getByRole('button', { name: /Reveal values/ })).toHaveCount(0);
+  const report = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Masked report' }).click();
+  const reportText = await readFile((await (await report).path())!, 'utf8');
+  expect(reportText).toContain('missing DB_PASSWORD');
+  expect(reportText).not.toContain('hunter2');
+  const env = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download normalized .env' }).click();
+  expect(await readFile((await (await env).path())!, 'utf8')).toBe('SHARED=same\nAPI_TOKEN=hunter2\nPORT=9090\n');
 
   expect(offOrigin).toEqual([]);
   expect(errors).toEqual([]);

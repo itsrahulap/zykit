@@ -9,9 +9,16 @@ const docs: ToolDocs = {
     'Under **Cleaned text**, choose **Turn unusual spaces into normal spaces** and **Replace look-alike letters**, then **Copy**, **Send to…**, or **Clean the input**.',
   ],
   howItWorks:
-    'The text is split into user-perceived characters (grapheme clusters) with the browser’s `Intl.Segmenter`, so an emoji family or a letter with combining accents counts as one character, and each cluster is split into its code points. For every code point the tool shows the `U+` value, its UTF-8 bytes and UTF-16 units, and its general category (such as *Lu* or *Cf*) and script, both taken from your browser’s Unicode data through regex property escapes. Block names and character names come from a built-in table that covers the common blocks, with algorithmic names for CJK ideographs, Hangul syllables, variation selectors, tags, regional indicators and many accented Latin letters.\n\n' +
-    'Each code point is checked against lists of suspicious characters: bidirectional controls used in *Trojan Source* attacks, invisible characters such as zero-width spaces and the byte order mark, unusual spaces such as the no-break space, control characters, tag characters that can hide text, stray variation selectors, private-use, unassigned and lone surrogate code points, and the replacement character. Zero-width joiners, variation selectors and tags inside an emoji sequence are expected and only noted. Look-alikes are found with a small hand-picked list of Cyrillic, Greek and Latin letters that imitate Latin ones, plus fullwidth forms, and any word mixing letters from more than one script is listed with the Latin text it imitates.\n\n' +
-    '**Normalization** runs `String.prototype.normalize` for all four forms and reports whether each differs from your text. **Cleaned text** removes invisible, bidi-control, tag, stray variation selector, control and lone surrogate characters while keeping emoji sequences intact, and can replace unusual spaces and look-alikes. Everything runs in your browser.',
+    'The browser’s `Intl.Segmenter` splits the text into characters as you see them (grapheme clusters), so an emoji family or a letter with combining accents counts as one. Each cluster is then split into code points. For each code point you get the `U+` value, UTF-8 bytes, UTF-16 units, general category (such as *Lu* or *Cf*) and script. Category and script come from your browser’s Unicode data via regex property escapes.\n\n' +
+    'Block and character names come from a built-in table of common blocks. CJK ideographs, Hangul syllables, variation selectors, tags, regional indicators and many accented Latin letters get algorithmic names.\n\n' +
+    'Each code point is checked for suspicious characters:\n\n' +
+    '- bidirectional controls used in *Trojan Source* attacks\n' +
+    '- invisible characters such as zero-width spaces and the byte order mark\n' +
+    '- unusual spaces such as the no-break space, and control characters\n' +
+    '- tag characters that can hide text, and stray variation selectors\n' +
+    '- private-use, unassigned and lone surrogate code points, and the replacement character\n\n' +
+    'Zero-width joiners, variation selectors and tags inside an emoji sequence are expected and only noted. Look-alikes come from a small hand-picked list of Cyrillic, Greek and Latin letters that imitate Latin ones, plus fullwidth forms. Words that mix scripts are listed with the Latin text they imitate.\n\n' +
+    '**Normalization** runs `String.prototype.normalize` for all four forms and says whether each differs from your text. **Cleaned text** removes invisible, bidi-control, tag, stray variation selector, control and lone surrogate characters but keeps emoji sequences intact. It can also replace unusual spaces and look-alikes. Everything runs in your browser.',
   limits: [
     'Text over 1,000,000 characters isn’t inspected.',
     'The **Code points** table lists the first 2,000 code points and the character chips show up to 1,000 characters from the first 20,000; the counts and warnings cover the whole text.',
@@ -21,7 +28,7 @@ const docs: ToolDocs = {
     'Dropped or opened files are limited to 10 MB and must be text.',
   ],
   privacy:
-    'Your text is analysed entirely in your browser; it is never uploaded or stored. The **Share** button copies a link with your text in its `#` fragment, which browsers don’t send to servers, but anyone you give the link to can read it. **Send to…** passes text between tools through this tab’s session storage, and it is removed as soon as the receiving tool reads it.',
+    'Your text is analysed in your browser and never uploaded or stored. **Share** copies a link with your text in its `#` fragment; browsers don’t send that to servers, but anyone you give the link to can read it. **Send to…** passes text through this tab’s session storage, removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'Why is the character count different from the length in my code?',

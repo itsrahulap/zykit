@@ -8,8 +8,14 @@ const docs: ToolDocs = {
     'Check **Lines before**, **Lines after** and **Characters** below the result, then copy or download the **Cleaned** text, or open it in another tool with **Send to…**.',
   ],
   howItWorks:
-    'The text is split into lines at LF, CRLF or a lone CR, and each ticked step runs on the lines in the order shown, top to bottom. **Trim lines** removes whitespace from either or both ends, including non-breaking spaces. **Collapse inner whitespace** turns runs of two or more spaces, tabs or non-breaking spaces into one space but keeps leading indentation. **Remove empty lines** also removes lines that contain only whitespace. **Remove duplicate lines** compares whole lines, optionally ignoring case, and keeps the first or last copy in its place.\n\n' +
-    '**Sort lines** sorts A → Z or Z → A with the browser’s English collation, which can ignore case; **Natural (numbers by value)** puts `item2` before `item10`; **By length** counts characters; and **Random** shuffles with a seeded generator so the order stays put while you edit, until you click **Shuffle again**. **Convert tabs ↔ spaces** expands tabs to the next tab stop, or turns leading spaces into tabs. **Strip non-printable and zero-width characters** removes control characters (keeping tabs and line breaks), soft hyphens, zero-width spaces and joiners, direction marks and bidi controls, and byte order marks.\n\n' +
+    'The text is split into lines at LF, CRLF or a lone CR. Each ticked step then runs on the lines in the order shown, top to bottom.\n\n' +
+    '- **Trim lines** removes whitespace, including non-breaking spaces, from either or both ends.\n' +
+    '- **Collapse inner whitespace** turns runs of two or more spaces, tabs or non-breaking spaces into one space, but keeps leading indentation.\n' +
+    '- **Remove empty lines** also removes lines that contain only whitespace.\n' +
+    '- **Remove duplicate lines** compares whole lines, optionally ignoring case, and keeps the first or last copy in its place.\n' +
+    '- **Sort lines** sorts A → Z or Z → A with the browser’s English collation, which can ignore case. **Natural (numbers by value)** puts `item2` before `item10`, **By length** counts characters, and **Random** shuffles with a seeded generator, so the order stays put while you edit until you click **Shuffle again**.\n' +
+    '- **Convert tabs ↔ spaces** expands tabs to the next tab stop, or turns leading spaces into tabs.\n' +
+    '- **Strip non-printable and zero-width characters** removes control characters (keeping tabs and line breaks), soft hyphens, zero-width spaces and joiners, direction marks, bidi controls and byte order marks.\n\n' +
     'The original line endings and any final newline are kept, unless **Normalise line endings** converts them to LF or CRLF. Everything runs in your browser as you type.',
   limits: [
     '**Strip non-printable and zero-width characters** also removes the zero-width joiner, which breaks joined emoji such as family or profession emoji into separate pictures.',

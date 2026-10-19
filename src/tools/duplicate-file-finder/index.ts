@@ -5,7 +5,7 @@ const duplicateFileFinder: ToolDefinition = {
   name: 'Duplicate File Finder',
   tagline: 'Find duplicate files by content',
   description:
-    'Select files or a folder to find exact duplicates by SHA-256 hash, see wasted space and export a report. Files never leave your device.',
+    'Find exact duplicate files by SHA-256 hash, see the wasted space and export a report. Files never leave your device.',
   category: 'Documents',
   icon: 'diff',
   tags: ['Duplicates', 'SHA-256', 'Files'],

@@ -7,13 +7,11 @@ export const graphsMoreProblems: Problem[] = [
     difficulty: "Medium",
     category: "graphs",
     description: `
-There are \`numCourses\` courses, labeled from \`0\` to \`numCourses - 1\`.
-Some courses have a prerequisite: you're given a list of pairs
-\`[a, b]\`, each meaning "you must finish course \`b\` before you're
-allowed to take course \`a\`."
+There are \`numCourses\` courses, labeled \`0\` to \`numCourses - 1\`. You're
+given prerequisite pairs \`[a, b]\`, each meaning "finish course \`b\`
+before taking course \`a\`."
 
-Given \`numCourses\` and this list of prerequisite pairs, decide whether
-it is possible to finish *all* of the courses.
+Return whether you can finish *all* the courses.
     `.trim(),
     examples: [
       {
@@ -39,38 +37,37 @@ it is possible to finish *all* of the courses.
       "There are no duplicate prerequisite pairs.",
     ],
     hints: [
-      "Model this as a directed graph: draw an edge from b to a whenever [a, b] says 'b before a'. Now the question is really about that graph's shape.",
-      "It's impossible to finish all courses exactly when the graph has a cycle - a cycle means every course on it is waiting on another course on the same cycle, so none of them can ever go first.",
-      "To detect a cycle with a graph traversal, you need more than a plain 'have I visited this node before' check. Track nodes that are 'currently on the path you're exploring right now' separately from nodes you've fully finished with - revisiting a node that's still on the current path is the cycle.",
+      "Model it as a directed graph: an edge from b to a for each [a, b] ('b before a'). The question is about that graph's shape.",
+      "You can't finish exactly when the graph has a cycle. Every course on a cycle waits on another course on it, so none can go first.",
+      "A plain 'visited' check isn't enough to find a cycle. Track nodes on the path you're exploring right now separately from nodes you've finished. Reaching a node still on the current path means a cycle.",
     ],
     approachOverview: `
-Build a directed graph where an edge from \`b\` to \`a\` means "\`b\` must
-come before \`a\`." Now finishing all courses is possible exactly when
-this graph has **no cycle** - if there were a cycle, every course on it
-would be stuck waiting for another course on the very same cycle.
+Build a directed graph with an edge from \`b\` to \`a\` ("\`b\` before
+\`a\`"). You can finish all courses exactly when the graph has **no
+cycle**. On a cycle, every course waits for another course on the same
+cycle.
 
-One way to check for a cycle is a DFS that tracks each node's state:
-*unvisited*, *currently being explored* (on the active recursion path),
-or *fully done* (already confirmed cycle-free). If the DFS ever walks
-into a node that is "currently being explored," that's a back-edge into
-the current path - a cycle - so the answer is false. If DFS finishes
-exploring every node without ever doing that, there's no cycle and the
-answer is true.
+To find a cycle, run a DFS that tracks each node's state:
 
-A different, non-recursive way to reach the same conclusion is
-**Kahn's algorithm**: repeatedly peel off courses that currently have
-no remaining prerequisites. If you can eventually peel off every
-course this way, there's no cycle.
+- *unvisited*
+- *visiting*: on the current recursion path
+- *done*: confirmed cycle-free
+
+If the DFS reaches a *visiting* node, that's a back-edge into the
+current path: a cycle, so return false. If it explores every node
+without that happening, return true.
+
+A non-recursive alternative is **Kahn's algorithm**: repeatedly remove
+courses with no remaining prerequisites. If every course gets removed,
+there's no cycle.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Try Every Ordering",
         explanation: `
-Finishing all courses is possible exactly when *some* ordering of the
-courses respects every prerequisite pair. The most naive way to check
-that is to literally generate every possible ordering of the courses
-and test each one against every prerequisite pair, stopping as soon as
-one ordering works.
+You can finish exactly when *some* ordering respects every prerequisite.
+The naive check generates every ordering and tests it against every
+pair, stopping at the first one that works.
         `.trim(),
         code: `function canFinish(numCourses, prerequisites) {
   const courses = Array.from({ length: numCourses }, (_, i) => i);
@@ -105,11 +102,9 @@ one ordering works.
       {
         approach: "Optimal - DFS Cycle Detection",
         explanation: `
-Build an adjacency list from the prerequisites, then DFS from every
-course, tagging each node as *visiting* (on the current recursion
-path) or *done* (fully explored, no cycle found through it). If DFS
-ever reaches a node already tagged *visiting*, that's a cycle, so
-finishing is impossible.
+Build an adjacency list, then DFS from every course. Tag each node
+*visiting* (on the current path) or *done* (fully explored, no cycle).
+Reaching a *visiting* node means a cycle, so finishing is impossible.
         `.trim(),
         code: `function canFinish(numCourses, prerequisites) {
   const graph = Array.from({ length: numCourses }, () => []);
@@ -141,8 +136,8 @@ finishing is impossible.
         spaceComplexity: "O(V + E) for the adjacency list, plus O(V) for the state array and recursion stack",
         walkthrough: [
           { code: "graph[b].push(a);", explanation: "Builds a directed edge b -> a: 'b unlocks a'." },
-          { code: "if (state[course] === VISITING) return true;", explanation: "Reaching a node that's still on the current DFS path means we've looped back into it - a cycle." },
-          { code: "state[course] = VISITING; ... state[course] = DONE;", explanation: "Marks the node as 'in progress' before recursing into its neighbors, then 'safe' once every neighbor comes back cycle-free." },
+          { code: "if (state[course] === VISITING) return true;", explanation: "Reaching a node still on the current DFS path means we looped back: a cycle." },
+          { code: "state[course] = VISITING; ... state[course] = DONE;", explanation: "Marks the node 'in progress' before visiting its neighbors, then 'safe' once they're all cycle-free." },
         ],
       },
     ],
@@ -156,13 +151,12 @@ finishing is impossible.
     difficulty: "Medium",
     category: "graphs",
     description: `
-There are \`numCourses\` courses, labeled from \`0\` to \`numCourses - 1\`,
-and a list of prerequisite pairs \`[a, b]\`, each meaning "course \`b\`
-must be finished before course \`a\`."
+There are \`numCourses\` courses, labeled \`0\` to \`numCourses - 1\`, and
+prerequisite pairs \`[a, b]\`, each meaning "finish course \`b\` before
+course \`a\`."
 
-Return *one* valid order in which you could take all the courses. If
-it's impossible to finish every course (because of a conflicting
-requirement), return an empty array instead.
+Return *one* valid order to take all the courses. If that's impossible,
+return an empty array.
     `.trim(),
     examples: [
       {
@@ -187,35 +181,30 @@ requirement), return an empty array instead.
       "There are no duplicate prerequisite pairs.",
     ],
     hints: [
-      "This is the same underlying question as Course Schedule - is there a cycle? - but now you also need to actually produce a working order, not just a yes/no answer.",
-      "A course can be taken as soon as every one of its prerequisites has already been taken. Track, for each course, how many prerequisites it's still waiting on (its 'in-degree').",
-      "Start with every course that has zero remaining prerequisites. Every time you take a course, that unblocks its dependents - decrease their remaining-prerequisite counts, and any that drop to zero become takeable next.",
+      "It's the same question as Course Schedule (is there a cycle?), but now you must produce an actual order.",
+      "A course can be taken once all its prerequisites are taken. Track how many each course is still waiting on (its 'in-degree').",
+      "Start with courses that have zero prerequisites left. Taking a course lowers its dependents' counts; any that reach zero can be taken next.",
     ],
     approachOverview: `
-Think of each course's **in-degree** as "how many prerequisites does it
-still need before it's takeable." A course can be added to the order
-the moment its in-degree hits zero.
+A course's **in-degree** is how many prerequisites it still needs. A
+course can join the order once its in-degree is zero.
 
-Start by finding every course whose in-degree is already zero - those
-can go first. As each course gets added to the order, "remove" it from
-the graph by decreasing the in-degree of every course that depends on
-it. Any course whose in-degree drops to zero is now takeable, so it
-joins the pool of next candidates. Keep repeating this until no more
-courses can be taken.
+Start with every course whose in-degree is already zero. Each time you
+add a course to the order, lower the in-degree of every course that
+depends on it. Any course that reaches zero joins the next candidates.
+Repeat until no more courses can be taken.
 
-If every course eventually gets added, the resulting order is valid.
-If some courses are left over with in-degree still above zero, they're
-stuck in a cycle with each other - it's impossible, so return \`[]\`.
-This peeling process is exactly **Kahn's algorithm** for topological
-sorting, and it can be driven with a simple queue.
+If every course was added, the order is valid. If some are left with
+in-degree above zero, they're stuck in a cycle, so return \`[]\`. This
+is **Kahn's algorithm** for topological sorting, driven by a queue.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Round-by-Round Simulation",
         explanation: `
-Repeatedly scan all not-yet-taken courses; in each pass, take every
-course whose prerequisites have all already been taken. If a full pass
-takes nothing new, the remaining courses are stuck in a cycle, so stop.
+Repeatedly scan the courses not yet taken, and take every one whose
+prerequisites are all taken. If a pass takes nothing new, the rest are
+stuck in a cycle, so stop.
         `.trim(),
         code: `function findOrder(numCourses, prerequisites) {
   const taken = new Array(numCourses).fill(false);
@@ -249,10 +238,10 @@ takes nothing new, the remaining courses are stuck in a cycle, so stop.
       {
         approach: "Optimal - BFS / Kahn's Algorithm",
         explanation: `
-Compute each course's in-degree, seed a queue with every course that
-already has in-degree zero, then repeatedly pop a course, append it to
-the order, and decrease the in-degree of its dependents - pushing any
-that reach zero. If the final order includes every course, it's valid.
+Compute each course's in-degree and queue every course at zero. Pop a
+course, add it to the order, and lower its dependents' in-degrees,
+queueing any that reach zero. If the order includes every course, it's
+valid.
         `.trim(),
         code: `function findOrder(numCourses, prerequisites) {
   const graph = Array.from({ length: numCourses }, () => []);
@@ -284,10 +273,10 @@ that reach zero. If the final order includes every course, it's valid.
         timeComplexity: "O(V + E) - every course is queued once and every edge is relaxed once",
         spaceComplexity: "O(V + E)",
         walkthrough: [
-          { code: "inDegree[a]++;", explanation: "Counts how many prerequisites each course still has outstanding." },
-          { code: "if (inDegree[course] === 0) queue.push(course);", explanation: "Any course with nothing left to wait for can be taken right away." },
-          { code: "inDegree[next]--; if (inDegree[next] === 0) queue.push(next);", explanation: "Taking a course removes one blocker from its dependents; a dependent joins the queue the moment it has none left." },
-          { code: "return order.length === numCourses ? order : [];", explanation: "If some courses never reached in-degree zero, they're stuck in a cycle with each other, so no valid order exists." },
+          { code: "inDegree[a]++;", explanation: "Counts each course's outstanding prerequisites." },
+          { code: "if (inDegree[course] === 0) queue.push(course);", explanation: "A course with nothing to wait for can be taken right away." },
+          { code: "inDegree[next]--; if (inDegree[next] === 0) queue.push(next);", explanation: "Taking a course removes one blocker from each dependent. A dependent with none left joins the queue." },
+          { code: "return order.length === numCourses ? order : [];", explanation: "Courses that never reached zero are stuck in a cycle, so no valid order exists." },
         ],
       },
     ],
@@ -301,14 +290,12 @@ that reach zero. If the final order includes every course, it's valid.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You start with a tree of \`n\` nodes labeled \`1\` to \`n\`, connected by
-\`n - 1\` edges. One extra edge then got added on top of that tree,
-which creates exactly one cycle somewhere in the graph.
+You start with a tree of \`n\` nodes labeled \`1\` to \`n\`, joined by
+\`n - 1\` edges. One extra edge is added, creating exactly one cycle.
 
-You're given the final list of \`n\` edges, in the order they were
-added. Find the one edge that can be removed so the graph becomes a
-valid tree again. If more than one edge could be removed to break the
-cycle, return the one that appears *last* in the input list.
+You're given all \`n\` edges in the order they were added. Return an edge
+you can remove to make the graph a tree again. If several edges would
+work, return the one that appears *last* in the input.
     `.trim(),
     examples: [
       {
@@ -329,37 +316,31 @@ cycle, return the one that appears *last* in the input list.
       "No repeated edges appear in the input.",
     ],
     hints: [
-      "Process the edges one at a time, in the order given, and keep track of which nodes are already connected to each other through edges seen so far.",
-      "The very first edge you encounter that connects two nodes that were *already* connected to each other must be the one that closes the cycle.",
-      "'Are these two nodes already connected?' and 'merge these two nodes' are exactly what a Union-Find (Disjoint Set Union) structure answers and does, both in close to constant time.",
+      "Process edges in the given order, tracking which nodes are already connected by the edges seen so far.",
+      "The first edge that joins two nodes that were *already* connected is the one that closes the cycle.",
+      "'Are these two nodes connected?' and 'merge them' are exactly what Union-Find (Disjoint Set Union) does, both in near-constant time.",
     ],
     approachOverview: `
-Process the edges in the order they were added, using a **Union-Find**
-structure that starts with every node in its own separate group. For
-each edge \`[a, b]\`: if \`a\` and \`b\` are already in the same group, then
-this edge connects two nodes that could already reach each other -
-adding it is exactly what creates the cycle, so it's the answer. Since
-we're scanning in the original order and stop at the *first* such
-edge, that's automatically the *last* edge (relative to the tree that
-existed before it) that closes the loop.
+Process edges in order with a **Union-Find** structure, where every
+node starts in its own group. For each edge \`[a, b]\`:
 
-If \`a\` and \`b\` are in different groups, merge those groups and move
-on - this edge is a genuine tree edge.
+- If \`a\` and \`b\` are already in the same group, they could already reach each other. This edge creates the cycle, so return it.
+- Otherwise, merge their groups. It's a real tree edge.
 
-A more brute-force alternative: for each edge in order, before adding
-it, run a DFS/BFS over the edges added so far to check if its two
-endpoints are already reachable from each other. This answers the same
-question, just recomputed from scratch every time instead of
-incrementally.
+The first edge that closes the cycle is the cycle edge that appears last
+in the input, which is what the problem asks for.
+
+A brute-force alternative: before adding each edge, run a DFS/BFS over
+the edges so far to check whether its endpoints are already connected.
+Same question, but recomputed from scratch each time.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Reachability Check Per Edge",
         explanation: `
-Build up the graph edge by edge. Before adding each new edge, run a DFS
-to check whether its two endpoints can already reach each other using
-only the edges added so far. The first edge where that's true is the
-one that closes the cycle.
+Build the graph edge by edge. Before adding each edge, run a DFS to
+check whether its endpoints are already connected. The first edge where
+they are closes the cycle.
         `.trim(),
         code: `function findRedundantConnection(edges) {
   const n = edges.length;
@@ -392,9 +373,9 @@ one that closes the cycle.
       {
         approach: "Optimal - Union-Find",
         explanation: `
-Keep every node in its own group at the start. For each edge, try to
-union its two endpoints' groups. If they're already in the same
-group, this edge is redundant - return it immediately.
+Start with every node in its own group. For each edge, union its
+endpoints' groups. If they're already in the same group, the edge is
+redundant, so return it.
         `.trim(),
         code: `function findRedundantConnection(edges) {
   const n = edges.length;
@@ -422,9 +403,9 @@ group, this edge is redundant - return it immediately.
         spaceComplexity: "O(n)",
         walkthrough: [
           { code: "const parent = Array.from({ length: n + 1 }, (_, i) => i);", explanation: "Every node starts as its own group, pointing to itself." },
-          { code: "if (parent[x] !== x) parent[x] = find(parent[x]);", explanation: "Path compression - flattens the chain so future find() calls on these nodes are almost instant." },
-          { code: "if (rootA === rootB) return [a, b];", explanation: "Same root means a and b were already connected through earlier edges - this new edge is what creates the cycle." },
-          { code: "parent[rootA] = rootB;", explanation: "Merges the two groups together when the edge connects two previously separate components." },
+          { code: "if (parent[x] !== x) parent[x] = find(parent[x]);", explanation: "Path compression flattens the chain, so later find() calls are almost instant." },
+          { code: "if (rootA === rootB) return [a, b];", explanation: "Same root means a and b were already connected, so this edge creates the cycle." },
+          { code: "parent[rootA] = rootB;", explanation: "Merges the two separate groups." },
         ],
       },
     ],
@@ -438,11 +419,9 @@ group, this edge is redundant - return it immediately.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given \`n\` nodes labeled \`0\` to \`n - 1\`, along with a list of
-undirected edges connecting some of them. Count how many separate
-**connected components** the graph has - that is, how many groups of
-nodes there are such that every node can reach every other node in its
-own group, but not any node outside it.
+You're given \`n\` nodes labeled \`0\` to \`n - 1\` and a list of undirected
+edges. Return the number of **connected components**: groups where every
+node can reach every other node in its group, but none outside it.
     `.trim(),
     examples: [
       {
@@ -467,32 +446,27 @@ own group, but not any node outside it.
       "There are no self-loops or duplicate edges.",
     ],
     hints: [
-      "Build an adjacency list from the edges, then think about what happens if you start a traversal (DFS or BFS) from every node you haven't visited yet.",
-      "Each time you have to start a *brand-new* traversal from an unvisited node, that's one more connected component - everything that traversal reaches belongs to the same component and won't need its own separate count.",
-      "Union-Find offers a different angle: start with n separate groups, merge the two endpoints of every edge, and whatever number of distinct groups remains at the end is your answer.",
+      "Build an adjacency list, then think about starting a traversal (DFS or BFS) from each node you haven't visited yet.",
+      "Each *new* traversal from an unvisited node is one more component. Everything it reaches belongs to that component.",
+      "Union-Find is another angle: start with n groups, merge the endpoints of every edge, and count the groups left.",
     ],
     approachOverview: `
-A connected component is just "everything reachable from one starting
-node, using the given edges." So one natural approach is: build an
-adjacency list, then scan through the nodes; every time you hit a node
-you haven't visited yet, that's a new component - run DFS or BFS from
-it to mark every node in that component as visited, and increase your
-count by one.
+A connected component is everything reachable from one node. So build
+an adjacency list and scan the nodes. Each unvisited node starts a new
+component: add 1 to the count and run DFS or BFS from it to mark the
+whole component visited.
 
-A cleaner and more scalable approach uses **Union-Find**: start with
-every node in its own separate group, then merge the two endpoints of
-each edge into the same group. Whatever nodes remain unmerged relative
-to each other are in separate components, so counting the number of
-distinct group roots left at the end gives the answer directly -
-without ever building an explicit adjacency list or doing a traversal.
+**Union-Find** is cleaner and scales better. Start with every node in
+its own group and merge the endpoints of each edge. The number of
+distinct groups left is the answer, with no adjacency list or traversal
+needed.
     `.trim(),
     solutions: [
       {
         approach: "DFS Traversal",
         explanation: `
-Build an adjacency list from the edges. Scan every node; whenever an
-unvisited node is found, that's a new component - run DFS from it to
-mark its entire component as visited, then move on.
+Build an adjacency list and scan every node. Each unvisited node is a
+new component: run DFS from it to mark the whole component visited.
         `.trim(),
         code: `function countComponents(n, edges) {
   const graph = Array.from({ length: n }, () => []);
@@ -526,9 +500,9 @@ mark its entire component as visited, then move on.
       {
         approach: "Optimal - Union-Find",
         explanation: `
-Start with n separate groups (one per node). Union the two endpoints
-of every edge. At the end, count how many nodes are still their own
-group's root - that count is the number of connected components.
+Start with n groups, one per node, and union the endpoints of every
+edge. Each successful merge lowers the group count by one; the final
+count is the number of components.
         `.trim(),
         code: `function countComponents(n, edges) {
   const parent = Array.from({ length: n }, (_, i) => i);
@@ -565,9 +539,9 @@ group's root - that count is the number of connected components.
         timeComplexity: "O((V + E) × α(V)) - nearly O(V + E)",
         spaceComplexity: "O(V)",
         walkthrough: [
-          { code: "let components = n;", explanation: "Every node starts as its own isolated component." },
-          { code: "if (rootA === rootB) return;", explanation: "Edges between two nodes already in the same group don't change the component count - they just add extra connectivity within it." },
-          { code: "components--;", explanation: "Every time two previously separate groups get merged, the total number of components drops by exactly one." },
+          { code: "let components = n;", explanation: "Every node starts as its own component." },
+          { code: "if (rootA === rootB) return;", explanation: "An edge inside one group doesn't change the component count." },
+          { code: "components--;", explanation: "Merging two separate groups lowers the count by exactly one." },
         ],
       },
     ],
@@ -581,10 +555,9 @@ group's root - that count is the number of connected components.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given \`n\` nodes labeled \`0\` to \`n - 1\` and a list of
-undirected edges. Determine whether these edges form a **valid tree** -
-meaning every node is reachable from every other node, and there are
-no cycles anywhere in the graph.
+You're given \`n\` nodes labeled \`0\` to \`n - 1\` and a list of undirected
+edges. Return whether they form a **valid tree**: every node reachable
+from every other, with no cycles.
     `.trim(),
     examples: [
       {
@@ -609,37 +582,32 @@ no cycles anywhere in the graph.
       "There are no self-loops or duplicate edges.",
     ],
     hints: [
-      "A tree with n nodes always has exactly n - 1 edges. If the edge count doesn't match that, you can immediately answer false without checking anything else.",
-      "Matching edge count isn't enough on its own, though - a graph could have exactly n - 1 edges while still containing a small cycle and some disconnected node elsewhere. You still need to confirm there's no cycle and that everything is reachable.",
-      "Union-Find checks both conditions in one pass: try to union every edge's endpoints - if two nodes are already in the same group, that edge closes a cycle. If you finish with no cycle detected and exactly one group remains, it's a valid tree.",
+      "A tree with n nodes has exactly n - 1 edges. If the count differs, return false right away.",
+      "The right edge count isn't enough. A graph with n - 1 edges can still have a cycle in one place and a disconnected node in another. You still need to check for cycles and connectivity.",
+      "Union-Find checks both in one pass: union every edge's endpoints. If two nodes are already in the same group, that edge closes a cycle. No cycle and one group left means a valid tree.",
     ],
     approachOverview: `
-First, a quick shortcut: any tree with \`n\` nodes must have *exactly*
-\`n - 1\` edges. If the given edge count is different, it's immediately
-not a tree - no further checking needed.
+Shortcut first: a tree with \`n\` nodes has *exactly* \`n - 1\` edges. Any
+other count means it's not a tree.
 
-If the edge count does match, that alone isn't proof - you could still
-have a small cycle in one part of the graph and a disconnected node
-elsewhere, which also happens to add up to \`n - 1\` edges overall. So
-you still need to confirm two things: **no cycles**, and **fully
-connected**.
+A matching count isn't proof on its own. A small cycle in one place plus
+a disconnected node elsewhere can also add up to \`n - 1\` edges. So
+confirm **no cycles** and **fully connected**.
 
-Union-Find checks both at once. Start with every node in its own
-group. For each edge, try to union its endpoints: if they're already
-in the same group, this edge would create a cycle - stop and return
-false. If you make it through every edge without that happening, and
-the edge count was \`n - 1\`, everything must have merged into a single
-group, so the graph is connected and acyclic: a valid tree.
+Union-Find checks both. Start with every node in its own group and union
+each edge's endpoints. If they're already in the same group, the edge
+creates a cycle, so return false. If every edge merges cleanly and there
+were \`n - 1\` edges, everything ended up in one group: connected and
+acyclic, a valid tree.
     `.trim(),
     solutions: [
       {
         approach: "DFS Traversal",
         explanation: `
-Check the edge count is n - 1 first. Then run one DFS from node 0,
-being careful never to walk immediately back along the edge you just
-came from (since edges are undirected). If the DFS reaches every node
-without ever revisiting one another way, and it started with the
-right edge count, it's a valid tree.
+Check the edge count is n - 1. Then run one DFS from node 0, never
+walking straight back along the edge you came from (edges are
+undirected). If the DFS reaches every node without revisiting any, it's
+a valid tree.
         `.trim(),
         code: `function validTree(n, edges) {
   if (edges.length !== n - 1) return false;
@@ -671,10 +639,10 @@ right edge count, it's a valid tree.
       {
         approach: "Optimal - Union-Find",
         explanation: `
-After confirming the edge count is n - 1, union each edge's endpoints.
-If any edge connects two nodes already in the same group, that's a
-cycle, so it can't be a tree. If every edge unions cleanly, the graph
-is both acyclic and (given the right edge count) fully connected.
+After checking the edge count is n - 1, union each edge's endpoints. An
+edge between two nodes already in the same group is a cycle, so it's not
+a tree. If every edge merges cleanly, the graph is acyclic and (with
+that edge count) fully connected.
         `.trim(),
         code: `function validTree(n, edges) {
   if (edges.length !== n - 1) return false;
@@ -699,9 +667,9 @@ is both acyclic and (given the right edge count) fully connected.
         timeComplexity: "O(n × α(n)) - nearly O(n)",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "if (edges.length !== n - 1) return false;", explanation: "A cheap early exit - no tree with n nodes can have any other number of edges." },
-          { code: "if (rootA === rootB) return false;", explanation: "Both endpoints already being in the same group means a path between them already existed - this edge closes a cycle." },
-          { code: "return true;", explanation: "Having exactly n - 1 edges and never detecting a cycle guarantees everything merged into one connected, cycle-free group." },
+          { code: "if (edges.length !== n - 1) return false;", explanation: "A cheap early exit: a tree with n nodes can't have any other number of edges." },
+          { code: "if (rootA === rootB) return false;", explanation: "Both endpoints in the same group means a path already existed, so this edge closes a cycle." },
+          { code: "return true;", explanation: "Exactly n - 1 edges and no cycle means everything merged into one connected, cycle-free group." },
         ],
       },
     ],
@@ -715,16 +683,15 @@ is both acyclic and (given the right edge count) fully connected.
     difficulty: "Hard",
     category: "graphs",
     description: `
-You're given a \`beginWord\`, an \`endWord\`, and a dictionary of words
-called \`wordList\`. A *transformation sequence* is a chain of words
-starting at \`beginWord\` and ending at \`endWord\`, where:
+You're given a \`beginWord\`, an \`endWord\`, and a dictionary \`wordList\`. A
+*transformation sequence* is a chain of words from \`beginWord\` to
+\`endWord\` where:
 
-- Each step changes exactly one letter to get from one word to the next.
-- Every word in the chain (other than \`beginWord\` itself) must appear in \`wordList\`.
+- Each step changes exactly one letter.
+- Every word except \`beginWord\` is in \`wordList\`.
 
-Return the length of the *shortest* such transformation sequence,
-counting every word in the chain (including both \`beginWord\` and
-\`endWord\`). If no such sequence exists, return 0.
+Return the number of words in the *shortest* sequence, counting both
+\`beginWord\` and \`endWord\`. If none exists, return 0.
     `.trim(),
     examples: [
       {
@@ -750,40 +717,31 @@ counting every word in the chain (including both \`beginWord\` and
       "wordList contains no duplicates, and beginWord != endWord.",
     ],
     hints: [
-      "Picture each word as a node in a graph, with an edge between two words whenever they differ in exactly one letter position.",
-      "You're asked for the *shortest* chain, and every edge in this graph is 'worth' the same one step - that's exactly the situation breadth-first search is built for. DFS could find *a* path, but not necessarily the shortest one.",
-      "Rather than comparing a word against every other word in the list to find neighbors (slow), try substituting every letter of the alphabet into each position of the current word, and check whether the result is in the dictionary (fast, if the dictionary is a Set).",
+      "Picture each word as a node, with an edge between words that differ in exactly one letter.",
+      "You want the *shortest* chain, and every edge costs one step. That's what breadth-first search is for. DFS finds *a* path, not necessarily the shortest.",
+      "Instead of comparing a word against every other word (slow), try every letter of the alphabet at each position and check whether the result is in the dictionary (fast, if it's a Set).",
     ],
     approachOverview: `
-Picture every word as a node, with an edge connecting two words that
-differ by exactly one letter. The question "what's the shortest chain
-from beginWord to endWord" is then just "what's the shortest path
-between two nodes in this graph" - and shortest path in an unweighted
-graph is exactly what **BFS** is for.
+Make every word a node, with an edge between words that differ by one
+letter. The shortest chain is then the shortest path between two nodes,
+and in an unweighted graph that's what **BFS** finds.
 
-Start a BFS from \`beginWord\`, expanding one "layer" (one letter change)
-at a time, and stop the moment \`endWord\` is reached - the number of
-steps taken to get there, plus one for the starting word, is the
-answer. Mark each word as visited the moment it's *discovered* (not
-when it's popped) so the same word is never queued twice.
+Run BFS from \`beginWord\`, one layer (one letter change) at a time, and
+stop when you reach \`endWord\`. The steps taken, plus one for the
+starting word, is the answer. Mark each word visited when it's
+*discovered*, not when it's popped, so it's never queued twice.
 
-The only real design choice is *how* you find a word's neighbors:
+The main choice is how to find a word's neighbors:
 
-- **Brute force**: compare the current word against every remaining
-  word in the list, checking whether they differ in exactly one
-  position.
-- **Optimal**: for the current word, try replacing each letter
-  position with every other letter of the alphabet, and look up
-  whether that new word exists in a \`Set\` built from \`wordList\` - each
-  lookup is O(1), independent of how many words are left in the list.
+- **Brute force**: compare the word against every remaining word, checking for exactly one differing position.
+- **Optimal**: replace each position with every other letter and look the result up in a \`Set\` built from \`wordList\`. Each lookup is O(1), however many words are left.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Compare Against Remaining Words",
         explanation: `
-Run a standard BFS, but to find each word's neighbors, scan through
-every word still left in the dictionary and check whether it differs
-from the current word in exactly one letter position.
+Run a standard BFS. To find a word's neighbors, scan every word left in
+the dictionary for one that differs in exactly one position.
         `.trim(),
         code: `function ladderLength(beginWord, endWord, wordList) {
   const remaining = new Set(wordList);
@@ -820,10 +778,9 @@ from the current word in exactly one letter position.
       {
         approach: "Optimal - BFS with Generated Neighbors",
         explanation: `
-Put the whole word list into a Set for O(1) lookups. For each word
-popped from the BFS queue, generate every possible one-letter
-substitution (26 letters × word length candidates) and check each
-against the Set - any hit is a real neighbor.
+Put the word list in a Set for O(1) lookups. For each word popped from
+the queue, generate every one-letter change (26 letters × word length)
+and check it against the Set. Any hit is a neighbor.
         `.trim(),
         code: `function ladderLength(beginWord, endWord, wordList) {
   const remaining = new Set(wordList);
@@ -854,10 +811,10 @@ against the Set - any hit is a real neighbor.
         timeComplexity: "O(N × L × 26) - for each of N words, try 26 letters at each of L positions",
         spaceComplexity: "O(N × L)",
         walkthrough: [
-          { code: "const remaining = new Set(wordList);", explanation: "A Set gives O(1) 'is this a real word' lookups instead of scanning the list." },
-          { code: "if (!remaining.has(endWord)) return 0;", explanation: "If the target word was never in the dictionary, no valid sequence can end on it." },
-          { code: "const candidate = word.slice(0, i) + letter + word.slice(i + 1);", explanation: "Builds every possible one-letter variation of the current word at position i." },
-          { code: "if (remaining.has(candidate)) { remaining.delete(candidate); queue.push([candidate, steps + 1]); }", explanation: "A generated candidate that's actually in the dictionary is a genuine neighbor - queue it, and remove it so it can't be revisited." },
+          { code: "const remaining = new Set(wordList);", explanation: "A Set gives O(1) 'is this a word' lookups instead of scanning the list." },
+          { code: "if (!remaining.has(endWord)) return 0;", explanation: "If the end word isn't in the dictionary, no sequence can end on it." },
+          { code: "const candidate = word.slice(0, i) + letter + word.slice(i + 1);", explanation: "Builds a one-letter variation of the word at position i." },
+          { code: "if (remaining.has(candidate)) { remaining.delete(candidate); queue.push([candidate, steps + 1]); }", explanation: "A candidate in the dictionary is a neighbor. Queue it and remove it so it isn't revisited." },
         ],
       },
     ],

@@ -7,14 +7,11 @@ export const backtrackingProblems: Problem[] = [
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a list of numbers where every number is different from every
-other number in the list. Your task is to list out every possible group
-you could form by picking any subset of these numbers - including the
-empty group (picking nothing at all) and the full list itself (picking
-everything).
+Given a list of distinct numbers, return every possible subset - including
+the empty subset and the full list.
 
-The order of the numbers within a group, and the order the groups appear
-in your answer, don't matter.
+The order of numbers within a subset, and the order of subsets, don't
+matter.
     `.trim(),
     examples: [
       {
@@ -30,33 +27,27 @@ in your answer, don't matter.
     ],
     constraints: ["1 <= nums.length <= 10", "-10 <= nums[i] <= 10", "All numbers in nums are unique."],
     hints: [
-      "Every number in the list has exactly two possible fates: it's either in a given subset, or it isn't. If you had to decide that for every number in order, how many total decision sequences are there?",
-      "Think of building a subset one number at a time. At each number, you have a choice: add it to the subset you're building, or skip it. What happens if you explore both choices for every number?",
-      "After exploring one choice all the way (say, including a number), you need to remove it again before trying the other choice (skipping it) - otherwise your 'skip' attempt still has that number sitting in it.",
+      "Each number is either in a subset or not. If you decide that for every number in order, how many decision sequences are there?",
+      "Build a subset one number at a time. At each number, either add it or skip it. What if you explore both choices for every number?",
+      "After fully exploring 'include', remove the number before trying 'skip' - otherwise the skip branch still contains it.",
     ],
     approachOverview: `
-The most direct way to see every subset is to literally try, for each
-number, both of its two fates - included or excluded - and see where
-each combination of choices leads.
+Each number is either included or excluded, so try both for every
+number.
 
-One brute-force way to do this is to line up all 2^n combinations of
-yes/no decisions (for n numbers, one "in or out" decision per number)
-and read them off directly - each combination of decisions describes
-exactly one subset.
+The brute-force way lists all 2^n combinations of in/out decisions (one
+per number). Each combination describes exactly one subset.
 
-A more natural way to explore the same set of choices is to build one
-subset at a time: pick a number, decide to include it, and move on to
-the next number. Once you've explored every path that starts with
-"included", undo that choice (remove the number) and explore every path
-that starts with "excluded" instead. Trying a choice, exploring
-everything that follows from it, and then undoing it to try the next
-choice is the core idea behind **backtracking** - and it naturally
-visits every subset exactly once.
+A more natural way builds one subset at a time. Include a number and move
+on to the next. After exploring every path that starts with "included",
+undo that choice and explore every path with "excluded". Trying a choice,
+exploring what follows, then undoing it is the core of **backtracking** -
+and it visits every subset exactly once.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Bitmask Enumeration",
-        explanation: "Every subset corresponds to a unique sequence of \"include\" / \"exclude\" decisions, one per number - and a sequence of n yes/no decisions is exactly what an n-bit binary number represents. Walk through every integer from 0 to 2^n - 1, and use its binary digits as instructions: if bit i is 1, include nums[i] in this subset.",
+        explanation: "Each subset is a sequence of n include/exclude decisions - exactly what an n-bit binary number represents. Loop through every integer from 0 to 2^n - 1: if bit i is 1, include nums[i].",
         code: `function subsets(nums) {
   const n = nums.length;
   const result = [];
@@ -78,7 +69,7 @@ visits every subset exactly once.
       },
       {
         approach: "Optimal — Backtracking (Choose / Explore / Un-choose)",
-        explanation: "Build one subset at a time with a running list. At each number, first try including it (push it onto the current subset, recurse on the rest, then pop it back off), then try skipping it (just recurse on the rest, without ever adding it). Every time you reach the end of the list, the current running subset is complete - record a copy of it.",
+        explanation: "Build one subset at a time in a running list. At each number, first include it (push, recurse, pop), then skip it (just recurse). When you reach the end of the list, the subset is complete - save a copy.",
         code: `function subsets(nums) {
   const result = [];
   const current = [];
@@ -106,15 +97,15 @@ visits every subset exactly once.
         walkthrough: [
           {
             code: "if (index === nums.length) { result.push([...current]); return; }",
-            explanation: "Base case: we've made a decision for every number, so the subset currently being built is complete - save a copy of it.",
+            explanation: "Base case: every number has been decided, so the subset is complete - save a copy.",
           },
           {
             code: "current.push(nums[index]); backtrack(index + 1); current.pop();",
-            explanation: "Try including this number: add it, explore everything that follows, then remove it again so the array is back to how it was before this branch.",
+            explanation: "Include this number: add it, explore what follows, then remove it to restore the array.",
           },
           {
             code: "backtrack(index + 1);",
-            explanation: "Try skipping this number: move to the next index without ever having added it - this is the \"excluded\" branch.",
+            explanation: "Skip this number: move to the next index without adding it - the \"excluded\" branch.",
           },
         ],
       },
@@ -128,14 +119,12 @@ visits every subset exactly once.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a list of distinct positive numbers (called candidates) and
-a target number. Find every unique combination of candidates that adds
-up exactly to the target.
+Given a list of distinct positive numbers (candidates) and a target, find
+every unique combination of candidates that adds up exactly to the target.
 
-You're allowed to use the same candidate as many times as you like in
-one combination - there's no limit on repeats. Two combinations count as
-the same if they use the same numbers the same number of times,
-regardless of order, so don't list a combination more than once.
+You can use a candidate any number of times. Combinations with the same
+numbers used the same number of times are the same, whatever the order,
+so list each one only once.
     `.trim(),
     examples: [
       {
@@ -161,35 +150,29 @@ regardless of order, so don't list a combination more than once.
       "1 <= target <= 40",
     ],
     hints: [
-      "At each step, you're choosing which candidate to add next to the combination you're building - and since repeats are allowed, that same candidate can be chosen again right after.",
-      "To avoid ever building the same combination twice (like [2,3] and [3,2]), only allow yourself to pick candidates starting from the one you most recently used onward, never going back to an earlier one.",
-      "Track the amount still needed (the remaining target). If it ever hits exactly zero, you've found a valid combination. If it drops below zero, that path can't work - stop exploring it.",
+      "At each step, choose which candidate to add next. Repeats are allowed, so the same candidate can be chosen again.",
+      "To avoid building the same combination twice (like [2,3] and [3,2]), only pick candidates from the one you last used onward, never an earlier one.",
+      "Track the remaining target. At exactly zero, you've found a combination. Below zero, the path can't work - stop.",
     ],
     approachOverview: `
-Think of building a combination one number at a time, always deciding
-"which candidate do I add next?" Since repeats are allowed, after adding
-a candidate you're allowed to add that exact same one again - but to
-avoid producing the same combination in a different order, you only
-move forward through the candidate list, never backward.
+Build a combination one number at a time, deciding which candidate to add
+next. Repeats are allowed, so you can add the same one again. To avoid
+the same combination in a different order, only move forward through the
+candidates, never back.
 
-A straightforward version of this explores every candidate at every
-step, only stopping once the running total exactly matches the target
-(a valid combination) or exceeds it (a dead end that gets abandoned).
-After trying a candidate, you "un-add" it - remove it from the running
-combination - before trying the next one, which is exactly the
-choose/explore/un-choose pattern of backtracking.
+The straightforward version tries every candidate at every step, stopping
+when the total matches the target (a valid combination) or exceeds it (a
+dead end). After trying a candidate, remove it before trying the next -
+the choose/explore/un-choose pattern of backtracking.
 
-You can make the same search noticeably faster with one extra trick:
-sort the candidates first. Once they're in order, as soon as adding the
-next candidate would already overshoot the target, every candidate
-after it (being even bigger) would overshoot too - so you can stop
-trying candidates at that step entirely, instead of checking each one
-individually.
+Sorting the candidates first makes it faster. Once adding a candidate
+would overshoot the target, every later (bigger) candidate would too, so
+you can stop that step instead of checking each one.
     `.trim(),
     solutions: [
       {
         approach: "Backtracking — Try Every Candidate",
-        explanation: "At every step, loop over all candidates starting from the current index onward (allowing the current index to repeat). Add a candidate to the running combination, recurse with that same starting index (since it can be reused) and a smaller remaining target, then remove it before trying the next candidate. Stop a path as soon as the remaining target hits zero (success) or goes negative (dead end).",
+        explanation: "At each step, loop over candidates from the current index onward. Add one, recurse with the same index (so it can be reused) and a smaller remaining target, then remove it. Stop a path when the remaining target hits zero (success) or goes negative (dead end).",
         code: `function combinationSum(candidates, target) {
   const result = [];
   const current = [];
@@ -218,21 +201,21 @@ individually.
         walkthrough: [
           {
             code: "if (remaining === 0) { result.push([...current]); return; }",
-            explanation: "The running combination adds up exactly to the target - save a copy of it.",
+            explanation: "The combination adds up exactly to the target - save a copy.",
           },
           {
             code: "if (remaining < 0) { return; }",
-            explanation: "We've added too much on this path - it can never work, so stop exploring it.",
+            explanation: "This path overshot the target and can never work, so stop.",
           },
           {
             code: "backtrack(i, remaining - candidates[i]);",
-            explanation: "Passes i (not i + 1) as the next starting point, which is exactly what allows candidates[i] to be reused later in the same combination.",
+            explanation: "Passing i (not i + 1) lets candidates[i] be reused in the same combination.",
           },
         ],
       },
       {
         approach: "Optimal — Sort and Prune",
-        explanation: "Sort the candidates first. Then, at each step, skip any candidate that would already push the running total past the target - and since the list is sorted, every candidate after it is at least as large, so you can stop checking that branch entirely instead of testing each one and discovering it fails.",
+        explanation: "Sort the candidates first. At each step, once a candidate would push the total past the target, stop - every later candidate is at least as large, so none of them can work.",
         code: `function combinationSum(candidates, target) {
   const sorted = [...candidates].sort((a, b) => a - b);
   const result = [];
@@ -269,10 +252,8 @@ individually.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a list of numbers, all different from each other. List out
-every possible way to reorder them - every distinct arrangement
-(permutation) of all the numbers, using each number exactly once per
-arrangement.
+Given a list of distinct numbers, return every possible ordering
+(permutation), using each number exactly once per ordering.
     `.trim(),
     examples: [
       {
@@ -288,37 +269,30 @@ arrangement.
     ],
     constraints: ["1 <= nums.length <= 6", "All numbers in nums are unique."],
     hints: [
-      "At each position in the arrangement you're building, you can place any number that hasn't been used yet in this arrangement so far.",
-      "You'll need to remember which numbers are already \"placed\" in the arrangement you're currently building, so you don't place the same number twice.",
-      "Once you finish exploring every arrangement that starts with a given number in a given spot, you need to free that number back up (mark it unused) before trying a different number in that spot.",
+      "At each position, you can place any number not yet used in this arrangement.",
+      "Track which numbers are already placed, so you don't place one twice.",
+      "After exploring every arrangement with a number in a spot, mark it unused again before trying a different number there.",
     ],
     approachOverview: `
-Build one arrangement at a time, one position at a time. At each
-position, try placing every number that hasn't already been used
-earlier in this same arrangement, then move on to fill the next
-position. When every position is filled, you've completed one full
-permutation.
+Build one arrangement a position at a time. At each position, try every
+number not already used in this arrangement, then fill the next position.
+When every position is filled, you have one permutation.
 
-The natural way to track "already used" is a small tracker (an array of
-booleans) alongside the arrangement you're building. Before placing a
-number, check it isn't already used; after exploring everything that
-follows from placing it, mark it unused again before trying the next
-candidate for that position - the same try/explore/undo rhythm as
-before, just applied to positions in an arrangement instead of yes/no
-inclusion decisions.
+Track "used" with an array of booleans. Before placing a number, check it
+isn't used; after exploring what follows, mark it unused before trying the
+next candidate. It's the same try/explore/undo rhythm, applied to
+positions instead of include/exclude decisions.
 
-There's also a neat trick that avoids the tracker altogether: keep the
-numbers in a single array, and instead of asking "which unused number
-goes here", swap the number currently in this position with each
-candidate further down the array, recurse, and then swap back.
-Everything before the current position is "locked in", and everything
-from the current position onward is still "up for grabs" - so you never
-need a separate structure to remember what's used.
+A neat trick skips the tracker: keep the numbers in one array, swap each
+candidate further down into the current position, recurse, then swap
+back. Everything before the current position is locked in; everything
+from it onward is still available - so no separate "used" structure is
+needed.
     `.trim(),
     solutions: [
       {
         approach: "Backtracking — Track Used Numbers",
-        explanation: "Build the current arrangement in an array, alongside a parallel boolean array marking which numbers are already placed. At each position, try every number that isn't marked used: mark it used, place it, recurse into the next position, then unmark it and remove it before trying the next candidate.",
+        explanation: "Build the arrangement in an array, with a boolean array marking placed numbers. At each position, try every unused number: mark it used, place it, recurse, then remove it and unmark it.",
         code: `function permute(nums) {
   const result = [];
   const current = [];
@@ -351,25 +325,25 @@ need a separate structure to remember what's used.
         walkthrough: [
           {
             code: "if (current.length === nums.length) { result.push([...current]); return; }",
-            explanation: "Once every position is filled, the arrangement is complete - save a copy of it.",
+            explanation: "Every position is filled, so the arrangement is complete - save a copy.",
           },
           {
             code: "if (used[i]) continue;",
-            explanation: "Skip any number that's already placed somewhere earlier in this arrangement.",
+            explanation: "Skip numbers already placed in this arrangement.",
           },
           {
             code: "used[i] = true; current.push(nums[i]); backtrack();",
-            explanation: "Place this number, mark it used, and explore every arrangement that continues from here.",
+            explanation: "Place this number, mark it used, and explore every arrangement from here.",
           },
           {
             code: "current.pop(); used[i] = false;",
-            explanation: "Undo the placement so the next candidate for this position can be tried with a clean slate.",
+            explanation: "Undo the placement so the next candidate can be tried here.",
           },
         ],
       },
       {
         approach: "Optimal — In-Place Swapping",
-        explanation: "Instead of a separate \"used\" tracker, treat everything before the current position as locked in and everything from the current position onward as the pool of numbers still available. To try a candidate for the current position, swap it into place, recurse on the next position, then swap back to undo it - freeing up that spot for the next candidate without needing any extra bookkeeping array.",
+        explanation: "Skip the \"used\" tracker: everything before the current position is locked in, and everything from it onward is still available. To try a candidate, swap it into place, recurse on the next position, then swap back - no extra array needed.",
         code: `function permute(nums) {
   const result = [];
 
@@ -404,11 +378,9 @@ need a separate structure to remember what's used.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a list of numbers that might contain repeats - the same
-value could appear more than once. List out every possible subset
-(including the empty one and the full list), but this time make sure
-your answer never contains two subsets that look the same (same values,
-same counts), even though the input has duplicate values.
+Given a list of numbers that may contain repeats, return every possible
+subset (including the empty one and the full list). The answer must not
+contain two identical subsets (same values, same counts).
     `.trim(),
     examples: [
       {
@@ -424,33 +396,29 @@ same counts), even though the input has duplicate values.
     ],
     constraints: ["1 <= nums.length <= 10", "-10 <= nums[i] <= 10"],
     hints: [
-      "If you try every include/exclude decision the same way as when values were all unique, you'll end up generating the exact same subset more than once whenever two equal values are both candidates at the same point.",
-      "One fix is to just generate everything (duplicates included) and then throw away repeats afterward - but that means doing extra work building subsets you're only going to discard.",
-      "A cleaner fix: first sort the list so equal values sit next to each other. Then, at any point where you're deciding which number to include next, skip a value if it's the same as the one you already skipped right before it at that same step - that skips the duplicate branch before you ever explore it.",
+      "With the plain include/exclude search, equal values produce the same subset more than once.",
+      "You could generate everything and remove repeats afterward - but that wastes work building subsets you'll discard.",
+      "Cleaner: sort the list so equal values are neighbors. When choosing the next number at a step, skip a value equal to the one just before it at that step - this skips the duplicate branch before exploring it.",
     ],
     approachOverview: `
-This is the same include/exclude exploration as the plain subsets
-problem, except that duplicate values in the input can make the search
-visit the exact same subset from two different paths - for example,
-choosing "the first 2" versus "the second 2" produces an
-identical-looking subset either way.
+This is the plain subsets search, except duplicate values can reach the
+same subset by two paths - choosing "the first 2" or "the second 2" gives
+an identical subset.
 
-A brute-force fix is to run the ordinary subset search exactly as
-before, letting it produce duplicate subsets, and then filter the
-results afterward - for instance by turning each subset into a sorted,
-stringified key and only keeping the first subset seen for each key.
+The brute-force fix runs the normal search and filters duplicates
+afterward, for example by turning each subset into a sorted string key
+and keeping only the first subset per key.
 
-A more direct fix avoids ever generating the duplicate in the first
-place: sort the input so identical values become neighbors, and while
-deciding what to include next at a given step, skip over a value if
-it's identical to the value you just decided *not* to include at that
-same step. That one rule prevents the search from ever re-exploring a
-branch it's effectively already covered.
+A more direct fix never generates duplicates. Sort the input so equal
+values are neighbors. When choosing what to include next at a step, skip
+a value equal to the one you just decided *not* to include at that step.
+This one rule stops the search from re-exploring a branch it has already
+covered.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Generate Then De-duplicate",
-        explanation: "Run the same include/exclude backtracking as ordinary subsets, without worrying about duplicate values at all. This produces every subset, including repeats of the same subset reached through different combinations of equal values. Afterward, collapse duplicates by keying each subset on its sorted, comma-joined values and keeping only one copy per key.",
+        explanation: "Run the plain include/exclude backtracking, ignoring duplicates. This produces repeats of subsets reached through different equal values. Afterward, key each subset on its sorted, comma-joined values and keep one copy per key.",
         code: `function subsetsWithDup(nums) {
   const all = [];
   const current = [];
@@ -485,7 +453,7 @@ branch it's effectively already covered.
       },
       {
         approach: "Optimal — Sort and Skip Duplicate Branches",
-        explanation: "Sort the input first, then build subsets by deciding, at each index, whether to include it or move past it - but skip an \"include\" choice when this value is identical to the previous element in the sorted array at this same step, since that would explore a branch already fully covered by the first occurrence.",
+        explanation: "Sort the input, then build subsets by choosing which index to include next. Skip a value equal to the previous element at the same step - its branch is already covered by the first occurrence.",
         code: `function subsetsWithDup(nums) {
   const sorted = [...nums].sort((a, b) => a - b);
   const result = [];
@@ -511,15 +479,15 @@ branch it's effectively already covered.
         walkthrough: [
           {
             code: "result.push([...current]);",
-            explanation: "Every prefix of decisions made so far is itself a valid subset, so it's recorded the moment we enter this call - not just at the very end.",
+            explanation: "Every set of choices so far is a valid subset, so it's recorded on entering the call - not only at the end.",
           },
           {
             code: "if (i > start && sorted[i] === sorted[i - 1]) continue;",
-            explanation: "At this step, only the first occurrence of a repeated value is tried as a fresh choice; a later, equal value would just rebuild subsets already reachable through the first one.",
+            explanation: "Only the first of a repeated value is tried at this step; a later equal value would rebuild the same subsets.",
           },
           {
             code: "current.push(sorted[i]); backtrack(i + 1); current.pop();",
-            explanation: "Includes this value, explores everything that can follow it, then removes it before trying the next distinct value at this step.",
+            explanation: "Includes this value, explores what follows, then removes it before trying the next distinct value.",
           },
         ],
       },
@@ -533,15 +501,12 @@ branch it's effectively already covered.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a list of numbers (which may include repeated values) and a
-target number. Find every unique combination of numbers from the list
-that adds up exactly to the target.
+Given a list of numbers (which may repeat) and a target, find every
+unique combination from the list that adds up exactly to the target.
 
-This time, each number can only be used as many times as it appears in
-the list (for example, if 5 shows up twice in the input, a combination
-may use two 5s, but not three) - and even though the input can have
-duplicate values, your answer must not contain the same combination more
-than once.
+Each number can be used only as many times as it appears (if 5 appears
+twice, a combination may use two 5s, not three). The answer must not
+contain the same combination twice.
     `.trim(),
     examples: [
       {
@@ -557,32 +522,27 @@ than once.
     ],
     constraints: ["1 <= candidates.length <= 100", "1 <= candidates[i] <= 50", "1 <= target <= 30"],
     hints: [
-      "Since each value can only be used as many times as it appears, once you use a candidate you should move on to a later position for the next pick, rather than being allowed to reuse the same position.",
-      "Sorting the candidates first groups equal values together, which makes it possible to tell apart \"using the value 1 for the second time in this combination\" from \"starting a brand-new combination with the value 1 that skips over the first 1 entirely.\"",
-      "At any given step, if you decide not to include a particular value, don't include any later, equal value at that same step either - that second one would only rebuild a combination you could already build by including the first.",
+      "Each position can be used once, so after using a candidate, the next pick comes from a later position.",
+      "Sorting groups equal values together, so you can tell \"using 1 a second time\" apart from \"starting a new combination with a 1 that skips the first 1.\"",
+      "If you skip a value at a step, skip every later equal value at that step too - it would only rebuild a combination the first one already covers.",
     ],
     approachOverview: `
-This is like the earlier combination-sum problem, except each position
-in the input can only contribute once instead of unlimited times, and
-repeated values in the input need special handling so you don't end up
-with the same combination twice.
+This is like Combination Sum, except each position can be used only once,
+and repeated values need care so no combination appears twice.
 
-Handling "use each position once" is straightforward: once you use
-candidates[i], the next pick has to come from position i + 1 onward,
-never i again.
+"Use each position once" is easy: after using candidates[i], the next
+pick comes from i + 1 onward.
 
-The trickier part is the duplicate values. A brute-force fix is to
-search without worrying about duplicates and then remove repeat
-combinations from the results afterward, the same de-duplication trick
-used for Subsets II. The cleaner fix is to sort the candidates first,
-then, whenever you decide to skip a value at a given step, also skip any
-later value at that same step that's identical to it - so you never
-explore two branches that would build the exact same combination.
+Duplicate values are trickier. The brute-force fix searches freely and
+removes repeat combinations afterward, as in Subsets II. The cleaner fix
+sorts the candidates, and when you skip a value at a step, also skips any
+later equal value at that step - so no two branches build the same
+combination.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Backtrack Then De-duplicate",
-        explanation: "Move forward through the (unsorted) list one position at a time, using each position at most once, and collect every combination that sums exactly to the target. Because the input can hold duplicate values at different positions, the same combination can be built more than once - so afterward, collapse duplicates by keying each result on its sorted, comma-joined values.",
+        explanation: "Move forward through the unsorted list, using each position at most once, and collect every combination that sums to the target. Duplicate values can build the same combination more than once, so afterward key each result on its sorted, comma-joined values to remove repeats.",
         code: `function combinationSum2(candidates, target) {
   const all = [];
   const current = [];
@@ -620,7 +580,7 @@ explore two branches that would build the exact same combination.
       },
       {
         approach: "Optimal — Sort and Skip Duplicate Branches",
-        explanation: "Sort the candidates so equal values sit next to each other. Move forward through the list one position at a time (never revisiting a used position), and at each step skip over a candidate if it's equal to the one right before it at this same step - only the first equal value gets tried, which is enough to cover every combination that uses that value. Stop a branch as soon as the remaining target hits zero or a candidate would overshoot it.",
+        explanation: "Sort the candidates so equal values are neighbors. Move forward through the list (never reusing a position), and at each step skip a candidate equal to the one before it - trying only the first equal value covers every combination with that value. Stop a branch when the remaining target hits zero or a candidate would overshoot it.",
         code: `function combinationSum2(candidates, target) {
   const sorted = [...candidates].sort((a, b) => a - b);
   const result = [];
@@ -651,15 +611,15 @@ explore two branches that would build the exact same combination.
         walkthrough: [
           {
             code: "if (sorted[i] > remaining) break;",
-            explanation: "Since the array is sorted, once one candidate is too big, every candidate after it is too, so we stop trying candidates at this step entirely.",
+            explanation: "The array is sorted, so once a candidate is too big, every later one is too - stop this step.",
           },
           {
             code: "if (i > start && sorted[i] === sorted[i - 1]) continue;",
-            explanation: "Skips a value that's identical to one already tried at this same step, so the same combination never gets built twice.",
+            explanation: "Skips a value equal to one already tried at this step, so no combination is built twice.",
           },
           {
             code: "backtrack(i + 1, remaining - sorted[i]);",
-            explanation: "Moves on using i + 1, not i, so this exact position in the list is never reused.",
+            explanation: "Uses i + 1, not i, so this position is never reused.",
           },
         ],
       },
@@ -673,13 +633,11 @@ explore two branches that would build the exact same combination.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a grid of letters and a target word. Determine whether the
-word can be traced out by moving from cell to adjacent cell (up, down,
-left, or right - not diagonally), where each cell in the grid can be
-used at most once while tracing out that particular word.
+Given a grid of letters and a word, decide whether the word can be traced
+by moving between adjacent cells (up, down, left or right - not
+diagonally), using each cell at most once.
 
-Return *true* if some path through the grid spells the word letter by
-letter, and *false* if no such path exists.
+Return *true* if some path spells the word, and *false* otherwise.
     `.trim(),
     examples: [
       {
@@ -700,37 +658,31 @@ letter, and *false* if no such path exists.
     ],
     constraints: ["1 <= board.length, board[i].length <= 6", "1 <= word.length <= 15", "board and word consist only of English letters."],
     hints: [
-      "The word has to start somewhere, so try every cell in the grid as a possible starting point for the first letter.",
-      "From wherever you are, the next letter of the word has to be found in one of the up-to-four neighboring cells - and it has to be a cell you haven't already used on this particular path.",
-      "If a path reaches a dead end (no matching neighbor for the next letter), you need to back up: free the last cell you used, and try a different neighbor from the step before.",
+      "Try every cell as a starting point for the first letter.",
+      "The next letter must be in one of the up to four neighbors - and in a cell not already used on this path.",
+      "At a dead end (no neighbor matches the next letter), back up: free the last cell and try a different neighbor from the step before.",
     ],
     approachOverview: `
-Since the word could start at any position on the grid, try every cell
-as a possible starting point. From a starting cell that matches the
-word's first letter, look at its neighbors for one that matches the
-second letter, then from there look for the third letter among *its*
-neighbors, and so on.
+The word could start anywhere, so try every cell. From a cell matching
+the first letter, look for a neighbor matching the second letter, then
+for the third among *its* neighbors, and so on.
 
-Along the way, you need to remember which cells are already part of the
-path so far, so the search never reuses one. If a path runs into a dead
-end - no unused neighbor matches the next letter needed - back up:
-un-mark the most recently used cell as available again, and try a
-different neighbor from the step before. That backing-up step is
-exactly what makes this backtracking: you commit to a cell, explore
-everything that follows, and undo the commitment the moment it stops
-paying off.
+Remember which cells are on the current path so none is reused. At a dead
+end - no unused neighbor matches the next letter - back up: free the last
+cell and try a different neighbor from the step before. That's
+backtracking: commit to a cell, explore what follows, and undo the choice
+when it stops working.
 
-One way to track "already used" is a separate grid of true/false flags.
-A slightly leaner way skips the extra grid entirely: temporarily
-overwrite a used cell's letter with a placeholder character while
-exploring from it, then restore the original letter once you back up out
-of that cell - since a placeholder can never match a real letter, it
-naturally blocks reuse without needing any extra memory.
+You can track used cells with a separate grid of true/false flags. A
+leaner way overwrites a used cell's letter with a placeholder while
+exploring from it, then restores the letter when backing out. A
+placeholder never matches a real letter, so it blocks reuse with no extra
+memory.
     `.trim(),
     solutions: [
       {
         approach: "Backtracking — Separate Visited Grid",
-        explanation: "Try starting the search from every cell. At each step, if the current cell's letter matches the letter the word needs at this point, mark the cell visited and recursively check whether the rest of the word can be traced from one of its unvisited neighbors. If a neighbor doesn't pan out, un-mark the current cell before returning, so a different starting path can reuse it.",
+        explanation: "Start the search from every cell. If the cell's letter matches the next letter needed, mark it visited and recursively check whether the rest of the word can be traced from an unvisited neighbor. Un-mark the cell before returning so other paths can use it.",
         code: `function exist(board, word) {
   const rows = board.length;
   const cols = board[0].length;
@@ -773,21 +725,21 @@ naturally blocks reuse without needing any extra memory.
         walkthrough: [
           {
             code: "if (index === word.length) return true;",
-            explanation: "Every letter of the word has been matched along this path - success.",
+            explanation: "Every letter has been matched along this path - success.",
           },
           {
             code: "visited[row][col] || board[row][col] !== word[index]",
-            explanation: "Bails out if this cell is already used on the current path, or its letter doesn't match the letter the word needs right now.",
+            explanation: "Stops if this cell is already on the path or its letter doesn't match the one needed.",
           },
           {
             code: "visited[row][col] = true; /* ...explore... */ visited[row][col] = false;",
-            explanation: "Marks the cell used before exploring its neighbors, then frees it again once that exploration is done - whether it succeeded or not - so other paths can still use it.",
+            explanation: "Marks the cell used while exploring its neighbors, then frees it - success or not - so other paths can use it.",
           },
         ],
       },
       {
         approach: "Optimal — Mark In-Place Instead of a Visited Grid",
-        explanation: "Skip the separate visited grid. Instead, temporarily overwrite a cell's letter with a sentinel character (one that can never appear in the word) while exploring from it, then restore the original letter afterward. This saves the extra rows x cols grid, at the cost of briefly mutating the board during the search.",
+        explanation: "Skip the visited grid. While exploring from a cell, overwrite its letter with a sentinel character (one that never appears in the word), then restore it. This saves the rows x cols grid, at the cost of briefly changing the board during the search.",
         code: `function exist(board, word) {
   const rows = board.length;
   const cols = board[0].length;
@@ -837,11 +789,9 @@ naturally blocks reuse without needing any extra memory.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-You're given a string. A *palindrome* is a string that reads the same
-forwards and backwards, like "aba" or "racecar" (or even a single
-letter, which is always a palindrome). Split (partition) the string into
-pieces, placed in order, such that every single piece is a palindrome -
-and find every distinct way of splitting it that works.
+A *palindrome* reads the same forwards and backwards, like "aba" or
+"racecar" (a single letter always is one). Given a string, find every way
+to split it into consecutive pieces where every piece is a palindrome.
     `.trim(),
     examples: [
       {
@@ -857,35 +807,29 @@ and find every distinct way of splitting it that works.
     ],
     constraints: ["1 <= s.length <= 16", "s consists only of lowercase English letters."],
     hints: [
-      "Think of choosing where the first piece ends. Once you've decided the first piece is a palindrome, the rest of the problem is just \"partition what's left the same way.\"",
-      "For each possible cut point, you need to check whether the piece up to that point is actually a palindrome before committing to it - if it isn't, that cut doesn't lead anywhere and you move to the next one.",
-      "You'll end up checking whether the same substring is a palindrome more than once across different partitions - precomputing all of those checks up front, once each, can save a lot of repeated work.",
+      "Choose where the first piece ends. If it's a palindrome, the rest is the same problem on what's left.",
+      "At each cut point, check that the piece is a palindrome before committing - if not, move to the next cut.",
+      "The same substring gets checked many times across partitions. Precomputing every check once saves a lot of repeated work.",
     ],
     approachOverview: `
-Build a partition one piece at a time. At the current starting point in
-the string, try every possible length for the next piece; if the
-substring of that length starting here is a palindrome, commit to it as
-the next piece and recurse on everything after it. When you reach the
-end of the string, every piece chosen along the way was a palindrome, so
-the whole path is a valid partition.
+Build a partition one piece at a time. From the current position, try
+every length for the next piece. If that substring is a palindrome, take
+it and recurse on the rest. Reaching the end of the string means every
+piece was a palindrome, so the path is a valid partition.
 
-A straightforward version of this re-checks "is this substring a
-palindrome" from scratch every single time it's needed, by comparing
-characters from both ends inward. That works, but the same substring
-often gets checked more than once across different partitions being
-explored.
+The simple version re-checks each substring from scratch by comparing
+characters from both ends inward. That works, but the same substring is
+often checked many times.
 
-A faster version precomputes the answer to "is s[i..j] a palindrome" for
-every possible i and j up front, using the fact that s[i..j] is a
-palindrome exactly when s[i] equals s[j] *and* everything strictly
-between them (s[i+1..j-1]) is also a palindrome. Once that table exists,
-checking any substring during the search is an instant lookup instead of
-a fresh scan.
+A faster version precomputes "is s[i..j] a palindrome" for every i and j.
+s[i..j] is a palindrome exactly when s[i] equals s[j] *and* s[i+1..j-1] is
+also a palindrome. With that table, each check during the search is an
+instant lookup.
     `.trim(),
     solutions: [
       {
         approach: "Backtracking — Check Each Cut Directly",
-        explanation: "Starting from a given position, try every possible end point for the next piece. For each candidate piece, scan it from both ends inward to check it's a palindrome; if it is, add it to the current partition, recurse starting right after it, and then remove it before trying a longer (or shorter) next piece.",
+        explanation: "From a given position, try every end point for the next piece. Check each piece from both ends inward; if it's a palindrome, add it, recurse from right after it, then remove it before trying the next end point.",
         code: `function partition(s) {
   const result = [];
   const current = [];
@@ -922,21 +866,21 @@ a fresh scan.
         walkthrough: [
           {
             code: "if (start === s.length) { result.push([...current]); return; }",
-            explanation: "Reaching the end of the string means every piece chosen so far was a palindrome - the current partition is complete.",
+            explanation: "Reaching the end means every piece was a palindrome - the partition is complete.",
           },
           {
             code: "if (isPalindrome(start, end)) {",
-            explanation: "Only commits to a candidate piece once it's confirmed to read the same forwards and backwards.",
+            explanation: "Only takes a piece once it's confirmed to be a palindrome.",
           },
           {
             code: "current.push(s.slice(start, end + 1)); backtrack(end + 1); current.pop();",
-            explanation: "Adds the piece, explores every partition of what remains after it, then removes it to try a different length for this piece.",
+            explanation: "Adds the piece, explores every partition of the rest, then removes it to try a different length.",
           },
         ],
       },
       {
         approach: "Optimal — Precompute Palindromes with a DP Table",
-        explanation: "Before searching, build a table isPalindrome[i][j] that says whether s[i..j] is a palindrome, filling it in for shorter substrings first: s[i..j] is a palindrome exactly when s[i] === s[j] and the substring strictly inside them is also a palindrome (or is short enough not to need checking). During the backtracking search, every palindrome check then becomes a single table lookup instead of an O(n) scan.",
+        explanation: "Before searching, build a table isPalindrome[i][j] for whether s[i..j] is a palindrome, filling shorter substrings first. s[i..j] is a palindrome exactly when s[i] === s[j] and the substring inside is also a palindrome (or too short to need checking). During the search, each check is a table lookup instead of an O(n) scan.",
         code: `function partition(s) {
   const n = s.length;
   const isPalindrome = Array.from({ length: n }, () => new Array(n).fill(false));
@@ -970,7 +914,7 @@ a fresh scan.
   backtrack(0);
   return result;
 }`,
-        timeComplexity: "O(n^2) to precompute the table, plus O(n * 2^n) to generate all partitions - the number of partitions is unavoidable, but each palindrome check during the search is now O(1) instead of O(n)",
+        timeComplexity: "O(n^2) to precompute the table, plus O(n * 2^n) to generate all partitions - the partition count is unavoidable, but each palindrome check is now O(1) instead of O(n)",
         spaceComplexity: "O(n^2) for the DP table, plus O(n) recursion depth",
       },
     ],
@@ -983,13 +927,11 @@ a fresh scan.
     difficulty: "Medium",
     category: "backtracking",
     description: `
-On an old phone keypad, each digit from 2 to 9 is printed with a few
-letters on it (2 -> abc, 3 -> def, and so on, the same layout as a
-physical telephone keypad). Given a string of digits, return every
-possible letter combination that the digits could represent - one letter
-chosen per digit, in order.
+On a phone keypad, each digit from 2 to 9 has a few letters (2 -> abc,
+3 -> def, and so on). Given a string of digits, return every letter
+combination the digits could represent - one letter per digit, in order.
 
-If the input is empty, there are no combinations to return.
+If the input is empty, return no combinations.
     `.trim(),
     examples: [
       {
@@ -1010,33 +952,30 @@ If the input is empty, there are no combinations to return.
     ],
     constraints: ["0 <= digits.length <= 4", 'Each character of digits is between "2" and "9".'],
     hints: [
-      "Each digit contributes one letter to the final combination, chosen from that digit's 3 or 4 possible letters - so the total combinations come from pairing every choice for the first digit with every choice for the second, and so on.",
-      "You could build this up level by level: start with an empty combination, and for each digit, extend every combination built so far with every letter that digit allows.",
-      "Alternatively, build one combination at a time: pick a letter for the current digit, move to the next digit, and once you've picked a letter for every digit, you have one complete combination - then back up and try the next letter for the last digit you touched.",
+      "Each digit adds one of its 3 or 4 letters, so the combinations pair every choice for the first digit with every choice for the second, and so on.",
+      "You could build level by level: start with an empty combination, and for each digit, extend every combination so far with each of its letters.",
+      "Or build one combination at a time: pick a letter for this digit, move to the next, and when every digit has a letter, record it - then back up and try the next letter for the last digit.",
     ],
     approachOverview: `
-Each digit in the input contributes exactly one letter to the final
-string, chosen from that digit's handful of possible letters. The full
-answer is every way of picking one letter per digit, in order.
+Each digit adds exactly one of its letters, so the answer is every way
+to pick one letter per digit, in order.
 
-One way to build this is level by level: start with a list containing
-just the empty string, and for each digit in turn, replace that list
-with a new one where every existing partial combination has been
-extended by every letter that digit allows. After processing every
-digit, the list holds every complete combination.
+One way builds level by level: start with a list holding the empty
+string. For each digit, replace the list with every partial combination
+extended by each of that digit's letters. After the last digit, the list
+holds every combination.
 
 A more memory-efficient way builds one combination at a time instead of
-keeping a whole intermediate list alive at every step: pick a letter for
-the current digit, move on to the next digit, and once every digit has a
-letter, record the finished combination. Then back up - try the next
-letter for the digit you most recently picked - which is the same
-choose/explore/undo rhythm you've seen in every other backtracking
-problem, just working through digits instead of array positions.
+keeping a whole intermediate list. Pick a letter for the current digit,
+move to the next, and record the combination once every digit has a
+letter. Then back up and try the next letter for the last digit - the
+same choose/explore/undo rhythm, working through digits instead of array
+positions.
     `.trim(),
     solutions: [
       {
         approach: "Iterative — Build Up Combinations Level by Level",
-        explanation: "Keep a running list of partial combinations, starting with just the empty string. For each digit, build a brand-new list by taking every partial combination built so far and appending every letter that digit maps to. After the last digit, the list holds every full combination.",
+        explanation: "Keep a list of partial combinations, starting with the empty string. For each digit, build a new list by appending each of its letters to every partial combination. After the last digit, the list holds every combination.",
         code: `function letterCombinations(digits) {
   if (digits.length === 0) return [];
 
@@ -1067,7 +1006,7 @@ problem, just working through digits instead of array positions.
       },
       {
         approach: "Optimal — Backtracking, One Combination at a Time",
-        explanation: "Build a single combination in a running string as you move digit by digit. At each digit, try every letter it maps to: append the letter, recurse into the next digit, then remove the letter before trying the next one. Record the running string once every digit has been given a letter.",
+        explanation: "Build one combination in a running string, digit by digit. At each digit, try each of its letters: append it, recurse into the next digit, then remove it. Record the string once every digit has a letter.",
         code: `function letterCombinations(digits) {
   if (digits.length === 0) return [];
 
@@ -1101,19 +1040,19 @@ problem, just working through digits instead of array positions.
         walkthrough: [
           {
             code: "if (index === digits.length) { result.push(current); return; }",
-            explanation: "Every digit has been given a letter, so the running string is one complete, finished combination.",
+            explanation: "Every digit has a letter, so the string is one complete combination.",
           },
           {
             code: "current += letter;",
-            explanation: "Tries this letter for the current digit by appending it to the combination being built.",
+            explanation: "Tries this letter for the current digit.",
           },
           {
             code: "backtrack(index + 1);",
-            explanation: "Moves on to give the next digit a letter, exploring everything that follows from this choice.",
+            explanation: "Moves to the next digit, exploring everything that follows from this choice.",
           },
           {
             code: "current = current.slice(0, -1);",
-            explanation: "Removes the letter just tried so the next candidate letter for this same digit starts from a clean combination.",
+            explanation: "Removes the letter so the next letter for this digit can be tried.",
           },
         ],
       },
@@ -1127,14 +1066,11 @@ problem, just working through digits instead of array positions.
     difficulty: "Hard",
     category: "backtracking",
     description: `
-On an n x n chessboard, place n queens so that no two queens attack each
-other - meaning no two queens share the same row, the same column, or
-the same diagonal.
+Place n queens on an n x n chessboard so that no two attack each other -
+no two share a row, column or diagonal.
 
-Return every distinct way to place the queens that satisfies this rule.
-Each solution should describe one full board: for every row, show which
-column (if any) holds a queen, using "Q" for a queen and "." for an
-empty square.
+Return every distinct placement. Each solution is one full board, with
+each row written using "Q" for a queen and "." for an empty square.
     `.trim(),
     examples: [
       {
@@ -1150,35 +1086,29 @@ empty square.
     ],
     constraints: ["1 <= n <= 9"],
     hints: [
-      "Since no two queens can share a row, you can place exactly one queen per row - so the problem becomes \"which column, in each row, in turn.\"",
-      "As you place a queen in a row, you need to know which columns are already taken, and which diagonals are already taken, by queens placed in earlier rows.",
-      "Two cells share a diagonal if the difference of their (row, column) values is the same, or if the sum of their (row, column) values is the same - tracking those two quantities as you go lets you check a diagonal conflict instantly instead of scanning the whole board.",
+      "No two queens can share a row, so place exactly one per row - the question becomes \"which column in each row.\"",
+      "When placing a queen, you need to know which columns and diagonals earlier queens already use.",
+      "Two cells share a diagonal if their row - column values match, or their row + column values match. Tracking both lets you check diagonals instantly instead of scanning the board.",
     ],
     approachOverview: `
-Since no two queens can ever share a row, you can decide the placement
-one row at a time: for row 0, choose a column; for row 1, choose a
-column that doesn't conflict with row 0's queen; and so on. Once every
-row has a queen placed without conflicts, you have one complete, valid
-solution.
+No two queens can share a row, so place them one row at a time: choose a
+column for row 0, then a non-conflicting column for row 1, and so on.
+When every row has a queen with no conflicts, you have one solution.
 
-A straightforward way to check "does this column conflict with an
-earlier queen" is to look back at every queen already placed in previous
-rows and compare columns and diagonals directly - simple to write, but
-it re-scans all previously placed queens on every single attempt.
+The simple conflict check compares the candidate with every queen in
+earlier rows (columns and diagonals). It's easy to write, but re-scans all
+earlier queens on every attempt.
 
-A faster way keeps three running trackers as you go: which columns
-already have a queen, and which of the two diagonal directions already
-have a queen (a cell's "diagonal identity" in one direction is row minus
-column, and in the other direction it's row plus column - two cells on
-the same diagonal always share one of these two values). Checking a
-candidate column against these trackers is then a single lookup instead
-of a scan, and un-placing a queen is just removing its column and
-diagonals from the trackers again before trying the next column.
+A faster way keeps three trackers: used columns and the two used diagonal
+directions. One diagonal is identified by row minus column, the other by
+row plus column - two cells on the same diagonal share one of these
+values. Checking a column is then a lookup instead of a scan, and
+removing a queen just removes its column and diagonals from the trackers.
     `.trim(),
     solutions: [
       {
         approach: "Backtracking — Scan Previously Placed Queens",
-        explanation: "Place queens row by row. For each row, try every column; before committing, check every queen already placed in earlier rows to make sure none of them shares this column or either diagonal. If a column is safe, place the queen there, recurse into the next row, then remove it and try the next column.",
+        explanation: "Place queens row by row. For each row, try every column, checking that no queen in an earlier row shares the column or either diagonal. If it's safe, place the queen, recurse into the next row, then remove it and try the next column.",
         code: `function solveNQueens(n) {
   const result = [];
   const queenCol = new Array(n).fill(-1); // queenCol[row] = column of the queen in that row
@@ -1220,17 +1150,17 @@ diagonals from the trackers again before trying the next column.
         walkthrough: [
           {
             code: "const sameCol = prevCol === col; const sameDiagonal = Math.abs(prevRow - row) === Math.abs(prevCol - col);",
-            explanation: "Checks whether an earlier queen shares this column, or sits on one of the two diagonals through this cell (equal row/column differences means same diagonal).",
+            explanation: "Checks whether an earlier queen shares this column or a diagonal (equal row and column differences mean same diagonal).",
           },
           {
             code: "queenCol[row] = col; backtrack(row + 1); queenCol[row] = -1;",
-            explanation: "Commits to this column for the current row, explores every arrangement of the remaining rows, then clears the row's placement to try the next column.",
+            explanation: "Places the queen in this column, explores the remaining rows, then clears it to try the next column.",
           },
         ],
       },
       {
         approach: "Optimal — Track Columns and Diagonals with Sets",
-        explanation: "Instead of re-scanning earlier queens on every check, maintain three sets as you go: used columns, used \"row minus column\" diagonals, and used \"row plus column\" diagonals. Placing or removing a queen just adds or deletes one entry from each of the three sets, and checking whether a column is safe becomes three constant-time lookups instead of a scan back through every earlier row.",
+        explanation: "Instead of re-scanning earlier queens, keep three sets: used columns, used \"row minus column\" diagonals, and used \"row plus column\" diagonals. Placing or removing a queen adds or deletes one entry in each set, and checking a column is three constant-time lookups.",
         code: `function solveNQueens(n) {
   const result = [];
   const queenCol = new Array(n).fill(-1);

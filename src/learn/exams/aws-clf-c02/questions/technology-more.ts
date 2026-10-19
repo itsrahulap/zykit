@@ -9,7 +9,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Redshift', 'Amazon EMR', 'Amazon Athena', 'AWS Glue'],
     answer: [2],
     explanation:
-      '**Amazon Athena** is a serverless, interactive query service that runs standard SQL directly against data in Amazon S3, and you pay for the data scanned by each query. Amazon Redshift is a data warehouse designed mainly for loaded, structured data. Amazon EMR runs big data frameworks such as Spark, and AWS Glue is an ETL and data catalog service rather than an ad hoc SQL query tool.',
+      '**Amazon Athena** is a serverless query service that runs standard SQL directly on data in Amazon S3; you pay for the data each query scans. Amazon Redshift is a data warehouse mainly for loaded, structured data. Amazon EMR runs big data frameworks such as Spark, and AWS Glue is an ETL and data catalog service, not an ad hoc SQL tool.',
   },
   {
     id: 'tech-102',
@@ -19,7 +19,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon EMR', 'Amazon Athena', 'Amazon QuickSight', 'Amazon Data Firehose'],
     answer: [0],
     explanation:
-      '**Amazon EMR** is a managed big data platform for running open-source frameworks such as Apache Spark, Hadoop, Hive, and Presto. Athena runs serverless SQL queries on S3 data, QuickSight builds business intelligence dashboards, and Data Firehose delivers streaming data to destinations; none of them runs Spark or Hadoop clusters.',
+      '**Amazon EMR** is a managed big data platform for running open-source frameworks such as Apache Spark, Hadoop, Hive, and Presto. Athena runs serverless SQL on S3 data, QuickSight builds BI dashboards, and Data Firehose delivers streaming data; none runs Spark or Hadoop clusters.',
   },
   {
     id: 'tech-103',
@@ -29,7 +29,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Macie', 'Amazon Redshift', 'AWS DataSync', 'AWS Lake Formation'],
     answer: [3],
     explanation:
-      '**AWS Lake Formation** helps you build, secure, and manage data lakes, with centralized fine-grained permissions (database, table, column, and row level) for analytics services. Amazon Macie discovers sensitive data in S3, Amazon Redshift is a data warehouse, and AWS DataSync moves data; none of them centrally governs data lake permissions.',
+      '**AWS Lake Formation** builds, secures, and manages data lakes, with central fine-grained permissions (database, table, column, and row level) for analytics services. Amazon Macie finds sensitive data in S3, Amazon Redshift is a data warehouse, and AWS DataSync moves data; none governs data lake permissions.',
   },
   {
     id: 'tech-104',
@@ -54,7 +54,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SQS', 'Amazon Kinesis Data Streams', 'Amazon SNS', 'AWS Step Functions'],
     answer: [1],
     explanation:
-      '**Amazon Kinesis Data Streams** stores ordered records for a retention period, so multiple consumer applications can read the same data independently and replay it. With Amazon SQS, a message is processed by a consumer and then deleted, so it is not designed for many independent readers or replay. Amazon SNS pushes messages without storing them for replay, and Step Functions orchestrates workflows.',
+      '**Amazon Kinesis Data Streams** keeps ordered records for a retention period, so several consumer apps can read the same data independently and replay it. In Amazon SQS, a consumer processes a message and then deletes it, so there are no independent readers or replay. Amazon SNS pushes messages without storing them for replay, and Step Functions orchestrates workflows.',
   },
   {
     id: 'tech-106',
@@ -64,7 +64,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Kinesis Data Streams', 'Amazon SQS', 'Amazon Data Firehose', 'Amazon MQ'],
     answer: [2],
     explanation:
-      '**Amazon Data Firehose** (formerly Kinesis Data Firehose) is a fully managed service that loads streaming data into destinations such as Amazon S3, Amazon Redshift, and Amazon OpenSearch Service, scaling automatically. Kinesis Data Streams requires you to build consumers that read and write the data. Amazon SQS and Amazon MQ are messaging services, not delivery pipelines into analytics stores.',
+      '**Amazon Data Firehose** (formerly Kinesis Data Firehose) is fully managed and loads streaming data into destinations such as Amazon S3, Amazon Redshift, and Amazon OpenSearch Service, scaling automatically. With Kinesis Data Streams you build your own consumers. Amazon SQS and Amazon MQ are messaging services, not delivery pipelines into analytics stores.',
   },
   {
     id: 'tech-107',
@@ -74,7 +74,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon QuickSight', 'Amazon CloudWatch', 'AWS Glue', 'Amazon EMR'],
     answer: [0],
     explanation:
-      '**Amazon QuickSight** is a serverless business intelligence (BI) service for building and sharing interactive dashboards from many data sources, including Redshift and Athena. CloudWatch dashboards show operational metrics, not business analytics. AWS Glue prepares and catalogs data, and Amazon EMR processes big data; neither is a BI visualization tool. (AWS renamed QuickSight to Amazon Quick Suite in October 2025, later shortened to Amazon Quick; the exam guide still says QuickSight.)',
+      '**Amazon QuickSight** is a serverless business intelligence (BI) service for building and sharing interactive dashboards from many sources, including Redshift and Athena. CloudWatch dashboards show operational metrics, not business analytics. AWS Glue prepares and catalogs data, and Amazon EMR processes big data; neither is a BI tool. (AWS renamed QuickSight to Amazon Quick Suite in October 2025, later shortened to Amazon Quick; the exam guide still says QuickSight.)',
   },
   {
     id: 'tech-108',
@@ -84,7 +84,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Kendra', 'Amazon OpenSearch Service', 'Amazon Redshift', 'Amazon Athena'],
     answer: [1],
     explanation:
-      '**Amazon OpenSearch Service** is a managed service for log analytics, real-time application monitoring, and full-text search, with OpenSearch Dashboards for visualization. Amazon Kendra is an ML-powered enterprise search service for finding answers in documents, not a log analytics engine. Redshift is a data warehouse, and Athena runs ad hoc SQL on S3 rather than near real-time search.',
+      '**Amazon OpenSearch Service** is managed log analytics, real-time application monitoring, and full-text search, with OpenSearch Dashboards for visualization. Amazon Kendra is ML-powered enterprise search for finding answers in documents, not log analytics. Redshift is a data warehouse, and Athena runs ad hoc SQL on S3, not near real-time search.',
   },
   {
     id: 'tech-109',
@@ -109,7 +109,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Amazon MSK** is a fully managed service for Apache Kafka, so existing Kafka clients and code keep working. Kinesis Data Streams is a different streaming service with its own APIs, so applications would need changes. Amazon MQ is a managed broker for ActiveMQ and RabbitMQ, and Amazon SQS is a message queue.',
+      '**Amazon MSK** is fully managed Apache Kafka, so existing Kafka clients and code keep working. Kinesis Data Streams has its own APIs, so applications would need changes. Amazon MQ is a managed broker for ActiveMQ and RabbitMQ, and Amazon SQS is a message queue.',
   },
   {
     id: 'tech-111',
@@ -125,7 +125,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [0, 2],
     explanation:
-      '**Amazon Kinesis Data Streams** and **Amazon MSK** both ingest and store high-volume streaming data in real time. The Glue Data Catalog stores metadata about datasets, QuickSight visualizes data, and Lake Formation governs data lake access; none of them is a streaming ingestion service.',
+      '**Amazon Kinesis Data Streams** and **Amazon MSK** both ingest and store high-volume streaming data in real time. The Glue Data Catalog stores dataset metadata, QuickSight visualizes data, and Lake Formation governs data lake access; none ingests streams.',
   },
   {
     id: 'tech-112',
@@ -135,7 +135,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SageMaker AI', 'Amazon Bedrock', 'Amazon Rekognition', 'Amazon Comprehend'],
     answer: [0],
     explanation:
-      '**Amazon SageMaker AI** is a fully managed service for the complete ML lifecycle: preparing data, building, training, tuning, and deploying custom models. Amazon Bedrock provides access to existing foundation models rather than building your own models from scratch. Rekognition and Comprehend are pre-trained AI services for images/video and text.',
+      '**Amazon SageMaker AI** is fully managed for the whole ML lifecycle: preparing data, building, training, tuning, and deploying custom models. Amazon Bedrock gives access to existing foundation models rather than building your own from scratch. Rekognition and Comprehend are pre-trained AI services for images/video and text.',
   },
   {
     id: 'tech-113',
@@ -145,7 +145,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SageMaker AI', 'Amazon Lex', 'Amazon Kendra', 'Amazon Bedrock'],
     answer: [3],
     explanation:
-      '**Amazon Bedrock** is a fully managed, serverless service that offers foundation models from leading AI companies and Amazon through a single API. SageMaker AI is for building, training, and hosting ML models, which involves more infrastructure choices. Amazon Lex builds chatbots, and Amazon Kendra is an enterprise search service.',
+      '**Amazon Bedrock** is a fully managed, serverless service offering foundation models from leading AI companies and Amazon through one API. SageMaker AI is for building, training, and hosting ML models, with more infrastructure choices. Amazon Lex builds chatbots, and Amazon Kendra is an enterprise search service.',
   },
   {
     id: 'tech-114',
@@ -175,7 +175,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Textract', 'Amazon Comprehend', 'Amazon Kendra', 'Amazon Personalize'],
     answer: [2],
     explanation:
-      '**Amazon Kendra** is an intelligent enterprise search service that uses ML to return relevant answers to natural language questions, with connectors for sources such as S3 and SharePoint. Textract extracts text from documents, Comprehend analyzes text for insights such as sentiment and entities, and Personalize generates recommendations.',
+      '**Amazon Kendra** is intelligent enterprise search that uses ML to answer natural language questions, with connectors for sources such as S3 and SharePoint. Textract extracts text from documents, Comprehend analyzes text for insights such as sentiment and entities, and Personalize generates recommendations.',
   },
   {
     id: 'tech-117',
@@ -195,7 +195,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Rekognition', 'Amazon Comprehend', 'Amazon Transcribe', 'Amazon Textract'],
     answer: [3],
     explanation:
-      '**Amazon Textract** extracts text, handwriting, key-value pairs from forms, and tables from scanned documents. Rekognition is for image and video analysis and does not understand form and table structure. Comprehend analyzes text that has already been extracted, and Transcribe converts speech to text.',
+      '**Amazon Textract** extracts text, handwriting, key-value pairs from forms, and tables from scanned documents. Rekognition analyzes images and video but does not understand forms and tables. Comprehend analyzes text that is already extracted, and Transcribe converts speech to text.',
   },
   {
     id: 'tech-119',
@@ -231,7 +231,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Polly', 'Amazon Transcribe', 'Amazon Lex', 'Amazon Translate'],
     answer: [2],
     explanation:
-      '**Amazon Lex** builds conversational interfaces (chatbots and voice bots) using automatic speech recognition and natural language understanding to identify intent. Polly only turns text into speech, Transcribe only turns speech into text, and Translate converts between languages; none of them manages a conversation.',
+      '**Amazon Lex** builds chatbots and voice bots, using speech recognition and natural language understanding to identify intent. Polly only turns text into speech, Transcribe only turns speech into text, and Translate converts between languages; none manages a conversation.',
   },
   {
     id: 'tech-122',
@@ -267,7 +267,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Kendra', 'Amazon Rekognition', 'Amazon SageMaker AI', 'Amazon Personalize'],
     answer: [3],
     explanation:
-      '**Amazon Personalize** is a fully managed service that trains recommendation models on your interaction data and serves real-time personalized recommendations, with no ML expertise required. SageMaker AI would require the company to build and train its own models. Kendra is enterprise search, and Rekognition analyzes images and video.',
+      '**Amazon Personalize** trains recommendation models on your interaction data and serves real-time personalized recommendations, with no ML expertise needed. With SageMaker AI the company would build and train its own models. Kendra is enterprise search, and Rekognition analyzes images and video.',
   },
   {
     id: 'tech-125',
@@ -282,17 +282,17 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**Amazon Rekognition** is a pre-trained AI service, so the app can detect faces with a simple API call and no model training. Training a model in SageMaker AI, running your own framework on EC2, or fine-tuning a foundation model all require far more ML knowledge and effort.',
+      '**Amazon Rekognition** is pre-trained, so the app detects faces with one API call and no training. Training in SageMaker AI, running your own framework on EC2, or fine-tuning a foundation model all need far more ML knowledge and effort.',
   },
   {
     id: 'tech-126',
     domain: 'technology-services',
     question:
-      'An order-processing application must keep accepting orders during traffic spikes, even when the backend processing servers are slow or temporarily unavailable. Which service should be used to decouple the components by buffering the orders until they can be processed?',
+      'An order-processing application must keep accepting orders during traffic spikes, even when the backend servers are slow or temporarily unavailable. Which service decouples the components by buffering orders until they can be processed?',
     options: ['Amazon SNS', 'Amazon EventBridge', 'Amazon SQS', 'AWS Step Functions'],
     answer: [2],
     explanation:
-      '**Amazon SQS** is a fully managed message queue that stores messages durably until consumers poll and process them, decoupling producers from slow or unavailable consumers. SNS and EventBridge push messages and events to targets rather than holding a backlog for consumers to pull. Step Functions orchestrates workflow steps, not message buffering.',
+      '**Amazon SQS** is a fully managed queue that stores messages durably until consumers poll and process them, decoupling producers from slow or unavailable consumers. SNS and EventBridge push to targets rather than holding a backlog for consumers to pull. Step Functions orchestrates workflow steps, not buffering.',
   },
   {
     id: 'tech-127',
@@ -302,7 +302,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SNS', 'Amazon SQS', 'Amazon MQ', 'Amazon Kinesis Data Streams'],
     answer: [0],
     explanation:
-      '**Amazon SNS** is a publish/subscribe service that pushes each message to all subscribers of a topic, including email, SMS, Lambda, HTTP endpoints, and SQS queues. SQS is a queue that consumers poll, Amazon MQ is a managed message broker for existing applications, and Kinesis Data Streams is for streaming data.',
+      '**Amazon SNS** is publish/subscribe: it pushes each message to every subscriber of a topic, including email, SMS, Lambda, HTTP endpoints, and SQS queues. SQS is a queue that consumers poll, Amazon MQ is a managed message broker for existing applications, and Kinesis Data Streams is for streaming data.',
   },
   {
     id: 'tech-128',
@@ -312,7 +312,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SQS', 'Amazon MQ', 'Amazon AppFlow', 'Amazon EventBridge'],
     answer: [3],
     explanation:
-      '**Amazon EventBridge** is a serverless event bus that receives events from AWS services, your applications, and SaaS partners, and uses rules to filter and route them to targets. SQS is a message queue without content-based routing rules, Amazon MQ is a managed broker for ActiveMQ and RabbitMQ, and AppFlow transfers data between SaaS apps and AWS.',
+      '**Amazon EventBridge** is a serverless event bus that takes events from AWS services, your apps, and SaaS partners, and uses rules to filter and route them to targets. SQS is a message queue without content-based routing rules, Amazon MQ is a managed broker for ActiveMQ and RabbitMQ, and AppFlow transfers data between SaaS apps and AWS.',
   },
   {
     id: 'tech-129',
@@ -322,7 +322,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Step Functions', 'Amazon AppFlow', 'Amazon SNS', 'AWS Glue', 'Amazon SQS'],
     answer: [2, 4],
     explanation:
-      'In the fan-out pattern, a message is published to an **Amazon SNS** topic, and multiple **Amazon SQS** queues subscribed to that topic each receive a copy for independent processing. Step Functions orchestrates workflows, AppFlow moves data between SaaS applications and AWS, and Glue performs ETL.',
+      'In fan-out, you publish a message to an **Amazon SNS** topic, and each **Amazon SQS** queue subscribed to it gets a copy to process independently. Step Functions orchestrates workflows, AppFlow moves data between SaaS applications and AWS, and Glue performs ETL.',
   },
   {
     id: 'tech-130',
@@ -332,7 +332,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SQS', 'AWS Step Functions', 'Amazon SNS', 'AWS CodePipeline'],
     answer: [1],
     explanation:
-      '**AWS Step Functions** is a visual workflow service that orchestrates AWS services such as Lambda into state machines with branching, retries, and error handling. SQS and SNS are messaging services without workflow logic, and CodePipeline orchestrates software release pipelines, not application workflows.',
+      '**AWS Step Functions** is a visual workflow service that orchestrates services such as Lambda into state machines with branching, retries, and error handling. SQS and SNS are messaging without workflow logic, and CodePipeline orchestrates software releases, not app workflows.',
   },
   {
     id: 'tech-131',
@@ -342,7 +342,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SQS', 'Amazon SNS', 'Amazon MQ', 'Amazon EventBridge'],
     answer: [2],
     explanation:
-      '**Amazon MQ** is a managed message broker service for Apache ActiveMQ and RabbitMQ that supports standard APIs and protocols, so existing applications can migrate with little or no code change. SQS, SNS, and EventBridge use their own AWS APIs, so the messaging code would need to be rewritten.',
+      '**Amazon MQ** is a managed broker for Apache ActiveMQ and RabbitMQ that supports standard APIs and protocols, so existing apps migrate with little or no code change. SQS, SNS, and EventBridge use their own AWS APIs, so the messaging code would need rewriting.',
   },
   {
     id: 'tech-132',
@@ -357,7 +357,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [0],
     explanation:
-      '**Amazon AppFlow** is a fully managed integration service that securely transfers data between SaaS applications such as Salesforce and AWS services such as Amazon S3, on demand or on a schedule. DataSync moves files from storage systems, Transfer Family provides SFTP/FTPS/FTP endpoints, and DMS migrates databases.',
+      '**Amazon AppFlow** securely transfers data between SaaS apps such as Salesforce and AWS services such as Amazon S3, on demand or on a schedule. DataSync moves files from storage systems, Transfer Family provides SFTP/FTPS/FTP endpoints, and DMS migrates databases.',
   },
   {
     id: 'tech-133',
@@ -382,17 +382,17 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS CodeBuild', 'AWS CodePipeline', 'AWS CodeDeploy', 'AWS CodeArtifact'],
     answer: [1],
     explanation:
-      '**AWS CodePipeline** is a continuous delivery service that models and automates the stages of a release process, calling other tools for each stage. CodeBuild only performs the build and test step, CodeDeploy only performs deployments, and CodeArtifact stores software packages.',
+      '**AWS CodePipeline** is continuous delivery: it models and automates the stages of a release, calling other tools for each stage. CodeBuild only builds and tests, CodeDeploy only deploys, and CodeArtifact stores software packages.',
   },
   {
     id: 'tech-135',
     domain: 'technology-services',
     question:
-      'A development team wants one fully managed service that compiles source code and runs unit tests, and another service that automates deploying the resulting application to Amazon EC2 instances and on-premises servers. Which services should it use? (Choose two.)',
+      'A development team wants one fully managed service that compiles code and runs unit tests, and another that automates deploying the result to Amazon EC2 instances and on-premises servers. Which services should it use? (Choose two.)',
     options: ['AWS CodeBuild', 'AWS CodeArtifact', 'AWS X-Ray', 'AWS CodeDeploy', 'AWS Config'],
     answer: [0, 3],
     explanation:
-      '**AWS CodeBuild** is a fully managed build service that compiles code, runs tests, and produces artifacts, and **AWS CodeDeploy** automates deployments to EC2, on-premises servers, Lambda, and Amazon ECS. CodeArtifact is a package repository, X-Ray traces requests, and Config tracks resource configurations.',
+      '**AWS CodeBuild** compiles code, runs tests, and produces artifacts, and **AWS CodeDeploy** automates deployments to EC2, on-premises servers, Lambda, and Amazon ECS. CodeArtifact is a package repository, X-Ray traces requests, and Config tracks resource configurations.',
   },
   {
     id: 'tech-136',
@@ -407,7 +407,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**AWS CodeArtifact** is a managed artifact repository for software packages from formats such as npm, Maven, PyPI, and NuGet. Amazon ECR stores container images, CodeBuild compiles and tests code, and CodeDeploy deploys applications.',
+      '**AWS CodeArtifact** is a managed repository for software packages such as npm, Maven, PyPI, and NuGet. Amazon ECR stores container images, CodeBuild compiles and tests code, and CodeDeploy deploys applications.',
   },
   {
     id: 'tech-137',
@@ -432,7 +432,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'The **AWS SDKs** provide language-specific libraries, such as Boto3 for Python, for calling AWS services from application code. The Management Console is a web interface for people, CloudShell is a browser-based shell, and CloudFormation provisions infrastructure from templates rather than being called from application logic.',
+      'The **AWS SDKs** are language libraries, such as Boto3 for Python, for calling AWS services from code. The Management Console is a web interface for people, CloudShell is a browser-based shell, and CloudFormation provisions infrastructure from templates, not from app logic.',
   },
   {
     id: 'tech-139',
@@ -442,7 +442,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Organizations', 'AWS Control Tower', 'AWS Config', 'AWS Service Catalog'],
     answer: [1],
     explanation:
-      '**AWS Control Tower** automates the setup of a well-architected multi-account landing zone and applies controls (guardrails), building on AWS Organizations and other services. Organizations by itself groups accounts and applies policies but does not automatically set up a landing zone. Config evaluates resource compliance, and Service Catalog offers approved products for self-service.',
+      '**AWS Control Tower** automates setup of a well-architected multi-account landing zone and applies controls (guardrails), building on AWS Organizations and other services. Organizations alone groups accounts and applies policies but does not set up a landing zone. Config evaluates resource compliance, and Service Catalog offers approved products for self-service.',
   },
   {
     id: 'tech-140',
@@ -467,7 +467,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS CloudTrail', 'AWS Systems Manager', 'AWS Config', 'AWS Trusted Advisor'],
     answer: [2],
     explanation:
-      '**AWS Config** records resource configurations and their changes over time and evaluates them against **Config rules**, such as a rule that checks for encrypted EBS volumes. CloudTrail records API calls rather than evaluating configuration compliance, Systems Manager manages and operates resources, and Trusted Advisor gives periodic best-practice checks rather than continuous custom compliance rules.',
+      '**AWS Config** records resource configurations and changes over time and evaluates them against **Config rules**, such as one that checks for encrypted EBS volumes. CloudTrail records API calls but does not check compliance, Systems Manager operates resources, and Trusted Advisor runs periodic best-practice checks, not continuous custom rules.',
   },
   {
     id: 'tech-142',
@@ -477,7 +477,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS CloudFormation', 'AWS Config', 'AWS Systems Manager', 'AWS Launch Wizard'],
     answer: [0],
     explanation:
-      '**AWS CloudFormation** is an infrastructure as code (IaC) service that provisions resources consistently from JSON or YAML templates as stacks. AWS Config records and evaluates configurations but does not provision them, Systems Manager operates and manages existing resources, and Launch Wizard is a guided deployment tool for specific third-party applications.',
+      '**AWS CloudFormation** is infrastructure as code (IaC): it provisions resources consistently from JSON or YAML templates as stacks. AWS Config records and evaluates configurations but does not provision, Systems Manager operates existing resources, and Launch Wizard guides deployment of specific third-party applications.',
   },
   {
     id: 'tech-143',
@@ -492,7 +492,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**Session Manager**, a capability of AWS Systems Manager, provides secure, auditable shell access to managed instances without opening inbound ports, managing SSH keys, or running bastion hosts. Inspector scans for vulnerabilities, Config records configurations, and Direct Connect is a dedicated network connection to AWS.',
+      '**Session Manager**, part of AWS Systems Manager, gives secure, auditable shell access to managed instances with no inbound ports, SSH keys, or bastion hosts. Inspector scans for vulnerabilities, Config records configurations, and Direct Connect is a dedicated network connection to AWS.',
   },
   {
     id: 'tech-144',
@@ -517,7 +517,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Trusted Advisor', 'AWS Compute Optimizer', 'AWS Auto Scaling', 'AWS Health Dashboard'],
     answer: [1],
     explanation:
-      '**AWS Compute Optimizer** uses machine learning on utilization metrics to recommend optimal configurations for EC2 instances, Auto Scaling groups, EBS volumes, Lambda functions, and more. Trusted Advisor runs broad best-practice checks rather than detailed ML-based rightsizing. AWS Auto Scaling adjusts capacity, and the Health Dashboard reports AWS events.',
+      '**AWS Compute Optimizer** applies machine learning to utilization metrics to recommend configurations for EC2 instances, Auto Scaling groups, EBS volumes, Lambda functions, and more. Trusted Advisor runs broad best-practice checks, not detailed ML-based rightsizing. AWS Auto Scaling adjusts capacity, and the Health Dashboard reports AWS events.',
   },
   {
     id: 'tech-146',
@@ -542,7 +542,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Compute Optimizer', 'Amazon Inspector', 'AWS Trusted Advisor', 'AWS Health Dashboard'],
     answer: [2],
     explanation:
-      '**AWS Trusted Advisor** inspects your account and recommends improvements across cost, security, fault tolerance, performance, service limits, and operational excellence, including open S3 bucket permissions, idle resources, and quota usage. Compute Optimizer focuses on rightsizing compute resources, Inspector scans workloads for software vulnerabilities, and the Health Dashboard reports AWS service events.',
+      '**AWS Trusted Advisor** checks your account and recommends improvements across cost, security, fault tolerance, performance, service limits, and operational excellence, such as open S3 bucket permissions, idle resources, and quota usage. Compute Optimizer rightsizes compute, Inspector scans for software vulnerabilities, and the Health Dashboard reports AWS service events.',
   },
   {
     id: 'tech-148',
@@ -552,7 +552,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Health Dashboard', 'Amazon CloudWatch', 'AWS Trusted Advisor', 'AWS CloudTrail'],
     answer: [0],
     explanation:
-      'The **AWS Health Dashboard** shows the general status of AWS services and a personalized view of events, such as scheduled maintenance and issues, that affect your account and resources. CloudWatch monitors metrics and logs from your resources, Trusted Advisor gives best-practice recommendations, and CloudTrail records API activity.',
+      'The **AWS Health Dashboard** shows the general status of AWS services plus a personalized view of events, such as scheduled maintenance and issues, that affect your account. CloudWatch monitors metrics and logs from your resources, Trusted Advisor gives best-practice recommendations, and CloudTrail records API activity.',
   },
   {
     id: 'tech-149',
@@ -567,7 +567,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      'An **Amazon CloudWatch alarm** watches a metric such as CPUUtilization against a threshold over a period and can notify an **Amazon SNS** topic with an email subscription. CloudTrail records API calls, Config evaluates configuration compliance, and X-Ray traces requests; none of them alarms on performance metrics.',
+      'An **Amazon CloudWatch alarm** watches a metric such as CPUUtilization against a threshold over a period and can notify an **Amazon SNS** topic with an email subscription. CloudTrail records API calls, Config checks configuration compliance, and X-Ray traces requests; none alarms on performance metrics.',
   },
   {
     id: 'tech-150',
@@ -577,7 +577,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon CloudWatch', 'AWS CloudTrail', 'AWS Config', 'Amazon Inspector'],
     answer: [1],
     explanation:
-      '**AWS CloudTrail** records API activity in the account, including who made each call, when, and from which IP address. CloudWatch monitors metrics and logs, Config records the configuration state of resources rather than the caller details of each request, and Inspector scans for vulnerabilities.',
+      '**AWS CloudTrail** records API activity in the account, including who made each call, when, and from which IP address. CloudWatch monitors metrics and logs, Config records resource configuration state, not who made each request, and Inspector scans for vulnerabilities.',
   },
   {
     id: 'tech-151',
@@ -593,7 +593,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [1, 2],
     explanation:
-      '**AWS CloudTrail** shows who made the API call that changed the security group, and **AWS Config** keeps the configuration history so you can compare the settings before and after the change. CloudWatch monitors metrics and logs, X-Ray traces application requests, and Trusted Advisor gives best-practice recommendations.',
+      '**AWS CloudTrail** shows who made the API call that changed the security group, and **AWS Config** keeps the configuration history so you can compare settings before and after. CloudWatch monitors metrics and logs, X-Ray traces application requests, and Trusted Advisor gives best-practice recommendations.',
   },
   {
     id: 'tech-152',
@@ -603,7 +603,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Control Tower', 'AWS Organizations', 'AWS Service Catalog', 'AWS Marketplace'],
     answer: [2],
     explanation:
-      '**AWS Service Catalog** lets administrators create and manage catalogs of approved IT products (for example, CloudFormation templates) that users can provision in a self-service way. Control Tower sets up multi-account landing zones, Organizations manages accounts and policies, and AWS Marketplace is a catalog of third-party software.',
+      '**AWS Service Catalog** lets admins manage catalogs of approved IT products (for example, CloudFormation templates) that users provision themselves. Control Tower sets up multi-account landing zones, Organizations manages accounts and policies, and AWS Marketplace is a catalog of third-party software.',
   },
   {
     id: 'tech-153',
@@ -613,7 +613,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS License Manager', 'AWS Artifact', 'AWS Service Catalog', 'AWS Trusted Advisor'],
     answer: [0],
     explanation:
-      '**AWS License Manager** helps manage software licenses from vendors such as Microsoft, Oracle, and SAP across AWS and on premises, with rules that limit overuse. AWS Artifact provides AWS compliance reports and agreements, Service Catalog offers approved products for self-service, and Trusted Advisor gives best-practice checks.',
+      '**AWS License Manager** manages software licenses from vendors such as Microsoft, Oracle, and SAP across AWS and on premises, with rules that limit overuse. AWS Artifact provides AWS compliance reports and agreements, Service Catalog offers approved products for self-service, and Trusted Advisor gives best-practice checks.',
   },
   {
     id: 'tech-154',
@@ -623,7 +623,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Trusted Advisor', 'AWS Config', 'AWS Control Tower', 'AWS Well-Architected Tool'],
     answer: [3],
     explanation:
-      'The **AWS Well-Architected Tool** lets you answer questions about a workload, compares it against the pillars of the AWS Well-Architected Framework, and produces an improvement plan. Trusted Advisor runs automated account-level checks rather than workload design reviews, Config evaluates resource configurations, and Control Tower governs multi-account environments.',
+      'In the **AWS Well-Architected Tool** you answer questions about a workload; it compares the answers against the Well-Architected Framework pillars and produces an improvement plan. Trusted Advisor runs automated account-level checks, not workload design reviews, Config evaluates resource configurations, and Control Tower governs multi-account environments.',
   },
   {
     id: 'tech-155',
@@ -638,7 +638,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [1],
     explanation:
-      '**AWS Auto Scaling** monitors applications and automatically adjusts capacity, adding resources during peaks and removing them when demand drops. Elastic Load Balancing distributes traffic but does not change capacity, and Compute Optimizer and Trusted Advisor only make recommendations.',
+      '**AWS Auto Scaling** monitors applications and adjusts capacity automatically, adding resources at peaks and removing them when demand drops. Elastic Load Balancing distributes traffic but does not change capacity, and Compute Optimizer and Trusted Advisor only make recommendations.',
   },
   {
     id: 'tech-156',
@@ -653,7 +653,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**AWS Launch Wizard** guides you through sizing, configuring, and deploying third-party applications such as SQL Server and SAP on AWS, then provisions the resources. Service Catalog distributes products an administrator has already defined, Application Migration Service rehosts existing servers, and Elastic Beanstalk deploys your own web application code.',
+      '**AWS Launch Wizard** guides you through sizing, configuring, and deploying third-party applications such as SQL Server and SAP on AWS, then provisions the resources. Service Catalog distributes products an admin already defined, Application Migration Service rehosts existing servers, and Elastic Beanstalk deploys your own web application code.',
   },
   {
     id: 'tech-157',
@@ -683,7 +683,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [3],
     explanation:
-      '**AWS DMS** migrates databases to AWS while the source remains operational, supporting both homogeneous and heterogeneous migrations such as Oracle to Aurora PostgreSQL (with schema conversion handled by DMS Schema Conversion or the AWS Schema Conversion Tool). DataSync moves files, Application Migration Service rehosts whole servers without changing engines, and Transfer Family handles file transfers over SFTP/FTPS/FTP.',
+      '**AWS DMS** migrates databases to AWS while the source stays operational. It handles same-engine and cross-engine migrations such as Oracle to Aurora PostgreSQL (schema conversion is done by DMS Schema Conversion or the AWS Schema Conversion Tool). DataSync moves files, Application Migration Service rehosts whole servers without changing engines, and Transfer Family handles SFTP/FTPS/FTP transfers.',
   },
   {
     id: 'tech-159',
@@ -693,7 +693,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Storage Gateway', 'AWS DataSync', 'Amazon AppFlow', 'AWS Transfer Family'],
     answer: [1],
     explanation:
-      '**AWS DataSync** is an online data transfer service that automates and accelerates moving data between on-premises storage (NFS, SMB, and others) and AWS storage services, with scheduling. Storage Gateway gives on-premises applications ongoing hybrid access to cloud storage rather than bulk migration. AppFlow moves SaaS application data, and Transfer Family provides SFTP/FTPS/FTP endpoints.',
+      '**AWS DataSync** automates and speeds up online transfers between on-premises storage (NFS, SMB, and others) and AWS storage, with scheduling. Storage Gateway gives on-premises apps ongoing hybrid access to cloud storage, not bulk migration. AppFlow moves SaaS application data, and Transfer Family provides SFTP/FTPS/FTP endpoints.',
   },
   {
     id: 'tech-160',
@@ -703,7 +703,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS DataSync', 'AWS Storage Gateway', 'AWS Transfer Family', 'Amazon AppFlow'],
     answer: [2],
     explanation:
-      '**AWS Transfer Family** provides fully managed SFTP, FTPS, FTP, and AS2 endpoints that store files directly in Amazon S3 or Amazon EFS. DataSync is for moving data between storage systems rather than accepting partner SFTP uploads, Storage Gateway connects on-premises applications to cloud storage, and AppFlow integrates SaaS applications.',
+      '**AWS Transfer Family** provides fully managed SFTP, FTPS, FTP, and AS2 endpoints that store files directly in Amazon S3 or Amazon EFS. DataSync moves data between storage systems but does not accept partner SFTP uploads, Storage Gateway connects on-premises apps to cloud storage, and AppFlow integrates SaaS apps.',
   },
   {
     id: 'tech-161',
@@ -729,7 +729,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS IoT Core', 'AWS IoT Greengrass', 'Amazon Kinesis Data Streams', 'Amazon SNS'],
     answer: [0],
     explanation:
-      '**AWS IoT Core** lets devices connect securely to the cloud using protocols such as MQTT and HTTPS, and its rules engine routes messages to other AWS services. IoT Greengrass runs software on edge devices rather than acting as the cloud connection point, Kinesis Data Streams ingests streaming data but does not manage device connections, and SNS is a pub/sub notification service.',
+      '**AWS IoT Core** connects devices securely to the cloud over protocols such as MQTT and HTTPS, and its rules engine routes messages to other AWS services. IoT Greengrass runs software on edge devices, not the cloud connection point, Kinesis Data Streams ingests streams but does not manage devices, and SNS is pub/sub notification.',
   },
   {
     id: 'tech-163',
@@ -790,7 +790,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     ],
     answer: [2],
     explanation:
-      '**Amazon WorkSpaces Secure Browser** provides a fully managed, cloud-hosted browser for accessing internal websites and SaaS applications from existing local browsers, without data being stored on the device. WorkSpaces provides full virtual desktops and AppStream 2.0 streams desktop applications, which is more than this need. Amazon Connect is a contact center service.',
+      '**Amazon WorkSpaces Secure Browser** is a fully managed, cloud-hosted browser for reaching internal websites and SaaS apps from users\' own browsers, with no data stored on the device. WorkSpaces (full desktops) and AppStream 2.0 (streamed desktop apps) are more than this needs. Amazon Connect is a contact center service.',
   },
   {
     id: 'tech-167',
@@ -800,7 +800,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['AWS Amplify', 'AWS AppSync', 'Amazon API Gateway', 'AWS CodeArtifact'],
     answer: [0],
     explanation:
-      '**AWS Amplify** provides tools and hosting to build, deploy, and host full-stack web and mobile apps, including Git-based CI/CD. AppSync creates managed GraphQL APIs, API Gateway creates and manages APIs, and CodeArtifact stores software packages; none of them hosts a full-stack app on its own.',
+      '**AWS Amplify** provides tools and hosting to build, deploy, and host full-stack web and mobile apps, with Git-based CI/CD. AppSync creates managed GraphQL APIs, API Gateway manages APIs, and CodeArtifact stores packages; none hosts a full-stack app on its own.',
   },
   {
     id: 'tech-168',
@@ -826,7 +826,7 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon Lex', 'Amazon SNS', 'Amazon Connect', 'Amazon WorkSpaces'],
     answer: [2],
     explanation:
-      '**Amazon Connect** is an omnichannel cloud contact center service for voice and chat with pay-as-you-go pricing. Amazon Lex can power bots inside a contact center but is not a contact center itself, SNS sends notifications, and WorkSpaces provides virtual desktops.',
+      '**Amazon Connect** is an omnichannel cloud contact center for voice and chat with pay-as-you-go pricing. Amazon Lex can power bots inside a contact center but is not one itself, SNS sends notifications, and WorkSpaces provides virtual desktops.',
   },
   {
     id: 'tech-170',
@@ -836,6 +836,6 @@ export const technologyMoreQuestions: ExamQuestion[] = [
     options: ['Amazon SQS', 'Amazon Connect', 'Amazon MQ', 'Amazon Simple Email Service (Amazon SES)'],
     answer: [3],
     explanation:
-      '**Amazon SES** is a cloud email service for sending transactional, marketing, and bulk email from applications. SQS and Amazon MQ are messaging services between application components, and Amazon Connect is a contact center service.',
+      '**Amazon SES** is a cloud email service for sending transactional, marketing, and bulk email from applications. SQS and Amazon MQ pass messages between app components, and Amazon Connect is a contact center.',
   },
 ];

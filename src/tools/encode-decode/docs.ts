@@ -9,9 +9,10 @@ const docs: ToolDocs = {
     'Copy the result with **Copy output**, or open it in another tool with **Send to…**.',
   ],
   howItWorks:
-    'Text is first turned into UTF-8 bytes, so any Unicode text, including emoji, round-trips. Base64 uses the standard RFC 4648 alphabet with `=` padding; Base64URL uses `-` and `_` and no padding. Hex writes each UTF-8 byte as two lowercase hex digits. When decoding Base64, Base64URL and Hex, the resulting bytes must be valid UTF-8, or you get an error instead of garbled text.\n\n' +
-    '**URL component** and **Full URL** use the browser’s `encodeURIComponent` / `decodeURIComponent` and `encodeURI` / `decodeURI`. The component variant escapes everything except letters, digits and `- _ . ! ~ * \' ( )`, while the full-URL variant keeps characters such as `: / ? # & =` intact.\n\n' +
-    '**HTML entities** escapes `&`, `<`, `>`, `"` and `\'`, and with **Also escape all non-ASCII characters** every character above `~` as a hex reference such as `&#xE9;`. Decoding handles decimal and hex references and a built-in set of common named entities, without using the page’s HTML parser.',
+    'Text is first turned into UTF-8 bytes, so any Unicode text, including emoji, round-trips. Base64 uses the standard RFC 4648 alphabet with `=` padding; Base64URL uses `-` and `_` and no padding. Hex writes each byte as two lowercase hex digits.\n\n' +
+    'When decoding Base64, Base64URL and Hex, the bytes must be valid UTF-8, or you get an error instead of garbled text.\n\n' +
+    '**URL component** and **Full URL** use the browser’s `encodeURIComponent` / `decodeURIComponent` and `encodeURI` / `decodeURI`. The component variant escapes everything except letters, digits and `- _ . ! ~ * \' ( )`. The full-URL variant keeps characters such as `: / ? # & =` intact.\n\n' +
+    '**HTML entities** escapes `&`, `<`, `>`, `"` and `\'`. With **Also escape all non-ASCII characters**, it also escapes every character above `~` as a hex reference such as `&#xE9;`. Decoding handles decimal and hex references and a built-in set of common named entities, without using the page’s HTML parser.',
   limits: [
     'Input and output are text: decoded bytes that aren’t valid UTF-8 (for example a Base64-encoded image) are rejected rather than shown.',
     'Base64 decoding ignores whitespace; padding is optional but must be correct when present. Characters from the other Base64 alphabet are rejected, with a hint to switch codec.',
@@ -20,7 +21,7 @@ const docs: ToolDocs = {
     'Files opened or dropped must be text, up to 10 MB.',
   ],
   privacy:
-    'All conversions run in your browser as you type; nothing is uploaded or stored. If you use **Send to…** to pass text between tools, it is handed over through this tab’s session storage and removed as soon as the receiving tool reads it.',
+    'All conversions run in your browser as you type; nothing is uploaded or stored. Text passed with **Send to…** goes through this tab’s session storage and is removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'What is the difference between Base64 and Base64URL?',

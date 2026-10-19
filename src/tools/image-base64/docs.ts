@@ -8,8 +8,9 @@ const docs: ToolDocs = {
     'Check the preview and the detected type, then click **Download** to save the image.',
   ],
   howItWorks:
-    'Encoding reads the file’s bytes and writes them as standard Base64, four characters for every three bytes, which makes the text about a third bigger than the image. The type in the data URI comes from the file’s first bytes (its magic number), not its name or extension.\n\n' +
-    'Decoding first pulls a `data:` URI out of any surrounding CSS `url(…)`, `<img>` tag or quotes. Base64 is decoded strictly: whitespace and line breaks are ignored, but any other invalid character, bad padding or truncated length is reported. Base64URL (with `-` and `_`) is recognised automatically, and non-Base64 data URIs such as percent-encoded SVG are decoded too. The decoded bytes are identified by their magic number; if that disagrees with the data URI’s declared type, you’re warned and the detected type is used.',
+    'Encoding writes the file’s bytes as standard Base64: four characters for every three bytes, so the text is about a third bigger than the image. The type in the data URI comes from the file’s first bytes (its magic number), not its name or extension.\n\n' +
+    'Decoding first pulls a `data:` URI out of any surrounding CSS `url(…)`, `<img>` tag or quotes. Base64 is decoded strictly: whitespace and line breaks are ignored, but any other invalid character, bad padding or truncated length is reported.\n\n' +
+    'Base64URL (with `-` and `_`) is recognised automatically, and non-Base64 data URIs such as percent-encoded SVG are decoded too. The decoded bytes are identified by their magic number. If that disagrees with the data URI’s declared type, you’re warned and the detected type is used.',
   limits: [
     'Images up to 10 MB can be encoded, and up to 20 MB of image data can be decoded.',
     'Recognised formats: PNG, JPEG, GIF, WebP, AVIF, HEIC, BMP, ICO, TIFF, JPEG XL and SVG. Files that aren’t recognised as images can’t be encoded.',

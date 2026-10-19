@@ -7,12 +7,11 @@ export const slidingWindowProblems: Problem[] = [
     difficulty: "Easy",
     category: "sliding-window",
     description: `
-You're given a list of prices, where \`prices[i]\` is the price of a stock
-on day \`i\`. You're allowed to buy the stock on exactly one day, and then
-sell it on a *later* day.
+\`prices[i]\` is a stock's price on day \`i\`. You can buy on one day and
+sell on a *later* day.
 
-Find the maximum profit you could make. If no choice of buy/sell days
-would make a profit, return \`0\` (you're allowed to simply not trade).
+Find the maximum profit. If no trade makes a profit, return \`0\` (you
+can choose not to trade).
     `.trim(),
     examples: [
       {
@@ -33,27 +32,25 @@ would make a profit, return \`0\` (you're allowed to simply not trade).
     ],
     constraints: ["1 <= prices.length <= 10^5", "0 <= prices[i] <= 10^4"],
     hints: [
-      "For any day you consider selling, what's the best day you could have bought on before it?",
-      "You don't need to re-scan all earlier days for every sell day — what single number about the past would you need to remember as you go?",
-      "Keep a running 'lowest price seen so far' as you scan left to right, and compare today's price against it.",
+      "For any sell day, what's the best day you could have bought before it?",
+      "You don't need to re-scan earlier days for each sell day. What one number about the past should you remember?",
+      "Keep a running 'lowest price so far' as you scan left to right, and compare today's price to it.",
     ],
     approachOverview: `
-The brute-force idea is to try every possible pair of a buy day and a
-later sell day, compute the profit for each pair, and keep the best one.
-That checks every pair, which is a lot of repeated work.
+Brute force tries every buy day with every later sell day and keeps the
+best profit. That repeats a lot of work.
 
-A much faster approach scans the prices once, left to right, while
-keeping track of two things: the lowest price seen *so far*, and the best
-profit found *so far*. On each day, you first check "if I sold today,
-having bought at the cheapest price I've seen, what would my profit be?"
-and update the best profit if that's better. Then you update the lowest
-price if today's price is even lower. By the end of one pass, you've
-considered every valid buy-then-sell pair without ever looking backwards.
+A faster way scans once, tracking the lowest price *so far* and the best
+profit *so far*. Each day, check the profit if you sold today after
+buying at the lowest price, and keep it if it's better. Then update the
+lowest price if today is lower.
+
+One pass covers every valid buy-then-sell pair without looking back.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Every Buy/Sell Pair",
-        explanation: "Try every day as a potential buy day, and every later day as a potential sell day, tracking the best profit seen. Correct, but it re-examines the same days over and over.",
+        explanation: "Try every buy day with every later sell day, tracking the best profit. Correct, but it checks the same days over and over.",
         code: `function maxProfit(prices) {
   let best = 0;
 
@@ -73,7 +70,7 @@ considered every valid buy-then-sell pair without ever looking backwards.
       },
       {
         approach: "Optimal — Track the Running Minimum",
-        explanation: "Walk through the prices once. Keep the lowest price seen so far as the best possible buy point, and at each day check what profit selling today would give against that minimum, updating the best answer as you go.",
+        explanation: "Walk the prices once. Keep the lowest price so far as the buy point, and each day check the profit from selling today, updating the best answer.",
         code: `function maxProfit(prices) {
   let minPrice = Infinity;
   let best = 0;
@@ -91,11 +88,11 @@ considered every valid buy-then-sell pair without ever looking backwards.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
         walkthrough: [
-          { code: "let minPrice = Infinity;", explanation: "Starts with no valid buy price seen yet, so anything will be lower." },
-          { code: "let best = 0;", explanation: "No trade made yet, so the best profit so far is zero." },
-          { code: "if (price < minPrice) {", explanation: "If today is the cheapest day seen so far, it becomes the new best place to have bought." },
-          { code: "} else if (price - minPrice > best) {", explanation: "Otherwise, check what profit selling today would give if bought at the cheapest price seen — and keep it if it beats the current best." },
-          { code: "return best;", explanation: "After one pass, every possible buy-then-sell pair has effectively been considered." },
+          { code: "let minPrice = Infinity;", explanation: "No buy price seen yet, so any price will be lower." },
+          { code: "let best = 0;", explanation: "No trade yet, so the best profit is zero." },
+          { code: "if (price < minPrice) {", explanation: "If today is the cheapest day so far, it becomes the new best buy day." },
+          { code: "} else if (price - minPrice > best) {", explanation: "Otherwise, check the profit from selling today at the lowest buy price, and keep it if it's the best." },
+          { code: "return best;", explanation: "One pass has covered every buy-then-sell pair." },
         ],
       },
     ],
@@ -109,9 +106,8 @@ considered every valid buy-then-sell pair without ever looking backwards.
     difficulty: "Medium",
     category: "sliding-window",
     description: `
-You're given a string. Find the length of the longest substring (a
-*contiguous* run of characters, not just any subset) that contains no
-repeated characters.
+Given a string, find the length of the longest substring (a
+*contiguous* run of characters) with no repeated characters.
     `.trim(),
     examples: [
       {
@@ -132,29 +128,27 @@ repeated characters.
     ],
     constraints: ["0 <= s.length <= 5 * 10^4", "s consists of English letters, digits, symbols, and spaces."],
     hints: [
-      "Think of a window that expands to the right as long as it stays valid, and shrinks from the left the moment it becomes invalid.",
-      "How would you instantly check whether the character you're about to add is already inside the current window?",
-      "A hash set (or a map from character to its most recent index) lets you both detect repeats instantly and jump the left edge of the window forward efficiently.",
+      "Picture a window that grows to the right while it's valid, and shrinks from the left as soon as it isn't.",
+      "How can you instantly check whether the next character is already in the window?",
+      "A hash set (or a map from character to its latest index) detects repeats instantly and lets you move the left edge forward efficiently.",
     ],
     approachOverview: `
-A brute-force approach would check every possible substring, and for each
-one scan it to see if it has repeated characters. That's a lot of
-redundant scanning since substrings overlap heavily.
+Brute force checks every substring for repeats. Substrings overlap
+heavily, so that's a lot of repeated scanning.
 
-Instead, use a sliding window: keep two pointers, \`left\` and \`right\`,
-marking the current substring, plus a set of the characters currently
-inside that window. Move \`right\` forward one step at a time, adding
-characters to the set. If the character you're adding is already in the
-set, that means the window has a duplicate — so shrink the window from
-the left, removing characters, until the duplicate is gone. At every
-step, the window is duplicate-free, so its length is a candidate answer.
-This way each character is added and removed from the window at most
-once, giving a single pass overall.
+Use a sliding window instead. Pointers \`left\` and \`right\` mark the
+current substring, and a set holds its characters. Move \`right\`
+forward one step at a time, adding characters to the set.
+
+If the new character is already in the set, shrink from the left until
+the duplicate is gone. The window is then duplicate-free, so its length
+is a candidate answer. Each character enters and leaves the window at
+most once, so it's a single pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Substring",
-        explanation: "Try every start and end position, and for each candidate substring scan it to check whether all characters are unique. Simple, but re-scans overlapping substrings many times.",
+        explanation: "Try every start position and extend until a character repeats. Simple, but re-scans overlapping substrings many times.",
         code: `function lengthOfLongestSubstring(s) {
   let best = 0;
 
@@ -176,7 +170,7 @@ once, giving a single pass overall.
       },
       {
         approach: "Optimal — Sliding Window with a Set",
-        explanation: "Grow the window by moving the right edge forward. Whenever the incoming character is already inside the window, shrink from the left until it isn't a duplicate anymore, then keep going.",
+        explanation: "Move the right edge forward. If the new character is already in the window, shrink from the left until it isn't, then continue.",
         code: `function lengthOfLongestSubstring(s) {
   const window = new Set();
   let left = 0;
@@ -196,12 +190,12 @@ once, giving a single pass overall.
         timeComplexity: "O(n)",
         spaceComplexity: "O(min(n, alphabet size))",
         walkthrough: [
-          { code: "const window = new Set();", explanation: "Holds exactly the characters currently between left and right, with no duplicates." },
+          { code: "const window = new Set();", explanation: "Holds the characters between left and right, with no duplicates." },
           { code: "for (let right = 0; right < s.length; right++) {", explanation: "Grows the window one character at a time from the right." },
-          { code: "while (window.has(s[right])) {", explanation: "If the new character is already in the window, the window currently has a duplicate to remove." },
-          { code: "window.delete(s[left]); left++;", explanation: "Shrinks from the left, discarding characters, until the duplicate is gone." },
-          { code: "window.add(s[right]);", explanation: "Now it's safe to add the new character — the window is duplicate-free again." },
-          { code: "best = Math.max(best, right - left + 1);", explanation: "Records the window's length as a candidate for the longest valid substring." },
+          { code: "while (window.has(s[right])) {", explanation: "The new character is already in the window, so there's a duplicate to remove." },
+          { code: "window.delete(s[left]); left++;", explanation: "Shrinks from the left until the duplicate is gone." },
+          { code: "window.add(s[right]);", explanation: "Now the new character can be added safely." },
+          { code: "best = Math.max(best, right - left + 1);", explanation: "Records the window's length as a candidate answer." },
         ],
       },
     ],
@@ -215,12 +209,11 @@ once, giving a single pass overall.
     difficulty: "Medium",
     category: "sliding-window",
     description: `
-You're given a string made of uppercase letters and a number \`k\`. You're
-allowed to pick up to \`k\` characters anywhere in the string and change
-each of them to any other letter you like.
+You're given a string of uppercase letters and a number \`k\`. You can
+change up to \`k\` characters to any other letter.
 
-After making at most \`k\` such changes, find the length of the longest
-substring that consists of a single repeated letter (like \`"AAAA"\`).
+Find the length of the longest substring of one repeated letter (like
+\`"AAAA"\`) you can get with at most \`k\` changes.
     `.trim(),
     examples: [
       { input: 's = "ABAB", k = 2', output: "4", explanation: 'Change both "B"s to "A" (or both "A"s to "B") to get "AAAA" or "BBBB", length 4.' },
@@ -233,33 +226,29 @@ substring that consists of a single repeated letter (like \`"AAAA"\`).
     ],
     constraints: ["1 <= s.length <= 10^5", "s consists of only uppercase English letters.", "0 <= k <= s.length"],
     hints: [
-      "For a candidate window, if you kept the most common letter in it and changed everything else, how many changes would that take?",
-      "A window is 'achievable' exactly when (window length) - (count of its most frequent letter) <= k. Try growing a window and shrinking it only when that stops being true.",
-      "You don't need the frequency count to be perfectly up to date when shrinking — even a slightly stale 'best frequency seen so far' is enough to let the window only ever grow or stay the same size, never truly shrink the best answer.",
+      "If you kept a window's most common letter and changed everything else, how many changes would that take?",
+      "A window works when (window length) - (count of its most frequent letter) <= k. Grow the window and shrink it only when that fails.",
+      "The frequency count doesn't need to be exact when shrinking. A slightly stale 'best frequency so far' still works, because the window never shrinks below the best answer.",
     ],
     approachOverview: `
-The brute-force way is to check every substring, and for each one count
-how many characters differ from its most frequent letter — that count is
-exactly how many replacements it would take. If that count is at most
-\`k\`, the substring is achievable, so track the longest one you find.
-That means re-counting letter frequencies for overlapping substrings
-again and again.
+Brute force checks every substring and counts how many characters differ
+from its most frequent letter. That's the number of replacements needed;
+if it's at most \`k\`, the substring works. But it re-counts overlapping
+substrings again and again.
 
-A sliding window does much better. Grow a window from left to right,
-keeping a running count of how often each letter appears inside it.
-A window of length \`L\` needs \`L - (count of its most frequent letter)\`
-replacements to become a single repeated letter, since every character
-other than the most common one has to change. As long as that number is
-\`<= k\`, the window is valid, so let it keep growing. The moment it isn't
-valid, shrink from the left by one. The window's length only ever grows
-or holds steady as it slides — it can be shown that it never needs to
-shrink below the best length already found, so tracking the maximum
-window length seen is enough to get the right answer.
+A sliding window does better. Grow it left to right, counting each
+letter inside. A window of length \`L\` needs
+\`L - (count of its most frequent letter)\` replacements, since every
+other character must change.
+
+While that's \`<= k\`, keep growing. When it isn't, shrink from the left
+by one. The window never needs to shrink below the best length found,
+so tracking the largest window seen gives the right answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Substring",
-        explanation: "For every substring, count how many characters are not the most frequent letter in it — that's the number of replacements needed — and check it against k.",
+        explanation: "For every substring, count the characters that aren't its most frequent letter (the replacements needed) and check that against k.",
         code: `function characterReplacement(s, k) {
   let best = 0;
 
@@ -287,7 +276,7 @@ window length seen is enough to get the right answer.
       },
       {
         approach: "Optimal — Sliding Window with Max Frequency",
-        explanation: "Grow the window while tracking letter counts and the highest frequency seen in it. If the window ever needs more than k replacements, shrink it from the left by one. The window's size only ever grows over the whole scan, so its final size is the answer.",
+        explanation: "Grow the window, tracking letter counts and the highest frequency. If it needs more than k replacements, shrink it from the left by one. The window never shrinks overall, so its final size is the answer.",
         code: `function characterReplacement(s, k) {
   const counts = {};
   let left = 0;
@@ -312,11 +301,11 @@ window length seen is enough to get the right answer.
         timeComplexity: "O(n)",
         spaceComplexity: "O(26) — constant, one count per uppercase letter",
         walkthrough: [
-          { code: "counts[s[right]] = (counts[s[right]] || 0) + 1;", explanation: "Adds the new right-edge character to the window's letter counts." },
-          { code: "maxCount = Math.max(maxCount, counts[s[right]]);", explanation: "Tracks the highest single-letter frequency seen in any window so far (it's fine if this is slightly stale after a shrink)." },
-          { code: "if (windowLength - maxCount > k) {", explanation: "Checks if turning this window into one repeated letter would take more than k changes." },
-          { code: "counts[s[left]]--; left++;", explanation: "If it would take too many changes, shrink the window by dropping its leftmost character." },
-          { code: "best = Math.max(best, right - left + 1);", explanation: "Records the current window's length as a candidate answer — the window never truly shrinks below the best found." },
+          { code: "counts[s[right]] = (counts[s[right]] || 0) + 1;", explanation: "Adds the new right-edge character to the letter counts." },
+          { code: "maxCount = Math.max(maxCount, counts[s[right]]);", explanation: "Tracks the highest single-letter frequency seen so far (it can be slightly stale after a shrink)." },
+          { code: "if (windowLength - maxCount > k) {", explanation: "Checks whether this window would need more than k changes." },
+          { code: "counts[s[left]]--; left++;", explanation: "If so, drop the leftmost character." },
+          { code: "best = Math.max(best, right - left + 1);", explanation: "Records the window's length as a candidate. The window never shrinks below the best found." },
         ],
       },
     ],
@@ -330,12 +319,11 @@ window length seen is enough to get the right answer.
     difficulty: "Medium",
     category: "sliding-window",
     description: `
-You're given two strings, \`s1\` and \`s2\`. Check whether \`s2\` contains a
-*permutation* of \`s1\` as a contiguous substring — in other words, whether
-some contiguous run of \`s2\` uses exactly the same letters, with exactly
-the same counts, as \`s1\`, just possibly in a different order.
+Given strings \`s1\` and \`s2\`, check whether \`s2\` contains a
+*permutation* of \`s1\` as a contiguous substring: a run with exactly
+the same letters and counts as \`s1\`, in any order.
 
-Return \`true\` if such a substring exists, and \`false\` otherwise.
+Return \`true\` if it does, and \`false\` otherwise.
     `.trim(),
     examples: [
       {
@@ -356,32 +344,28 @@ Return \`true\` if such a substring exists, and \`false\` otherwise.
     ],
     constraints: ["1 <= s1.length, s2.length <= 10^4", "s1 and s2 consist of lowercase English letters."],
     hints: [
-      "A permutation of s1 is just any rearrangement of its letters — so you're really looking for any window in s2 of length s1.length whose letter counts exactly match s1's letter counts.",
-      "Since every window you check has the same fixed length, you can slide it one step at a time rather than trying every start position from scratch.",
-      "When you slide the window by one, only one letter leaves and one enters — update the counts incrementally instead of recounting the whole window each time.",
+      "A permutation is any rearrangement of s1's letters. So look for a window in s2 of length s1.length whose letter counts match s1's.",
+      "Every window has the same fixed length, so slide it one step at a time instead of starting from scratch at each position.",
+      "Each slide moves one letter out and one in. Update the counts instead of recounting the whole window.",
     ],
     approachOverview: `
-Since a permutation just rearranges the same letters, this problem is
-really: does \`s2\` contain any contiguous window, the same length as
-\`s1\`, whose letter counts exactly match \`s1\`'s letter counts?
+A permutation just rearranges letters, so the question is: does \`s2\`
+have a window, the length of \`s1\`, with the same letter counts as
+\`s1\`?
 
-The brute-force approach checks every window of that fixed length by
-building a fresh count of its letters and comparing it to \`s1\`'s counts —
-that recomputation is wasteful since neighboring windows overlap almost
-entirely.
+Brute force builds fresh counts for every window and compares them.
+That's wasteful, since neighboring windows overlap almost entirely.
 
-A sliding window fixes this: build the letter counts for \`s1\` once, and
-for the first window of \`s2\`. Then slide the window one step at a time —
-each slide removes exactly one letter (the one falling off the left) and
-adds exactly one letter (the one entering on the right), so the counts
-can be updated incrementally instead of recomputed. After each slide,
-compare the window's counts to \`s1\`'s counts; if they ever match exactly,
-a valid permutation has been found.
+A sliding window fixes this. Count \`s1\`'s letters once, and the first
+window of \`s2\`. Each slide removes one letter on the left and adds one
+on the right, so you update the counts instead of recomputing them.
+After each slide, compare to \`s1\`'s counts; a match means you found a
+permutation.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Recount Every Window",
-        explanation: "For every possible window of s2 with the same length as s1, build its letter counts from scratch and compare them against s1's counts.",
+        explanation: "For every window of s2 the length of s1, build its letter counts from scratch and compare them to s1's counts.",
         code: `function checkInclusion(s1, s2) {
   const need = buildCounts(s1);
   const windowSize = s1.length;
@@ -418,7 +402,7 @@ function sameCounts(a, b) {
       },
       {
         approach: "Optimal — Fixed-Size Sliding Window",
-        explanation: "Keep one running count array for the current window in s2, updated incrementally as the window slides by one position at a time, and compare it to s1's counts after each slide.",
+        explanation: "Keep one count array for the current window in s2, update it as the window slides, and compare it to s1's counts after each slide.",
         code: `function checkInclusion(s1, s2) {
   if (s1.length > s2.length) return false;
 
@@ -453,11 +437,11 @@ function matches(a, b) {
         timeComplexity: "O(n + m) — n = s2.length, m = s1.length, since the letter comparison is a constant 26 slots",
         spaceComplexity: "O(26) — constant, two fixed-size count arrays",
         walkthrough: [
-          { code: "for (let i = 0; i < s1.length; i++) { need[...]++; have[...]++; }", explanation: "Builds the target counts for s1 once, and the counts for the very first window of s2 of the same length." },
-          { code: "if (matches(need, have)) return true;", explanation: "Checks the first window immediately, before sliding at all." },
-          { code: "have[s2.charCodeAt(right) - base]++;", explanation: "Slides the window forward by including the new character on the right." },
-          { code: "have[s2.charCodeAt(left) - base]--;", explanation: "And removing the character that just fell off the left, keeping the window a fixed size." },
-          { code: "if (matches(need, have)) return true;", explanation: "Compares the updated window counts to s1's counts after every slide." },
+          { code: "for (let i = 0; i < s1.length; i++) { need[...]++; have[...]++; }", explanation: "Builds s1's target counts and the counts for s2's first window of the same length." },
+          { code: "if (matches(need, have)) return true;", explanation: "Checks the first window before sliding." },
+          { code: "have[s2.charCodeAt(right) - base]++;", explanation: "Slides forward by adding the new character on the right." },
+          { code: "have[s2.charCodeAt(left) - base]--;", explanation: "Removes the character that fell off the left, keeping the window size fixed." },
+          { code: "if (matches(need, have)) return true;", explanation: "Compares the window's counts to s1's after every slide." },
         ],
       },
     ],
@@ -471,12 +455,11 @@ function matches(a, b) {
     difficulty: "Medium",
     category: "sliding-window",
     description: `
-You're given a string \`s\` and a shorter pattern string \`p\`. Find every
-starting index in \`s\` where a substring begins that is an *anagram* of
-\`p\` — meaning it uses exactly the same letters, with exactly the same
-counts, just possibly in a different order.
+Given a string \`s\` and a shorter pattern \`p\`, find every index in
+\`s\` where an *anagram* of \`p\` starts. An anagram has exactly the same
+letters and counts, in any order.
 
-Return all such starting indices, in any order.
+Return the starting indices in any order.
     `.trim(),
     examples: [
       {
@@ -493,27 +476,26 @@ Return all such starting indices, in any order.
     ],
     constraints: ["1 <= s.length, p.length <= 3 * 10^4", "s and p consist of lowercase English letters."],
     hints: [
-      "This is the same underlying question as checking whether one string contains a permutation of another — except here you need every match, not just whether one exists.",
-      "Every window you'll ever check has the same fixed length, p.length — slide it across s one step at a time instead of rebuilding it from scratch.",
-      "Keep a running letter-count for the current window, updating it by one letter in and one letter out on each slide, and compare it to p's letter-count after every slide.",
+      "This is like checking whether one string contains a permutation of another, but you need every match, not just one.",
+      "Every window has the same length, p.length. Slide it across s one step at a time instead of rebuilding it.",
+      "Keep letter counts for the current window, updating one letter in and one out per slide, and compare to p's counts after each slide.",
     ],
     approachOverview: `
-This is essentially "Permutation in String," but instead of stopping at
-the first match, every matching starting index needs to be collected.
+This is "Permutation in String," but you collect every matching start
+index instead of stopping at the first.
 
-Build the letter counts for \`p\` once, and the counts for the first
-window of \`s\` (of the same length as \`p\`). Slide that window across
-\`s\` one character at a time: each slide adds the new character on the
-right and removes the one falling off the left, so the counts update in
-constant time rather than being recomputed. After every slide (including
-the very first window), compare the window's counts to \`p\`'s counts —
-whenever they match exactly, the window's starting index is an anagram
-match, so record it.
+Count \`p\`'s letters once, and the first window of \`s\` (same length as
+\`p\`). Slide the window one character at a time: add the new character
+on the right and remove the one on the left, so counts update in
+constant time.
+
+After every slide (and for the first window), compare counts with
+\`p\`'s. If they match, record the window's start index.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Recount Every Window",
-        explanation: "For every window of s the same length as p, build its letter counts from scratch and compare them to p's counts, collecting every start index that matches.",
+        explanation: "For every window of s the length of p, build its letter counts from scratch, compare to p's, and collect each matching start index.",
         code: `function findAnagrams(s, p) {
   const result = [];
   const need = buildCounts(p);
@@ -549,7 +531,7 @@ function sameCounts(a, b) {
       },
       {
         approach: "Optimal — Fixed-Size Sliding Window",
-        explanation: "Maintain one running count array for the current window, updated by adding and removing a single letter as the window slides, and check it against p's counts after each slide.",
+        explanation: "Keep one count array for the window, add and remove one letter per slide, and compare it to p's counts after each slide.",
         code: `function findAnagrams(s, p) {
   const result = [];
   if (p.length > s.length) return result;
@@ -587,11 +569,11 @@ function matches(a, b) {
         timeComplexity: "O(n + m) — n = s.length, m = p.length, comparisons are a constant 26 slots",
         spaceComplexity: "O(26) — constant, two fixed-size count arrays",
         walkthrough: [
-          { code: "for (let i = 0; i < p.length; i++) { need[...]++; have[...]++; }", explanation: "Builds p's target counts once, and the counts for the first window of s." },
-          { code: "if (matches(need, have)) result.push(0);", explanation: "The very first window starts at index 0, so it's checked before any sliding happens." },
-          { code: "have[s.charCodeAt(right) - base]++;", explanation: "Slides forward by including the new right-edge character." },
-          { code: "have[s.charCodeAt(left) - base]--;", explanation: "And excluding the character that just fell off the left edge." },
-          { code: "if (matches(need, have)) { result.push(left + 1); }", explanation: "The new window now starts at left + 1 — record it if its counts match p's." },
+          { code: "for (let i = 0; i < p.length; i++) { need[...]++; have[...]++; }", explanation: "Builds p's target counts and the counts for the first window of s." },
+          { code: "if (matches(need, have)) result.push(0);", explanation: "The first window starts at index 0, so it's checked before sliding." },
+          { code: "have[s.charCodeAt(right) - base]++;", explanation: "Slides forward by adding the new right-edge character." },
+          { code: "have[s.charCodeAt(left) - base]--;", explanation: "Removes the character that fell off the left edge." },
+          { code: "if (matches(need, have)) { result.push(left + 1); }", explanation: "The window now starts at left + 1. Record it if its counts match p's." },
         ],
       },
     ],
@@ -605,14 +587,12 @@ function matches(a, b) {
     difficulty: "Hard",
     category: "sliding-window",
     description: `
-You're given two strings, \`s\` and \`t\`. Find the *shortest* contiguous
-substring of \`s\` that contains every character in \`t\`, including
-matching each character's count (if \`t\` has two \`"a"\`s, the substring
-must contain at least two \`"a"\`s too).
+Given strings \`s\` and \`t\`, find the *shortest* contiguous substring
+of \`s\` that contains every character of \`t\`, with counts (if \`t\` has
+two \`"a"\`s, the substring needs at least two).
 
-Return that shortest substring. If no such substring exists, return an
-empty string. If multiple shortest substrings tie, returning any one of
-them is fine.
+Return that substring, or an empty string if none exists. If several
+tie, return any one.
     `.trim(),
     examples: [
       {
@@ -629,33 +609,30 @@ them is fine.
       "There is guaranteed to be at least one valid answer, or the correct result is an empty string.",
     ],
     hints: [
-      "Think of a window that grows until it satisfies every required character, and then shrinks as much as possible while staying valid.",
-      "Track how many of each required character the window currently has, plus a single running counter for 'how many distinct required characters are fully satisfied right now' — that avoids rescanning all counts on every step.",
-      "Once the window is valid, greedily shrink from the left (recording the window if it's the best so far) until it stops being valid, then go back to growing from the right.",
+      "Picture a window that grows until it has every required character, then shrinks as much as it can while staying valid.",
+      "Track how many of each required character the window has, plus one counter for 'how many distinct required characters are fully met'. That avoids rescanning all counts each step.",
+      "Once valid, shrink from the left (recording the window if it's the best so far) until it isn't valid, then grow from the right again.",
     ],
     approachOverview: `
-The brute-force approach checks every possible substring of \`s\`, and for
-each one verifies whether it contains enough of every character required
-by \`t\`. That means re-scanning overlapping substrings again and again,
-and doing a full comparison against \`t\`'s requirements each time.
+Brute force checks every substring of \`s\` against \`t\`'s
+requirements. That re-scans overlapping substrings and does a full
+comparison each time.
 
-A sliding window is far more efficient. Keep a count of how many of each
-character \`t\` requires, and a matching count for what the current window
-actually has. Grow the window from the right, and every time a character
-reaches exactly the count \`t\` needs for it, mark one more requirement as
-"satisfied." Once *all* requirements are satisfied, the window is valid —
-at that point, try shrinking it from the left as far as possible (each
-shrink might record a new best answer) until it becomes invalid again
-(a requirement drops below what's needed). Then resume growing from the
-right. Tracking a single "how many requirements are satisfied" counter,
-rather than re-checking every character's count each time, keeps each
-step of the process fast — every character is added to and removed from
-the window at most once overall.
+A sliding window is far faster. Count what \`t\` requires and what the
+window has. Grow the window from the right. When a character's count
+reaches exactly what \`t\` needs, one more requirement is "satisfied."
+
+Once *all* requirements are satisfied, the window is valid. Shrink it
+from the left as far as possible, recording each new best, until a
+requirement drops below what's needed. Then grow from the right again.
+
+The single "satisfied" counter avoids rechecking every count, and each
+character enters and leaves the window at most once.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Check Every Substring",
-        explanation: "For every possible start and end position, build the substring's character counts and check whether it covers every requirement of t, tracking the shortest one that works.",
+        explanation: "For every start and end position, build the substring's counts and check whether it covers t, tracking the shortest that works.",
         code: `function minWindow(s, t) {
   if (t.length > s.length) return "";
 
@@ -697,7 +674,7 @@ function covers(need, have) {
       },
       {
         approach: "Optimal — Sliding Window with a Satisfied-Count",
-        explanation: "Grow the window until every character requirement from t is met, tracked with a single counter instead of rechecking all counts. Then shrink from the left as far as possible, recording the best window at each valid point, before growing again.",
+        explanation: "Grow the window until every requirement from t is met, tracked with one counter. Then shrink from the left as far as possible, recording the best valid window, before growing again.",
         code: `function minWindow(s, t) {
   if (t.length > s.length) return "";
 
@@ -739,12 +716,12 @@ function covers(need, have) {
         timeComplexity: "O(n + m) — n = s.length, m = t.length; each index enters and leaves the window at most once",
         spaceComplexity: "O(k) — k = distinct characters in t",
         walkthrough: [
-          { code: "for (const ch of t) need[ch] = (need[ch] || 0) + 1;", explanation: "Records exactly how many of each character t requires." },
-          { code: "const required = Object.keys(need).length;", explanation: "Counts how many distinct characters need to be fully satisfied for the window to be valid." },
-          { code: "if (need[ch] !== undefined && have[ch] === need[ch]) { satisfied++; }", explanation: "The moment a character's count in the window exactly reaches what's needed, one more requirement becomes satisfied." },
-          { code: "while (satisfied === required) {", explanation: "Once every requirement is met, the window is valid — try to shrink it as much as possible." },
-          { code: "if (right - left + 1 < bestLen) { bestLen = ...; bestStart = left; }", explanation: "Every time the window is valid, it's a candidate for the shortest window found so far." },
-          { code: "have[leftChar]--; if (... have[leftChar] < need[leftChar]) satisfied--;", explanation: "Removing the leftmost character might drop a requirement below what's needed, which ends the shrinking phase." },
+          { code: "for (const ch of t) need[ch] = (need[ch] || 0) + 1;", explanation: "Records how many of each character t requires." },
+          { code: "const required = Object.keys(need).length;", explanation: "How many distinct characters must be satisfied for a valid window." },
+          { code: "if (need[ch] !== undefined && have[ch] === need[ch]) { satisfied++; }", explanation: "When a character's count reaches exactly what's needed, one more requirement is satisfied." },
+          { code: "while (satisfied === required) {", explanation: "Every requirement is met, so the window is valid. Shrink it as much as possible." },
+          { code: "if (right - left + 1 < bestLen) { bestLen = ...; bestStart = left; }", explanation: "Each valid window is a candidate for the shortest." },
+          { code: "have[leftChar]--; if (... have[leftChar] < need[leftChar]) satisfied--;", explanation: "Removing the leftmost character may drop a requirement below what's needed, which ends the shrinking." },
         ],
       },
     ],
@@ -758,12 +735,11 @@ function covers(need, have) {
     difficulty: "Hard",
     category: "sliding-window",
     description: `
-You're given a list of numbers and a window size \`k\`. Imagine a window
-of size \`k\` that starts at the beginning of the list and slides one step
-to the right at a time, all the way to the end.
+You're given a list of numbers and a window size \`k\`. A window of size
+\`k\` starts at the beginning and slides right one step at a time to the
+end.
 
-For every position of that window, find the maximum value inside it, and
-return the list of all those maximums, in order.
+Return the maximum value in each window position, in order.
     `.trim(),
     examples: [
       {
@@ -780,37 +756,33 @@ return the list of all those maximums, in order.
     ],
     constraints: ["1 <= nums.length <= 10^5", "-10^4 <= nums[i] <= 10^4", "1 <= k <= nums.length"],
     hints: [
-      "Recomputing the max of the whole window every time it slides works, but it repeats a lot of comparisons between consecutive windows.",
-      "Think about which numbers in the current window could still possibly become the maximum of some *future* window — a number that's smaller than a more-recent number in the window can never be the max again, no matter how far the window slides.",
-      "Keep a structure (a deque) of candidate indices in decreasing order of their values — the front is always the current window's max, and you can drop indices from the back whenever a bigger number arrives.",
+      "Recomputing each window's max works, but repeats many comparisons between neighboring windows.",
+      "Which numbers could still be the max of a *future* window? A number smaller than a more recent one in the window never can be.",
+      "Keep a deque of candidate indices in decreasing order of value. The front is the current max; drop indices from the back when a bigger number arrives.",
     ],
     approachOverview: `
-The direct approach is: for every window position, look at all \`k\`
-elements inside it and find the maximum. That's correct, but it repeats
-a huge amount of comparison work, since each element gets re-compared in
-every window it belongs to.
+The direct approach scans all \`k\` elements of every window for the
+max. It's correct, but each element is compared again in every window
+it's part of.
 
-The key insight for the fast approach: once a number in the window is
-smaller than some more-recent number also in the window, that older,
-smaller number can *never* become the maximum of any future window — the
-more recent, larger number will always still be in the window (or the
-window will have moved past both). So it can be safely thrown away.
+The key insight: if an older number is smaller than a newer one in the
+window, it can *never* be the max of a future window. The newer, larger
+number stays in the window at least as long. So the older one can be
+dropped.
 
-This suggests keeping a deque (a list you can add/remove from both ends)
-of *indices*, kept in an order where their corresponding values are
-strictly decreasing from front to back. When a new number comes in from
-the right, remove indices from the back of the deque whose values are
-smaller than the new number (they'll never matter again), then add the
-new index. Also remove the front index if it has slid outside the
-current window. After each such update, the value at the front of the
-deque is exactly the maximum of the current window. Every index is added
-and removed from the deque at most once, so the whole scan is a single
-pass.
+Keep a deque (a list you can add to or remove from at both ends) of
+*indices*, with values decreasing from front to back:
+
+- When a new number arrives, pop indices from the back whose values are smaller, then add the new index.
+- Remove the front index if it has slid out of the window.
+- The front now holds the current window's max.
+
+Each index is added and removed at most once, so it's a single pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force — Scan Every Window",
-        explanation: "For each window position, look at all k elements inside it directly to find the maximum.",
+        explanation: "For each window, check all k elements to find the maximum.",
         code: `function maxSlidingWindow(nums, k) {
   const result = [];
 
@@ -829,7 +801,7 @@ pass.
       },
       {
         approach: "Optimal — Monotonic Decreasing Deque",
-        explanation: "Keep a deque of indices whose values are strictly decreasing from front to back. The front index is always the current window's maximum. Drop smaller values from the back before adding a new one, and drop the front once it slides out of the window.",
+        explanation: "Keep a deque of indices with values decreasing from front to back, so the front is the window's max. Drop smaller values from the back before adding a new one, and drop the front once it leaves the window.",
         code: `function maxSlidingWindow(nums, k) {
   const deque = []; // stores indices, values decreasing front to back
   const result = [];
@@ -857,10 +829,10 @@ pass.
         timeComplexity: "O(n) — each index is pushed and popped from the deque at most once",
         spaceComplexity: "O(k) for the deque",
         walkthrough: [
-          { code: "while (deque.length > 0 && nums[deque[deque.length - 1]] < nums[i]) { deque.pop(); }", explanation: "Discards any recent-but-smaller candidates from the back — they can never be a window's max once a bigger number has arrived." },
-          { code: "deque.push(i);", explanation: "Adds the new index; the deque's values stay strictly decreasing from front to back." },
-          { code: "if (deque[0] <= i - k) { deque.shift(); }", explanation: "Drops the front index if it's no longer inside the current window (too far to the left)." },
-          { code: "if (i >= k - 1) { result.push(nums[deque[0]]); }", explanation: "Once the window has grown to full size k, the front of the deque holds the current window's maximum." },
+          { code: "while (deque.length > 0 && nums[deque[deque.length - 1]] < nums[i]) { deque.pop(); }", explanation: "Drops smaller candidates from the back. Once a bigger number arrives, they can never be a window's max." },
+          { code: "deque.push(i);", explanation: "Adds the new index; values stay decreasing from front to back." },
+          { code: "if (deque[0] <= i - k) { deque.shift(); }", explanation: "Drops the front index if it has slid out of the window on the left." },
+          { code: "if (i >= k - 1) { result.push(nums[deque[0]]); }", explanation: "Once the window reaches size k, the front of the deque holds its maximum." },
         ],
       },
     ],

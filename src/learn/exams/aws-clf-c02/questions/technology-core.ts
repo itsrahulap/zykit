@@ -12,7 +12,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'An extension of a Region placed in a large metro area close to users',
     ],
     answer: [2],
-    explanation: 'An **Availability Zone** is one or more discrete data centers with redundant power, networking and connectivity, isolated from the other AZs in the same Region. A Region contains multiple AZs, not the other way around. Sites that cache content for CloudFront are edge locations, and a Region extension placed in a metro area is an AWS Local Zone.',
+    explanation: 'An **Availability Zone** is one or more discrete data centers with redundant power, networking and connectivity, isolated from the other AZs in its Region. A Region contains multiple AZs, not the reverse. CloudFront caches content at edge locations, and a Region extension in a metro area is an AWS Local Zone.',
   },
   {
     id: 'tech-002',
@@ -25,7 +25,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Enable AWS Global Accelerator for users located in Germany',
     ],
     answer: [0],
-    explanation: 'AWS does not move your data out of the Region you store it in unless you choose to, so selecting a Region in the required country (such as Europe (Frankfurt)) addresses **data sovereignty**. Using multiple AZs improves availability but does not control which country the data is in. CloudFront and Global Accelerator improve performance for users; they do not determine where the source data is stored.',
+    explanation: 'AWS does not move your data out of its Region unless you choose to, so picking a Region in the required country (such as Europe (Frankfurt)) meets **data sovereignty** needs. Multiple AZs improve availability but do not control the country. CloudFront and Global Accelerator improve performance; they do not decide where the source data is stored.',
   },
   {
     id: 'tech-003',
@@ -38,7 +38,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Edge locations',
     ],
     answer: [3],
-    explanation: 'CloudFront caches copies of content at **edge locations** (points of presence) around the world to reduce latency for viewers. Availability Zones host Regional resources such as EC2 instances, Outposts brings AWS infrastructure into a customer data center, and subnets are IP address ranges inside a VPC.',
+    explanation: 'CloudFront caches content at **edge locations** (points of presence) worldwide to cut latency for viewers. Availability Zones host Regional resources such as EC2 instances, Outposts puts AWS infrastructure in a customer data center, and subnets are IP ranges inside a VPC.',
   },
   {
     id: 'tech-004',
@@ -51,7 +51,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Direct Connect',
     ],
     answer: [1],
-    explanation: '**AWS Local Zones** place AWS compute, storage and other services in large metro areas close to users, for latency-sensitive workloads such as media rendering and real-time gaming. Wavelength embeds AWS infrastructure in 5G carrier networks for mobile devices. CloudFront caches content but does not run rendering compute, and Direct Connect is a network connection that does not move compute closer to users.',
+    explanation: '**AWS Local Zones** put AWS compute, storage and other services in large metro areas near users, for latency-sensitive work such as media rendering and real-time gaming. Wavelength sits inside 5G carrier networks for mobile devices. CloudFront caches content but does not run rendering, and Direct Connect is a network link that does not move compute closer to users.',
   },
   {
     id: 'tech-005',
@@ -64,7 +64,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Global Accelerator',
     ],
     answer: [1],
-    explanation: '**AWS Wavelength** deploys AWS compute and storage within communications service providers\' 5G networks, so traffic from 5G devices reaches the application without leaving the carrier network. Local Zones are in metro areas but not inside 5G networks, Outposts runs in a customer\'s own data center, and Global Accelerator routes traffic over the AWS global network to Regional endpoints.',
+    explanation: '**AWS Wavelength** puts AWS compute and storage inside carriers\' 5G networks, so traffic from 5G devices reaches the app without leaving the carrier network. Local Zones are in metro areas but not inside 5G networks, Outposts runs in a customer\'s own data center, and Global Accelerator routes traffic over the AWS global network to Regional endpoints.',
   },
   {
     id: 'tech-006',
@@ -77,7 +77,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Outposts',
     ],
     answer: [3],
-    explanation: '**AWS Outposts** is fully managed AWS infrastructure installed in the customer\'s data center, offering the same AWS APIs and tools for a consistent hybrid experience. Local Zones are AWS-operated locations, not the customer\'s facility. Storage Gateway only gives on-premises access to cloud storage, and Direct Connect is a dedicated network connection.',
+    explanation: '**AWS Outposts** is fully managed AWS infrastructure installed in your data center, with the same AWS APIs and tools as the cloud. Local Zones are run by AWS, not in your facility. Storage Gateway only gives on-premises access to cloud storage, and Direct Connect is a dedicated network link.',
   },
   {
     id: 'tech-007',
@@ -91,7 +91,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Keep user session data only in the memory of each instance',
     ],
     answer: [0, 3],
-    explanation: 'Spreading instances across **multiple Availability Zones** removes a single data center as a point of failure, and **Elastic Load Balancing** sends traffic only to healthy instances in those AZs. A single AZ is still a single point of failure regardless of instance size. Instance store data and per-instance session data are lost when an instance fails, which hurts availability.',
+    explanation: 'Spreading instances across **multiple Availability Zones** removes one data center as a single point of failure, and **Elastic Load Balancing** sends traffic only to healthy instances. One AZ is still a single point of failure, whatever the instance size. Instance store data and in-memory session data are lost when an instance fails.',
   },
   {
     id: 'tech-008',
@@ -104,7 +104,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Place the application behind Amazon CloudFront',
     ],
     answer: [0],
-    explanation: 'Protecting against a Region-wide event requires a **multi-Region disaster recovery** design, with data replicated to and the application deployable in another Region. More AZs or larger instances in the same Region do not help if the whole Region is affected. CloudFront caches content at the edge but cannot run the application\'s backend if the origin Region is unavailable.',
+    explanation: 'Surviving a Region-wide event needs **multi-Region disaster recovery**: data replicated to another Region where the app can run. More AZs or bigger instances in the same Region do not help if the whole Region is down. CloudFront caches content at the edge but cannot run the backend if the origin Region is unavailable.',
   },
   {
     id: 'tech-009',
@@ -117,7 +117,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Config',
     ],
     answer: [2],
-    explanation: '**AWS CloudFormation** is the infrastructure as code service: you describe resources in JSON or YAML templates and deploy them as stacks repeatedly and consistently. Elastic Beanstalk deploys and manages web applications for you rather than letting you model arbitrary infrastructure. The console is a manual, one-time method, and AWS Config records and evaluates resource configurations but does not create them.',
+    explanation: '**AWS CloudFormation** is infrastructure as code: you describe resources in JSON or YAML templates and deploy them as stacks, the same way every time. Elastic Beanstalk deploys and manages web apps rather than modeling any infrastructure you like. The console is manual, and AWS Config records and evaluates resource configurations but does not create them.',
   },
   {
     id: 'tech-010',
@@ -131,7 +131,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Templates can be version-controlled and reviewed like application code',
     ],
     answer: [1, 4],
-    explanation: 'With CloudFormation, the same template produces the same resources every time, and because templates are text files they can be stored in **version control** and reviewed. CloudFormation does not patch guest operating systems. You still pay for the resources a stack creates, and the caller (or a service role) still needs IAM permissions to create them.',
+    explanation: 'The same template creates the same resources every time, and templates are text files you can keep in **version control** and review. CloudFormation does not patch guest operating systems. You still pay for the resources a stack creates, and the caller (or a service role) still needs IAM permissions to create them.',
   },
   {
     id: 'tech-011',
@@ -145,7 +145,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Marketplace',
     ],
     answer: [2, 3],
-    explanation: 'The **AWS CLI** lets you call AWS APIs from scripts and terminals, and the **AWS SDKs** let applications call them from languages such as Python, Java and JavaScript; both use programmatic credentials. The Management Console is the browser-based interface. AWS Artifact provides compliance reports, and AWS Marketplace is a catalog of third-party software.',
+    explanation: 'The **AWS CLI** calls AWS APIs from scripts and terminals, and the **AWS SDKs** call them from code in languages such as Python, Java and JavaScript; both use programmatic credentials. The Management Console is the browser interface. AWS Artifact provides compliance reports, and AWS Marketplace is a catalog of third-party software.',
   },
   {
     id: 'tech-012',
@@ -158,7 +158,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Connecting on-premises infrastructure to resources running in the AWS Cloud',
     ],
     answer: [3],
-    explanation: 'A **hybrid** deployment connects on-premises infrastructure with cloud resources so they work together. Running everything on AWS is a cloud (cloud-native) deployment, and running everything on premises with virtualization is an on-premises (private cloud) deployment. Using two Regions is still an all-cloud deployment.',
+    explanation: 'A **hybrid** deployment connects on-premises infrastructure with cloud resources. Everything on AWS is a cloud (cloud-native) deployment, and everything on premises with virtualization is an on-premises (private cloud) deployment. Two Regions is still all-cloud.',
   },
   {
     id: 'tech-013',
@@ -171,7 +171,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Accelerated computing',
     ],
     answer: [2],
-    explanation: '**Compute optimized** instances have high-performance processors for compute-bound workloads such as batch processing, high-performance web servers and dedicated gaming servers. Memory optimized instances target large in-memory data sets, storage optimized instances target high local disk I/O, and accelerated computing instances add hardware accelerators such as GPUs.',
+    explanation: '**Compute optimized** instances have high-performance processors for CPU-bound work such as batch processing, web servers and game servers. Memory optimized suits large in-memory data sets, storage optimized suits high local disk I/O, and accelerated computing adds hardware such as GPUs.',
   },
   {
     id: 'tech-014',
@@ -184,7 +184,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Storage optimized',
     ],
     answer: [1],
-    explanation: '**Memory optimized** instances deliver fast performance for workloads that process large data sets in memory. General purpose instances balance compute, memory and networking, compute optimized instances favor CPU, and storage optimized instances favor high sequential read and write access to local storage.',
+    explanation: '**Memory optimized** instances are fast for large in-memory data sets. General purpose balances compute, memory and networking, compute optimized favors CPU, and storage optimized favors high sequential reads and writes to local storage.',
   },
   {
     id: 'tech-015',
@@ -197,7 +197,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'General purpose',
     ],
     answer: [0],
-    explanation: '**Storage optimized** instances are designed for workloads that require high, sequential read and write access to very large data sets on local storage, delivering many low-latency IOPS. Memory optimized instances focus on RAM, compute optimized on CPU, and general purpose instances balance resources without specializing in local storage throughput.',
+    explanation: '**Storage optimized** instances deliver high, sequential reads and writes to very large data sets on local storage, with many low-latency IOPS. Memory optimized focuses on RAM, compute optimized on CPU, and general purpose balances resources without specializing in local storage.',
   },
   {
     id: 'tech-016',
@@ -210,7 +210,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Storage optimized',
     ],
     answer: [0],
-    explanation: '**Accelerated computing** instances use hardware accelerators such as GPUs (or AWS Trainium and Inferentia chips) for machine learning training, graphics processing and similar workloads. General purpose, memory optimized and storage optimized instances do not provide GPU acceleration.',
+    explanation: '**Accelerated computing** instances use hardware accelerators such as GPUs (or AWS Trainium and Inferentia chips) for machine learning, graphics and similar work. The other families have no GPU acceleration.',
   },
   {
     id: 'tech-017',
@@ -224,7 +224,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'It caches static content at edge locations',
     ],
     answer: [0, 2],
-    explanation: 'EC2 Auto Scaling **scales out and in** based on demand or schedules, and its health checks **replace unhealthy instances** to keep the desired capacity. It does not change instance families on its own. Distributing requests is the job of Elastic Load Balancing (within a Region), and edge caching is done by Amazon CloudFront.',
+    explanation: 'EC2 Auto Scaling **scales out and in** with demand or on a schedule, and its health checks **replace unhealthy instances** to keep the desired capacity. It does not change instance families. Elastic Load Balancing distributes requests (within a Region), and Amazon CloudFront does edge caching.',
   },
   {
     id: 'tech-018',
@@ -237,7 +237,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Route 53 weighted routing',
     ],
     answer: [1],
-    explanation: 'An **Application Load Balancer** operates at layer 7 and supports content-based rules such as **path-based** and host-based routing to different target groups. A Network Load Balancer works at layer 4 (TCP/UDP) and does not inspect URL paths. A Gateway Load Balancer is for virtual network appliances, and Route 53 resolves DNS names without seeing URL paths.',
+    explanation: 'An **Application Load Balancer** works at layer 7 and supports **path-based** and host-based routing to different target groups. A Network Load Balancer works at layer 4 (TCP/UDP) and does not read URL paths. A Gateway Load Balancer is for virtual network appliances, and Route 53 resolves DNS names without seeing URL paths.',
   },
   {
     id: 'tech-019',
@@ -250,7 +250,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon API Gateway',
     ],
     answer: [2],
-    explanation: 'A **Network Load Balancer** operates at layer 4, handles TCP and UDP traffic at very high volume with ultra-low latency, and provides a static IP address per AZ. An Application Load Balancer handles HTTP/HTTPS at layer 7, a Gateway Load Balancer is for third-party virtual appliances, and API Gateway manages HTTP, REST and WebSocket APIs rather than raw UDP traffic.',
+    explanation: 'A **Network Load Balancer** works at layer 4, handles very high volumes of TCP and UDP traffic with ultra-low latency, and gives a static IP per AZ. An Application Load Balancer handles HTTP/HTTPS at layer 7, a Gateway Load Balancer is for third-party virtual appliances, and API Gateway manages HTTP, REST and WebSocket APIs, not raw UDP.',
   },
   {
     id: 'tech-020',
@@ -263,7 +263,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Gateway Load Balancer',
     ],
     answer: [3],
-    explanation: 'A **Gateway Load Balancer** is built to deploy, scale and manage third-party virtual appliances such as firewalls and intrusion detection systems, passing traffic through them transparently. Application, Network and Classic Load Balancers distribute application traffic to targets but are not designed for inline appliance fleets.',
+    explanation: 'A **Gateway Load Balancer** deploys, scales and manages third-party virtual appliances such as firewalls and intrusion detection systems, passing traffic through them transparently. Application, Network and Classic Load Balancers send app traffic to targets but are not built for inline appliance fleets.',
   },
   {
     id: 'tech-021',
@@ -290,7 +290,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Elastic Beanstalk',
     ],
     answer: [2],
-    explanation: '**Amazon EKS** is a managed, conformant Kubernetes service, so existing Kubernetes tools and manifests keep working. Amazon ECS is an AWS-native orchestrator that does not use the Kubernetes API. Amazon ECR stores container images, and Elastic Beanstalk is an application platform service rather than a Kubernetes service.',
+    explanation: '**Amazon EKS** is managed, conformant Kubernetes, so existing Kubernetes tools and manifests keep working. Amazon ECS is AWS\'s own orchestrator and does not use the Kubernetes API. Amazon ECR stores container images, and Elastic Beanstalk is an app platform, not Kubernetes.',
   },
   {
     id: 'tech-023',
@@ -303,7 +303,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Lightsail',
     ],
     answer: [0],
-    explanation: '**AWS Fargate** is a serverless compute engine for containers that works with both Amazon ECS and Amazon EKS, so there are no servers to manage. The EC2 launch type requires you to manage the container instances. Amazon ECR only stores images, and Lightsail is a simplified service for virtual servers and other resources, not a compute option for ECS.',
+    explanation: '**AWS Fargate** is serverless compute for containers on Amazon ECS and Amazon EKS, with no servers to manage. With the EC2 launch type you manage the container instances. Amazon ECR only stores images, and Lightsail offers simple virtual servers, not a compute option for ECS.',
   },
   {
     id: 'tech-024',
@@ -316,7 +316,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Elastic Container Registry (Amazon ECR)',
     ],
     answer: [3],
-    explanation: '**Amazon ECR** is a fully managed container image registry for storing, managing and sharing container images. Amazon ECS orchestrates containers, Fargate provides serverless compute to run them, and Amazon EFS is a shared file system rather than an image registry.',
+    explanation: '**Amazon ECR** is a fully managed registry for storing, managing and sharing container images. Amazon ECS orchestrates containers, Fargate runs them serverlessly, and Amazon EFS is a shared file system, not an image registry.',
   },
   {
     id: 'tech-025',
@@ -329,7 +329,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Lightsail',
     ],
     answer: [1],
-    explanation: '**AWS Lambda** runs code in response to events such as S3 uploads, scales automatically and bills only for the compute time consumed, with no servers to manage. Amazon EC2 and Lightsail require you to manage and pay for running servers, and Elastic Beanstalk still runs your application on EC2 instances that are billed while running.',
+    explanation: '**AWS Lambda** runs code in response to events such as S3 uploads, scales automatically and bills only for compute time used, with no servers to manage. With Amazon EC2 and Lightsail you manage and pay for running servers, and Elastic Beanstalk still runs your app on EC2 instances billed while running.',
   },
   {
     id: 'tech-026',
@@ -343,7 +343,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon DynamoDB',
     ],
     answer: [2, 4],
-    explanation: '**AWS Lambda** runs code without servers, and **Amazon DynamoDB** is a serverless database with no instances to choose or patch. With Amazon EC2 and Lightsail you launch and manage virtual servers, and with Amazon RDS for SQL Server you still choose and pay for DB instance classes even though AWS manages them.',
+    explanation: '**AWS Lambda** runs code without servers, and **Amazon DynamoDB** is a serverless database with no instances to choose or patch. With Amazon EC2 and Lightsail you manage virtual servers, and with Amazon RDS for SQL Server you still choose and pay for DB instance classes, even though AWS manages them.',
   },
   {
     id: 'tech-027',
@@ -356,7 +356,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Batch',
     ],
     answer: [1],
-    explanation: '**AWS Elastic Beanstalk** deploys application code and automatically handles provisioning, load balancing, auto scaling and health monitoring, while you keep full access to the underlying resources. CloudFormation provisions infrastructure you describe in templates but does not take application code and run it for you. Lightsail offers simple virtual servers, and AWS Batch runs batch jobs.',
+    explanation: '**AWS Elastic Beanstalk** deploys your code and handles provisioning, load balancing, auto scaling and health monitoring, while you keep full access to the underlying resources. CloudFormation provisions infrastructure from templates but does not take your code and run it. Lightsail offers simple virtual servers, and AWS Batch runs batch jobs.',
   },
   {
     id: 'tech-028',
@@ -369,7 +369,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Lightsail',
     ],
     answer: [3],
-    explanation: '**Amazon Lightsail** offers easy-to-use virtual private servers, including preconfigured WordPress blueprints, with predictable bundled monthly pricing. Amazon EKS runs Kubernetes clusters and is far more complex than needed, AWS Batch runs batch jobs, and Outposts installs AWS hardware in a customer data center.',
+    explanation: '**Amazon Lightsail** offers easy virtual private servers, including ready-made WordPress blueprints, at a predictable monthly price. Amazon EKS runs Kubernetes and is far too complex here, AWS Batch runs batch jobs, and Outposts puts AWS hardware in a customer data center.',
   },
   {
     id: 'tech-029',
@@ -382,7 +382,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon ElastiCache',
     ],
     answer: [0],
-    explanation: '**AWS Batch** plans, schedules and runs batch computing jobs and dynamically provisions the right compute resources (EC2 or Fargate) for them. Lambda is for short, event-driven functions with a maximum run time of 15 minutes, Lightsail provides simple virtual servers, and ElastiCache is an in-memory caching service.',
+    explanation: '**AWS Batch** schedules and runs batch jobs and provisions the right compute (EC2 or Fargate) for them. Lambda is for short, event-driven functions that run for at most 15 minutes, Lightsail provides simple virtual servers, and ElastiCache is an in-memory caching service.',
   },
   {
     id: 'tech-030',
@@ -436,7 +436,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'A Multi-AZ deployment',
     ],
     answer: [3],
-    explanation: 'A **Multi-AZ** deployment keeps a synchronously replicated standby in a different AZ and fails over automatically if the primary fails. Read replicas are mainly for scaling read traffic and must be promoted manually, ElastiCache caches data but is not a failover target, and a larger instance class adds capacity but no redundancy.',
+    explanation: 'A **Multi-AZ** deployment keeps a synchronously replicated standby in another AZ and fails over to it automatically. Read replicas mainly scale reads and must be promoted manually, ElastiCache is a cache, not a failover target, and a larger instance class adds capacity but no redundancy.',
   },
   {
     id: 'tech-034',
@@ -449,7 +449,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Storage autoscaling',
     ],
     answer: [2],
-    explanation: '**Read replicas** are asynchronously updated copies of the database that can serve read-only queries, offloading the primary. In a Multi-AZ DB instance deployment the standby is for failover and does not serve reads. Automated backups provide point-in-time recovery, and storage autoscaling only grows disk space.',
+    explanation: '**Read replicas** are asynchronously updated copies that serve read-only queries, offloading the primary. In a Multi-AZ DB instance deployment the standby is only for failover and does not serve reads. Automated backups provide point-in-time recovery, and storage autoscaling only grows disk space.',
   },
   {
     id: 'tech-035',
@@ -463,7 +463,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'It delivers single-digit millisecond performance at any scale',
     ],
     answer: [3, 4],
-    explanation: '**Amazon DynamoDB** is a serverless, fully managed NoSQL key-value and document database that delivers **single-digit millisecond** performance at any scale. It is not relational and is not built for complex joins, there are no servers for you to manage, and large analytical queries are the job of a data warehouse such as Amazon Redshift.',
+    explanation: '**Amazon DynamoDB** is a serverless, fully managed NoSQL key-value and document database that delivers **single-digit millisecond** performance at any scale. It is not relational or built for complex joins, has no servers for you to manage, and large analytical queries belong in a data warehouse such as Amazon Redshift.',
   },
   {
     id: 'tech-036',
@@ -476,7 +476,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon S3 Glacier Flexible Retrieval',
     ],
     answer: [1],
-    explanation: '**Amazon ElastiCache** is a managed in-memory caching service (Valkey, Redis OSS and Memcached compatible) that serves frequently read data with very low latency and reduces load on the database. Redshift is a data warehouse, Neptune is a graph database, and S3 Glacier Flexible Retrieval is archival storage with retrieval times of minutes to hours.',
+    explanation: '**Amazon ElastiCache** is a managed in-memory cache (Valkey, Redis OSS and Memcached compatible) that serves frequently read data with very low latency and takes load off the database. Redshift is a data warehouse, Neptune is a graph database, and S3 Glacier Flexible Retrieval is archival storage with retrieval times of minutes to hours.',
   },
   {
     id: 'tech-037',
@@ -502,7 +502,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Aurora',
     ],
     answer: [0],
-    explanation: '**Amazon Neptune** is a managed **graph database** designed for highly connected data, such as social networks, recommendation engines and fraud detection. DynamoDB is a key-value and document database, Redshift is a data warehouse, and Aurora is a relational database; none are optimized for traversing relationships.',
+    explanation: '**Amazon Neptune** is a managed **graph database** for highly connected data, such as social networks, recommendations and fraud detection. DynamoDB is key-value and document, Redshift is a data warehouse, and Aurora is relational; none are optimized for traversing relationships.',
   },
   {
     id: 'tech-039',
@@ -542,7 +542,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Storage Gateway',
     ],
     answer: [0, 1],
-    explanation: 'For a **heterogeneous** migration (different engines), the **AWS Schema Conversion Tool** converts the schema and code objects from Oracle to PostgreSQL, and **AWS DMS** migrates the data, optionally with ongoing replication to minimize downtime. Elastic Beanstalk deploys applications, ElastiCache is an in-memory cache, and Storage Gateway provides hybrid access to cloud storage.',
+    explanation: 'For a **heterogeneous** migration (different engines), the **AWS Schema Conversion Tool** converts the schema and code objects from Oracle to PostgreSQL, and **AWS DMS** moves the data, optionally with ongoing replication to cut downtime. Elastic Beanstalk deploys applications, ElastiCache is an in-memory cache, and Storage Gateway provides hybrid access to cloud storage.',
   },
   {
     id: 'tech-042',
@@ -555,7 +555,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Patching the database software and the operating system',
     ],
     answer: [3],
-    explanation: 'On EC2 the customer manages the guest **operating system and database software**, including patching, backups and high availability; RDS automates these tasks. Physical servers, hardware replacement and the global network are always AWS responsibilities under the shared responsibility model, whichever option is used.',
+    explanation: 'On EC2 you manage the guest **operating system and database software**, including patching, backups and high availability; RDS automates these. Physical servers, hardware replacement and the global network are always AWS\'s job under the shared responsibility model.',
   },
   {
     id: 'tech-043',
@@ -568,7 +568,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'It is in an Availability Zone that has an edge location',
     ],
     answer: [2],
-    explanation: 'A subnet is **public** when its associated route table has a route (typically 0.0.0.0/0) to an **internet gateway**. A subnet whose internet traffic goes through a NAT gateway is a private subnet with outbound-only access. Security groups control traffic to instances but do not make a subnet public, and edge locations are unrelated to subnets.',
+    explanation: 'A subnet is **public** when its associated route table has a route (typically 0.0.0.0/0) to an **internet gateway**. A subnet that reaches the internet through a NAT gateway is private, with outbound-only access. Security groups control instance traffic but do not make a subnet public, and edge locations have nothing to do with subnets.',
   },
   {
     id: 'tech-044',
@@ -581,7 +581,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Direct Connect',
     ],
     answer: [0],
-    explanation: 'A **NAT gateway** in a public subnet lets instances in private subnets start outbound connections to the internet while blocking connections initiated from the internet. Routing the subnet directly to an internet gateway would make it a public subnet. VPC peering connects VPCs to each other, and Direct Connect links on-premises networks to AWS, not to the internet.',
+    explanation: 'A **NAT gateway** in a public subnet lets private-subnet instances start outbound internet connections while blocking connections started from the internet. Routing the subnet straight to an internet gateway would make it public. VPC peering connects VPCs to each other, and Direct Connect links on-premises networks to AWS, not to the internet.',
   },
   {
     id: 'tech-045',
@@ -608,7 +608,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Direct Connect',
     ],
     answer: [3],
-    explanation: '**AWS Direct Connect** provides a dedicated private network connection between on-premises locations and AWS that does not travel over the public internet, giving more consistent performance. Site-to-Site VPN and Client VPN create encrypted tunnels over the internet, and CloudFront is a content delivery network.',
+    explanation: '**AWS Direct Connect** is a dedicated private link between on-premises sites and AWS that avoids the public internet, so performance is more consistent. Site-to-Site VPN and Client VPN create encrypted tunnels over the internet, and CloudFront is a content delivery network.',
   },
   {
     id: 'tech-047',
@@ -621,7 +621,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'VPC peering',
     ],
     answer: [1],
-    explanation: '**AWS Site-to-Site VPN** creates encrypted IPsec tunnels between an on-premises network and AWS over the internet and can be set up quickly. Direct Connect is a dedicated connection that takes longer to provision and is not encrypted by default. Client VPN connects individual users rather than whole networks, and VPC peering connects two VPCs.',
+    explanation: '**AWS Site-to-Site VPN** creates encrypted IPsec tunnels between an on-premises network and AWS over the internet, and is quick to set up. Direct Connect is a dedicated link that takes longer to provision and is not encrypted by default. Client VPN connects individual users, not networks, and VPC peering connects two VPCs.',
   },
   {
     id: 'tech-048',
@@ -634,7 +634,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Transit Gateway',
     ],
     answer: [1],
-    explanation: '**AWS Client VPN** is a managed, client-based VPN that lets individual users connect securely to AWS and on-premises resources from any location. Site-to-Site VPN and Direct Connect connect entire networks rather than individual devices, and Transit Gateway is a network hub for VPCs and on-premises networks, not a remote-user VPN.',
+    explanation: '**AWS Client VPN** is a managed, client-based VPN that lets individual users connect securely to AWS and on-premises resources from anywhere. Site-to-Site VPN and Direct Connect connect whole networks, not devices, and Transit Gateway is a network hub, not a remote-user VPN.',
   },
   {
     id: 'tech-049',
@@ -647,7 +647,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Transit Gateway',
     ],
     answer: [3],
-    explanation: '**AWS Transit Gateway** acts as a regional hub that connects VPCs and on-premises networks through a single gateway, simplifying a hub-and-spoke network. VPC peering is one-to-one and non-transitive, so it needs many connections at scale. A NAT gateway provides outbound internet access, and Global Accelerator improves user traffic to applications.',
+    explanation: '**AWS Transit Gateway** is a regional hub that connects VPCs and on-premises networks through one gateway (hub and spoke). VPC peering is one-to-one and non-transitive, so it needs many connections at scale. A NAT gateway gives outbound internet access, and Global Accelerator speeds user traffic to applications.',
   },
   {
     id: 'tech-050',
@@ -660,7 +660,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Simple routing',
     ],
     answer: [0],
-    explanation: '**Latency-based routing** answers DNS queries with the Region that provides the lowest latency for the user. Geolocation routing chooses by the user\'s location (country or continent), which is not always the lowest-latency Region. Weighted routing splits traffic by assigned percentages, and simple routing returns the same record without considering performance.',
+    explanation: '**Latency-based routing** answers with the Region that gives the user the lowest latency. Geolocation routing picks by the user\'s country or continent, which is not always the fastest Region. Weighted routing splits traffic by set percentages, and simple routing returns the same record regardless of performance.',
   },
   {
     id: 'tech-051',
@@ -673,7 +673,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Geolocation routing based on the user\'s country',
     ],
     answer: [2],
-    explanation: '**Failover routing** returns the primary record while its **health check** passes and switches to the secondary (standby) record when the primary becomes unhealthy. Weighted routing without health checks keeps sending traffic to the failed site, simple routing does not do health-based failover, and geolocation routing chooses by user location rather than health.',
+    explanation: '**Failover routing** returns the primary record while its **health check** passes and switches to the secondary (standby) when the primary is unhealthy. Weighted routing without health checks keeps sending traffic to the failed site, simple routing has no health-based failover, and geolocation routing picks by location, not health.',
   },
   {
     id: 'tech-052',
@@ -686,7 +686,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Global Accelerator',
     ],
     answer: [3],
-    explanation: '**AWS Global Accelerator** provides static anycast IP addresses and routes TCP and UDP traffic over the AWS global network to the nearest healthy Regional endpoint, which suits non-HTTP use cases such as gaming. CloudFront is a content delivery network that caches HTTP/HTTPS content. Route 53 is DNS and provides no static anycast IPs for the app, and S3 Transfer Acceleration speeds up uploads to S3 only.',
+    explanation: '**AWS Global Accelerator** gives static anycast IP addresses and routes TCP and UDP traffic over the AWS global network to the nearest healthy Regional endpoint, which suits non-HTTP uses such as gaming. CloudFront is a CDN that caches HTTP/HTTPS content. Route 53 is DNS with no static anycast IPs for the app, and S3 Transfer Acceleration only speeds up uploads to S3.',
   },
   {
     id: 'tech-053',
@@ -713,7 +713,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'VPC A can reach VPC C if both VPCs use the same security group',
     ],
     answer: [2],
-    explanation: '**VPC peering is not transitive**: each pair of VPCs that must communicate needs its own peering connection (or a hub such as AWS Transit Gateway). Being in the same Region does not change this, and peering works across Regions anyway. Security groups filter traffic but cannot create a route between VPCs.',
+    explanation: '**VPC peering is not transitive**: each pair of VPCs that must talk needs its own peering connection (or a hub such as AWS Transit Gateway). Being in the same Region changes nothing, and peering works across Regions anyway. Security groups filter traffic but cannot create a route between VPCs.',
   },
   {
     id: 'tech-055',
@@ -726,7 +726,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon S3 Transfer Acceleration',
     ],
     answer: [1],
-    explanation: 'A **gateway VPC endpoint** for S3 adds a route that keeps traffic between the VPC and S3 on the AWS network without an internet gateway or NAT device. An internet gateway sends traffic to the internet, Direct Connect links on-premises networks to AWS, and Transfer Acceleration speeds up long-distance uploads over CloudFront edge locations.',
+    explanation: 'A **gateway VPC endpoint** for S3 adds a route that keeps VPC-to-S3 traffic on the AWS network, with no internet gateway or NAT device. An internet gateway sends traffic to the internet, Direct Connect links on-premises networks to AWS, and Transfer Acceleration speeds long-distance uploads through CloudFront edge locations.',
   },
   {
     id: 'tech-056',
@@ -739,7 +739,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'S3 Glacier Deep Archive',
     ],
     answer: [0],
-    explanation: '**S3 Intelligent-Tiering** monitors access and automatically moves objects between access tiers, with no retrieval fees and no performance impact for its frequent and infrequent tiers. Standard-IA and One Zone-IA charge retrieval fees and suit data known to be accessed infrequently. Glacier Deep Archive is for long-term archives with retrieval times of hours.',
+    explanation: '**S3 Intelligent-Tiering** watches access and moves objects between tiers automatically, with no retrieval fees and no performance impact for its frequent and infrequent tiers. Standard-IA and One Zone-IA charge retrieval fees and suit data you know is rarely accessed. Glacier Deep Archive is for long-term archives with retrievals in hours.',
   },
   {
     id: 'tech-057',
@@ -752,7 +752,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'S3 Glacier Deep Archive',
     ],
     answer: [0],
-    explanation: '**S3 One Zone-IA** stores data in a single Availability Zone at a lower cost than Standard-IA, which is acceptable for infrequently accessed data that can be re-created. S3 Standard costs more and is meant for frequently accessed data, Standard-IA pays extra for multi-AZ resilience that this data does not need, and Glacier Deep Archive does not offer millisecond access.',
+    explanation: '**S3 One Zone-IA** stores data in one Availability Zone for less than Standard-IA, which is fine for rarely accessed data you can re-create. S3 Standard costs more and is for frequently accessed data, Standard-IA pays for multi-AZ resilience this data does not need, and Glacier Deep Archive has no millisecond access.',
   },
   {
     id: 'tech-058',
@@ -765,7 +765,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'S3 Standard-Infrequent Access',
     ],
     answer: [1],
-    explanation: '**S3 Glacier Deep Archive** is the lowest-cost S3 storage class, designed for long-term retention of rarely accessed data, with standard retrievals completing within 12 hours. Glacier Flexible Retrieval and Glacier Instant Retrieval offer faster access at a higher storage cost, and Standard-IA costs more still.',
+    explanation: '**S3 Glacier Deep Archive** is the lowest-cost S3 storage class, built for long-term retention of rarely accessed data; standard retrievals finish within 12 hours. Glacier Flexible Retrieval and Glacier Instant Retrieval offer faster access at a higher storage cost, and Standard-IA costs more still.',
   },
   {
     id: 'tech-059',
@@ -778,7 +778,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'S3 Standard',
     ],
     answer: [2],
-    explanation: '**S3 Glacier Instant Retrieval** is designed for long-lived data accessed about once a quarter that still needs **millisecond** retrieval, at a lower storage cost than the infrequent access classes. Glacier Flexible Retrieval and Deep Archive need minutes to hours to retrieve data, and S3 Standard costs more for data that is rarely accessed.',
+    explanation: '**S3 Glacier Instant Retrieval** is for long-lived data accessed about once a quarter that still needs **millisecond** retrieval, and it costs less to store than the infrequent access classes. Glacier Flexible Retrieval and Deep Archive take minutes to hours to retrieve, and S3 Standard costs more for rarely accessed data.',
   },
   {
     id: 'tech-060',
@@ -805,7 +805,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'MFA Delete',
     ],
     answer: [2, 4],
-    explanation: '**S3 Versioning** keeps previous versions of objects so overwritten or deleted objects can be recovered, and **MFA Delete** (used with Versioning) requires multi-factor authentication to permanently delete versions or change the versioning state. Transfer Acceleration speeds up transfers, Intelligent-Tiering optimizes storage cost, and CloudFront caching improves delivery performance; none protect against deletion.',
+    explanation: '**S3 Versioning** keeps previous versions so overwritten or deleted objects can be recovered, and **MFA Delete** (used with Versioning) requires MFA to permanently delete versions or change the versioning state. Transfer Acceleration speeds transfers, Intelligent-Tiering cuts storage cost, and CloudFront caching speeds delivery; none protect against deletion.',
   },
   {
     id: 'tech-062',
@@ -819,7 +819,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'It is object storage that applications access through HTTP APIs',
     ],
     answer: [1, 3],
-    explanation: 'EBS provides **block storage** that lives in one **Availability Zone**; to move data to another AZ, you take a **snapshot** and create a new volume from it. Shared access from many instances across AZs describes Amazon EFS. Data that disappears when an instance stops describes instance store, and object storage over HTTP APIs describes Amazon S3.',
+    explanation: 'EBS is **block storage** that lives in one **Availability Zone**; to move data to another AZ, take a **snapshot** and create a new volume from it. Shared access from many instances across AZs is Amazon EFS, data lost when an instance stops is instance store, and object storage over HTTP APIs is Amazon S3.',
   },
   {
     id: 'tech-063',
@@ -832,7 +832,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon S3',
     ],
     answer: [2],
-    explanation: '**Instance store** is temporary block storage on disks physically attached to the host, included in the instance price and well suited to buffers, caches and scratch data; its data is lost when the instance stops or terminates. EBS volumes persist independently of the instance and are billed separately, EFS is a network file system, and S3 is object storage.',
+    explanation: '**Instance store** is temporary block storage on disks attached to the host, included in the instance price and suited to buffers, caches and scratch data; its data is lost when the instance stops or terminates. EBS volumes persist on their own and are billed separately, EFS is a network file system, and S3 is object storage.',
   },
   {
     id: 'tech-064',
@@ -871,7 +871,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Elastic Block Store (Amazon EBS)',
     ],
     answer: [1],
-    explanation: '**Amazon FSx for Lustre** is a high-performance parallel file system for HPC, machine learning and media processing, and it can be linked to an S3 bucket. FSx for Windows File Server is designed for Windows SMB workloads, Storage Gateway connects on-premises applications to cloud storage, and EBS is block storage attached to individual instances.',
+    explanation: '**Amazon FSx for Lustre** is a high-performance parallel file system for HPC, machine learning and media processing, and can link to an S3 bucket. FSx for Windows File Server is for Windows SMB workloads, Storage Gateway connects on-premises apps to cloud storage, and EBS is block storage for individual instances.',
   },
   {
     id: 'tech-067',
@@ -884,7 +884,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Amazon Elastic File System (Amazon EFS)',
     ],
     answer: [1],
-    explanation: '**AWS Storage Gateway** is a hybrid cloud storage service; for example, S3 File Gateway presents NFS or SMB file shares on premises, stores the data in S3 and caches frequently used data locally. Snowball Edge is a physical device for offline transfer and edge computing, DataSync performs online data transfers but provides no ongoing local cache, and EFS is a file system inside AWS.',
+    explanation: '**AWS Storage Gateway** is hybrid cloud storage. For example, S3 File Gateway presents NFS or SMB shares on premises, stores the data in S3 and caches hot data locally. Snowball Edge is a physical device for offline transfer and edge computing, DataSync does online transfers with no ongoing local cache, and EFS is a file system inside AWS.',
   },
   {
     id: 'tech-068',
@@ -897,7 +897,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Backup',
     ],
     answer: [3],
-    explanation: '**AWS Backup** centrally manages and automates backups across many AWS services using backup plans and policies. Elastic Disaster Recovery replicates servers for fast recovery rather than managing policy-based backups across services, Amazon Data Lifecycle Manager automates only EBS snapshots and AMIs, and S3 Versioning applies only to objects in S3 buckets.',
+    explanation: '**AWS Backup** centrally manages and automates backups across many AWS services with backup plans and policies. Elastic Disaster Recovery replicates servers for fast recovery rather than managing backup policies, Amazon Data Lifecycle Manager automates only EBS snapshots and AMIs, and S3 Versioning applies only to S3 objects.',
   },
   {
     id: 'tech-069',
@@ -910,7 +910,7 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'Route the upload through AWS Global Accelerator',
     ],
     answer: [0],
-    explanation: 'The **AWS Snow Family**, such as **Snowball Edge** devices, moves large amounts of data offline by physically shipping rugged storage devices to AWS, avoiding a slow, limited network link. A VPN, Transfer Acceleration and Global Accelerator all still send the data over the limited internet connection, which could take far longer for hundreds of terabytes. Note: AWS Snowball Edge has been closed to new customers since November 2025; AWS now points new customers to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
+    explanation: 'The **AWS Snow Family**, such as **Snowball Edge**, moves large amounts of data offline by shipping rugged storage devices to AWS, avoiding a slow network link. A VPN, Transfer Acceleration and Global Accelerator all still use the limited internet connection, which would take far longer for hundreds of terabytes.\n\nNote: Snowball Edge has been closed to new customers since November 2025. AWS now points them to AWS DataSync for online transfers or AWS Data Transfer Terminal for physical transfers. The exam guide still lists the Snow Family, so know what it is for.',
   },
   {
     id: 'tech-070',
@@ -923,6 +923,6 @@ export const technologyCoreQuestions: ExamQuestion[] = [
       'AWS Storage Gateway',
     ],
     answer: [2],
-    explanation: '**AWS Elastic Disaster Recovery** continuously replicates servers at the block level into a low-cost staging area in AWS and can launch recovered instances within minutes, giving RPOs of seconds. AWS Backup takes scheduled, point-in-time backups rather than continuous server replication, Snowball Edge is for offline data transfer, and Storage Gateway provides hybrid access to cloud storage.',
+    explanation: '**AWS Elastic Disaster Recovery** continuously replicates servers at the block level into a low-cost staging area in AWS and can launch recovered instances in minutes, with RPOs of seconds. AWS Backup takes scheduled, point-in-time backups, not continuous replication, Snowball Edge is for offline data transfer, and Storage Gateway provides hybrid access to cloud storage.',
   },
 ];

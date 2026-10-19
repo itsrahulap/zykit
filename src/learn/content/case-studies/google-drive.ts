@@ -5,33 +5,28 @@ export const googleDriveCaseStudy: CaseStudy = {
   title: "Google Drive",
   difficulty: "Medium",
   summary:
-    "Design a cloud file storage and sync service: upload any file, access it from any device, share it with others, and have edits stay consistent even when made offline or from multiple places at once.",
+    "Design cloud file storage and sync: upload any file, access it from any device, share it, and keep edits consistent even when made offline or from several places at once.",
   problemStatement: `
-Someone drags a folder of files into a desktop sync client. Those files
-should show up, unchanged, on their phone and in their browser a moment
-later. They edit a document on their laptop while offline, and a
-collaborator edits the same document on the web at the same time — when
-both come back online, neither person's work should silently disappear. They
-share a file with a coworker, who should be able to view or edit it
-according to permissions the owner set, without ever seeing files that
-weren't shared with them.
+A user drags a folder into a desktop sync client. The files should appear,
+unchanged, on their phone and in their browser a moment later. They edit a
+document offline while a collaborator edits it on the web. When both
+reconnect, neither person's work should silently disappear. A coworker they
+share with can view or edit according to the owner's permissions, and never
+sees files that weren't shared.
 
-The part that looks simple — "store a file, let people access it" — is not
-actually the hard part; object storage solves that. The hard parts are
-everything around it: a file might be huge, so uploading and syncing it
-needs to survive a flaky connection and not resend the whole thing after a
-tiny edit. The same file often exists, byte-for-byte, across huge numbers of
-different users' accounts (a popular PDF, a common template), so storing it
-redundantly for every uploader would be enormously wasteful. And multiple
-devices or people editing related content concurrently need a defined,
-predictable way to reconcile conflicting changes rather than one silently
-overwriting the other.
+"Store a file, let people access it" isn't the hard part; object storage
+solves that. The hard parts are around it:
 
-So the real design problem is: how do you upload and sync large files
-efficiently and resumably, avoid storing duplicate content, reconcile
-concurrent edits sanely, and layer a flexible sharing/permissions model on
-top of all of it — while every one of those pieces still needs to feel
-instant to the end user.
+- Files can be huge. Upload and sync must survive flaky connections and
+  not resend the whole file after a tiny edit.
+- The same bytes often exist in huge numbers of accounts (a popular PDF, a
+  common template). Storing a copy per uploader would be very wasteful.
+- Concurrent edits from several devices or people need a predictable way
+  to reconcile, not one silently overwriting the other.
+
+So the design must upload and sync large files efficiently and resumably,
+avoid duplicate storage, reconcile concurrent edits sanely, and add a
+flexible sharing/permissions model, while all of it feels instant.
   `.trim(),
   requirements: {
     functional: [
@@ -84,7 +79,7 @@ instant to the end user.
     },
   ],
   capacityNotes:
-    "The dominant cost here is storage at exabyte scale, which makes content-based deduplication a first-class architectural concern rather than an optimization to bolt on later, and pushes cold/rarely-accessed files toward cheaper storage tiers. Just as important, metadata operations vastly outnumber actual file-content transfers, since most sync activity is 'checking if anything changed' — so file metadata (small, hot, extremely frequently read/written) needs to live in a fast store that's architecturally separate from the file bytes themselves (large, comparatively cold, cheap-storage-friendly).",
+    "Storage at exabyte scale is the main cost. That makes content-based deduplication a core design concern, not a later optimization, and pushes rarely accessed files to cheaper tiers. Metadata operations also far outnumber content transfers, since most sync activity is 'did anything change?'. So metadata (small, hot, constantly read/written) lives in a fast store separate from file bytes (large, colder, fine on cheap storage).",
   apiDesign: [
     { method: "POST", path: "/api/v1/files/upload-init", description: "Starts a chunked upload session for a file; returns an upload id and chunk size to use." },
     { method: "PUT", path: "/api/v1/files/upload/{uploadId}/chunk/{n}", description: "Uploads one chunk of a file; supports resuming after a dropped connection." },
@@ -126,31 +121,28 @@ the system (even under someone else's account) requires no new bytes to be
 transferred or stored at all, only a new \`files\`/\`file_versions\` row.
   `.trim(),
   highLevelDesign: `
-A sync client (desktop app, mobile app, or browser) watches for local file
-changes and, for anything new or modified, splits the file into fixed-size
-**chunks** and computes a content hash for each chunk before uploading
-anything. It first asks the server which of those chunk hashes it doesn't
-already have; only genuinely new chunks are actually transferred, and the
-server assembles/records the file by referencing existing blocks for
-anything that matched. This is what makes both small edits to large files and
-duplicate content across different users cheap: a one-line edit to a huge
-document only needs to send the changed chunk(s), not the whole file.
+A sync client (desktop, mobile, or browser) watches for local changes. For
+each new or modified file, it splits the file into fixed-size **chunks** and
+hashes each one. It asks the server which hashes it doesn't have yet, and
+uploads only those chunks. The server records the file by referencing
+existing blocks for the rest. So a one-line edit to a huge document sends
+only the changed chunk(s), and duplicate content across users costs almost
+nothing.
 
-Once uploaded, a change is written to a small, fast **metadata and change-log
-store**, decoupled entirely from the (much larger, comparatively cold)
-**block storage** holding actual bytes. Every other device belonging to that
-user (and any other users the file is shared with) is either notified in
-real time (a push over a persistent connection) or discovers the change on
-its next periodic poll of the change log, and pulls down just the changed
-chunks it's missing.
+The change is written to a small, fast **metadata and change-log store**,
+separate from the much larger, colder **block storage** holding the bytes.
+The user's other devices (and users the file is shared with) either get a
+real-time push over a persistent connection or find the change on their
+next poll of the change log. They then pull only the chunks they're
+missing.
 
-Sharing and permissions sit as a layer that every read/write path checks
-against: a **permissions table**, checked (and inherited down folder
-hierarchies) before any metadata or content is returned, so an unshared file
-is invisible rather than merely access-denied, and a viewer-only share can
-read but never successfully write a new version. This separation —
-sync/dedup engine, metadata store, block storage, permissions layer — lets
-each piece scale and fail independently rather than as one monolith.
+Every read and write checks a **permissions table** (inherited down folder
+trees) before returning metadata or content. An unshared file is invisible,
+not just access-denied, and a viewer-only share can never write a new
+version.
+
+Keeping the sync/dedup engine, metadata store, block storage, and
+permissions layer separate lets each scale and fail independently.
   `.trim(),
   highLevelDiagram: `
                         ┌──────────────┐
@@ -177,171 +169,144 @@ each piece scale and fail independently rather than as one monolith.
     {
       title: "Chunked upload and sync for large, flaky connections",
       explanation: `
-Treating a file as one indivisible blob to upload works fine on a fast,
-stable connection and badly everywhere else — a dropped connection at 95%
-of a large upload would mean starting over, and any small edit to a huge
-file would require re-sending the entire thing.
+Uploading a file as one blob works on a fast, stable connection and badly
+everywhere else. A drop at 95% means starting over, and a small edit to a
+huge file means re-sending all of it.
 
-- Files are split into **fixed-size chunks** (e.g. a few MB each) before
-  upload, each identified by a hash of its own content.
-- The client uploads chunks independently and can **resume** after a
-  failure by simply asking "which chunks do you still need?" rather than
-  restarting the whole transfer.
-- When only part of a file changes (a paragraph added to a long document),
-  only the chunk(s) containing that changed region need to be re-uploaded —
-  the rest of the file's chunks are untouched and already stored.
-- The same chunking scheme underlies **efficient sync checks**: a device can
-  compare chunk hashes for a file against what the server has, and pull down
-  only the chunks it's missing, rather than re-downloading whole files on
-  every sync.
+- Files are split into **fixed-size chunks** (e.g. a few MB each), each
+  identified by a hash of its content.
+- Chunks upload independently. After a failure, the client **resumes** by
+  asking "which chunks do you still need?"
+- When part of a file changes (a paragraph added to a long document), only
+  the affected chunk(s) are re-uploaded.
+- The same chunks power **efficient sync checks**. A device compares chunk
+  hashes with the server and pulls only the chunks it's missing.
 
-This is the same principle a video platform's chunked upload uses for
-resumability, applied more aggressively here because Drive's files are
-edited incrementally far more often than a video is re-uploaded.
+Video platforms use chunked upload for resumability too. Drive leans on it
+harder, because files are edited incrementally far more often than videos
+are re-uploaded.
       `.trim(),
     },
     {
       title: "Deduplication via content hashing",
       explanation: `
-An enormous fraction of files uploaded to a service like this are not
-unique — a popular PDF, a standard corporate template, a common OS or app
-file people back up — uploaded independently by huge numbers of unrelated
-users. Storing every one of those copies separately would be a massive,
-avoidable storage cost.
+A huge share of uploads aren't unique: a popular PDF, a standard template,
+a common OS or app file people back up. Storing each copy separately would
+be a massive, avoidable cost.
 
 - Every chunk (and often the whole file) is identified by a **hash of its
   content**, not by who uploaded it or when.
-- Before actually transferring a chunk's bytes, the client checks whether
-  the server already has a block with that hash — if so, the upload for that
-  chunk is skipped entirely, and the new file simply **references** the
-  existing block.
-- This works **across users**, not just across a single user's own history —
-  two unrelated users uploading the identical file both end up pointing at
-  the same underlying blocks, with no cross-user visibility of each other's
-  files implied (permissions are enforced entirely at the metadata/
-  permissions layer, never by the shared blocks themselves).
-- Deleting a file must **decrement a reference count** on its blocks rather
-  than deleting the bytes outright — a block is only actually reclaimed once
-  no file, for any user, still references it.
+- Before sending a chunk, the client checks whether the server already has
+  that hash. If so, the upload is skipped and the new file just
+  **references** the existing block.
+- This works **across users**. Two unrelated users uploading the same file
+  point at the same blocks. That doesn't let them see each other's files:
+  permissions are enforced at the metadata/permissions layer, never by the
+  shared blocks.
+- Deleting a file **decrements a reference count** on its blocks instead
+  of deleting bytes. A block is reclaimed only when no file, for any user,
+  references it.
 
-The trade this introduces is real: deduplication adds complexity (reference
-counting, hash computation on every upload, a lookup before every transfer)
-in exchange for a large, direct reduction in storage cost at a scale where
-that cost is one of the business's largest line items.
+The trade is real. Dedup adds reference counting, hashing on every upload,
+and a lookup before every transfer. In return it cuts storage cost, one of
+the business's largest line items at this scale.
       `.trim(),
     },
     {
       title: "Conflict resolution for concurrent edits",
       explanation: `
-Two devices (or two collaborators) can modify the same file while
-disconnected from each other, and when both changes reach the server, the
-system has to decide what happens — silently discarding one person's edit
-is never acceptable.
+Two devices (or collaborators) can change the same file while disconnected.
+When both changes reach the server, it must decide what happens. Silently
+discarding someone's edit is never acceptable.
 
-- The simplest, most common approach: track a **version/revision number**
-  (or a last-write timestamp) per file. If a client tries to save a change
-  based on a version that's no longer current, the server detects the
-  conflict rather than blindly overwriting.
-- On conflict, rather than losing data, the system typically **keeps both**:
-  the incoming change is saved as a new file (a "conflicted copy") alongside
-  the version already on the server, and the user resolves it manually — a
-  deliberately conservative choice that favors never losing data over
-  automatically picking a winner.
-- For documents actually designed for live collaborative editing (as opposed
-  to file-level sync), a different, finer-grained technique — operational
-  transforms or CRDTs that merge concurrent edits at the level of individual
-  characters/operations — avoids conflicts altogether by making concurrent
-  edits mathematically mergeable. That's a materially harder problem than
-  file-level sync and is usually treated as a distinct sub-system (the
-  editing app itself) layered on top of, rather than replacing, file-level
-  sync and storage.
-- Folder-level conflicts (a file renamed on one device while deleted on
-  another) are resolved with similar conservative defaults: prefer keeping
-  data over automatically discarding either side's action.
+- The common approach: track a **version/revision number** (or last-write
+  timestamp) per file. If a client saves a change based on an outdated
+  version, the server detects the conflict instead of overwriting.
+- On conflict, the system usually **keeps both**. The incoming change is
+  saved as a new file (a "conflicted copy") next to the server's version,
+  and the user resolves it. This deliberately favors never losing data
+  over picking a winner automatically.
+- Documents built for live collaborative editing use a finer-grained
+  technique: operational transforms or CRDTs, which merge concurrent edits
+  per character/operation so they never conflict. That's a much harder
+  problem, usually a separate subsystem (the editing app) layered on top
+  of file-level sync and storage, not replacing it.
+- Folder conflicts (a file renamed on one device and deleted on another)
+  use similar conservative defaults: keep data rather than discard either
+  side's action.
 
-The general principle: at the file-sync layer, correctness means never
-silently losing a user's change, even if that means occasionally asking the
-user to manually reconcile two versions.
+At the file-sync layer, correctness means never silently losing a change,
+even if the user occasionally has to reconcile two versions.
       `.trim(),
     },
     {
       title: "Sharing and the permissions model",
       explanation: `
-Sharing needs to support both "share one file with one person" and "share an
-entire folder tree with a team," and permission checks have to be fast
-enough to run on every single file access without becoming the bottleneck.
+Sharing must support "one file with one person" and "a whole folder tree
+with a team." Permission checks must be fast enough to run on every access
+without becoming the bottleneck.
 
-- Permissions are stored per file **and** per folder, with folder
-  permissions **inheriting down** the tree by default — sharing a folder
-  doesn't require writing a permission row for every file inside it, and
-  moving a file into a shared folder should extend that folder's
-  permissions to it automatically.
-- Roles (viewer, editor, owner) are checked at the metadata layer before any
-  content is served — an unauthorized user's request for a file id they
-  don't have access to should behave the same whether the file exists or
-  not, so as to avoid leaking the existence of files that weren't shared
-  with them.
-- Because permission checks happen on effectively every read and write,
-  they're cached aggressively per (user, file/folder) pair, invalidated
-  whenever the permission set for that resource changes — a classic
-  read-heavy, write-rare caching pattern.
-- Public/link-based sharing ("anyone with the link can view") is modeled as
-  its own special-cased permission entry rather than requiring a row per
-  potential visitor, since the set of "anyone with the link" isn't
-  enumerable in advance.
+- Permissions are stored per file **and** per folder. Folder permissions
+  **inherit down** the tree by default, so sharing a folder doesn't need a
+  row per file, and a file moved into a shared folder picks up its
+  permissions automatically.
+- Roles (viewer, editor, owner) are checked at the metadata layer before
+  any content is served. An unauthorized request must behave the same
+  whether the file exists or not, so it doesn't leak the existence of
+  unshared files.
+- Since checks run on nearly every read and write, they're cached per
+  (user, file/folder) pair and invalidated when that resource's
+  permissions change. A classic read-heavy, write-rare cache.
+- Link sharing ("anyone with the link can view") is a special permission
+  entry, not a row per visitor, since "anyone with the link" can't be
+  listed in advance.
 
-Getting this wrong in either direction is costly: too strict and
-legitimate collaborators get blocked; too loose and a private file becomes
-accidentally discoverable — so permission checks are treated as a hard
-requirement on the critical path, not an optional feature layered on
-afterward.
+Errors either way are costly. Too strict blocks real collaborators; too
+loose makes private files discoverable. So permission checks are a hard
+requirement on the critical path, not an add-on.
       `.trim(),
     },
   ],
   bottlenecksAndScaling: `
-The first bottleneck at real scale is the metadata store, not the (far
-larger but comparatively cold) block storage — because every sync check,
-every permission lookup, and every small edit touches metadata, while
-actual byte transfer only happens when content genuinely changes. The
-metadata store therefore needs to be sharded (commonly by user or workspace,
-since almost all activity is scoped to one user's or team's own files) and
-cached aggressively for hot paths like permission checks and change-log
-polling, well before block storage capacity becomes a concern.
+The metadata store is the first bottleneck, not the far larger but colder
+block storage. Every sync check, permission lookup, and small edit touches
+metadata, while bytes move only when content really changes. So shard the
+metadata store (usually by user or workspace, since most activity stays
+within one user's or team's files) and cache hot paths like permission
+checks and change-log polling, long before block capacity matters.
 
-Block storage scales differently: it's enormous in raw size but low in
-request rate relative to metadata, so it scales by adding cheap, cold
-storage capacity and tiering rarely-accessed blocks onto slower/cheaper
-media, while keeping deduplication reference-counting correct as files are
-added and removed across the whole system. The other place this design
-strains is real-time sync notification at scale — maintaining persistent
-push connections to every active device for every user is a genuinely large
-connection-management problem in its own right, typically solved by
-dedicated, horizontally-sharded connection-handling infrastructure separate
-from the metadata/storage services entirely.
+Block storage is huge but gets far fewer requests. It scales by adding
+cheap, cold capacity and moving rarely accessed blocks to cheaper media,
+while keeping dedup reference counts correct as files come and go.
+
+Real-time sync notification also strains at scale. Holding push
+connections to every active device is a large connection-management
+problem of its own. It's usually handled by dedicated, horizontally
+sharded connection infrastructure, separate from metadata and storage.
   `.trim(),
   tradeOffs: [
     {
       decision: "Content-addressed, chunked storage vs. storing whole files per upload",
       explanation:
-        "Content-addressed chunk storage was chosen: it enables both cross-user deduplication and efficient incremental sync/upload, at the cost of real complexity — reference counting for deletes, hash computation on every write, and reassembly logic on read. Storing whole files per upload is simpler to implement and reason about, but wastes enormous amounts of storage on duplicate content and forces full re-uploads for any edit, which doesn't hold up at this scale.",
+        "Use content-addressed chunk storage. It enables cross-user dedup and efficient incremental sync/upload, at the cost of real complexity: reference counting for deletes, hashing on every write, and reassembly on read. Storing whole files is simpler, but wastes huge amounts of storage on duplicates and forces full re-uploads for any edit. That doesn't hold up at this scale.",
     },
     {
       decision: "Conservative conflict handling (keep both copies) vs. automatic last-write-wins",
       explanation:
-        "On a detected conflict, the system keeps both versions rather than silently letting the later write overwrite the earlier one, trading a small amount of user confusion (occasionally having to manually reconcile a 'conflicted copy') for the much stronger guarantee that a user's work is never silently destroyed. Last-write-wins is simpler and conflict-free from the system's point of view, but is unacceptable for a file storage product where data loss is the worst possible failure mode.",
+        "On conflict, keep both versions instead of letting the later write overwrite the earlier one. Users occasionally have to reconcile a 'conflicted copy', but their work is never silently destroyed. Last-write-wins is simpler for the system, but unacceptable for file storage, where data loss is the worst failure.",
     },
     {
       decision: "Separating metadata store from block storage vs. one unified storage system",
       explanation:
-        "Metadata (small, hot, extremely frequently read/written) and file bytes (large, comparatively cold) are kept in two architecturally separate systems, each tuned to its own access pattern, at the cost of added complexity in keeping them consistent (a metadata row pointing at blocks that must actually exist, reference counts that must stay accurate). A single unified store would be simpler to keep consistent but would force one system to serve two very different workloads well, which usually means serving neither optimally.",
+        "Keep metadata (small, hot, constantly read/written) and file bytes (large, colder) in separate systems, each tuned to its access pattern. The cost is keeping them consistent: metadata must point at blocks that exist, and reference counts must stay accurate. One unified store is easier to keep consistent but must serve two very different workloads, and usually serves neither well.",
     },
   ],
   interviewTips: [
-    "Lead with chunking and content hashing — they solve resumable upload, efficient sync, and deduplication all at once, and interviewers want to see you connect those three problems to one mechanism.",
-    "Be explicit that conflict resolution favors never losing data over picking an automatic winner, and explain why that's the right default for a file storage product specifically.",
-    "Separate the 'file-level sync' problem from 'live collaborative document editing' (OTs/CRDTs) explicitly — conflating them is a common mistake, and interviewers often probe this distinction.",
-    "Justify splitting metadata storage from block storage by access-pattern frequency (metadata operations vastly outnumber byte transfers), not just as a generic 'microservices' gesture.",
-    "Mention permission inheritance down folder trees — a naive per-file permission model doesn't scale to how people actually organize and share folders.",
+    "Lead with chunking and content hashing. One mechanism solves resumable upload, efficient sync, and dedup, and interviewers want to see you connect them.",
+    "Say that conflict resolution favors never losing data over picking a winner automatically, and why that's the right default for file storage.",
+    "Separate file-level sync from live collaborative editing (OTs/CRDTs). Mixing them up is a common mistake, and interviewers often probe it.",
+    "Justify splitting metadata from block storage by access frequency (metadata operations far outnumber byte transfers), not as a generic 'microservices' move.",
+    "Mention permission inheritance down folder trees. Per-file permissions alone don't scale to how people organize and share folders.",
   ],
   relatedTopics: ["consistent-hashing", "caching", "sharding", "consistency-models", "cap-theorem", "databases", "sql-vs-nosql"],
   keywords: ["google drive", "cloud storage", "file sync", "deduplication", "content hashing", "conflict resolution", "system design interview"],

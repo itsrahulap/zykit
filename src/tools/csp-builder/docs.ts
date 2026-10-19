@@ -8,7 +8,15 @@ const docs: ToolDocs = {
     'Pick an **output** format (header, meta tag, nginx, Apache, Vercel or Netlify), optionally as Report-Only, and copy it. Use the **hash generator** for inline scripts and styles.',
   ],
   howItWorks:
-    'The policy is held as an ordered list of directives. Pasted text is parsed with the same CSP parser used by the HTTP Headers tool (duplicates are dropped, as browsers use only the first). The evaluator follows Content-Security-Policy fallback rules (for example `script-src` to `default-src`, `worker-src` to `child-src` to `script-src`) and flags the problems Google\'s CSP Evaluator looks for: `\'unsafe-inline\'` without a nonce or hash, `\'unsafe-eval\'`, wildcards and broad schemes in `script-src`, plain-HTTP sources, missing `object-src`, `base-uri`, `frame-ancestors` and `form-action`, `\'strict-dynamic\'` without a nonce, short nonces, and a built-in list of hosts known to serve JSONP, AngularJS or user content that can bypass an allowlist. Hashes are computed with the Web Crypto API (SHA-256, SHA-384 or SHA-512) over the exact text you provide, and nonces come from `crypto.getRandomValues`.',
+    'The policy is held as an ordered list of directives. Pasted text is parsed with the same CSP parser as the HTTP Headers tool. Duplicate directives are dropped, as browsers use only the first.\n\n' +
+    'The evaluator follows Content-Security-Policy fallback rules (for example `script-src` to `default-src`, `worker-src` to `child-src` to `script-src`). It flags the problems Google\'s CSP Evaluator looks for:\n\n' +
+    '- `\'unsafe-inline\'` without a nonce or hash, and `\'unsafe-eval\'`\n' +
+    '- wildcards and broad schemes in `script-src`\n' +
+    '- plain-HTTP sources\n' +
+    '- missing `object-src`, `base-uri`, `frame-ancestors` and `form-action`\n' +
+    '- `\'strict-dynamic\'` without a nonce, and short nonces\n' +
+    '- hosts from a built-in list known to serve JSONP, AngularJS or user content that can bypass an allowlist\n\n' +
+    'Hashes are computed with the Web Crypto API (SHA-256, SHA-384 or SHA-512) over the exact text you provide. Nonces come from `crypto.getRandomValues`.',
   limits: [
     'The evaluator is a static approximation: it does not fetch your scripts, test for real bypasses, or know your site. A good grade does not prove the policy is safe or that it won\'t break your pages.',
     'The list of bypass-prone hosts is small and may be out of date; it only inspects script sources.',

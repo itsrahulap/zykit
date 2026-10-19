@@ -7,11 +7,8 @@ export const arraysHashingProblems: Problem[] = [
     difficulty: "Easy",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers. Figure out if any number shows up more
-than once anywhere in the list.
-
-Return *true* if at least one value repeats, and *false* if every
-number in the list is unique.
+Given a list of numbers, return *true* if any value appears more than
+once, and *false* if every number is unique.
     `.trim(),
     examples: [
       { input: "nums = [1, 2, 3, 1]", output: "true", explanation: "The value 1 appears twice - once at index 0 and again at index 3." },
@@ -20,27 +17,25 @@ number in the list is unique.
     ],
     constraints: ["1 <= nums.length <= 10^5", "-10^9 <= nums[i] <= 10^9"],
     hints: [
-      "The direct approach is to compare every number against every other number - but that gets slow fast. Is there a way to check 'have I seen this before' without rescanning the whole list each time?",
-      "Sorting the list first puts equal values right next to each other, so you only need to compare each number to its neighbor.",
-      "A hash set lets you record every value you've seen and check membership in a single step, so you never need to look back through the earlier part of the list.",
+      "Comparing every number against every other number gets slow fast. Can you check 'have I seen this before?' without rescanning the list?",
+      "Sorting puts equal values next to each other, so you only need to compare each number to its neighbor.",
+      "A hash set records every value you've seen and checks membership in one step, so you never look back through the list.",
     ],
     approachOverview: `
-The most obvious approach is to compare each number against every other
-number in the list, which works but does a lot of repeated comparisons.
+The obvious approach compares each number against every other number.
+It works, but repeats a lot of comparisons.
 
-A better idea is to sort the list first - once sorted, any duplicate
-values end up sitting right next to each other, so a single pass
-checking neighbors is enough to catch a repeat.
+Sorting first is better: duplicates end up next to each other, so one
+pass checking neighbors catches a repeat.
 
-The fastest approach skips sorting altogether: walk through the list
-once, keeping a hash set of every value seen so far. Before adding a
-new number, check whether it's already in the set - if it is, you've
-found your duplicate immediately.
+The fastest approach skips sorting. Walk the list once, keeping a hash
+set of values seen so far. If a number is already in the set, you've
+found a duplicate.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Check Every Pair",
-        explanation: "Compare every number against every number that comes after it. If any pair matches, there's a duplicate. It's simple to reason about, but it looks at every possible pair, so it gets slow as the list grows.",
+        explanation: "Compare every number against every number after it. If any pair matches, there's a duplicate. Simple, but it checks every pair, so it gets slow as the list grows.",
         code: `function containsDuplicate(nums) {
   for (let i = 0; i < nums.length; i++) {
     for (let j = i + 1; j < nums.length; j++) {
@@ -61,7 +56,7 @@ found your duplicate immediately.
       },
       {
         approach: "Better - Sort First",
-        explanation: "Sort a copy of the list. Once it's sorted, any two equal values are guaranteed to end up next to each other, so a single pass comparing each element to its neighbor is enough to find a duplicate.",
+        explanation: "Sort a copy of the list. Equal values are then next to each other, so one pass comparing each element to its neighbor finds any duplicate.",
         code: `function containsDuplicate(nums) {
   const sorted = [...nums].sort((a, b) => a - b);
 
@@ -78,7 +73,7 @@ found your duplicate immediately.
       },
       {
         approach: "Optimal - Hash Set",
-        explanation: "Walk through the list once. For each number, check whether it's already in a hash set of numbers you've seen so far. If it is, you've found a duplicate immediately; if not, add it and keep going.",
+        explanation: "Walk the list once. If a number is already in the hash set of seen numbers, you've found a duplicate. If not, add it and keep going.",
         code: `function containsDuplicate(nums) {
   const seen = new Set();
 
@@ -109,11 +104,9 @@ found your duplicate immediately.
     difficulty: "Easy",
     category: "arrays-hashing",
     description: `
-You're given two strings. Determine whether the second string is an
-*anagram* of the first - meaning it's made of exactly the same letters,
-with exactly the same counts, just possibly in a different order.
-
-Return *true* if they're anagrams of each other, and *false* otherwise.
+Given two strings, return *true* if the second is an *anagram* of the
+first, and *false* otherwise. An anagram uses exactly the same letters
+the same number of times, possibly in a different order.
     `.trim(),
     examples: [
       { input: 's = "anagram", t = "nagaram"', output: "true", explanation: "Both strings contain the same seven letters with the same counts, just rearranged." },
@@ -122,25 +115,23 @@ Return *true* if they're anagrams of each other, and *false* otherwise.
     ],
     constraints: ["1 <= s.length, t.length <= 5 * 10^4", "s and t consist of lowercase English letters."],
     hints: [
-      "If two strings are anagrams, what would happen if you rearranged both of their letters into alphabetical order?",
-      "Comparing sorted versions of the strings works, but sorting costs time. Is there a way to compare letter counts directly instead?",
-      "Count how many times each letter appears in one string, then subtract those counts while scanning the other string. If every count lands back at zero, the strings are anagrams.",
+      "If two strings are anagrams, what happens when you sort both of their letters alphabetically?",
+      "Comparing sorted strings works, but sorting costs time. Can you compare letter counts directly?",
+      "Count each letter in one string, then subtract counts while scanning the other. If every count ends at zero, they're anagrams.",
     ],
     approachOverview: `
-Two strings are anagrams exactly when they contain the same letters the
-same number of times. One straightforward way to check that is to
-rearrange (sort) both strings alphabetically - if they're anagrams, the
-sorted versions will be identical, character for character.
+Two strings are anagrams when they contain the same letters the same
+number of times. One simple check: sort both strings alphabetically. If
+they're anagrams, the sorted versions are identical.
 
-A faster way avoids sorting entirely: count how many times each letter
-appears in the first string, then walk through the second string
-subtracting from those counts as you go. If every count lands back at
-exactly zero by the end, the strings are anagrams.
+A faster way skips sorting. Count each letter in the first string, then
+walk the second string subtracting from those counts. If every count
+ends at exactly zero, the strings are anagrams.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort and Compare",
-        explanation: "If two strings are anagrams, sorting each one's letters alphabetically must produce the exact same string. So sort both strings and compare the results directly.",
+        explanation: "Anagrams produce the same string when their letters are sorted. So sort both strings and compare.",
         code: `function isAnagram(s, t) {
   if (s.length !== t.length) {
     return false;
@@ -156,7 +147,7 @@ exactly zero by the end, the strings are anagrams.
       },
       {
         approach: "Optimal - Character Count",
-        explanation: "Count how often each letter appears in `s` using a hash map. Then scan through `t`, decreasing the count for each letter it contains. If `t` ever asks for a letter that isn't available, or in a different amount, the strings aren't anagrams.",
+        explanation: "Count each letter in `s` with a hash map. Then scan `t`, decreasing the count for each letter. If `t` needs a letter that isn't available, the strings aren't anagrams.",
         code: `function isAnagram(s, t) {
   if (s.length !== t.length) {
     return false;
@@ -181,7 +172,7 @@ exactly zero by the end, the strings are anagrams.
         spaceComplexity: "O(1) - at most 26 lowercase letters, so the map's size is bounded by a constant",
         walkthrough: [
           { code: "for (const ch of s) counts.set(ch, (counts.get(ch) || 0) + 1);", explanation: "Builds a tally of how many times each letter appears in the first string." },
-          { code: "if (!counts.has(ch) || counts.get(ch) === 0) return false;", explanation: "If the second string ever needs a letter that's missing, or needs it more times than the first string had it, they can't be anagrams." },
+          { code: "if (!counts.has(ch) || counts.get(ch) === 0) return false;", explanation: "If the second string needs a letter that's missing, or more times than the first string has it, they can't be anagrams." },
           { code: "counts.set(ch, counts.get(ch) - 1);", explanation: "'Uses up' one occurrence of that letter from the tally." },
           { code: "return true;", explanation: "If we get through all of t without any mismatch, every letter matched up exactly." },
         ],
@@ -196,12 +187,11 @@ exactly zero by the end, the strings are anagrams.
     difficulty: "Easy",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers and a target number. Find two *different*
-numbers in the list that add up exactly to the target, and return their
-positions (indexes) in the list.
+Given a list of numbers and a target, find two *different* numbers that
+add up to the target and return their indexes.
 
-You can assume there's always exactly one valid pair, and you can't use
-the same element twice.
+There is always exactly one valid pair, and you can't use the same
+element twice.
     `.trim(),
     examples: [
       { input: "nums = [2, 7, 11, 15], target = 9", output: "[0, 1]", explanation: "nums[0] + nums[1] = 2 + 7 = 9." },
@@ -215,25 +205,22 @@ the same element twice.
     ],
     hints: [
       "For each number, what's the one specific value you'd need to find somewhere else in the list?",
-      "Checking every pair works, but it means comparing each number against every other number - is there a faster way to check 'have I seen this value before'?",
-      "A hash table (a plain object or a Map) lets you check 'have I seen X' in one step instead of scanning the whole list again.",
+      "Checking every pair works, but it's slow. Is there a faster way to check 'have I seen this value before?'",
+      "A hash table (a plain object or a Map) checks 'have I seen X?' in one step instead of rescanning the list.",
     ],
     approachOverview: `
-The most direct way to solve this is to check every possible pair of
-numbers and see if any pair adds up to the target. That works, but it
-means comparing each number against every other number - a lot of
-repeated work.
+The direct way checks every pair to see if it adds up to the target.
+That works, but repeats a lot of work.
 
-A faster way: as you walk through the list once, ask "what number would
-I need to see, together with the one I'm looking at right now, to reach
-the target?" If you've already seen that number, you're done. A hash
-table lets you check "have I seen this value already" instantly, turning
-the problem into a single pass through the list.
+A faster way walks the list once. For each number, ask "what number
+would complete the target with this one?" If you've already seen it,
+you're done. A hash table answers "have I seen this value?" instantly,
+so one pass is enough.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Check Every Pair",
-        explanation: "Try every pair of numbers and check if they add up to the target. It's the most obvious solution, but it looks at every pair, so it does far more work than necessary as the list grows.",
+        explanation: "Try every pair and check if it adds up to the target. The most obvious solution, but it does far more work than needed as the list grows.",
         code: `function twoSum(nums, target) {
   for (let i = 0; i < nums.length; i++) {
     for (let j = i + 1; j < nums.length; j++) {
@@ -255,7 +242,7 @@ the problem into a single pass through the list.
       },
       {
         approach: "Optimal - Hash Map",
-        explanation: "Walk through the list once. For each number, check whether the value needed to complete the pair (`target - currentNumber`) has already been seen. A `Map` lets you check that instantly, while remembering every number's position as you go.",
+        explanation: "Walk the list once. For each number, check whether the value that completes the pair (`target - currentNumber`) was already seen. A `Map` checks this instantly and remembers each number's position.",
         code: `function twoSum(nums, target) {
   const seen = new Map(); // value -> index
 
@@ -289,13 +276,12 @@ the problem into a single pass through the list.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a list of strings. Group together every string that's an
-anagram of another - meaning they contain exactly the same letters,
-just in a different order.
+Given a list of strings, group together the strings that are anagrams of
+each other (same letters, different order).
 
-Return the groups as a list of lists. Each input string must end up in
-exactly one group, but the groups themselves can come back in any
-order, and the strings within a group can be in any order too.
+Return the groups as a list of lists. Each string goes in exactly one
+group. The groups, and the strings within each group, can be in any
+order.
     `.trim(),
     examples: [
       {
@@ -312,27 +298,24 @@ order, and the strings within a group can be in any order too.
       "strs[i] consists of lowercase English letters.",
     ],
     hints: [
-      "Two strings belong in the same group exactly when they're anagrams of each other - how did you check that for just two strings?",
-      "Comparing every string against every other string works, but it's a lot of repeated comparisons. Is there a single 'signature' you could compute for a string so that all of its anagrams share that exact signature?",
-      "Sorting a string's letters alphabetically gives you such a signature: two strings are anagrams if and only if their sorted forms are identical. Group strings by that sorted form.",
+      "Two strings belong in the same group when they're anagrams. How did you check that for just two strings?",
+      "Comparing every string against every other works, but repeats a lot. Can you compute a 'signature' for a string that all its anagrams share?",
+      "Sorting a string's letters gives such a signature: two strings are anagrams if and only if their sorted forms match. Group strings by that sorted form.",
     ],
     approachOverview: `
-A direct way to solve this is to go through the strings one at a time,
-and for each one, check it against every group formed so far to see if
-it belongs there (using the same kind of anagram check you'd use for
-two strings). That works, but comparing each new string against every
-existing group adds up as the list grows.
+The direct way takes each string and checks it against every group so
+far, using a two-string anagram check. That works, but the comparisons
+add up as the list grows.
 
-A cleaner approach relies on the fact that anagrams, once their letters
-are sorted alphabetically, turn into the exact same string. That sorted
-string acts as a signature - every anagram of a word shares the same
-signature. Using a hash map from signature to the list of original
-strings that share it, the whole list can be grouped in a single pass.
+A cleaner approach uses the fact that anagrams become the same string
+when their letters are sorted. That sorted string is a signature shared
+by every anagram of a word. A hash map from signature to the matching
+strings groups the whole list in one pass.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Compare Against Existing Groups",
-        explanation: "For each string, check it against the first string of every group formed so far. If it's an anagram of that group's representative, add it there; otherwise, start a new group. Checking whether two strings are anagrams is done with a simple letter-count comparison.",
+        explanation: "Check each string against the first string of every group so far, using a letter-count comparison. If it's an anagram, add it to that group. Otherwise, start a new group.",
         code: `function groupAnagrams(strs) {
   const groups = [];
 
@@ -373,7 +356,7 @@ function isAnagramOf(a, b) {
       },
       {
         approach: "Optimal - Sorted String as Hash Key",
-        explanation: "For every string, sort its letters alphabetically to build a signature key - anagrams always produce the same key. Use a hash map from that key to the list of original strings sharing it, then return all the map's values as the groups.",
+        explanation: "Sort each string's letters to build a key. Anagrams always produce the same key. Map each key to the strings that share it, then return the map's values as the groups.",
         code: `function groupAnagrams(strs) {
   const groups = new Map();
 
@@ -407,12 +390,10 @@ function isAnagramOf(a, b) {
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers and a number *k*. Find the *k* numbers
-that occur most often in the list.
+Given a list of numbers and a number *k*, return the *k* numbers that
+occur most often, in any order.
 
-Return them as a list, in any order. You can assume there's always
-exactly one valid answer for which values make up the top *k* most
-frequent ones.
+There is always exactly one valid answer.
     `.trim(),
     examples: [
       { input: "nums = [1,1,1,2,2,3], k = 2", output: "[1, 2]", explanation: "1 appears 3 times and 2 appears 2 times - both occur more often than 3, which appears only once." },
@@ -421,29 +402,27 @@ frequent ones.
     ],
     constraints: ["1 <= nums.length <= 10^5", "k is always valid: 1 <= k <= number of distinct values in nums."],
     hints: [
-      "First figure out how often each number occurs - a hash map is a natural fit for that.",
-      "Once you have the counts, sorting all of them by frequency and taking the top k works, but full sorting does more work than you really need.",
-      "A frequency can never be higher than the length of the list. What if, instead of sorting, you placed each number into a 'bucket' labeled with its frequency, then read the buckets off from highest frequency down?",
+      "First count how often each number occurs. A hash map fits well.",
+      "Sorting the counts by frequency and taking the top k works, but a full sort does more work than needed.",
+      "A frequency can't be higher than the list's length. Instead of sorting, put each number in a 'bucket' for its frequency, then read the buckets from highest frequency down.",
     ],
     approachOverview: `
-No matter the approach, the first thing you need is a count of how
-often each number appears - a hash map handles that in one pass.
+Every approach starts by counting how often each number appears, which a
+hash map does in one pass.
 
-From there, the simplest next step is to sort the numbers by their
-frequency and take the top k. That's correct, but full sorting is more
-work than this problem actually needs.
+The simplest next step is to sort by frequency and take the top k.
+That's correct, but a full sort is more work than needed.
 
-A faster approach takes advantage of one fact: a frequency can never be
-larger than the length of the list. That means you can create an array
-of "buckets," where the bucket at index f holds every number that
-occurs exactly f times. Filling the buckets takes one pass; reading
-them off from the highest index down, until you've collected k
-numbers, gives the answer without ever fully sorting anything.
+A faster approach uses one fact: a frequency can't be larger than the
+list's length. So create an array of "buckets", where bucket f holds
+every number that occurs exactly f times. Fill the buckets in one pass,
+then read them from the highest index down until you have k numbers. No
+sorting needed.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort by Frequency",
-        explanation: "Count how often each number occurs using a hash map, then sort those counts from highest to lowest and take the first k numbers.",
+        explanation: "Count each number with a hash map, sort the counts from highest to lowest, and take the first k numbers.",
         code: `function topKFrequent(nums, k) {
   const counts = new Map();
   for (const num of nums) {
@@ -459,7 +438,7 @@ numbers, gives the answer without ever fully sorting anything.
       },
       {
         approach: "Optimal - Bucket Sort",
-        explanation: "Count how often each number occurs, same as before. Then, instead of sorting, create an array of buckets indexed by frequency - bucket[3] holds every number that appears exactly 3 times, and so on. Reading the buckets from the highest frequency down and collecting numbers gives the top k without any sorting.",
+        explanation: "Count each number as before. Instead of sorting, create buckets indexed by frequency: bucket[3] holds every number that appears exactly 3 times, and so on. Read the buckets from the highest frequency down to collect the top k.",
         code: `function topKFrequent(nums, k) {
   const counts = new Map();
   for (const num of nums) {
@@ -501,13 +480,12 @@ numbers, gives the answer without ever fully sorting anything.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers. Build a new list where each position
-holds the product of *all* the other numbers in the original list -
-everything except the number that sits at that position.
+Given a list of numbers, build a new list where each position holds the
+product of *all* the other numbers, everything except the one at that
+position.
 
-You need to do this without using division anywhere (even though
-"total product divided by nums[i]" is a tempting shortcut, it breaks
-down whenever the list contains a zero).
+Don't use division. "Total product divided by nums[i]" is tempting, but
+it breaks when the list contains a zero.
     `.trim(),
     examples: [
       { input: "nums = [1, 2, 3, 4]", output: "[24, 12, 8, 6]", explanation: "For index 0: 2*3*4 = 24. For index 1: 1*3*4 = 12. And so on for each position." },
@@ -519,28 +497,26 @@ down whenever the list contains a zero).
       "You may not use the division operator.",
     ],
     hints: [
-      "For a given position, its answer is 'everything to the left of it, multiplied together' times 'everything to the right of it, multiplied together'.",
-      "You could compute, for every position, the running product of everything before it in a single left-to-right pass. Where would the 'everything after it' part come from?",
-      "Run the same idea again, but from the right-hand side this time, multiplying the running product into what you already have from the left-to-right pass. Two passes, no division.",
+      "Each position's answer is (product of everything to its left) times (product of everything to its right).",
+      "One left-to-right pass can compute the running product before each position. Where would the 'everything after it' part come from?",
+      "Do the same from the right, multiplying that running product into what the first pass stored. Two passes, no division.",
     ],
     approachOverview: `
-The direct way to think about this problem: the answer at each position
-is the product of everything to its left, times the product of
-everything to its right. A brute-force solution recomputes that whole
-product from scratch for every single position, which means redoing a
-lot of the same multiplication over and over.
+The answer at each position is the product of everything to its left
+times the product of everything to its right. Brute force recomputes
+this from scratch for every position, repeating the same
+multiplications.
 
-The efficient version reuses work across positions instead of
-recomputing it. In one left-to-right pass, store at each position the
-running product of everything that came before it. Then, in a second
-right-to-left pass, multiply in the running product of everything that
-comes after it. By the end, every position holds exactly the product
-of all the other numbers, and division never enters the picture.
+The efficient version reuses work. A left-to-right pass stores at each
+position the running product of everything before it. A right-to-left
+pass then multiplies in the running product of everything after it. Each
+position ends up with the product of all other numbers, with no
+division.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Recompute Each Product",
-        explanation: "For every position, loop through the entire list again and multiply together every number except the one at that position.",
+        explanation: "For each position, loop over the whole list and multiply every number except the one at that position.",
         code: `function productExceptSelf(nums) {
   const n = nums.length;
   const result = new Array(n).fill(1);
@@ -562,7 +538,7 @@ of all the other numbers, and division never enters the picture.
       },
       {
         approach: "Optimal - Prefix and Suffix Products",
-        explanation: "In one left-to-right pass, fill the output array with the running product of everything before each position. Then, in a right-to-left pass, multiply in the running product of everything after each position. Combining both gives, for every index, the product of all the other numbers.",
+        explanation: "A left-to-right pass fills the output with the running product of everything before each position. A right-to-left pass multiplies in the running product of everything after it. Each index then holds the product of all other numbers.",
         code: `function productExceptSelf(nums) {
   const n = nums.length;
   const result = new Array(n).fill(1);
@@ -584,8 +560,8 @@ of all the other numbers, and division never enters the picture.
         timeComplexity: "O(n)",
         spaceComplexity: "O(1) extra space, beyond the output array",
         walkthrough: [
-          { code: "let prefix = 1; for (let i = 0; i < n; i++) { result[i] = prefix; prefix *= nums[i]; }", explanation: "Before touching nums[i], result[i] is set to the running product of everything strictly to its left. Only after that does nums[i] get folded into the running product for the next position." },
-          { code: "let suffix = 1; for (let i = n - 1; i >= 0; i--) { result[i] *= suffix; suffix *= nums[i]; }", explanation: "Same idea from the right: multiplies into each position the running product of everything strictly to its right, again updating the running product only after using it." },
+          { code: "let prefix = 1; for (let i = 0; i < n; i++) { result[i] = prefix; prefix *= nums[i]; }", explanation: "result[i] gets the running product of everything strictly to its left. Only then is nums[i] folded into the running product for the next position." },
+          { code: "let suffix = 1; for (let i = n - 1; i >= 0; i--) { result[i] *= suffix; suffix *= nums[i]; }", explanation: "Same idea from the right: multiplies in the running product of everything strictly to its right, updating the product only after using it." },
           { code: "return result;", explanation: "Each position now holds (product of everything left of it) times (product of everything right of it) - exactly the product of every other number." },
         ],
       },
@@ -599,20 +575,17 @@ of all the other numbers, and division never enters the picture.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a 9x9 Sudoku board, partially filled in. Each cell either
-holds a digit from 1 to 9, or is empty (shown as a "." character).
+You're given a partly filled 9x9 Sudoku board. Each cell holds a digit
+from 1 to 9 or is empty (shown as ".").
 
-Determine whether the numbers currently placed on the board follow
-Sudoku's placement rules. You are **not** solving or completing the
-puzzle - only checking that what's already there doesn't break any
-rule:
+Check whether the placed numbers follow Sudoku's rules. You are **not**
+solving the puzzle, only checking that nothing breaks a rule:
 
 - No row may contain the same digit more than once.
 - No column may contain the same digit more than once.
-- No single 3x3 box (the board splits evenly into a 3x3 grid of these) may contain the same digit more than once.
+- No 3x3 box (the board splits into a 3x3 grid of these) may contain the same digit more than once.
 
-Empty cells are ignored entirely - they never count as a conflict with
-anything.
+Empty cells are ignored and never cause a conflict.
     `.trim(),
     examples: [
       {
@@ -632,33 +605,29 @@ anything.
     ],
     constraints: ["The board is always exactly 9x9.", "Each cell holds a digit '1'-'9' or the character '.'."],
     hints: [
-      "You need to check three different kinds of groups - rows, columns, and 3x3 boxes. Start by getting just 'does this one row have a duplicate?' working.",
-      "You could check all the rows, then all the columns, then all the boxes, as three separate sweeps over the board - that's correct, but it visits every cell three times.",
-      "Every cell belongs to exactly one row, one column, and one box, all at the same time. What if you tracked what's been seen in all three, for every cell, during a single sweep over the board?",
+      "You need to check three kinds of groups: rows, columns and 3x3 boxes. Start with 'does this one row have a duplicate?'",
+      "Checking all rows, then all columns, then all boxes is correct, but it visits every cell three times.",
+      "Every cell belongs to exactly one row, one column and one box. Can you track what's been seen in all three during a single sweep?",
     ],
     approachOverview: `
-A natural first attempt is to check each rule separately: sweep across
-every row checking for duplicates, then sweep down every column, then
-check each of the nine 3x3 boxes. Each sweep uses a set to catch
-repeated digits. It's correct, but it looks at the whole board three
-separate times.
+A first attempt checks each rule separately: sweep every row, then every
+column, then each of the nine 3x3 boxes, using a set to catch repeated
+digits. It's correct, but reads the board three times.
 
-Since every cell belongs to exactly one row, one column, and one box
-all at once, you can fold every check into a single pass. Keep a small
-set for each row, each column, and each box (nine of each). Visit each
-filled cell exactly once, and check whether its digit already exists in
-that cell's row-set, column-set, or box-set - if it does, the board is
-invalid. Otherwise, record the digit in all three sets and move on.
+Since every cell belongs to exactly one row, column and box, you can do
+all checks in one pass. Keep a set for each row, each column and each
+box (nine of each). For each filled cell, check whether its digit is
+already in that cell's row, column or box set. If so, the board is
+invalid. Otherwise, add the digit to all three sets.
 
-The trick that makes box-tracking work is a small formula: for a cell
-at row r and column c, its box index is
-"Math.floor(r / 3) * 3 + Math.floor(c / 3)" - it maps every cell to one
-of the nine boxes, numbered left-to-right, top-to-bottom.
+Box tracking uses a small formula. For a cell at row r and column c, the
+box index is "Math.floor(r / 3) * 3 + Math.floor(c / 3)". It maps every
+cell to one of the nine boxes, numbered left-to-right, top-to-bottom.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Three Separate Sweeps",
-        explanation: "Check the board three times: once sweeping every row for duplicates, once sweeping every column, and once sweeping every 3x3 box. Each sweep uses a fresh set per group to spot a repeated digit.",
+        explanation: "Sweep the board three times: rows, then columns, then 3x3 boxes. Each sweep uses a fresh set per group to spot a repeated digit.",
         code: `function isValidSudoku(board) {
   // Check rows
   for (let r = 0; r < 9; r++) {
@@ -704,7 +673,7 @@ of the nine boxes, numbered left-to-right, top-to-bottom.
       },
       {
         approach: "Optimal - Single Pass With Row, Column, and Box Sets",
-        explanation: "Keep one set per row, one per column, and one per 3x3 box. Sweep the board exactly once - for each filled cell, check its digit against that cell's row, column, and box sets before adding it to all three.",
+        explanation: "Keep one set per row, column and 3x3 box. Sweep the board once. For each filled cell, check its digit against its row, column and box sets, then add it to all three.",
         code: `function isValidSudoku(board) {
   const rows = Array.from({ length: 9 }, () => new Set());
   const cols = Array.from({ length: 9 }, () => new Set());
@@ -748,14 +717,12 @@ of the nine boxes, numbered left-to-right, top-to-bottom.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given an unsorted list of integers. Find the length of the
-longest run of *consecutive* integers that all appear somewhere in the
-list - the numbers don't need to sit next to each other in the list
-itself, only be consecutive in value (like 3, 4, 5, 6).
+Given an unsorted list of integers, find the length of the longest run
+of *consecutive* values (like 3, 4, 5, 6) that all appear in the list.
+They don't need to sit next to each other in the list.
 
-Your solution needs to run in O(n) time, so sorting the list (which
-takes longer than that) is a reasonable first attempt, but not the
-intended final answer.
+Your solution must run in O(n) time. Sorting takes longer, so it's a
+fair first attempt but not the intended answer.
     `.trim(),
     examples: [
       { input: "nums = [100, 4, 200, 1, 3, 2]", output: "4", explanation: "The numbers 1, 2, 3, 4 are all present and form a run of consecutive values - the longest one available." },
@@ -764,28 +731,25 @@ intended final answer.
     ],
     constraints: ["0 <= nums.length <= 10^5", "-10^9 <= nums[i] <= 10^9"],
     hints: [
-      "Sorting first makes it easy to spot consecutive runs, but sorting alone already costs more time than the problem is really asking for.",
-      "For a given number to be the *start* of a run, what would have to be true about the number just below it?",
-      "Put every number in a hash set first. Then only start counting a run from numbers where 'one less' isn't in the set - that guarantees you never recount the same run twice, keeping the whole thing to one real pass.",
+      "Sorting makes consecutive runs easy to spot, but sorting alone takes more time than allowed.",
+      "For a number to be the *start* of a run, what must be true about the number just below it?",
+      "Put every number in a hash set. Only start counting a run from numbers where 'one less' isn't in the set. That way no run is counted twice, so it stays one real pass.",
     ],
     approachOverview: `
-A reasonable first idea is to sort the list - once sorted, consecutive
-values sit right next to each other, so a single pass counting streaks
-gives you the answer. It's correct, but sorting itself already costs
-more than the O(n) the problem is really asking for.
+A first idea is to sort the list. Consecutive values then sit next to
+each other, so one pass counting streaks gives the answer. It's correct,
+but sorting costs more than the required O(n).
 
-The key insight for a faster solution: put every number into a hash set
-for instant lookups, then only start counting a sequence from numbers
-that are the *start* of one - meaning "number minus 1" is not in the
-set. Every other number gets picked up later as part of some run
-starting from its true beginning, so across the whole algorithm, each
-number only ever gets counted once, even though there's a loop nested
-inside the main loop.
+The faster solution puts every number in a hash set for instant lookups.
+Then it only counts a sequence from numbers that *start* one, meaning
+"number minus 1" isn't in the set. Every other number is counted as part
+of a run from its true start. So each number is counted only once, even
+though there's a loop inside the main loop.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Sort and Scan",
-        explanation: "Remove duplicates and sort what's left. Then walk through once, tracking how long the current streak of consecutive values is, and remembering the longest streak seen.",
+        explanation: "Remove duplicates and sort. Then walk through once, tracking the current streak of consecutive values and the longest streak seen.",
         code: `function longestConsecutive(nums) {
   if (nums.length === 0) return 0;
 
@@ -810,7 +774,7 @@ inside the main loop.
       },
       {
         approach: "Optimal - Hash Set, Start From Sequence Beginnings",
-        explanation: "Put every number into a hash set. Then, for each number that's the start of a sequence (meaning one less than it is not in the set), count forward - checking if the next value, and the one after that, and so on, are in the set - to find that sequence's length.",
+        explanation: "Put every number in a hash set. For each number that starts a sequence (one less isn't in the set), count forward while the next value is in the set to get that sequence's length.",
         code: `function longestConsecutive(nums) {
   const numSet = new Set(nums);
   let longest = 0;
@@ -832,8 +796,8 @@ inside the main loop.
         spaceComplexity: "O(n)",
         walkthrough: [
           { code: "const numSet = new Set(nums);", explanation: "Lets us check 'is this value present?' in a single step, for any number." },
-          { code: "if (!numSet.has(num - 1)) {", explanation: "Skips numbers that are in the middle or end of a run - only the true start of a sequence (where one less doesn't exist) is worth counting from." },
-          { code: "while (numSet.has(num + length)) { length++; }", explanation: "Walks forward from the sequence's start, extending the count for as long as the next consecutive value keeps showing up." },
+          { code: "if (!numSet.has(num - 1)) {", explanation: "Skips numbers in the middle or end of a run. Only count from the true start of a sequence, where one less doesn't exist." },
+          { code: "while (numSet.has(num + length)) { length++; }", explanation: "Walks forward from the start, extending the count while the next consecutive value exists." },
           { code: "longest = Math.max(longest, length);", explanation: "Keeps track of the longest run found across every sequence start." },
         ],
       },
@@ -847,11 +811,11 @@ inside the main loop.
     difficulty: "Easy",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers where one particular value shows up more
-than half the time (strictly more than n/2 times, where n is the
-length of the list). Find and return that value.
+You're given a list where one value appears more than half the time
+(strictly more than n/2 times, where n is the list's length). Return
+that value.
 
-You can assume such a value always exists in the input.
+Such a value always exists.
     `.trim(),
     examples: [
       { input: "nums = [3, 2, 3]", output: "3", explanation: "3 appears twice out of three elements - more than half." },
@@ -860,28 +824,27 @@ You can assume such a value always exists in the input.
     ],
     constraints: ["1 <= nums.length <= 5 * 10^4", "A majority element (appearing more than n/2 times) always exists."],
     hints: [
-      "Counting how often each value appears with a hash map, and checking as you go whether any count has crossed n/2, will get you the answer.",
-      "Because the majority element appears *more than half* the time, think of it like a tug-of-war: every time you see it, pull one way, and every time you see anything else, pull the other way.",
-      "Keep a running 'candidate' value and a counter. If the counter ever hits zero, throw away the current candidate and start fresh with whatever number comes next - the true majority element can never fully get cancelled out this way.",
+      "Count each value with a hash map and check as you go whether any count passes n/2.",
+      "The majority element appears *more than half* the time. Think of a tug-of-war: pull one way when you see it, and the other way for anything else.",
+      "Keep a 'candidate' and a counter. When the counter hits zero, take the next number as the new candidate. The true majority element can never be fully cancelled out.",
     ],
     approachOverview: `
-The straightforward approach is to count how often each number appears
-using a hash map, and return the one whose count passes n/2.
+The simple approach counts each number with a hash map and returns the
+one whose count passes n/2.
 
-There's a cleverer approach, known as the Boyer-Moore voting idea, that
-needs no extra memory at all. Think of it as a tug-of-war: keep a
-"candidate" and a counter starting at zero. Walk through the list - if
-the counter is zero, adopt the current number as the new candidate.
-Then add 1 to the counter if the current number matches the candidate,
-or subtract 1 if it doesn't. Because the true majority element
-outnumbers everything else put together, it can never be fully
-cancelled out by the time you reach the end, so whatever candidate
-remains is the answer.
+Boyer-Moore voting needs no extra memory. Keep a "candidate" and a
+counter starting at zero. Walk the list:
+
+- If the counter is zero, make the current number the candidate.
+- Add 1 if the number matches the candidate, or subtract 1 if not.
+
+The majority element outnumbers everything else combined, so it can't be
+fully cancelled out. The candidate left at the end is the answer.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Count With a Hash Map",
-        explanation: "Count how many times each number appears using a hash map. As soon as any number's count passes n/2, return it.",
+        explanation: "Count each number with a hash map. As soon as a count passes n/2, return that number.",
         code: `function majorityElement(nums) {
   const counts = new Map();
   const majorityThreshold = Math.floor(nums.length / 2);
@@ -898,7 +861,7 @@ remains is the answer.
       },
       {
         approach: "Optimal - Boyer-Moore Voting",
-        explanation: "Keep a running candidate and a counter, both starting empty. For each number: if the counter is zero, make this number the new candidate. Then increase the counter if the number matches the candidate, or decrease it otherwise. The majority element, by definition, can never be fully cancelled out, so it's guaranteed to be the candidate left standing at the end.",
+        explanation: "Keep a candidate and a counter, both starting empty. For each number, if the counter is zero, make it the candidate. Then increase the counter if the number matches the candidate, or decrease it otherwise. The majority element can't be fully cancelled out, so it's the candidate left at the end.",
         code: `function majorityElement(nums) {
   let candidate = null;
   let count = 0;
@@ -916,9 +879,9 @@ remains is the answer.
         spaceComplexity: "O(1)",
         walkthrough: [
           { code: "let candidate = null; let count = 0;", explanation: "Starts with no candidate and an empty counter." },
-          { code: "if (count === 0) { candidate = num; }", explanation: "Whenever the counter drops to zero (including at the very start), the current number becomes the new candidate to track." },
-          { code: "count += num === candidate ? 1 : -1;", explanation: "Strengthens the count if this number agrees with the candidate, or weakens it if it doesn't - like votes for and against." },
-          { code: "return candidate;", explanation: "Because the majority element outnumbers all other values combined, it always survives as the final candidate, even though it might get swapped out temporarily along the way." },
+          { code: "if (count === 0) { candidate = num; }", explanation: "Whenever the counter is zero (including at the start), the current number becomes the new candidate." },
+          { code: "count += num === candidate ? 1 : -1;", explanation: "Adds a vote if this number matches the candidate, or removes one if it doesn't." },
+          { code: "return candidate;", explanation: "The majority element outnumbers all others combined, so it always ends as the candidate, even if swapped out for a while." },
         ],
       },
     ],
@@ -931,13 +894,11 @@ remains is the answer.
     difficulty: "Medium",
     category: "arrays-hashing",
     description: `
-You're given a list of numbers (which can include negatives) and a
-target number k. Count how many *contiguous* stretches of the list
-(subarrays) add up exactly to k.
+Given a list of numbers (which can include negatives) and a target k,
+count how many *contiguous* subarrays add up to exactly k.
 
-A subarray has to be made of elements that sit next to each other in
-the original list - you can't skip around and pick elements from
-scattered positions.
+A subarray's elements must sit next to each other in the list. You can't
+pick elements from scattered positions.
     `.trim(),
     examples: [
       { input: "nums = [1, 1, 1], k = 2", output: "2", explanation: "The subarray made of the first two elements, and the subarray made of the last two elements, both sum to 2." },
@@ -946,28 +907,24 @@ scattered positions.
     ],
     constraints: ["1 <= nums.length <= 2 * 10^4", "-1000 <= nums[i] <= 1000", "-10^7 <= k <= 10^7"],
     hints: [
-      "Checking every possible subarray and adding up its elements works, but recomputing each subarray's sum from scratch is wasteful.",
-      "If you track the running total from the start of the list up to each position (a 'prefix sum'), the sum of any subarray is just one prefix sum minus another, earlier one.",
-      "For each position, you want to know how many earlier positions had a running total equal to 'current running total minus k'. A hash map that counts how many times each running total has occurred lets you answer that instantly.",
+      "Summing every subarray works, but recomputing each sum from scratch is wasteful.",
+      "Track the running total up to each position (a 'prefix sum'). Any subarray's sum is one prefix sum minus an earlier one.",
+      "At each position, count earlier positions whose running total equals 'current total minus k'. A hash map counting each running total answers this instantly.",
     ],
     approachOverview: `
-The brute-force way is to check every possible subarray directly,
-adding up its elements and comparing the sum to k. It works, but it
-recomputes a lot of the same sums over and over as the window slides.
+Brute force sums every subarray and compares it to k. It works, but
+recomputes the same sums many times.
 
-The faster approach relies on prefix sums: the sum of any subarray
-between two positions is just the running total up to the later
-position minus the running total up to the earlier one. So, while
-scanning the list and keeping a running total, you can ask at every
-step: "has the running total minus k shown up as a running total
-before?" A hash map counting how many times each running total has
-occurred answers that in one step, turning the whole problem into a
-single pass through the list.
+The faster approach uses prefix sums. A subarray's sum is the running
+total at its end minus the running total just before its start. So while
+scanning with a running total, ask at each step: "has (running total
+minus k) appeared as a running total before?" A hash map counting each
+running total answers this in one step, so one pass is enough.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Check Every Subarray",
-        explanation: "For every starting position, extend the subarray one element at a time, keeping a running sum, and count it whenever that running sum equals k.",
+        explanation: "From each starting position, extend the subarray one element at a time with a running sum. Count it whenever the sum equals k.",
         code: `function subarraySum(nums, k) {
   let count = 0;
 
@@ -988,7 +945,7 @@ single pass through the list.
       },
       {
         approach: "Optimal - Prefix Sum + Hash Map",
-        explanation: "Keep a running total as you scan the list, and a hash map counting how many times each running total value has occurred so far (starting with a running total of 0 having occurred once, to correctly handle subarrays starting at index 0). At each step, the number of subarrays ending here that sum to k equals how many times (current running total minus k) has appeared before.",
+        explanation: "Keep a running total and a hash map counting how often each running total has occurred. Seed it with 0 occurring once, so subarrays starting at index 0 are counted. At each step, the number of subarrays ending here that sum to k is how often (running total minus k) has appeared before.",
         code: `function subarraySum(nums, k) {
   const prefixCounts = new Map();
   prefixCounts.set(0, 1); // an empty prefix sums to 0
@@ -1012,11 +969,11 @@ single pass through the list.
         timeComplexity: "O(n)",
         spaceComplexity: "O(n)",
         walkthrough: [
-          { code: "prefixCounts.set(0, 1);", explanation: "Seeds the map with 'a running total of 0 has occurred once' - this represents the empty prefix before the list even starts, and lets subarrays beginning at index 0 be counted correctly." },
-          { code: "sum += num;", explanation: "Keeps a running total of everything seen so far, updated as each number is visited." },
-          { code: "const needed = sum - k;", explanation: "Figures out what an earlier running total would have needed to be for the subarray between that point and here to sum to exactly k." },
-          { code: "if (prefixCounts.has(needed)) { count += prefixCounts.get(needed); }", explanation: "Adds in however many earlier positions had exactly that running total - each one marks a valid subarray ending at the current position." },
-          { code: "prefixCounts.set(sum, (prefixCounts.get(sum) || 0) + 1);", explanation: "Records the current running total, so later positions can find it if they need it." },
+          { code: "prefixCounts.set(0, 1);", explanation: "Seeds the map with 'a running total of 0 occurred once'. This is the empty prefix before the list starts, so subarrays beginning at index 0 are counted." },
+          { code: "sum += num;", explanation: "Updates the running total of everything seen so far." },
+          { code: "const needed = sum - k;", explanation: "The earlier running total that would make the subarray from there to here sum to exactly k." },
+          { code: "if (prefixCounts.has(needed)) { count += prefixCounts.get(needed); }", explanation: "Adds how many earlier positions had that running total. Each marks a valid subarray ending here." },
+          { code: "prefixCounts.set(sum, (prefixCounts.get(sum) || 0) + 1);", explanation: "Records the current running total for later positions." },
         ],
       },
     ],

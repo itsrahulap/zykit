@@ -9,8 +9,9 @@ const docs: ToolDocs = {
     'Download a single file, or **Download all (ZIP)** for the whole batch.',
   ],
   howItWorks:
-    'Each image is decoded by your browser with `createImageBitmap` (EXIF orientation applied), drawn onto a canvas at its original size and re-encoded in the chosen format with the browser’s own encoder. SVG files can’t be decoded that way, so they are rendered through an image element on the main thread; an SVG without a set size is drawn at 512 × 512. When the browser supports `OffscreenCanvas`, the work runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread.\n\n' +
-    'Before converting, the browser is tested once to see which of PNG, JPEG, WebP and AVIF its canvas can actually encode, and only those are offered. Changing a setting converts the whole batch again. The ZIP stores files as they are, without compressing them again.',
+    'Each image is decoded with `createImageBitmap` (EXIF orientation applied), drawn onto a canvas at its original size and re-encoded in the chosen format with the browser’s own encoder. If the browser supports `OffscreenCanvas`, this runs in a Web Worker so the page stays responsive; otherwise it runs on the main thread.\n\n' +
+    'SVG files can’t be decoded that way, so they are rendered through an image element on the main thread. An SVG without a set size is drawn at 512 × 512.\n\n' +
+    'The browser is tested once to see which of PNG, JPEG, WebP and AVIF its canvas can encode, and only those are offered. Changing a setting converts the whole batch again. The ZIP stores files as they are, without compressing them again.',
   limits: [
     'Up to 50 MB per file, 100 megapixels per image and 16,384 pixels on either side, and up to 100 images per batch.',
     'Reading depends on your browser’s image decoder: PNG, JPEG, WebP, GIF, BMP, ICO and SVG generally work; AVIF, HEIC and JPEG XL only where the browser can decode them. Files it can’t decode are flagged in the list.',
@@ -19,7 +20,7 @@ const docs: ToolDocs = {
     'Images are not resized, and re-encoding removes metadata such as EXIF and GPS.',
   ],
   privacy:
-    'Images are decoded, converted and zipped entirely in your browser. They are never uploaded or saved to browser storage; the converted files exist only in memory until you download them or leave the page.',
+    'Images are decoded, converted and zipped entirely in your browser, and never uploaded or saved to browser storage. The converted files exist only in memory until you download them or leave the page.',
   faqs: [
     {
       question: 'Why isn’t AVIF (or WebP) offered?',
@@ -37,7 +38,7 @@ const docs: ToolDocs = {
     {
       question: 'Is converting to PNG lossless?',
       answer:
-        'PNG stores the decoded pixels exactly, so nothing more is lost in the conversion. But if the source was a JPEG or other lossy file, its earlier compression artefacts stay, and the PNG is usually much larger.',
+        'PNG stores the decoded pixels exactly, so nothing more is lost. But if the source was a JPEG or other lossy file, its compression artefacts stay, and the PNG is usually much larger.',
     },
     {
       question: 'Does converting keep EXIF data?',

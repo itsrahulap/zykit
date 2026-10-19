@@ -9,7 +9,8 @@ const docs: ToolDocs = {
     'Turn on **Timestamps** to see when each entry was logged, and use **Copy output**, **Send to…** or **Clear output** on the console.',
   ],
   howItWorks:
-    'Each run starts a fresh Web Worker, created from your code, and terminates it when the run is over, so nothing carries over between runs and the worker can’t read or change the page. Your code is wrapped in an `async` function, which is why top-level `await` works. A small runtime replaces `console` so output is captured and pretty-printed, and keeps track of timers and `fetch` calls so the run only counts as finished when your code and everything it scheduled are done.\n\n' +
+    'Each run starts a fresh Web Worker from your code and ends it when the run is over. Nothing carries over between runs, and the worker can’t read or change the page. Your code is wrapped in an `async` function, so top-level `await` works.\n\n' +
+    'A small runtime replaces `console` to capture and pretty-print output. It also tracks timers and `fetch` calls, so a run only finishes when your code and everything it scheduled are done.\n\n' +
     'TypeScript is turned into JavaScript with Sucrase, which strips type annotations without type-checking and keeps every line where it was, so error line numbers match your code. Errors and stack traces are mapped back to lines in the editor. Sucrase is downloaded from this site the first time you run TypeScript.\n\n' +
     'The site’s Content Security Policy also applies inside the worker: requests to other servers are blocked, and `eval` and `new Function` don’t work.',
   limits: [
@@ -20,7 +21,7 @@ const docs: ToolDocs = {
     'Output stops after 2,000 console entries or 1 MB of text, and the run is then stopped. Objects are printed 4 levels deep and with up to 100 items per collection; `console.table` shows the first 1,000 rows.',
   ],
   privacy:
-    'Your code runs only in your browser, in an isolated worker, and is never uploaded. The editor contents, language and time limit are saved in this browser’s local storage so they are still there when you come back. Code sent here from another tool or a Learn page with **Send to…** arrives through this tab’s session storage and is removed as soon as it is read; the same applies to console output you send on. This tool doesn’t offer share links.',
+    'Your code runs only in your browser, in an isolated worker, and is never uploaded. The editor contents, language and time limit are saved in this browser’s local storage for your next visit. Code sent here from another tool or a Learn page with **Send to…** passes through this tab’s session storage and is removed as soon as it is read; the same goes for console output you send on. This tool has no share links.',
   faqs: [
     {
       question: 'Why does `document` or `window` say it is not defined?',

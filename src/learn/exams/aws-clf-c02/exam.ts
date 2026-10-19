@@ -18,10 +18,10 @@ export const awsCloudPractitioner: Exam = {
   passRatio: 0.7,
   facts: [
     '65 questions in 90 minutes: 50 are scored and 15 are unscored, and you can’t tell which.',
-    'Two question types: multiple choice (one correct answer out of four) and multiple response (two or more correct out of five or more).',
+    'Two question types: multiple choice (one correct out of four) and multiple response (two or more correct out of five or more).',
     'Scored from 100 to 1,000; you need **700** to pass. Unanswered questions count as wrong, so never leave one blank.',
     'Mock tests here use the same format and domain weights, and pass at 70% correct as a rough match for 700.',
-    'AWS changed its Support plans in December 2025 (now Basic, Business Support+, Enterprise Support and Unified Operations). Questions here use the current plans and explain the older names, which the exam may still use.',
+    'Questions here use the Support plans AWS introduced in December 2025 and explain the older names, which the exam may still use.',
   ],
   updates: [
     '**Support plans** changed in December 2025: Basic, Business Support+, Enterprise Support and Unified Operations. Developer and Business Support closed to new customers and Enterprise On-Ramp is being retired. Older questions may still use the old names.',

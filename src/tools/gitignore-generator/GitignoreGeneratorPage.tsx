@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import gitignoreGenerator from './index';
-import { GROUPS, merge, MAX_PATHS, parseRules, SAMPLE_PATHS, searchTemplates, templateById, testPath, type PathResult } from './features/gitignore-generator';
+import { GROUPS, merge, MAX_PATHS, parseRules, SAMPLE_PATHS, searchTemplates, STARTERS, templateById, testPath, type PathResult } from './features/gitignore-generator';
 import { Checkbox, OutputPanel } from '../../shared/ui/convert';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { useShareState } from '../../shared/hooks/useShareState';
@@ -20,11 +20,15 @@ export default function GitignoreGeneratorPage() {
   const [paths, setPaths] = useState('');
   const [rulesText, setRulesText] = useState('');
   const [ignoreCase, setIgnoreCase] = useState(false);
+  // Hand edits to the output, plus the generated text they started from (to warn when templates change underneath).
+  const [edit, setEdit] = useState<{ text: string; base: string } | null>(null);
   const searchId = useId();
 
   const merged = useMemo(() => merge(selected, custom), [selected, custom]);
   const visible = useMemo(() => searchTemplates(query), [query]);
-  const effective = rulesText.trim() ? rulesText : merged.text;
+  const output = edit?.text ?? merged.text;
+  const outdated = edit !== null && edit.base !== merged.text;
+  const effective = rulesText.trim() ? rulesText : output;
 
   // Test results are computed after a short pause so typing in a long list stays responsive.
   const [results, setResults] = useState<PathResult[]>([]);
@@ -63,7 +67,7 @@ export default function GitignoreGeneratorPage() {
       <Breadcrumb tool={gitignoreGenerator} />
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <Headline accent=".gitignore">Generate a </Headline>
-        <Button variant="ghost" disabled={!selected.length && !custom} onClick={() => (setSelected([]), setCustom(''))}>
+        <Button variant="ghost" disabled={!selected.length && !custom} onClick={() => (setSelected([]), setCustom(''), setEdit(null))}>
           <Icon name="x" className="h-4 w-4" /> Clear all
         </Button>
       </div>
@@ -76,6 +80,13 @@ export default function GitignoreGeneratorPage() {
               Search templates
             </label>
             <input id={searchId} type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Python, Next.js, JetBrains…" className={field} autoComplete="off" />
+            <div role="group" aria-label="Starter sets" className="mt-3 flex flex-wrap gap-2">
+              {STARTERS.map((st) => (
+                <Button key={st.name} variant="secondary" onClick={() => setSelected(st.ids)}>
+                  {st.name}
+                </Button>
+              ))}
+            </div>
             {selected.length > 0 && (
               <ul aria-label="Selected templates" className="mt-3 flex flex-wrap gap-2">
                 {selected.map((id) => (
@@ -117,12 +128,37 @@ export default function GitignoreGeneratorPage() {
         </div>
 
         <div className="min-w-0">
-          {merged.text ? (
+          {output || edit ? (
             <div className="space-y-3">
-              <OutputPanel title=".gitignore" icon="code" text={merged.text} fileName=".gitignore" mime="application/octet-stream" kind="text" />
+              <OutputPanel title=".gitignore" icon="code" text={output} fileName=".gitignore" mime="application/octet-stream" kind="text">
+                <CodeArea
+                  label="Edit .gitignore"
+                  hint={edit ? 'edited by you' : 'type to edit'}
+                  value={output}
+                  onChange={(e) => setEdit({ text: e.target.value, base: edit?.base ?? merged.text })}
+                  rows={18}
+                />
+              </OutputPanel>
+              {edit && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button variant="secondary" onClick={() => setEdit(null)}>
+                    Reset to generated
+                  </Button>
+                  {outdated && (
+                    <p role="status" className="text-sm text-amber-800 dark:text-amber-300">
+                      Templates changed since you edited. Your edits are kept; reset to regenerate.
+                    </p>
+                  )}
+                </div>
+              )}
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 Browsers drop the leading dot from downloads, so the file may save as <code>gitignore</code>. Rename it to{' '}
                 <code>.gitignore</code> in your project root.
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                A .gitignore only affects untracked files. To stop tracking something already committed, run{' '}
+                <code className="break-all">git rm -r --cached &lt;path&gt;</code> and commit; this removes it from the repository (not from your disk), so
+                teammates will see it deleted.
               </p>
             </div>
           ) : (

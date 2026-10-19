@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GROUPS, merge, parseRules, searchTemplates, templateById, TEMPLATES, testPath, testPaths } from '../../../src/tools/gitignore-generator/features/gitignore-generator';
+import { GROUPS, merge, parseRules, searchTemplates, STARTERS, templateById, TEMPLATES, testPath, testPaths } from '../../../src/tools/gitignore-generator/features/gitignore-generator';
 
 const ignored = (rules: string, path: string, ic = false) => testPath(parseRules(rules, ic), path)!.ignored;
 
@@ -155,5 +155,14 @@ describe('testPaths', () => {
     const text = merge(['node', 'env', 'vscode']).text;
     const res = testPaths(text, 'node_modules/a/b.js\n.env\n.env.example\n.vscode/settings.json\nsrc/main.ts');
     expect(res.map((r) => r.ignored)).toEqual([true, true, false, false, false]);
+  });
+});
+
+describe('starters', () => {
+  it('only reference real templates and merge to non-empty output', () => {
+    for (const st of STARTERS) {
+      for (const id of st.ids) expect(templateById(id), `${st.name}: ${id}`).toBeDefined();
+      expect(merge(st.ids).text).toContain('# ===');
+    }
   });
 });

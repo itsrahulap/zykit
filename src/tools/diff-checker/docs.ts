@@ -21,7 +21,7 @@ const docs: ToolDocs = {
     'The result shows 2,000 rows at a time; **Show more lines** reveals the next ones. Phones always get the unified view.',
   ],
   privacy:
-    'Both texts are compared in your browser and never uploaded or stored. The **Share** button (Copy share link) puts both texts and the options in the link’s `#` fragment, which browsers don’t send to servers; links are limited in size, so long texts show *Too large to share*. Text sent here from another tool with **Send to…** goes into **Original** through this tab’s session storage and is removed as soon as it is read.',
+    'Both texts are compared in your browser and never uploaded or stored. The **Share** button (Copy share link) puts both texts and the options in the link’s `#` fragment, which browsers don’t send to servers. Links have a size limit, so long texts show *Too large to share*. Text sent here from another tool with **Send to…** goes into **Original** through this tab’s session storage and is removed as soon as it is read.',
   faqs: [
     {
       question: 'Why does a line show as changed when it looks the same?',

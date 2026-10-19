@@ -8,8 +8,8 @@ const docs: ToolDocs = {
     'Click a common resolution that matches the ratio to load it, and copy the CSS `aspect-ratio` line for your stylesheet.',
   ],
   howItWorks:
-    'The ratio is width : height divided by their greatest common divisor (Euclid’s algorithm); decimal sides are first scaled by a power of ten so they become whole numbers. The decimal value is width ÷ height. The nearest common ratio is the entry in a built-in list (1:1, 5:4, 4:3, 3:2, 16:10, 16:9, 21:9, 32:9 and a few more) with the smallest difference on a logarithmic scale.\n\n' +
-    'Solving a missing side multiplies by the locked ratio and rounds to a whole unit, so it can be off by up to half a unit. Scaling multiplies both sides by the percentage and rounds each. The A-paper and golden presets use 1.4142:1 and 1.6180:1, rounded from √2 and φ. Everything is plain arithmetic in your browser.',
+    'The ratio is width : height divided by their greatest common divisor (Euclid’s algorithm). Decimal sides are first scaled by a power of ten to make them whole numbers. The decimal value is width ÷ height. The nearest common ratio is the closest entry, on a logarithmic scale, in a built-in list (1:1, 5:4, 4:3, 3:2, 16:10, 16:9, 21:9, 32:9 and a few more).\n\n' +
+    'A missing side is solved with the locked ratio and rounded to a whole unit, so it can be off by up to half a unit. Scaling multiplies both sides by the percentage and rounds each. The A-paper and golden presets use 1.4142:1 and 1.6180:1, rounded from √2 and φ. Everything is plain arithmetic in your browser.',
   limits: [
     'Sides must be greater than 0 and at most 100000; decimals are accepted but the exact ratio of a decimal like 1.3333 is large (13333:10000).',
     'Solved and scaled sizes are rounded to whole numbers, so scaling back and forth can drift by a unit.',

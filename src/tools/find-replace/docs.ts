@@ -9,9 +9,10 @@ const docs: ToolDocs = {
     'Copy or download the **Result**, send it to another tool with **Send to…**, or click **Use result as the new text** to keep editing it.',
   ],
   howItWorks:
-    'Every rule becomes a JavaScript regular expression. In plain-text mode your search is escaped so that characters like `.` or `(` match literally, and the replacement is literal too, so `$` is just a dollar sign. With **Regular expression** on, the pattern uses the browser’s own `RegExp` syntax, and the replacement understands `$1`, `$<name>` for named groups, `$&` for the whole match and `$$` for a dollar sign. Matching is case-insensitive unless **Case sensitive** is on, and **Multiline** makes `^` and `$` match at each line.\n\n' +
-    '**Whole word** wraps the pattern so it only matches when no letter, digit or underscore touches it on either side. In plain-text mode that check covers Unicode letters, so it works for words like `café`; in regex mode it uses `\\w`, which only knows ASCII letters.\n\n' +
-    'Rules are applied in order, each to the result of the ones above it, and each shows its match count. The work runs in a background worker a moment after you stop typing. If it takes more than 1 second, usually because a pattern backtracks catastrophically, the worker is stopped and you are told to simplify the pattern.',
+    'Every rule becomes a JavaScript regular expression. In plain-text mode, your search is escaped so characters like `.` or `(` match literally, and the replacement is literal too, so `$` is just a dollar sign.\n\n' +
+    'With **Regular expression** on, the pattern uses the browser’s own `RegExp` syntax, and the replacement understands `$1`, `$<name>` for named groups, `$&` for the whole match and `$$` for a dollar sign. Matching is case-insensitive unless **Case sensitive** is on, and **Multiline** makes `^` and `$` match at each line.\n\n' +
+    '**Whole word** only matches when no letter, digit or underscore touches the match on either side. In plain-text mode this covers Unicode letters, so it works for words like `café`; in regex mode it uses `\\w`, which only knows ASCII letters.\n\n' +
+    'Rules run in order, each on the result of the ones above it, and each shows its match count. The work runs in a background worker a moment after you stop typing. If it takes more than 1 second (usually a pattern that backtracks catastrophically), the worker is stopped and you are asked to simplify the pattern.',
   limits: [
     'At most 5,000 matches per rule are highlighted and counted; replacing still covers every match.',
     'Only the first 200,000 characters of the text are highlighted on screen; replacing uses all of it.',
@@ -21,7 +22,7 @@ const docs: ToolDocs = {
     'Dropped or opened files are limited to 10 MB and must be text.',
   ],
   privacy:
-    'Searching and replacing happen entirely in your browser, in a background worker; your text is never uploaded or stored. The **Share** button copies a link with your text, rules and options in its `#` fragment, which browsers don’t send to servers, but anyone you give the link to can read it. **Send to…** passes text between tools through this tab’s session storage, and it is removed as soon as the receiving tool reads it.',
+    'Searching and replacing happen in your browser, in a background worker; your text is never uploaded or stored. **Share** copies a link with your text, rules and options in its `#` fragment. Browsers don’t send the fragment to servers, but anyone with the link can read it. **Send to…** passes text through this tab’s session storage, removed as soon as the receiving tool reads it.',
   faqs: [
     {
       question: 'How do I reuse part of the match in the replacement?',
@@ -36,12 +37,12 @@ const docs: ToolDocs = {
     {
       question: 'What happens when I add more than one rule?',
       answer:
-        'Rules run in order and each one works on the output of the rules above it, so a later rule can match text an earlier rule inserted. The highlights show the rule you last clicked into.',
+        'Rules run in order, each on the output of the rules above it, so a later rule can match text an earlier rule inserted. The highlights show the rule you last clicked into.',
     },
     {
       question: 'Why was my search stopped?',
       answer:
-        'Some patterns, such as nested repeats like `(a+)+`, can take exponentially long on certain text. Matching runs in a worker that is stopped after 1 second so the page doesn’t freeze; simplify the pattern and try again.',
+        'Some patterns, such as nested repeats like `(a+)+`, can take exponentially long on certain text. The worker is stopped after 1 second so the page doesn’t freeze. Simplify the pattern and try again.',
     },
   ],
 };

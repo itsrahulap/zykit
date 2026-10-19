@@ -7,12 +7,12 @@ export const graphsProblems: Problem[] = [
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given a grid of characters, where each cell is either "1" (land)
-or "0" (water). An *island* is a group of land cells that are connected
-to each other horizontally or vertically - not diagonally. Land cells
-that touch only at a corner belong to separate islands.
+You're given a grid where each cell is "1" (land) or "0" (water). An
+*island* is a group of land cells connected horizontally or vertically,
+not diagonally. Land cells that touch only at a corner are separate
+islands.
 
-Count how many islands are in the grid.
+Count the islands in the grid.
     `.trim(),
     examples: [
       {
@@ -32,45 +32,36 @@ Count how many islands are in the grid.
       "grid[i][j] is either \"0\" or \"1\"",
     ],
     hints: [
-      "If you pick any land cell and 'spread out' to every land cell reachable from it (up, down, left, right, and their neighbors' neighbors, and so on), you've just traced out one whole island.",
-      "Once you've visited a cell, you never need to count it again - mark it as seen (or overwrite it) so you don't loop back into the same island twice.",
-      "Scan the grid cell by cell. Every time you find an unvisited land cell, that's the start of a brand-new island - spread out from it, mark everything in it as visited, and increase your count by one.",
+      "Pick a land cell and 'spread out' to every land cell reachable from it (up, down, left, right, and so on). That traces one whole island.",
+      "Once you've visited a cell, mark it as seen (or overwrite it) so you don't count the same island twice.",
+      "Scan the grid. Each unvisited land cell starts a new island: spread out from it, mark it all visited, and add one to your count.",
     ],
     approachOverview: `
-The key idea behind this whole problem is *traversal*: starting from one
-cell and visiting every cell connected to it before moving on. Think of
-it like flood-filling a region in a paint program - you click one land
-cell, and the "spread" touches every land cell reachable from it through
-up/down/left/right steps.
+The key idea is *traversal*: start from one cell and visit every cell
+connected to it. It's like flood-fill in a paint program: click one land
+cell, and the fill reaches every land cell connected by up, down, left
+or right steps.
 
-Scan the grid in order. Whenever you land on an unvisited "1", you've
-found a new island: increase your count by one, then spread out from
-that cell to visit (and mark) every connected land cell so you never
-count it again. Once the spread finishes, keep scanning for the next
-unvisited "1".
+Scan the grid in order. Each unvisited "1" is a new island: add one to
+the count, then spread out and mark every connected land cell so it's
+never counted again. Then keep scanning.
 
-The spreading step can be done two ways, and both give the same
-correct answer:
+You can spread in two ways, with the same result:
 
-- **Depth-first search (DFS)** - dive down one direction as far as
-  possible (recursively visiting a neighbor's neighbor's neighbor...)
-  before backtracking to try other directions.
-- **Breadth-first search (BFS)** - visit all of a cell's direct
-  neighbors first, using a queue, before moving one step further out.
+- **Depth-first search (DFS)**: go as far as possible in one direction (recursively) before backtracking.
+- **Breadth-first search (BFS)**: visit all direct neighbors first, using a queue, before moving further out.
 
-Either one correctly visits "every land cell connected to this one" -
-they just differ in the order they visit cells and in whether you use
-the call stack (DFS) or an explicit queue (BFS).
+They differ only in visiting order and in using the call stack (DFS) or
+an explicit queue (BFS).
     `.trim(),
     solutions: [
       {
         approach: "DFS - Recursive Flood Fill",
         explanation: `
-Scan every cell. When an unvisited "1" is found, that's a new island -
-count it, then recursively visit every land cell reachable from it,
-marking each one as water ("0") the moment it's visited so it's never
-revisited. The recursion naturally stops at water cells, grid edges,
-and already-visited cells.
+Scan every cell. An unvisited "1" is a new island: count it, then
+recursively visit every connected land cell, turning each into water
+("0") so it's never revisited. The recursion stops at water, grid edges
+and visited cells.
         `.trim(),
         code: `function numIslands(grid) {
   const rows = grid.length;
@@ -104,19 +95,19 @@ and already-visited cells.
         timeComplexity: "O(rows × cols)",
         spaceComplexity: "O(rows × cols)",
         walkthrough: [
-          { code: 'if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] !== "1")', explanation: "Stops the recursion at grid edges, water cells, and cells already visited - this is what makes the flood fill terminate." },
-          { code: 'grid[r][c] = "0";', explanation: "Marks the cell as visited by turning it into water, so later scans and later recursive calls skip right over it." },
-          { code: "dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);", explanation: "Spreads out to all four neighbors, which is how one call ends up visiting an entire connected island." },
-          { code: 'if (grid[r][c] === "1") { count++; dfs(r, c); }', explanation: "Only an unvisited land cell starts a brand-new island - every cell dfs() already reached was already folded into a previous count." },
+          { code: 'if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] !== "1")', explanation: "Stops at grid edges, water and visited cells, so the flood fill ends." },
+          { code: 'grid[r][c] = "0";', explanation: "Marks the cell visited by turning it into water, so later scans and calls skip it." },
+          { code: "dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);", explanation: "Spreads to all four neighbors, so one call visits the whole island." },
+          { code: 'if (grid[r][c] === "1") { count++; dfs(r, c); }', explanation: "Only an unvisited land cell starts a new island. Cells dfs() already reached were counted with an earlier island." },
         ],
       },
       {
         approach: "BFS - Iterative Flood Fill",
         explanation: `
-Same idea, but instead of recursion, use a queue: when a new island is
-found, push its cell onto a queue, then repeatedly pop a cell, mark it
-visited, and push its unvisited land neighbors, until the queue is
-empty. This avoids deep recursion on very large grids.
+Same idea with a queue instead of recursion. For a new island, mark its
+cell visited and queue it. Then pop cells and mark and queue their
+unvisited land neighbors until the queue is empty. This avoids deep
+recursion on very large grids.
         `.trim(),
         code: `function numIslands(grid) {
   const rows = grid.length;
@@ -162,11 +153,10 @@ empty. This avoids deep recursion on very large grids.
     category: "graphs",
     description: `
 You're given a grid of 0s (water) and 1s (land). An *island* is a group
-of 1s connected horizontally or vertically, and its *area* is the number
-of land cells it contains.
+of 1s connected horizontally or vertically. Its *area* is its number of
+land cells.
 
-Return the area of the largest island in the grid. If there's no land
-at all, return 0.
+Return the largest island's area, or 0 if there's no land.
     `.trim(),
     examples: [
       {
@@ -179,30 +169,26 @@ at all, return 0.
     ],
     constraints: ["1 <= rows, cols <= 50", "grid[i][j] is either 0 or 1"],
     hints: [
-      "This is the same 'spread out and visit every connected land cell' idea as counting islands - except now, instead of just noticing that an island exists, you need to count how many cells it's made of.",
-      "Have your traversal function return the size of the island it just explored, rather than a boolean or nothing.",
-      "As you scan the grid, keep a running 'best area seen so far' and update it every time you finish exploring an island.",
+      "Use the same 'spread out to every connected land cell' idea as counting islands, but count the cells in each island.",
+      "Have your traversal function return the size of the island it explored.",
+      "Keep a running 'best area so far' and update it after each island.",
     ],
     approachOverview: `
-This builds directly on the island-counting idea: scan the grid, and
-whenever you find an unvisited land cell, spread out to every cell
-connected to it. The only difference here is what you do with that
-spread - instead of just marking "an island exists," you count the
-cells you visit along the way and compare that count against the
-largest area you've found so far.
+This builds on counting islands: scan the grid, and from each unvisited
+land cell, spread to every connected cell. This time, count the cells
+you visit and compare to the largest area so far.
 
-With DFS, the natural way to count is to have the function *return* a
-number: 1 (for the current cell) plus however many cells each of its
-neighbors' recursive calls found. With BFS, you can just increment a
-counter once per cell popped off the queue.
+With DFS, have the function *return* 1 (for the current cell) plus the
+counts from its neighbors' calls. With BFS, add one to a counter for
+each cell popped off the queue.
     `.trim(),
     solutions: [
       {
         approach: "DFS - Recursive Area Count",
         explanation: `
-For each unvisited land cell, recursively explore its island and have
-each call return 1 (for itself) plus the areas returned by its four
-neighbors. Track the largest area returned across all islands found.
+For each unvisited land cell, explore its island recursively. Each call
+returns 1 plus the areas from its four neighbors. Track the largest
+area.
         `.trim(),
         code: `function maxAreaOfIsland(grid) {
   const rows = grid.length;
@@ -232,18 +218,17 @@ neighbors. Track the largest area returned across all islands found.
         timeComplexity: "O(rows × cols)",
         spaceComplexity: "O(rows × cols)",
         walkthrough: [
-          { code: "if (... grid[r][c] !== 1) return 0;", explanation: "Water, out-of-bounds cells, and already-visited cells contribute nothing to the area." },
+          { code: "if (... grid[r][c] !== 1) return 0;", explanation: "Water, out-of-bounds and visited cells add nothing to the area." },
           { code: "grid[r][c] = 0;", explanation: "Marks the cell visited so it's never counted twice." },
-          { code: "return 1 + dfs(r + 1, c) + dfs(r - 1, c) + dfs(r, c + 1) + dfs(r, c - 1);", explanation: "This cell counts as 1, plus whatever area each of the four neighboring explorations turns up - the recursion adds up the whole island's size." },
-          { code: "maxArea = Math.max(maxArea, dfs(r, c));", explanation: "Every time a new island's exploration finishes, compare its total size against the best one seen so far." },
+          { code: "return 1 + dfs(r + 1, c) + dfs(r - 1, c) + dfs(r, c + 1) + dfs(r, c - 1);", explanation: "This cell counts as 1, plus the area found from each neighbor. The recursion adds up the whole island." },
+          { code: "maxArea = Math.max(maxArea, dfs(r, c));", explanation: "After each island, compare its size to the best so far." },
         ],
       },
       {
         approach: "BFS - Iterative Area Count",
         explanation: `
-For each unvisited land cell, run a queue-based flood fill and count
-how many cells get popped off the queue during that one island's
-exploration - that count is the island's area.
+For each unvisited land cell, run a queue-based flood fill. The number of
+cells popped off the queue is the island's area.
         `.trim(),
         code: `function maxAreaOfIsland(grid) {
   const rows = grid.length;
@@ -291,14 +276,11 @@ exploration - that count is the island's area.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given a reference to a node inside a *connected* undirected
-graph. Each node has a value and a list of neighbor nodes it's directly
-connected to.
+You're given a node in a *connected* undirected graph. Each node has a
+value and a list of its neighbors.
 
-Produce a *deep copy* of the entire graph: every node must be a brand
-new object (not the same one from the original graph), but the copied
-graph must have exactly the same structure - the same values, and the
-same connections between corresponding nodes.
+Make a *deep copy* of the whole graph. Every node must be a new object,
+but the copy must have the same values and the same connections.
     `.trim(),
     examples: [
       {
@@ -310,34 +292,31 @@ same connections between corresponding nodes.
       { input: "adjacency list = []", output: "[]", explanation: "An empty graph copies to an empty graph." },
     ],
     hints: [
-      "The tricky part isn't visiting every node - it's making sure you never create two different copies of the same original node, especially since the graph can contain cycles.",
-      "Keep a map from 'original node' to 'its copy'. Before creating a new copy for a node, check the map first - if it's already there, reuse it instead of making a duplicate.",
-      "Visit the graph the same way you'd visit any other graph (DFS or BFS) - the map is what turns that ordinary traversal into a correct clone.",
+      "The tricky part is never making two copies of the same node, especially since the graph can have cycles.",
+      "Keep a map from 'original node' to 'its copy'. Check it before copying a node, and reuse the copy if it's there.",
+      "Traverse the graph as usual (DFS or BFS). The map is what turns the traversal into a correct clone.",
     ],
     approachOverview: `
-This is a graph traversal with one twist: instead of just marking a
-node "visited," you need to remember *what its copy is*, because other
-nodes' neighbor lists will need to point to that same copy later (and
-because the graph can have cycles, so you must avoid cloning any node
-twice).
+This is a graph traversal with a twist: instead of just marking a node
+"visited," remember *its copy*. Other nodes' neighbor lists must point
+to that same copy, and cycles mean you must never clone a node twice.
 
-The fix is a hash map from original node to cloned node. Traverse the
-graph (DFS or BFS, both work) starting from the given node. The first
-time you see a node, create its clone immediately and store it in the
-map *before* recursing into its neighbors - that way, if a neighbor
-loops back to a node you're already in the middle of cloning, you find
-its clone in the map instead of trying to clone it again. Once every
-node has been visited, walk through each original node's neighbor list
-and hook up the corresponding clones.
+Use a hash map from original node to clone. Traverse from the given
+node (DFS or BFS). The first time you see a node, create its clone and
+store it in the map *before* visiting its neighbors. Then, if a neighbor
+loops back to it, you find the clone in the map instead of cloning
+again.
+
+As you visit each node, link the clones of its neighbors into its
+clone's neighbor list.
     `.trim(),
     solutions: [
       {
         approach: "DFS - Recursive with a Clone Map",
         explanation: `
-Recursively visit each node. The first time a node is seen, create its
-clone and record it in the map right away, then recurse into its
-neighbors and attach each neighbor's clone (found or freshly created)
-to the current clone's neighbor list.
+Visit each node recursively. The first time you see a node, create its
+clone and add it to the map. Then recurse into its neighbors and attach
+each neighbor's clone (existing or new) to this clone's neighbor list.
         `.trim(),
         code: `function cloneGraph(node) {
   if (!node) return null;
@@ -364,19 +343,18 @@ to the current clone's neighbor list.
         timeComplexity: "O(V + E)",
         spaceComplexity: "O(V)",
         walkthrough: [
-          { code: "if (visited.has(original)) return visited.get(original);", explanation: "If this original node has already been cloned (including when we've looped back around a cycle), reuse that clone instead of making a new one." },
-          { code: "const clone = { val: original.val, neighbors: [] }; visited.set(original, clone);", explanation: "Creates the clone and registers it *before* visiting neighbors - this is what prevents infinite recursion on cyclic graphs." },
-          { code: "for (const neighbor of original.neighbors) { clone.neighbors.push(dfs(neighbor)); }", explanation: "Recursively clones each neighbor (or fetches its existing clone) and links it into this node's copied neighbor list." },
+          { code: "if (visited.has(original)) return visited.get(original);", explanation: "If this node is already cloned (for example, after looping around a cycle), reuse that clone." },
+          { code: "const clone = { val: original.val, neighbors: [] }; visited.set(original, clone);", explanation: "Creates and registers the clone *before* visiting neighbors. This prevents infinite recursion on cycles." },
+          { code: "for (const neighbor of original.neighbors) { clone.neighbors.push(dfs(neighbor)); }", explanation: "Clones each neighbor (or gets its existing clone) and links it into this clone's neighbor list." },
         ],
       },
       {
         approach: "BFS - Iterative with a Clone Map",
         explanation: `
-Create the clone of the starting node up front, then use a queue to
-visit every original node exactly once. For each original node popped
-from the queue, walk its neighbor list: clone any neighbor not seen
-yet (and enqueue it), then link that neighbor's clone into the current
-node's clone.
+Clone the starting node first, then use a queue to visit each original
+node once. For each popped node, go through its neighbors: clone and
+enqueue any new neighbor, then link the neighbor's clone into the
+current node's clone.
         `.trim(),
         code: `function cloneGraph(node) {
   if (!node) return null;
@@ -419,13 +397,12 @@ You're given a grid where each cell is one of:
 - \`1\` - a fresh orange
 - \`2\` - a rotten orange
 
-Every minute, any fresh orange that is horizontally or vertically
-adjacent to a rotten orange becomes rotten too. This happens
-simultaneously across the whole grid, minute by minute.
+Every minute, each fresh orange next to a rotten one (horizontally or
+vertically) becomes rotten. This happens across the whole grid at the
+same time.
 
-Return the minimum number of minutes that must pass until no cell has
-a fresh orange left. If that's impossible - some fresh orange can never
-be reached - return -1.
+Return the minimum minutes until no fresh orange is left. If some fresh
+orange can never be reached, return -1.
     `.trim(),
     examples: [
       {
@@ -442,36 +419,31 @@ be reached - return -1.
     ],
     constraints: ["1 <= rows, cols <= 10", "grid[i][j] is 0, 1, or 2"],
     hints: [
-      "Rot doesn't spread from just one place - every rotten orange on the grid spreads at the same time. That's a sign you should start your traversal from *all* the rotten oranges at once, not just one.",
-      "This is the same 'visit a cell, then visit its unvisited neighbors' idea as counting islands, but this time each 'wave' of the spread corresponds to one full minute passing.",
-      "Breadth-first search naturally processes cells in order of distance from where the search started - so if you start it from every rotten orange simultaneously, the minute a fresh orange gets visited is exactly the minute it rots.",
+      "Every rotten orange spreads at the same time, so start your traversal from *all* rotten oranges at once.",
+      "It's the same 'visit a cell, then its unvisited neighbors' idea as counting islands, but each wave of spread is one minute.",
+      "BFS visits cells in order of distance from the start. Start it from every rotten orange at once, and the step a fresh orange is visited is the minute it rots.",
     ],
     approachOverview: `
-The phrase "every rotten orange spreads to its neighbors at the same
-time" is the giveaway: this calls for a **multi-source breadth-first
-search** - a BFS that starts from every rotten orange at once instead
-of just one starting point.
+"Every rotten orange spreads at the same time" is the giveaway: use a
+**multi-source breadth-first search**, a BFS that starts from every
+rotten orange at once.
 
-Load every rotten orange into a queue to begin with (this represents
-minute 0). Then repeatedly process the queue in layers: pop each cell
-currently in the queue, rot any fresh neighbor it has, and push those
-newly-rotten cells on for the *next* layer. Because BFS naturally
-processes cells one "ring" of distance at a time, each full layer you
-process corresponds to exactly one minute passing - so the number of
-layers it takes to rot everything reachable is the answer.
+Put every rotten orange in the queue (minute 0). Then process the queue
+in layers: pop each cell, rot its fresh neighbors, and push them for the
+*next* layer. BFS works one ring of distance at a time, so each layer is
+one minute. The number of layers needed is the answer.
 
-After the BFS finishes, if any fresh orange is still left, it was
-never reachable, so the answer is -1.
+If any fresh orange is left after the BFS, it was unreachable, so return
+-1.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Simulate Minute by Minute",
         explanation: `
-Repeatedly scan the whole grid looking for rotten oranges, collect every
-fresh orange adjacent to one, then rot all of them together (this
-represents one minute passing). Keep going until either no fresh
-oranges remain, or a full scan finds nothing new to rot (meaning
-whatever fresh oranges are left are unreachable).
+Scan the grid for rotten oranges, collect every fresh orange next to
+one, and rot them all together (one minute). Repeat until no fresh
+oranges remain, or a scan finds nothing new to rot (the rest are
+unreachable).
         `.trim(),
         code: `function orangesRotting(grid) {
   const rows = grid.length;
@@ -521,12 +493,12 @@ whatever fresh oranges are left are unreachable).
       {
         approach: "Optimal - Multi-Source BFS",
         explanation: `
-Start a BFS queue loaded with every rotten orange at once, and track how
-many fresh oranges exist. Process the queue: for each rotten orange
-popped, rot any fresh neighbor, decrement the fresh count, and push that
-neighbor onto the queue tagged with the minute it rotted. The last
-minute assigned this way is the answer - unless fresh oranges remain
-once the queue empties, in which case it's -1.
+Start the BFS queue with every rotten orange and count the fresh ones.
+For each popped orange, rot its fresh neighbors, lower the fresh count,
+and queue each neighbor with the minute it rotted.
+
+The last minute assigned is the answer. If fresh oranges remain when
+the queue is empty, return -1.
         `.trim(),
         code: `function orangesRotting(grid) {
   const rows = grid.length;
@@ -567,10 +539,10 @@ once the queue empties, in which case it's -1.
         timeComplexity: "O(rows × cols)",
         spaceComplexity: "O(rows × cols)",
         walkthrough: [
-          { code: "if (grid[r][c] === 2) { queue.push([r, c, 0]); }", explanation: "Every rotten orange starts in the queue already, at minute 0 - this is the 'multi-source' part." },
-          { code: "let freshCount = ...", explanation: "Tracks how many fresh oranges are left to rot, so we know at the end whether any were unreachable." },
-          { code: "grid[nr][nc] = 2; freshCount--; minutes = time + 1;", explanation: "Rotting a neighbor happens at exactly one minute later than the cell that rotted it - so the largest 'time' value ever assigned is the total minutes elapsed." },
-          { code: "return freshCount === 0 ? minutes : -1;", explanation: "If oranges are still fresh once the queue runs dry, they were never adjacent to any path of rot, so it's impossible." },
+          { code: "if (grid[r][c] === 2) { queue.push([r, c, 0]); }", explanation: "Every rotten orange starts in the queue at minute 0. This is the 'multi-source' part." },
+          { code: "let freshCount = ...", explanation: "Counts fresh oranges left, so at the end you know whether any were unreachable." },
+          { code: "grid[nr][nc] = 2; freshCount--; minutes = time + 1;", explanation: "A neighbor rots one minute after the cell that rotted it, so the largest time assigned is the total minutes." },
+          { code: "return freshCount === 0 ? minutes : -1;", explanation: "Oranges still fresh when the queue is empty were never reached by the rot, so it's impossible." },
         ],
       },
     ],
@@ -584,16 +556,16 @@ once the queue empties, in which case it's -1.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given a grid of heights representing a piece of land. The
-**Pacific Ocean** touches the top row and the left column of the grid;
-the **Atlantic Ocean** touches the bottom row and the right column.
+You're given a grid of land heights. The **Pacific Ocean** touches the
+top row and left column; the **Atlantic Ocean** touches the bottom row
+and right column.
 
-Water can flow from a cell to any horizontally or vertically adjacent
-cell whose height is *less than or equal to* its own (water never flows
-uphill, but flat ground is fine).
+Water flows from a cell to a horizontal or vertical neighbor whose
+height is *less than or equal to* its own (never uphill, but flat is
+fine).
 
-Find every cell from which water is able to reach **both** oceans, and
-return their coordinates.
+Return the coordinates of every cell whose water can reach **both**
+oceans.
     `.trim(),
     examples: [
       {
@@ -609,39 +581,35 @@ return their coordinates.
     ],
     constraints: ["1 <= rows, cols <= 200", "0 <= heights[i][j] <= 10^5"],
     hints: [
-      "Checking, for each cell, whether it can flow all the way out to both oceans by tracing a path forward works, but re-tracing a path from scratch for every single cell is a lot of repeated work.",
-      "Try thinking about it backwards: instead of asking 'can this cell reach the ocean,' start *from* the ocean's border cells and ask 'which cells could have flowed into me?' That reverses the height comparison: from a cell, you can step to a neighbor that is equal or *taller* (since if I can receive flow from a taller neighbor, that neighbor's water was allowed to flow down to me).",
-      "Run that reversed search once starting from every Pacific-border cell, and once starting from every Atlantic-border cell. Any cell reachable in both searches is a cell that water from it can reach both oceans.",
+      "Tracing a path from each cell to both oceans works, but repeats a lot of work for every cell.",
+      "Think backwards: start *from* the ocean's border cells and ask 'which cells could flow into me?' Now you step to a neighbor that is equal or *taller*, since water from a taller neighbor can flow down to you.",
+      "Run that reversed search from every Pacific-border cell, and again from every Atlantic-border cell. Cells reached by both searches can reach both oceans.",
     ],
     approachOverview: `
-Trying every cell's path out to both oceans one at a time works, but it
-redoes a lot of the same traversal over and over. There's a much
-cheaper way to get the same answer: run the traversal in reverse,
-starting from the oceans themselves.
+Tracing every cell's path to both oceans works, but repeats the same
+traversal over and over. It's much cheaper to run the traversal in
+reverse, starting from the oceans.
 
-Water flows from a higher (or equal) cell to a lower (or equal)
-neighbor. So instead of asking "starting at this cell, can I reach the
-Pacific?", flip the question around: "starting at the Pacific's border
-cells, which cells could have flowed *into* them?" A cell can flow into
-its neighbor if the neighbor's height is less than or equal to its own
-- so walking in reverse, you move from a cell to a neighbor whenever
-that neighbor's height is *greater than or equal to* the current one.
+Water flows to a neighbor of lower or equal height. So instead of
+asking "can this cell reach the Pacific?", ask "starting from the
+Pacific's border, which cells could flow *into* it?" In reverse, you
+move to a neighbor whose height is *greater than or equal to* the
+current one.
 
-Do this reverse flood-fill twice: once starting from every cell on the
-Pacific's two border edges, marking everything reachable as
-"reaches Pacific," and once starting from every cell on the Atlantic's
-two border edges, marking everything reachable as "reaches Atlantic."
-A cell that ends up marked by both searches is exactly a cell that can
-flow to both oceans.
+Run this reverse flood fill twice:
+
+- From every Pacific-border cell, marking what it reaches as "reaches Pacific".
+- From every Atlantic-border cell, marking what it reaches as "reaches Atlantic".
+
+Cells marked by both can flow to both oceans.
     `.trim(),
     solutions: [
       {
         approach: "Brute Force - Trace a Path From Every Cell",
         explanation: `
-For each cell, run a DFS that only steps to equal-or-lower neighbors,
-and see whether that DFS ever reaches a Pacific-border cell; separately
-check the same way for the Atlantic. A cell only makes it into the
-result if both checks succeed.
+For each cell, run a DFS that only steps to equal-or-lower neighbors and
+check whether it reaches a Pacific-border cell. Do the same for the
+Atlantic. A cell is in the result only if both checks succeed.
         `.trim(),
         code: `function pacificAtlantic(heights) {
   const rows = heights.length;
@@ -694,11 +662,10 @@ result if both checks succeed.
       {
         approach: "Optimal - Reverse Multi-Source Flood Fill",
         explanation: `
-Run a flood fill from every Pacific-border cell at once, stepping to a
-neighbor whenever its height is greater than or equal to the current
-cell's - this marks every cell that can flow to the Pacific. Do the
-same from every Atlantic-border cell. A cell marked reachable in both
-flood fills belongs in the answer.
+Flood fill from every Pacific-border cell, stepping to neighbors whose
+height is greater than or equal to the current cell's. This marks every
+cell that can flow to the Pacific. Do the same from the Atlantic border.
+Cells marked by both fills are the answer.
         `.trim(),
         code: `function pacificAtlantic(heights) {
   const rows = heights.length;
@@ -745,10 +712,10 @@ flood fills belongs in the answer.
         timeComplexity: "O(rows × cols)",
         spaceComplexity: "O(rows × cols)",
         walkthrough: [
-          { code: "heights[nr][nc] >= heights[r][c]", explanation: "This is the reversed flow rule: we only step to a neighbor that is tall enough to have actually let water flow down into the current cell." },
-          { code: "for (let c = 0; c < cols; c++) { dfs(0, c, pacific); dfs(rows - 1, c, atlantic); }", explanation: "Starts the Pacific flood fill from every cell in the top row, and the Atlantic flood fill from every cell in the bottom row, all in the same pass." },
-          { code: "for (let r = 0; r < rows; r++) { dfs(r, 0, pacific); dfs(r, cols - 1, atlantic); }", explanation: "Starts the Pacific flood fill from every cell in the left column, and the Atlantic flood fill from every cell in the right column." },
-          { code: "if (pacific[r][c] && atlantic[r][c]) { result.push([r, c]); }", explanation: "A cell only belongs in the answer if both independent flood fills reached it." },
+          { code: "heights[nr][nc] >= heights[r][c]", explanation: "The reversed flow rule: only step to a neighbor tall enough for water to flow down into the current cell." },
+          { code: "for (let c = 0; c < cols; c++) { dfs(0, c, pacific); dfs(rows - 1, c, atlantic); }", explanation: "Starts the Pacific fill from the top row and the Atlantic fill from the bottom row." },
+          { code: "for (let r = 0; r < rows; r++) { dfs(r, 0, pacific); dfs(r, cols - 1, atlantic); }", explanation: "Starts the Pacific fill from the left column and the Atlantic fill from the right column." },
+          { code: "if (pacific[r][c] && atlantic[r][c]) { result.push([r, c]); }", explanation: "A cell is in the answer only if both fills reached it." },
         ],
       },
     ],
@@ -762,13 +729,12 @@ flood fills belongs in the answer.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given a grid of "X" and "O" characters. Any group of "O"s that is
-completely *surrounded* by "X"s - meaning none of the "O"s in that group
-touch the border of the grid, directly or through other connected "O"s
-- gets *captured*: flip every "O" in that group to "X".
+You're given a grid of "X" and "O" characters. A group of connected "O"s
+that doesn't touch the grid's border is *surrounded* by "X"s and gets
+*captured*: flip every "O" in it to "X".
 
-Groups of "O"s that do touch the border (even by a single cell) are
-safe and stay as "O". Modify the grid in place to reflect the result.
+Groups that touch the border (even by one cell) are safe and stay "O".
+Modify the grid in place.
     `.trim(),
     examples: [
       {
@@ -780,35 +746,31 @@ safe and stay as "O". Modify the grid in place to reflect the result.
     ],
     constraints: ["1 <= rows, cols <= 200"],
     hints: [
-      "It's much easier to find the 'safe' O's than to directly test whether each O's group is 'surrounded' - an O only needs one path back to any border cell to be safe.",
-      "Start your traversal from every O sitting on the border, and spread inward through connected O's - everything that traversal reaches is safe. Mark those safe cells somehow so they're distinguishable afterward.",
-      "Once you've marked every safe O, do one final pass over the whole grid: any O that never got marked safe gets flipped to X, and any cell you marked safe gets flipped back to O.",
+      "Finding the 'safe' O's is easier than testing whether each group is surrounded. An O is safe if it has one path to a border cell.",
+      "Start from every O on the border and spread inward through connected O's. Everything reached is safe; mark it so you can tell it apart later.",
+      "Then make one pass over the grid: unmarked O's become X, and marked cells go back to O.",
     ],
     approachOverview: `
-Testing "is this group of O's surrounded" directly, group by group, is
-awkward. It's much simpler to flip the question around: find every O
-that's *safe* (connected, directly or indirectly, to a border cell),
-and then capture everything that's left over.
+Testing each group directly for "surrounded" is awkward. Flip it: find
+every *safe* O (connected to the border, directly or through other O's),
+then capture the rest.
 
-Start a traversal from every "O" sitting on the grid's border, and
-spread inward through every "O" connected to it. Since these are all
-reachable from the border, none of them can be captured - mark each
-one visited with a temporary placeholder (like "#") so it's easy to
-tell apart from an unvisited "O" later.
+Start a traversal from every "O" on the border and spread inward through
+connected "O"s. None of these can be captured. Mark each with a
+placeholder (like "#") to tell it apart from unvisited "O"s.
 
-Once every border-connected "O" has been marked, make one final pass
-over the grid: any "O" that's still a plain "O" was never reachable
-from the border, so it gets captured (flipped to "X"); any cell marked
-with the placeholder gets flipped back to "O", since it was safe all
-along.
+Then make one final pass:
+
+- A plain "O" was never reached from the border, so capture it (flip to "X").
+- A placeholder was safe, so flip it back to "O".
     `.trim(),
     solutions: [
       {
         approach: "DFS - Recursive Border Flood Fill",
         explanation: `
-Recursively spread out from every border "O", marking each one reached
-as safe. Then sweep the grid once: unmarked O's are captured, marked
-cells are restored to O.
+Recursively spread from every border "O", marking each cell reached as
+safe. Then sweep the grid: unmarked O's are captured, and marked cells
+go back to O.
         `.trim(),
         code: `function solve(board) {
   const rows = board.length;
@@ -851,16 +813,16 @@ cells are restored to O.
         timeComplexity: "O(rows × cols)",
         spaceComplexity: "O(rows × cols)",
         walkthrough: [
-          { code: 'board[r][c] = "#";', explanation: "Uses a placeholder character to mean 'this O is safe' - keeping it distinguishable from O's we haven't reached yet." },
-          { code: "for (let r ...) { dfs(r, 0); dfs(r, cols - 1); } for (let c ...) { dfs(0, c); dfs(rows - 1, c); }", explanation: "Starts the flood fill from every cell on all four edges of the grid - any O here is automatically safe, and the fill spreads inward from it." },
-          { code: 'if (board[r][c] === "O") board[r][c] = "X"; else if (board[r][c] === "#") board[r][c] = "O";', explanation: "The final cleanup pass: anything still a plain O was never reached from the border, so it's captured; anything marked safe is restored." },
+          { code: 'board[r][c] = "#";', explanation: "A placeholder meaning 'this O is safe', so it's distinct from O's not reached yet." },
+          { code: "for (let r ...) { dfs(r, 0); dfs(r, cols - 1); } for (let c ...) { dfs(0, c); dfs(rows - 1, c); }", explanation: "Starts the flood fill from every cell on all four edges. Any O there is safe, and the fill spreads inward." },
+          { code: 'if (board[r][c] === "O") board[r][c] = "X"; else if (board[r][c] === "#") board[r][c] = "O";', explanation: "Final pass: a plain O was never reached from the border, so it's captured; safe cells are restored." },
         ],
       },
       {
         approach: "BFS - Iterative Border Flood Fill",
         explanation: `
-Same idea, but push every border "O" into a queue up front and expand
-outward from all of them together, instead of using recursion.
+Same idea without recursion: queue every border "O" up front and expand
+from all of them together.
         `.trim(),
         code: `function solve(board) {
   const rows = board.length;
@@ -915,16 +877,15 @@ outward from all of them together, instead of using recursion.
     difficulty: "Medium",
     category: "graphs",
     description: `
-You're given an undirected graph as an adjacency list: \`graph[i]\` is
-the list of nodes that node \`i\` is directly connected to.
+You're given an undirected graph as an adjacency list: \`graph[i]\` lists
+the nodes connected to node \`i\`.
 
-A graph is *bipartite* if you can split every node into exactly two
-groups such that every edge connects a node in one group to a node in
-the other group - never two nodes from the same group.
+A graph is *bipartite* if you can split its nodes into two groups so
+that every edge connects the two groups, never two nodes in the same
+group.
 
 Return \`true\` if the graph can be split this way, and \`false\`
-otherwise. The graph may be disconnected (made of several separate
-pieces).
+otherwise. The graph may be disconnected (several separate pieces).
     `.trim(),
     examples: [
       {
@@ -941,35 +902,30 @@ pieces).
     ],
     constraints: ["1 <= graph.length <= 100", "The graph has no self-loops and no repeated edges."],
     hints: [
-      "Imagine you're coloring nodes with two colors as you visit them, such that every edge connects two *different* colors. If you can color the whole graph that way without ever being forced to put the same color on both ends of an edge, it's bipartite.",
-      "Pick any uncolored node, give it a color, and then every neighbor you visit from it must get the *other* color. If a neighbor already has a color and it's the *same* as the current node's, you've found a contradiction.",
-      "The graph might not be all one connected piece - make sure you restart the coloring process from a fresh, unvisited node until every node has been colored.",
+      "Color nodes with two colors as you visit them, so every edge joins two *different* colors. If you never have to give both ends of an edge the same color, it's bipartite.",
+      "Give an uncolored node a color; each neighbor must get the *other* color. A neighbor that already has the *same* color is a contradiction.",
+      "The graph may be in several pieces. Restart the coloring from an unvisited node until every node is colored.",
     ],
     approachOverview: `
-This is a traversal problem in disguise as a coloring problem. Walk the
-graph (DFS or BFS both work), assigning each node one of two colors as
-you first reach it. The rule is simple: every neighbor of a node must
-get the *opposite* color from that node.
+This is a traversal problem disguised as coloring. Walk the graph (DFS
+or BFS), giving each node one of two colors when you first reach it.
+Every neighbor must get the *opposite* color.
 
-Whenever you're about to visit a neighbor, check first: if it's
-unvisited, color it the opposite of the current node and keep
-traversing from it. If it's already been colored, it had better be the
-*opposite* color of the current node - if it's the *same* color, two
-directly connected nodes ended up in the same group, which means the
-graph can't be split this way, so the answer is \`false\`.
+Before visiting a neighbor, check it:
 
-Since the graph can be disconnected, make sure to restart the coloring
-from every node that hasn't been visited yet - each disconnected piece
-has to pass the same check independently.
+- Uncolored: give it the opposite color and continue from it.
+- Already colored the *same* as the current node: two connected nodes are in the same group, so return \`false\`.
+
+The graph can be disconnected, so restart the coloring from every node
+not yet visited. Each piece must pass the check.
     `.trim(),
     solutions: [
       {
         approach: "DFS - Two-Coloring",
         explanation: `
-Color each node 1 or -1 as it's first visited. Recurse into every
-neighbor: if a neighbor is already the same color as the current node,
-the graph isn't bipartite; if it's uncolored, color it the opposite and
-keep going. Restart from any node not yet colored, to cover
+Color each node 1 or -1 when first visited. For each neighbor: if it has
+the same color, the graph isn't bipartite; if it's uncolored, give it the
+opposite color and recurse. Restart from any uncolored node to cover
 disconnected pieces.
         `.trim(),
         code: `function isBipartite(graph) {
@@ -1002,18 +958,18 @@ disconnected pieces.
         timeComplexity: "O(V + E)",
         spaceComplexity: "O(V)",
         walkthrough: [
-          { code: "color[node] = c;", explanation: "Colors the current node with whichever of the two colors it was assigned." },
-          { code: "if (color[neighbor] === c) return false;", explanation: "A neighbor sharing the same color as the current node is a direct contradiction - those two connected nodes can't both be in the same group." },
-          { code: "if (color[neighbor] === 0 && !dfs(neighbor, -c)) return false;", explanation: "An uncolored neighbor gets colored with the opposite color and explored further; if that deeper exploration ever finds a contradiction, it propagates back up." },
-          { code: "for (let i = 0; i < n; i++) { if (color[i] === 0 && !dfs(i, 1)) return false; }", explanation: "Restarts the coloring from any node not yet reached, so disconnected pieces of the graph are all checked." },
+          { code: "color[node] = c;", explanation: "Gives the current node its assigned color." },
+          { code: "if (color[neighbor] === c) return false;", explanation: "A neighbor with the same color is a contradiction: two connected nodes can't be in the same group." },
+          { code: "if (color[neighbor] === 0 && !dfs(neighbor, -c)) return false;", explanation: "An uncolored neighbor gets the opposite color and is explored. Any contradiction found deeper is passed back up." },
+          { code: "for (let i = 0; i < n; i++) { if (color[i] === 0 && !dfs(i, 1)) return false; }", explanation: "Restarts from any node not yet reached, so every disconnected piece is checked." },
         ],
       },
       {
         approach: "BFS - Two-Coloring",
         explanation: `
-Same coloring rule, but processed layer by layer with a queue instead
-of recursion: color a starting node, then repeatedly pop a node and
-check/color its neighbors.
+Same coloring rule, layer by layer with a queue instead of recursion:
+color a starting node, then pop nodes and check or color their
+neighbors.
         `.trim(),
         code: `function isBipartite(graph) {
   const n = graph.length;

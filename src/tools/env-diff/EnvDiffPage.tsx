@@ -1,10 +1,11 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import envDiff from './index';
-import { diffCounts, diffEnv, maskValue, parseEnv, toExample, type DiffRow, type DiffStatus, type EnvEntry, type ParsedEnv } from './features/env-diff';
+import { diffCounts, diffEnv, envReport, maskValue, normalizeEnv, parseEnv, toExample, type DiffRow, type DiffStatus, type EnvEntry, type ParsedEnv } from './features/env-diff';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
-import { OpenFileButton, OutputPanel } from '../../shared/ui/convert';
+import { Checkbox, OpenFileButton, OutputPanel } from '../../shared/ui/convert';
 import { Badge, Button, Icon } from '../../shared/ui/ui';
+import { downloadText } from '../../shared/utils/dom.utils';
 import { pluralize } from '../../shared/utils/format.utils';
 
 type Filter = 'all' | DiffStatus;
@@ -60,8 +61,9 @@ function Issues({ name, parsed }: { name: string; parsed: ParsedEnv }) {
   );
 }
 
-function Value({ entry, revealed }: { entry?: EnvEntry; revealed: boolean }) {
+function Value({ entry, revealed, keysOnly }: { entry?: EnvEntry; revealed: boolean; keysOnly: boolean }) {
   if (!entry) return <span className="text-slate-400 dark:text-slate-500">—</span>;
+  if (keysOnly) return <span className="text-sm text-slate-600 dark:text-slate-400">present</span>;
   const shown = revealed ? (entry.value === '' ? '(empty)' : entry.value) : maskValue(entry.value);
   return (
     <span className="block min-w-0">
@@ -75,7 +77,7 @@ function Value({ entry, revealed }: { entry?: EnvEntry; revealed: boolean }) {
   );
 }
 
-function Row({ row, revealed, onToggle }: { row: DiffRow; revealed: boolean; onToggle: () => void }) {
+function Row({ row, revealed, onToggle, keysOnly }: { row: DiffRow; revealed: boolean; onToggle: () => void; keysOnly: boolean }) {
   return (
     <li className="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-start sm:gap-4 sm:px-6">
       <div className="min-w-0 space-y-1">
@@ -88,21 +90,25 @@ function Row({ row, revealed, onToggle }: { row: DiffRow; revealed: boolean; onT
       </div>
       <div className="min-w-0">
         <span className="eyebrow text-slate-500 sm:hidden">A </span>
-        <Value entry={row.left} revealed={revealed} />
+        <Value entry={row.left} revealed={revealed} keysOnly={keysOnly} />
       </div>
       <div className="min-w-0">
         <span className="eyebrow text-slate-500 sm:hidden">B </span>
-        <Value entry={row.right} revealed={revealed} />
+        <Value entry={row.right} revealed={revealed} keysOnly={keysOnly} />
       </div>
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-pressed={revealed}
-        aria-label={`${revealed ? 'Hide' : 'Reveal'} values of ${row.key}`}
-        className="inline-flex items-center justify-self-start gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        <Icon name={revealed ? 'lock' : 'search'} className="h-4 w-4" /> {revealed ? 'Hide' : 'Reveal'}
-      </button>
+      {keysOnly ? (
+        <span className="w-20" />
+      ) : (
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={revealed}
+          aria-label={`${revealed ? 'Hide' : 'Reveal'} values of ${row.key}`}
+          className="inline-flex items-center justify-self-start gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-600 pointer-coarse:min-h-11 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <Icon name={revealed ? 'lock' : 'search'} className="h-4 w-4" /> {revealed ? 'Hide' : 'Reveal'}
+        </button>
+      )}
     </li>
   );
 }
@@ -113,15 +119,25 @@ export default function EnvDiffPage() {
   const [filter, setFilter] = useState<Filter>('all');
   const [revealed, setRevealed] = useState<Set<string>>(() => new Set());
   const [exampleFrom, setExampleFrom] = useState<'a' | 'b'>('b');
+  const [keysOnly, setKeysOnly] = useState(false);
+  const [sortKeys, setSortKeys] = useState(false);
 
   const aText = useDeferredValue(a);
   const bText = useDeferredValue(b);
   const pa = useMemo(() => parseEnv(aText), [aText]);
   const pb = useMemo(() => parseEnv(bText), [bText]);
-  const rows = useMemo(() => diffEnv(pa, pb), [pa, pb]);
+  // Keys-only: changed values count as "in both" and no value-based secret check runs.
+  const rows = useMemo(() => {
+    const all = diffEnv(pa, pb);
+    return keysOnly ? all.map((r) => ({ ...r, status: r.status === 'changed' ? ('same' as const) : r.status, secret: null })) : all;
+  }, [pa, pb, keysOnly]);
   const counts = diffCounts(rows);
   const shown = filter === 'all' ? rows : rows.filter((r) => r.status === filter);
   const example = useMemo(() => toExample(exampleFrom === 'a' ? aText : bText), [exampleFrom, aText, bText]);
+  const normalized = useMemo(
+    () => normalizeEnv(exampleFrom === 'a' ? pa : pb, exampleFrom === 'a' ? aText : bText, sortKeys),
+    [exampleFrom, pa, pb, aText, bText, sortKeys],
+  );
   const both = aText.trim() && bText.trim();
 
   const toggle = (key: string) =>
@@ -203,9 +219,17 @@ export default function EnvDiffPage() {
               value={filter}
               onChange={setFilter}
             />
-            <Button variant="ghost" disabled={!revealed.size} onClick={() => setRevealed(new Set())}>
-              <Icon name="lock" className="h-4 w-4" /> Hide all
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Checkbox label="Compare keys only" checked={keysOnly} onChange={setKeysOnly} />
+              <Button variant="ghost" onClick={() => downloadText(envReport(pa, pb, rows, keysOnly), 'env-report.txt', 'text/plain')}>
+                <Icon name="download" className="h-4 w-4" /> Masked report
+              </Button>
+              {!keysOnly && (
+                <Button variant="ghost" disabled={!revealed.size} onClick={() => setRevealed(new Set())}>
+                  <Icon name="lock" className="h-4 w-4" /> Hide all
+                </Button>
+              )}
+            </div>
           </header>
           <div className="hidden grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-slate-100 px-6 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:grid dark:border-slate-800">
             <span>Key</span>
@@ -216,7 +240,7 @@ export default function EnvDiffPage() {
           {shown.length ? (
             <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {shown.map((r) => (
-                <Row key={r.key} row={r} revealed={revealed.has(r.key)} onToggle={() => toggle(r.key)} />
+                <Row key={r.key} row={r} revealed={revealed.has(r.key)} onToggle={() => toggle(r.key)} keysOnly={keysOnly} />
               ))}
             </ul>
           ) : (
@@ -228,7 +252,7 @@ export default function EnvDiffPage() {
       {(aText.trim() || bText.trim()) && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="eyebrow text-slate-600 dark:text-slate-400">Generate .env.example from</h2>
+            <h2 className="eyebrow text-slate-600 dark:text-slate-400">Generate files from</h2>
             <Segmented<'a' | 'b'>
               label="Generate from"
               options={[
@@ -240,6 +264,18 @@ export default function EnvDiffPage() {
             />
           </div>
           <OutputPanel title=".env.example (values removed)" icon="file" text={example} fileName=".env.example" mime="text/plain" />
+          {/* Download only: the normalized file contains real values, which this page never shows unmasked. */}
+          <div className="flex flex-wrap items-center gap-3 pt-3">
+            <Button variant="secondary" disabled={!normalized.safe || !normalized.text} onClick={() => downloadText(normalized.text, '.env', 'text/plain')}>
+              <Icon name="download" className="h-4 w-4" /> Download normalized .env
+            </Button>
+            <Checkbox label="Sort keys (drops comments)" checked={sortKeys} onChange={setSortKeys} />
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {normalized.safe
+              ? `One assignment per key (the last${normalized.dropped ? `; ${pluralize(normalized.dropped, 'earlier duplicate')} removed` : ''}), consistent quoting, invalid lines dropped. Every value was checked to read back unchanged.`
+              : 'Normalizing this file would change a value, so it isn’t offered.'}
+          </p>
         </div>
       )}
 

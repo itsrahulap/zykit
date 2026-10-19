@@ -8,8 +8,9 @@ const docs: ToolDocs = {
     'Copy the result, or download the `.zyk` or decrypted file. Send the passphrase to the recipient through a different channel.',
   ],
   howItWorks:
-    'Your passphrase is stretched with PBKDF2-SHA-256 (600,000 iterations by default, up to 2,000,000) and a random 16-byte salt. HKDF-SHA-256 then splits the result into a 256-bit AES key and a separate 8-byte check value. The data is encrypted with AES-256-GCM using a random 12-byte IV; the header (iterations, salt, IV, check value) is authenticated as GCM additional data, so it can’t be edited unnoticed. Everything runs with your browser’s Web Crypto API.\n\n' +
-    'Text output is `zykit:v1:` followed by Base64URL of the header and ciphertext. Files are saved as `name.zyk`, which holds the same envelope plus the original file name. On decryption, the check value tells a wrong passphrase apart from data that was modified, and the GCM tag catches any change to the ciphertext.',
+    'Your passphrase is stretched with PBKDF2-SHA-256 (600,000 iterations by default, up to 2,000,000) and a random 16-byte salt. HKDF-SHA-256 then splits the result into a 256-bit AES key and a separate 8-byte check value.\n\n' +
+    'The data is encrypted with AES-256-GCM using a random 12-byte IV. The header (iterations, salt, IV, check value) is authenticated as GCM additional data, so it can’t be edited unnoticed. Everything runs with your browser’s Web Crypto API.\n\n' +
+    'Text output is `zykit:v1:` followed by Base64URL of the header and ciphertext. Files are saved as `name.zyk`, holding the same envelope plus the original file name. On decryption, the check value tells a wrong passphrase apart from modified data, and the GCM tag catches any change to the ciphertext.',
   limits: [
     'Files up to 100 MB. The whole file is held in memory while it is encrypted or decrypted.',
     'Not OpenSSL-compatible: `openssl enc` can’t read the `zykit:v1` format, and OpenSSL `Salted__` output can’t be decrypted here.',
