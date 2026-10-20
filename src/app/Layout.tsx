@@ -9,6 +9,7 @@ import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPalett
 import { openShortcutsHelp } from '../shared/lib/shortcuts';
 import { ShortcutsHelpHost } from '../shared/ui/ShortcutsHelpHost';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
+import { DesignMenu } from '../shared/ui/DesignMenu';
 import { Icon } from '../shared/ui/ui';
 
 export interface RouteHandle {
@@ -76,6 +77,7 @@ function SiteHeader() {
             Blog
           </NavLink>
           <SearchButton compact className="ml-0.5 sm:ml-0" />
+          <DesignMenu />
           <ThemeToggle />
         </nav>
       </div>

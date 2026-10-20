@@ -64,7 +64,7 @@ export function Button({
 }
 
 export type IconName =
-  | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon'
+  | 'shield' | 'upload' | 'check' | 'warn' | 'x' | 'minus' | 'download' | 'info' | 'sparkle' | 'lock' | 'sun' | 'moon' | 'palette'
   | 'grid' | 'arrow' | 'image' | 'key' | 'diff' | 'code' | 'braces' | 'hash' | 'swap' | 'copy' | 'play' | 'stop'
   | 'book' | 'globe' | 'server' | 'database' | 'layers' | 'network' | 'puzzle' | 'building' | 'bookmark' | 'chart' | 'search' | 'menu' | 'chevron-left' | 'chevron-right' | 'lightbulb'
   | 'clock' | 'link' | 'dice' | 'regex' | 'file' | 'text';
@@ -86,6 +86,7 @@ export function Icon({ name, className = 'h-5 w-5' }: { name: IconName; classNam
     arrow: <path d="M7 17L17 7M9 7h8v8" />,
     image: <path d="M4 5h16v14H4z M4 16l5-5 4 4 3-3 4 4 M15 9.5a1.5 1.5 0 100-.01" />,
     moon: <path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z" />,
+    palette: <path d="M12 3a9 9 0 000 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 004-4c0-4.4-4-8-9-8z M7.5 12.5v.01 M9.5 8v.01 M14.5 8v.01 M17 11.5v.01" />,
     key: <path d="M14.5 13.5a5 5 0 10-4-4L3 17v4h4v-2h2v-2h2l3.5-3.5z M16.5 7.5v.01" />,
     diff: <path d="M6 3v12M6 15a3 3 0 100 6 3 3 0 000-6zM18 21V9M18 9a3 3 0 100-6 3 3 0 000 6zM6 9h6M12 15h6" />,
     code: <path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />,
