@@ -78,7 +78,7 @@ CI runs the same checks (plus CodeQL) on every pull request.
 
 ## Using AI coding assistants
 
-AI-assisted contributions are fine. You are responsible for the change: read it, run the checks, and make sure it follows the rules above. This repo is set up for Claude Code; see [docs/claude-code-plugins.md](docs/claude-code-plugins.md) for the plugins it suggests.
+AI-assisted contributions are fine. You are responsible for the change: read it, run the checks, and make sure it follows the rules above. Agents read [AGENTS.md](AGENTS.md) for repo-specific guidance. This repo is set up for Claude Code; see [docs/claude-code-plugins.md](docs/claude-code-plugins.md) for the plugins it suggests.
 
 ## License
 
