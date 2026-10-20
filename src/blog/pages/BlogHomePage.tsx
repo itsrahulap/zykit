@@ -49,7 +49,7 @@ export default function BlogHomePage() {
         <h2 id="all-posts" className="eyebrow mb-5 border-b border-slate-200 pb-3 text-slate-600 dark:border-slate-800 dark:text-slate-400">
           All posts
         </h2>
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {postsByDate().map((p) => (
             <li key={p.slug}>
               <PostCard post={p} />

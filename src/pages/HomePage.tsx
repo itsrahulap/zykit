@@ -285,7 +285,7 @@ export function HomePage() {
             <h2 id={`cat-${cat}`} className="eyebrow mb-5 border-b border-slate-200 pb-3 text-slate-600 dark:border-slate-800 dark:text-slate-400">
               {cat}
             </h2>
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {shown
                 .filter((t) => t.category === cat)
                 .map((t) => (
