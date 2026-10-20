@@ -17,7 +17,7 @@ export function CommitGraph({ repo }: { repo: Repo }) {
   const box = useRef<HTMLDivElement>(null);
   const maxRefs = Math.max(1, ...nodes.map((n) => n.refs.length));
   const top = 18 + maxRefs * 22;
-  const width = Math.max(320, PAD_X * 2 + Math.max(0, nodes.length - 1) * COL);
+  const width = Math.max(320, PAD_X * 2 + 80 + Math.max(0, nodes.length - 1) * COL);
   const height = top + lanes * LANE;
   const pos = new Map(nodes.map((n) => [n.id, { x: PAD_X + n.col * COL, y: top + n.lane * LANE + 12 }]));
   const detail = selected ? repo.commits[selected] : null;
@@ -41,7 +41,7 @@ export function CommitGraph({ repo }: { repo: Repo }) {
         </p>
       ) : (
         <div ref={box} className="overflow-x-auto">
-          <svg width={width} height={height} role="img" aria-label={`Commit graph with ${nodes.length} commits`} className="block">
+          <svg width={width} height={height} className="block">
             {edges.map((e) => {
               const a = pos.get(e.from)!;
               const b = pos.get(e.to)!;
