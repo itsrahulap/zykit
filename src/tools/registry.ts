@@ -122,6 +122,7 @@ import postgresQueryBuilder from './postgres-query-builder';
 import gitCommandBuilder from './git-command-builder';
 import dockerfileGenerator from './dockerfile-generator';
 import webhookPayloadBuilder from './webhook-payload-builder';
+import gitPlayground from './git-playground';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -244,6 +245,7 @@ export const TOOLS: ToolDefinition[] = [
   gitCommandBuilder,
   dockerfileGenerator,
   webhookPayloadBuilder,
+  gitPlayground,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;
