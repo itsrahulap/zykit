@@ -7,7 +7,7 @@ Guidance for any LLM agent (Claude Code, Codex, Cursor, …) working in this rep
 - **[CONTRIBUTING.md](CONTRIBUTING.md) is the source of truth.** Its "Rules every change follows", test expectations and PR conventions apply to agents exactly as they do to people. This file only adds agent-specific guidance; it never overrides CONTRIBUTING.md.
 - **Topic docs come next.** For a new tool, follow [docs/adding-a-tool.md](docs/adding-a-tool.md) (or `npm run new:tool`). Accessibility work follows [docs/accessibility-audit.md](docs/accessibility-audit.md).
 - **Ask before big bets.** A new dependency, a new architectural pattern, a cross-cutting refactor, any CSP change, or an unclear product decision: ask the maintainer instead of guessing.
-- **One instructions file.** Don't add a `CLAUDE.md` next to this one; extend this file.
+- **One instructions file.** `CLAUDE.md` only imports this file (`@AGENTS.md`) so Claude Code loads it. Put guidance here, not there.
 
 ## What this repo is
 
