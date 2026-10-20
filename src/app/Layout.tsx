@@ -9,6 +9,7 @@ import { CommandPaletteProvider, SearchButton } from '../shared/ui/CommandPalett
 import { openShortcutsHelp } from '../shared/lib/shortcuts';
 import { ShortcutsHelpHost } from '../shared/ui/ShortcutsHelpHost';
 import { ThemeToggle } from '../shared/ui/ThemeToggle';
+import { DesignMenu } from '../shared/ui/DesignMenu';
 import { Icon } from '../shared/ui/ui';
 
 export interface RouteHandle {
@@ -59,7 +60,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 
 function SiteHeader() {
   return (
-    <header className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-10">
+    <header className="w-full px-4 pt-6 sm:px-6 lg:px-10 sm:pt-10">
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-3 border-b border-slate-200 pb-6 sm:gap-x-4 dark:border-slate-800">
         <Link to="/" className="flex items-center gap-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
           <IconTile icon="grid" />
@@ -76,6 +77,7 @@ function SiteHeader() {
             Blog
           </NavLink>
           <SearchButton compact className="ml-0.5 sm:ml-0" />
+          <DesignMenu />
           <ThemeToggle />
         </nav>
       </div>
@@ -118,7 +120,7 @@ const YEAR = new Date().getFullYear();
 function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white/60 dark:border-slate-800 dark:bg-slate-900/40">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <div className="w-full px-4 py-12 sm:px-6 lg:px-10">
         <div className="grid gap-10 text-sm lg:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)]">
           <div className="max-w-sm space-y-4">
             <Link to="/" className="inline-flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
@@ -232,7 +234,7 @@ export function Layout() {
           Skip to content
         </a>
         <SiteHeader />
-        <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <main id="main" className="w-full px-4 py-8 sm:px-6 lg:px-10 sm:py-12">
           <Outlet />
         </main>
         <SiteFooter />

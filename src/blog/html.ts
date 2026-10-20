@@ -5,7 +5,7 @@ import { escapeHtml as esc, richTextToHtml } from '../learn/features/richTextHtm
 import { BLOG_PATH, POSTS, formatDate, getPost, getSeries, postPath, postsByDate, seriesPosts } from './registry';
 import type { BlogPost, PostBlock } from './types';
 
-const main = (inner: string) => `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">${inner}</main>`;
+const main = (inner: string) => `<main class="w-full px-4 py-8 sm:px-6 lg:px-10">${inner}</main>`;
 const postLink = (p: BlogPost) => `<a href="${esc(postPath(p))}">${esc(p.title)}</a>`;
 const inline = (text: string) => richTextToHtml(text).replace(/^<p>|<\/p>$/g, '');
 

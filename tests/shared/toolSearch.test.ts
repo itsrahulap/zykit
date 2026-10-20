@@ -52,6 +52,17 @@ describe('filterTools', () => {
     expect(filterTools(TOOLS, { category: 'Nope' })).toEqual([]);
   });
 
+  it('finds related tools through word groups, ranked after direct matches', () => {
+    const tools = [
+      t('curl-converter', 'cURL Converter', 'Network', ['HTTP', 'fetch']),
+      t('docker', 'Dockerfile Generator', 'DevOps', [], 'Node, FastAPI and more'),
+      t('word-counter', 'Word Counter', 'Text'),
+    ];
+    expect(filterTools(tools, { query: 'api' }).map((x) => x.id)).toEqual(['docker', 'curl-converter']);
+    expect(filterTools(TOOLS, { query: 'photo' }).map((x) => x.id)).toEqual(['clean-image']);
+    expect(scoreTool(tools[2], ['api'])).toBe(0);
+  });
+
   it('scores 0 for no match', () => {
     expect(scoreTool(TOOLS[0], ['zzz'])).toBe(0);
   });

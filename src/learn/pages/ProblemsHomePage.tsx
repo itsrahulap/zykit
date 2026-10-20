@@ -57,7 +57,7 @@ export default function ProblemsHomePage() {
         <h2 id="categories-heading" className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {problemCategories.length} patterns
         </h2>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {problemCategories.map((category, i) => {
             const items = getProblemsInCategory(category.id);
             const done = solvedCount(items.map((p) => p.id));

@@ -33,7 +33,7 @@ export function learnPages(src: LearnSources): LearnPage[] {
   const section = (title: string, html: string) => (html ? `<section><h2>${esc(title)}</h2>${html}</section>` : '');
   const pre = (code: string) => `<pre><code>${esc(code)}</code></pre>`;
   const main = (crumbs: [string, string][], inner: string) =>
-    `<main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><nav aria-label="Breadcrumb">${crumbs.map(([p, l]) => link(p, l)).join(' / ')}</nav>${inner}</main>`;
+    `<main class="w-full px-4 py-8 sm:px-6 lg:px-10"><nav aria-label="Breadcrumb">${crumbs.map(([p, l]) => link(p, l)).join(' / ')}</nav>${inner}</main>`;
   const breadcrumbs = (items: [string, string][]) => ({
     '@type': 'BreadcrumbList',
     itemListElement: items.map(([path, name], i) => ({ '@type': 'ListItem', position: i + 1, name, item: abs(path) })),
