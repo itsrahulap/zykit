@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "dompurify": "^3.4.16",
-    "marked": "^16.4.2",
+    "marked": "^18.1.1",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.4.299",
     "react": "^19.2.8",
