@@ -20,22 +20,56 @@ export function queryTerms(query: string): string[] {
   return fold(query).split(/\s+/).filter(Boolean);
 }
 
+/** Words people use for the same need. A term in a group also finds tools matching the other words, ranked lower. */
+const RELATED = [
+  ['api', 'http', 'request', 'rest', 'endpoint', 'curl', 'fetch', 'webhook', 'graphql', 'openapi', 'postman', 'status code'],
+  ['image', 'photo', 'picture', 'img', 'png', 'jpeg', 'jpg', 'webp'],
+  ['pdf', 'document'],
+  ['password', 'secret', 'credential', 'hash', 'encrypt', 'bcrypt'],
+  ['auth', 'token', 'jwt', 'bearer', 'oauth', 'totp', '2fa', 'otp'],
+  ['time', 'date', 'timestamp', 'timezone', 'epoch', 'unix', 'clock'],
+  ['encode', 'decode', 'base64', 'escape', 'percent-encoding'],
+  ['format', 'beautify', 'prettify', 'pretty', 'indent', 'minify'],
+  ['color', 'colour', 'palette', 'hex', 'rgb'],
+  ['compare', 'diff', 'difference'],
+  ['regex', 'regexp', 'pattern'],
+  ['network', 'ip', 'cidr', 'subnet', 'dns'],
+  ['email', 'mail', 'smtp', 'dkim', 'spf'],
+  ['docker', 'container', 'kubernetes', 'k8s', 'compose', 'devops'],
+  ['seo', 'meta tag', 'sitemap', 'robots', 'open graph'],
+  ['sql', 'database', 'postgres', 'query', 'db'],
+  ['random', 'generate', 'generator', 'mock', 'fake'],
+  ['qr', 'barcode'],
+];
+
+/** The other words in any group that contains the term (or a word the term starts, e.g. "pho" → photo). */
+function relatedTerms(term: string): string[] {
+  const out = new Set<string>();
+  for (const group of RELATED) if (group.some((w) => w === term || (term.length >= 3 && w.startsWith(term)))) group.forEach((w) => out.add(w));
+  out.delete(term);
+  return [...out];
+}
+
 /**
  * Score a tool against the query terms; 0 means no match. Every term must match
- * somewhere (name, tagline, description, tags, category or id). Name hits rank highest.
+ * somewhere (name, tagline, description, tags, category or id), directly or through a
+ * related word. Name hits rank highest; related-word hits rank below any direct hit.
  */
 export function scoreTool(tool: SearchableTool, terms: string[]): number {
   if (!terms.length) return 1;
   const name = fold(tool.name);
   const tags = tool.tags.map(fold);
   const rest = fold(`${tool.tagline} ${tool.description} ${tool.category} ${tool.id}`);
+  const direct = (term: string) =>
+    name.split(/\s+/).some((w) => w.startsWith(term)) ? 20 : name.includes(term) ? 12 : tags.some((t) => t.includes(term)) ? 8 : rest.includes(term) ? 2 : 0;
+  // Related words match whole-word starts only, so "rest" doesn't hit "interest".
+  const all = `${name} ${tags.join(' ')} ${rest}`;
+  const related = (r: string) => new RegExp(`(^|[^a-z0-9])${r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(all);
   let score = 0;
   for (const term of terms) {
-    if (name.split(/\s+/).some((w) => w.startsWith(term))) score += 10;
-    else if (name.includes(term)) score += 6;
-    else if (tags.some((t) => t.includes(term))) score += 4;
-    else if (rest.includes(term)) score += 1;
-    else return 0;
+    const s = direct(term) || (relatedTerms(term).some(related) ? 1 : 0);
+    if (!s) return 0;
+    score += s;
   }
   return score;
 }
