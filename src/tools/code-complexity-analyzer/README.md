@@ -34,6 +34,6 @@ The worker replies `started` once the compiler is loaded; the hook allows `LOAD_
 
 ## Known Gaps
 
-- The `typescript` chunk is large (about 9 MB raw, roughly 1.6 MB gzip) and is fetched on first analysis; a smaller parser would load faster but would be a new dependency.
+- The `typescript` chunk is large (about 3.5 MB minified, about 0.96 MB gzip in a production build), loaded only by the worker on first analysis; a smaller parser would load faster but would be a new dependency.
 - No cognitive complexity, Halstead metrics or per-file totals; top-level code isn't measured.
 - `parseDiagnostics` is an internal compiler field; a TypeScript upgrade could rename it (the unit test would catch it).

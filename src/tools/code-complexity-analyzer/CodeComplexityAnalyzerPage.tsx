@@ -195,7 +195,7 @@ export default function CodeComplexityAnalyzerPage() {
 
       <StatusStrip status={status} tone={state.status === 'loading' || state.status === 'running' ? 'busy' : analysis ? 'good' : 'neutral'} />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <CodeArea
           label="Code"
           hint="JavaScript or TypeScript"
@@ -259,7 +259,7 @@ export default function CodeComplexityAnalyzerPage() {
 
       {functions.length > 0 && (
         <>
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <Card title="Top 10" subtitle="Highest complexity first, then deepest nesting, then most lines. Pick one to see its source.">
               <FunctionTable label="Top 10 functions" functions={top} thresholds={thresholds} selected={selected} onSelect={(fn) => setSelectedStart(fn.start)} />
             </Card>
