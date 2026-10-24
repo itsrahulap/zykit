@@ -101,9 +101,9 @@ Work through it one item per session. Each item is sized to finish, test and rev
 - [x] N-11 OpenAPI Designer
 - [x] N-8 OpenAPI Dependency Mapper
 - [x] N-12 SQL Schema Visualizer
-- [ ] N-7 Code Complexity Analyzer
+- [x] N-7 Code Complexity Analyzer
 - [x] N-10 Architecture Diagram Builder
-- [ ] N-9 TypeScript Type Explorer
+- [x] N-9 TypeScript Type Explorer
 
 **Playgrounds** (hands-on practice; see [Playgrounds](#playgrounds)):
 
