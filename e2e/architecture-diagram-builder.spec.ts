@@ -10,7 +10,9 @@ test('Architecture Diagram Builder works locally', async ({ page }) => {
   const offOrigin: string[] = [];
   const errors: string[] = [];
   page.on('request', (r) => {
-    if (!r.url().startsWith(origin) || r.method() !== 'GET') offOrigin.push(`${r.method()} ${r.url()}`);
+    // blob: is the in-page SVG handed to <img> for the PNG export; it never leaves the browser.
+    const local = r.url().startsWith(origin) || r.url().startsWith('blob:');
+    if (!local || r.method() !== 'GET') offOrigin.push(`${r.method()} ${r.url()}`);
   });
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));

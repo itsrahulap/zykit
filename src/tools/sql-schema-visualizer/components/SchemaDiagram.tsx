@@ -3,7 +3,7 @@
 // it is the keyboard and screen-reader way to pick a table; the SVG itself is a picture.
 
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { connectedTables, DIAGRAM_METRICS, type Diagram } from '../features/diagram';
+import { connectedTables, DIAGRAM_METRICS, MARKER_W, type Diagram } from '../features/diagram';
 import { tableLabel, type ParsedSchema } from '../features/parser';
 import { Icon } from '../../../shared/ui/ui';
 
@@ -219,7 +219,7 @@ export function SchemaDiagram({ schema, diagram }: { schema: ParsedSchema; diagr
                               {r.markers.join(' ')}
                             </text>
                           )}
-                          <text x={t.x + 34} y={y} className={`fill-slate-900 text-xs dark:fill-slate-100 ${r.column.primaryKey ? 'font-bold' : ''}`}>
+                          <text x={t.x + MARKER_W} y={y} className={`fill-slate-900 text-xs dark:fill-slate-100 ${r.column.primaryKey ? 'font-bold' : ''}`}>
                             {r.name}
                           </text>
                           <text x={t.x + t.w - 10} y={y} textAnchor="end" className="fill-slate-500 font-mono text-[11px] dark:fill-slate-400">

@@ -7,8 +7,8 @@ import { exportProject, importProject } from '../../postgres-query-builder/featu
 import { DIAGRAM_METRICS, layoutDiagram } from './diagram';
 import { tableLabel, type ParsedSchema } from './parser';
 
-/** The Query Builder keeps its project in localStorage under this key (see its hooks/useProject.ts). */
-export const QUERY_BUILDER_STORAGE_KEY = 'zykit-postgres-query-builder';
+/** The Query Builder's own localStorage key, imported so a rename there can't silently break the hand-off. */
+export { STORAGE_KEY as QUERY_BUILDER_STORAGE_KEY } from '../../postgres-query-builder/hooks/useProject';
 export const QUERY_BUILDER_PATH = '/tools/postgres-query-builder';
 // Mirrors the Query Builder's import limits and card geometry, so the project loads and cards don't overlap.
 const MAX_TABLES = 200;

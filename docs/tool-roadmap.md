@@ -98,11 +98,11 @@ Work through it one item per session. Each item is sized to finish, test and rev
 
 **Large:**
 
-- [ ] N-11 OpenAPI Designer
-- [ ] N-8 OpenAPI Dependency Mapper
-- [ ] N-12 SQL Schema Visualizer
+- [x] N-11 OpenAPI Designer
+- [x] N-8 OpenAPI Dependency Mapper
+- [x] N-12 SQL Schema Visualizer
 - [ ] N-7 Code Complexity Analyzer
-- [ ] N-10 Architecture Diagram Builder
+- [x] N-10 Architecture Diagram Builder
 - [ ] N-9 TypeScript Type Explorer
 
 ---

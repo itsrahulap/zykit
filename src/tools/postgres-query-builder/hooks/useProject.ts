@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { emptyProject, type Project } from '../features/model';
 import { exportProject, importProject, pruneProject } from '../features/project';
 
-const STORAGE_KEY = 'zykit-postgres-query-builder';
+export const STORAGE_KEY = 'zykit-postgres-query-builder';
 const MAX_HISTORY = 100;
 
 function loadSaved(): Project | null {

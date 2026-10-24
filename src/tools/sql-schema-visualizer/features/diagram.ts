@@ -18,7 +18,7 @@ export interface Metrics {
 
 export const DIAGRAM_METRICS: Metrics = { header: 34, row: 22, padBottom: 8, minWidth: 190, maxWidth: 360, gapX: 96, gapY: 40 };
 const CHAR_W = 7.4;
-const MARKER_W = 34;
+export const MARKER_W = 44;
 
 export interface Row {
   column: SqlColumn;

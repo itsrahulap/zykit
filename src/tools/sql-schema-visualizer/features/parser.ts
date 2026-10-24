@@ -6,6 +6,7 @@ import { textError, type TextError } from '../../../shared/lib/textpos';
 
 export const MAX_INPUT_CHARS = 1_000_000;
 export const MAX_TABLES = 500;
+export const MAX_ISSUES = 200;
 
 export interface SqlColumn {
   name: string;
@@ -288,7 +289,11 @@ export function parseSchema(src: string): ParsedSchema {
     return result;
   }
 
-  const issue = (offset: number, message: string) => result.issues.push(textError(src, offset, message));
+  let extraIssues = 0;
+  const issue = (offset: number, message: string) => {
+    if (result.issues.length < MAX_ISSUES) result.issues.push(textError(src, offset, message));
+    else extraIssues++;
+  };
   const pending: PendingForeignKey[] = [];
   const lookup = (n: Name): SqlTable | undefined => {
     const sameName = result.tables.filter((t) => t.name === n.name);
@@ -528,6 +533,8 @@ export function parseSchema(src: string): ParsedSchema {
         line: textError(src, fk.offset, '').line,
       });
   }
+
+  if (extraIssues) result.issues.push(textError(src, src.length, `${extraIssues.toLocaleString('en-US')} more notes like these are not listed.`));
 
   for (const t of result.tables) {
     for (const col of t.columns) {
