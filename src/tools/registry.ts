@@ -129,6 +129,8 @@ import openapiDesigner from './openapi-designer';
 import openapiDependencyMapper from './openapi-dependency-mapper';
 import sqlSchemaVisualizer from './sql-schema-visualizer';
 import architectureDiagramBuilder from './architecture-diagram-builder';
+import codeComplexityAnalyzer from './code-complexity-analyzer';
+import typescriptTypeExplorer from './typescript-type-explorer';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -258,6 +260,8 @@ export const TOOLS: ToolDefinition[] = [
   openapiDependencyMapper,
   sqlSchemaVisualizer,
   architectureDiagramBuilder,
+  codeComplexityAnalyzer,
+  typescriptTypeExplorer,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

@@ -105,6 +105,17 @@ Work through it one item per session. Each item is sized to finish, test and rev
 - [x] N-10 Architecture Diagram Builder
 - [ ] N-9 TypeScript Type Explorer
 
+**Playgrounds** (hands-on practice; see [Playgrounds](#playgrounds)):
+
+- [x] P-1 Git Playground
+- [ ] P-2 SQL Playground
+- [ ] P-3 Linux Shell Playground
+- [ ] P-4 Docker Playground
+- [ ] P-5 CSS Flexbox & Grid Playground
+- [ ] P-6 Kubernetes (kubectl) Playground
+- [ ] P-7 HTTP / REST API Playground
+- [ ] P-8 Redis Playground
+
 ---
 
 ## Improvements to existing tools
@@ -383,6 +394,95 @@ Category **Data**, id `sql-schema-visualizer`. Pairs with N-6, so share its sche
 - **Relationships:** only explicit foreign keys are confirmed. Name-based guesses are optional and labelled "suggestion".
 - **Export:** SVG/PNG, plus Mermaid `erDiagram`. "Open in Query Builder" reuses the schema model.
 - **Tests:** common DDL, quoted identifiers, composite keys, multiple statements, unsupported syntax.
+
+---
+
+## Playgrounds
+
+Hands-on sandboxes where people type real commands and see what happens, with nothing to install and nothing that can break. They teach better than reference pages, and they pair with the Learn section (link each one from the matching Learn topics, and back).
+
+**Rules for every playground** (add to the shared instructions):
+
+- **Build on P-1.** `src/tools/git-playground/` is the reference: a pure `run(state, line) → { state, lines }` engine where a failed command leaves the state untouched, a `Terminal` component (prompt, ↑/↓ history, quick-command buttons, colour-coded output, a plain-English tip after each command), guided **challenges** (setup script, goal `check`, hints, a clickable solution, solved state in `localStorage`) and **free play**. The second playground to need the terminal moves `Terminal` into `src/shared/ui/` (per AGENTS.md: promote shared code when a second tool needs it).
+- **Be honest about simulation.** Real containers, clusters and servers can't run in a browser. Say "simulated" on the page and in the docs, model the behaviour people actually rely on, and list what's simplified in Limits. Never claim a command ran somewhere real.
+- **Real errors teach.** Refuse what the real tool refuses, with its real message plus a plain-English line on why and what to do.
+- **Tests:** unit-test the engine, and run **every challenge's solution** in a test to prove it passes its own `check` (see `tests/tools/git-playground/`). E2E: solve one challenge by typing, free play, no network, 320 px.
+
+### P-1. Git Playground ✅ done
+
+Category **DevOps & Config**, id `git-playground`. A simulated repository with a live commit graph, a Files panel (edit, stage, create), 8 challenges (first commit, branch and merge, undo a commit, merge conflict, rebase, stash, revert a pushed commit, cherry-pick) and free play. Supports `init, status, add, rm, commit, log, diff, show, branch, switch, checkout, restore, merge, rebase, reset, revert, cherry-pick, stash, tag` and a pretend remote (`push`, `pull`, `fetch`). Known gaps: whole-file merges, no interactive rebase.
+
+### P-2. SQL Playground (recommended next)
+
+Category **Data**, id `sql-playground`. The only playground that can run the **real thing**: SQLite through the existing SQL worker (`src/tools/csv-sql/workers/sql.worker.ts`, sql.js: the one WebAssembly exception in the security policy), so reuse it rather than adding an engine.
+
+- **Sample databases:** a small shop (customers, products, orders, order_items), a school and a movies set, each loadable in one click and resettable. Show the schema as a table list with columns and keys (reuse `sql-schema-visualizer`'s model if it fits).
+- **Editor + results:** run the statement under the cursor or all; result grid with row counts and timing; errors with line/column via `textpos`. `INSERT/UPDATE/DELETE` show "N rows affected"; a **Reset database** button undoes everything.
+- **Challenges:** SELECT and WHERE, sorting and LIMIT, JOINs (inner vs left), GROUP BY and HAVING, subqueries, a window function, an UPDATE with a safe WHERE. `check` compares the learner's result set to the expected one (order-insensitive unless the task says "sort").
+- **Honest scope:** it's SQLite; note where PostgreSQL/MySQL differ (types, `ILIKE`, `LIMIT/OFFSET` vs `TOP`). Link "Format" to `sql-formatter` and "Build visually" to `postgres-query-builder`.
+- **Tests:** each challenge's solution passes its check; reset restores the sample data; errors carry positions.
+
+### P-3. Linux Shell Playground
+
+Category **DevOps & Config**, id `linux-playground`. A simulated filesystem and shell for the commands every developer needs.
+
+- **Filesystem:** an in-memory tree with a home folder of sample files (logs, a CSV, a config, a script). Paths: absolute, relative, `~`, `.`, `..`.
+- **Commands:** `pwd, ls (-l, -a), cd, mkdir (-p), touch, cat, head, tail, cp, mv, rm (-r), echo, wc, grep (-i, -n, -r), find (-name), sort, uniq, cut, chmod, which, history, clear`, redirects (`>`, `>>`) and pipes (`|`). `chmod` shows the permission bits (link to `chmod-calculator`).
+- **Safety lesson:** `rm -rf /` and `sudo` are refused with an explanation of why they're dangerous.
+- **Challenges:** find your way around, create a project folder structure, find errors in a log with `grep`, count lines, move and rename files, fix a script's permissions, a pipe that finds the top 3 IPs in an access log.
+- **Tests:** path resolution, each command's flags, pipes and redirects, every challenge solution.
+
+### P-4. Docker Playground
+
+Category **DevOps & Config**, id `docker-playground`. A simulated Docker host (no real containers: say so).
+
+- **State:** images (a small catalog: nginx, node, postgres, redis, python, alpine with tags), containers (id, name, image, status, ports, env, mounts, restart policy), volumes and networks.
+- **Commands:** `docker pull, images, run (-d, -p, -e, -v, --name, --rm, --network), ps (-a), stop, start, restart, rm (-f), logs (-f shows canned output), exec (simulated shell for a few commands), inspect, rmi, volume create/ls/rm, network create/ls/connect, system prune`, plus `docker build` from a Dockerfile written in the page.
+- **Visuals:** a host diagram (containers as boxes with status colour, port arrows from host to container, volumes as cylinders, network groupings), and for `build`, the Dockerfile's layers with which ones were cached and why one changed line rebuilds everything after it.
+- **Teaching moments:** port already in use, removing a running container, data lost without a volume, containers on different networks can't reach each other, `latest` isn't a version.
+- **Challenges:** run nginx on port 8080, keep Postgres data with a volume, connect an app container to a database by name on a network, fix a slow build by reordering the Dockerfile, clean up stopped containers. Link "Generate" to `dockerfile-generator` and Compose to `docker-compose-converter`.
+- **Tests:** run-option parsing, port conflicts, volume persistence across `rm`, layer cache invalidation, every challenge solution.
+
+### P-5. CSS Flexbox & Grid Playground
+
+Category **Web**, id `css-layout-playground`. Visual, not a terminal: edit container and item properties and watch boxes move.
+
+- **Flexbox:** direction, wrap, justify-content, align-items, align-content, gap; per item grow, shrink, basis, order, align-self.
+- **Grid:** template columns/rows (`repeat`, `fr`, `minmax`, `auto-fit/auto-fill`), gap, areas, per-item placement and spans; grid lines and area names drawn on top.
+- **Output:** the generated CSS, updated live, with a one-line explanation of each property; copy button. Add/remove items, resize the container to see responsive behaviour.
+- **Challenges:** centre a box, a navbar with the logo left and links right, a card grid that fills the row, a holy-grail layout with areas. `check` compares computed item positions to the target.
+- **Tests:** CSS generation from state, challenge checks; e2e verifies layouts by bounding boxes.
+
+### P-6. Kubernetes (kubectl) Playground
+
+Category **DevOps & Config**, id `kubernetes-playground`. A simulated cluster (a small, honest model: no scheduler details, no real networking).
+
+- **Objects:** Deployments, ReplicaSets, Pods, Services, ConfigMaps, Namespaces.
+- **Commands:** `kubectl get / describe / apply -f / delete / scale / rollout status / rollout undo / logs / create namespace`, plus `-n` and `-o yaml`. `apply` takes YAML written in the page and validates it with `kubernetes-yaml-checker`'s features.
+- **Visuals:** Deployment → ReplicaSet → Pods tree with pod status, and a Service pointing at the pods its selector matches (mismatched labels show zero endpoints, the classic bug).
+- **Teaching moments:** delete a pod and watch it come back; a bad image tag gives `ImagePullBackOff`; a rolling update replaces pods gradually; `rollout undo`.
+- **Challenges:** deploy nginx with 3 replicas, expose it with a Service, fix a Service whose selector doesn't match, roll out a new version and roll it back.
+- **Tests:** apply/update semantics, selector matching, rollout history, every challenge solution.
+
+### P-7. HTTP / REST API Playground
+
+Category **Network & HTTP**, id `api-playground`. Learn HTTP by calling a **fake API that runs inside the page** (the security policy blocks real requests, and that's the point: nothing leaves the browser).
+
+- **Mock server:** in-page handlers for a small REST API (users, todos) with real behaviour: CRUD, validation errors (400/422), auth with a fake token (401/403), not found (404), conflicts (409), rate limiting (429), pagination and filtering. Reuse `mock-api-generator`'s collection model where it fits.
+- **Request builder:** method, URL with query params, headers, JSON body; the response shows status (linked to `http-status`), headers, body and timing. Every request also shows the equivalent `curl` (reuse `curl-converter`'s generators).
+- **Challenges:** list users, create one, handle a validation error, log in and call a protected endpoint, update with PATCH vs PUT, page through results, respect `Retry-After` on 429.
+- **Tests:** the mock server's status codes and validation, every challenge solution.
+
+### P-8. Redis Playground
+
+Category **Data**, id `redis-playground`. A simulated Redis with a command line and a live key browser.
+
+- **Types and commands:** strings (`SET` with `EX/NX`, `GET, INCR, DECR, APPEND`), keys (`DEL, EXISTS, EXPIRE, TTL, PERSIST, KEYS, SCAN, TYPE, RENAME`), lists (`LPUSH, RPUSH, LPOP, RPOP, LRANGE, LLEN`), hashes (`HSET, HGET, HGETALL, HDEL, HINCRBY`), sets (`SADD, SMEMBERS, SISMEMBER, SINTER, SUNION`), sorted sets (`ZADD, ZRANGE … WITHSCORES, ZRANK, ZINCRBY`), `MULTI/EXEC`, `FLUSHALL`.
+- **Expiry:** TTLs count down in real time in the key browser. Real Redis error messages (`WRONGTYPE …`).
+- **Challenges:** cache a value for 60 s, a page-view counter, a queue with lists, a leaderboard with sorted sets, a rate limiter with `INCR` + `EXPIRE`, a transaction. Link to the caching topic in Learn.
+- **Tests:** each command's semantics and errors, expiry with a fake clock, every challenge solution.
+
+**Also considered, already covered:** Regex (`regex-tester`), JavaScript/TypeScript (`js-runner`), JSONPath (`jsonpath-query`), cron (`cron-builder`). They're interactive already; at most they could gain challenges later.
 
 ---
 
