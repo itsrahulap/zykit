@@ -25,6 +25,7 @@ const MARKETPLACES: Record<string, Marketplace> = {
   addy: { id: 'addy-agent-skills', repo: 'addyosmani/agent-skills' },
   /** Not a plugin marketplace: Graphify installs as a CLI plus a skill (see its `install`). */
   graphify: { id: 'graphify', repo: 'safishamsi/graphify' },
+  skillAudit: { id: 'claude-skill-audit', repo: 'itsrahulap/claude-skill-audit' },
 };
 
 interface PluginGuide {
@@ -53,6 +54,8 @@ interface PluginGuide {
   install?: PostBlock[];
   /** URL slug when `<id>-claude-code-plugin` would be wrong (e.g. a skill, not a plugin). */
   slug?: string;
+  /** "Published by" text when neither "Anthropic" nor "a third party" fits (e.g. our own plugin). */
+  publisher?: string;
 }
 
 const PLUGINS: PluginGuide[] = [
@@ -285,6 +288,37 @@ const PLUGINS: PluginGuide[] = [
       },
     ],
   },
+  {
+    id: 'skill-audit',
+    slug: 'claude-skill-audit',
+    name: 'Claude Skill Audit',
+    tagline: 'see what your Claude Code setup costs and what you can cut',
+    marketplace: MARKETPLACES.skillAudit,
+    official: false,
+    publisher: 'Rahul A P, the author of Zykit (open source, MIT), `itsrahulap/claude-skill-audit`',
+    parts: ['3 skills', '1 SessionEnd hook', 'Python scripts'],
+    date: '2026-10-24',
+    summary:
+      'Every Claude Code session loads tools, skill lists, MCP instructions and CLAUDE.md before you type anything. Claude Skill Audit measures that startup cost, shows which skills and MCP servers you actually use, and summarises your token usage, all from files already on your machine.',
+    whatItDoes:
+      'Install a few plugins and connect a few services, and every session quietly starts heavier: less room for your conversation, and more context re-sent with every request. Claude Skill Audit answers three questions with evidence: what does a session load before my first message, which skills and MCP servers do I actually use, and how many tokens do I use, and where?\n\nOn one real setup it found a **39,000-token** startup context, **96 skills installed but only 6 used** in 45 sessions (about 8,100 tokens of skill listings every session), and MCP connectors that were connected but never called.',
+    howItWorks:
+      'Three skills, each backed by a Python script that reads what Claude Code already stores locally:\n\n- `/context-audit` reads the first request of recent sessions for the API-reported startup total, then estimates the split: tool schemas, system prompt, CLAUDE.md and memory, skill and agent listings, MCP instructions and hook-injected text. It also lists every MCP server, where it\u2019s configured, whether it\u2019s connected or needs auth, and whether you ever call it.\n- `/skill-audit` inventories your skills, commands and agents (your own, the project\u2019s, plugins\u2019 and claude.ai-synced ones), counts how often each was used, and estimates the listing tokens each source adds. `--html` writes a dashboard.\n- `/token-audit` sums API-reported usage by project, model, day and session, with the cache hit rate and a dated API-equivalent cost estimate.\n\nEvery number is labelled **measured** (reported by the API in your transcripts) or **estimated** (characters \u00f7 4, or a price calculation). Claude Code deletes transcripts after 30 days, so a small `SessionEnd` hook appends a one-line summary of each finished session (about 450 bytes) to `~/.claude/skill-audit/history.jsonl`, which keeps months of history.',
+    howToUse:
+      'Type one of the commands, add options after it, or just ask in plain words. Each report ends with a short "Worth reviewing" list: what to look at, the evidence, the impact, what you\u2019d lose and how to change it. The plugin never removes anything for you.',
+    commands: ['/context-audit', '/context-audit --save-baseline', '/context-audit --drift', '/skill-audit', '/skill-audit --unused', '/skill-audit --html', '/token-audit'],
+    prompts: ['Why is my context so big?', 'Which plugins can I remove?', 'How many tokens did I use this week?'],
+    useCases: [
+      'Finding out why sessions feel heavy or reach compaction sooner than expected',
+      'Deciding which plugins, skills and MCP connectors earn their place, after installing some or once a quarter',
+      'Seeing which project or session dominates your usage, and whether prompt caching is working',
+      'Saving a baseline and checking what changed after you add or remove a plugin',
+    ],
+    whenNotToUse:
+      'If you run Claude Code with only a couple of plugins and no MCP connectors, there is little to find. On a subscription, the cost figures are curiosity rather than money saved; the context numbers still matter.',
+    caveat:
+      'Per-skill sizes are estimates (characters \u00f7 4) and read low for code and JSON; only the startup total is measured. "Never used" means no uses in the transcripts and history on disk, which is evidence, not proof: keep anything you use once a quarter. It is read-only, sends no telemetry and makes no network requests; reports and history stay on your machine. Needs `python3` 3.8 or later.',
+  },
 ];
 
 const slugFor = (p: PluginGuide) => p.slug ?? `${p.id}-claude-code-plugin`;
@@ -305,17 +339,20 @@ function pluginPost(p: PluginGuide): BlogPost {
     date: p.date ?? DATE,
     tags: [...TAGS, p.name],
     series: claudeCodeSeries.id,
-    intro: `${p.whatItDoes}\n\n**What’s inside:** ${p.parts.join(', ')}. **Published by:** ${p.official ? 'Anthropic, in the official marketplace' : `a third party, \`${p.marketplace.repo}\``}.`,
+    intro: `${p.whatItDoes}\n\n**What’s inside:** ${p.parts.join(', ')}. **Published by:** ${p.publisher ?? (p.official ? 'Anthropic, in the official marketplace' : `a third party, \`${p.marketplace.repo}\``)}.`,
     sections: [
       { heading: 'How it works', blocks: [{ type: 'text', text: p.howItWorks }] },
       {
         heading: 'Install',
-        blocks: p.install ?? [
-          installBlock(p),
-          {
-            type: 'text',
-            text: `Skip the first line if you already added the \`${p.marketplace.id}\` marketplace. Reload the VS Code window or restart \`claude\` afterwards. New to plugins? See the install guide in this series.`,
-          },
+        blocks: [
+          { type: 'link', href: `https://github.com/${p.marketplace.repo}`, label: `github.com/${p.marketplace.repo}` },
+          ...(p.install ?? [
+            installBlock(p),
+            {
+              type: 'text',
+              text: `Skip the first line if you already added the \`${p.marketplace.id}\` marketplace. Reload the VS Code window or restart \`claude\` afterwards. New to plugins? See the install guide in this series.`,
+            } as PostBlock,
+          ]),
         ],
       },
       {

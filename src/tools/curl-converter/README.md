@@ -14,10 +14,14 @@ Converts a pasted cURL command into JavaScript fetch, Node.js fetch, axios or Py
 | `features/curl.ts` | `parseCurl`: option table (`OPTIONS`, `IGNORED`), handlers, method defaults → neutral `HttpRequest` |
 | `features/generate.ts` | `generate` for `fetch` / `node` / `axios` / `python`, `parseJsonExact`, literal printers, `credentialHeaders` |
 | `features/fetch.ts` | `parseFetch` (non-evaluating literal parser) and `toCurl` |
+| `features/request-builder.ts` | Request builder state, `builderStateToRequest` (query encoding, auth headers, body + default Content-Type) and `requestToBuilderState` (cURL → form) |
+| `components/RequestBuilder.tsx` | Builder UI: method/URL, tabs for query, headers, auth (secrets hidden until revealed), body, settings; live output in every target |
 
 ## Core Logic
 
 `parseCurl` tokenizes, cuts at the first control operator, strips `curl`/`curl.exe`, then walks long options (with `--name=value`), bundled short options and positional URLs. Unknown flags become warnings; options in `IGNORED` are collected into one note; recognised-but-unsupported ones get a "no equivalent" note. Method is derived after parsing (`-X` > `-I` > `-G` > `-T` → PUT > body → POST > GET). `generate` runs `prepare`, which folds duplicate headers (cookies with `; `, others with `, `), optionally folds `-u` into `Authorization`, strips `Content-Type` for multipart, and only treats a body as JSON when `parseJsonExact` round-trips it byte-for-byte (after whitespace compaction). `parseFetch` finds the first `fetch(` not preceded by an identifier or `.`, parses literals into `JsValue`, and wraps anything else as `Unresolved` placeholders; `toCurl` adds `-X` only when the method isn't implied.
+
+The request builder converts its form state to the same `HttpRequest`, so every generator is reused. Import (`requestToBuilderState`) keeps the request byte-exact: JSON and text bodies are kept as written, a body is treated as form fields only if re-encoding them reproduces the original text (curl labels any `--data` as form-encoded), a `Basic` header that isn't valid `user:password` base64 stays a plain header, and flags default to off. Options the parser warned about or skipped are shown in the builder as "Not carried over".
 
 ## Limits
 

@@ -1,15 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import dockerComposeConverter from './index';
 import { convert, DEFAULT_RUN_OPTIONS, detectDirection, type Conversion, type Direction } from './features/docker-compose-converter';
+import {
+  emptyBuilderState,
+  importComposeYaml,
+  TEMPLATES,
+  type ComposeBuilderState,
+} from './features/service-builder';
+import { ServiceBuilder } from './components/ServiceBuilder';
 import { Checkbox, ErrorPanel, Notices, OpenFileButton, OutputPanel } from '../../shared/ui/convert';
 import { useIncomingText } from '../../shared/hooks/useIncomingText';
 import { useShareState } from '../../shared/hooks/useShareState';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
+import { Tabs, type TabDef } from '../../shared/ui/Tabs';
 import { pluralize } from '../../shared/utils/format.utils';
 
 type Mode = 'auto' | Direction;
+type ActiveTab = 'convert' | 'build';
+
+const TABS: TabDef<ActiveTab>[] = [
+  { id: 'convert', label: 'Convert' },
+  { id: 'build', label: 'Service Builder' },
+];
 
 const MAX_INPUT_CHARS = 1_000_000;
 
@@ -40,11 +54,16 @@ volumes:
 `;
 
 export default function DockerComposeConverterPage() {
+  const [activeTab, setActiveTab] = useState<ActiveTab>('convert');
   const [input, setInput] = useState('');
   const [mode, setMode] = useState<Mode>('auto');
   const [detach, setDetach] = useState(DEFAULT_RUN_OPTIONS.detach);
   const [multiline, setMultiline] = useState(DEFAULT_RUN_OPTIONS.multiline);
   const [result, setResult] = useState<{ for: string; value: Conversion } | null>(null);
+
+  // Builder state
+  const [builderState, setBuilderState] = useState<ComposeBuilderState>(() => TEMPLATES['api-postgres'].state());
+  const [builderImportWarn, setBuilderImportWarn] = useState<string | null>(null);
 
   const tooLarge = input.length > MAX_INPUT_CHARS;
   const direction: Direction = mode === 'auto' ? detectDirection(input) : mode;
@@ -81,6 +100,32 @@ export default function DockerComposeConverterPage() {
   );
 
   const toCompose = direction === 'run-to-compose';
+
+  /** Import the active Compose YAML into the visual builder. */
+  const handleOpenInBuilder = async () => {
+    const yamlToImport = toCompose ? current?.output : input;
+    if (!yamlToImport?.trim()) return;
+
+    try {
+      const res = await importComposeYaml(yamlToImport);
+      setBuilderState(res.state);
+      setBuilderImportWarn(
+        res.warnings.length > 0 ? `Imported with warnings: ${res.warnings.join(' ')}` : null,
+      );
+      setActiveTab('build');
+    } catch (e) {
+      setBuilderImportWarn(`Could not load into builder: ${(e as Error).message}`);
+      setActiveTab('build');
+    }
+  };
+
+  /** Send the generated YAML from Builder to the Converter tab. */
+  const handleSendToConverter = (yaml: string) => {
+    setInput(yaml);
+    setMode('compose-to-run');
+    setActiveTab('convert');
+  };
+
   const status = tooLarge
     ? 'This input is too large to convert here (limit: about 1 MB).'
     : !input.trim()
@@ -96,90 +141,153 @@ export default function DockerComposeConverterPage() {
       <Breadcrumb tool={dockerComposeConverter} />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <Headline accent="Compose">Convert docker run to </Headline>
+        <Headline accent="Compose">Convert & build Docker </Headline>
         <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" onClick={() => (setInput(RUN_SAMPLE), setMode('auto'))}>
-            docker run example
-          </Button>
-          <Button variant="secondary" onClick={() => (setInput(COMPOSE_SAMPLE), setMode('auto'))}>
-            Compose example
-          </Button>
-          <OpenFileButton accept=".yml,.yaml,.sh,.txt,text/plain" onText={(t) => setInput(t)} />
-          <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
-            <Icon name="x" className="h-4 w-4" /> Clear
-          </Button>
+          {activeTab === 'convert' ? (
+            <>
+              <Button variant="secondary" onClick={() => (setInput(RUN_SAMPLE), setMode('auto'))}>
+                docker run example
+              </Button>
+              <Button variant="secondary" onClick={() => (setInput(COMPOSE_SAMPLE), setMode('auto'))}>
+                Compose example
+              </Button>
+              <OpenFileButton accept=".yml,.yaml,.sh,.txt,text/plain" onText={(t) => setInput(t)} />
+              <Button variant="ghost" disabled={!input} onClick={() => setInput('')}>
+                <Icon name="x" className="h-4 w-4" /> Clear
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setBuilderState(emptyBuilderState())}>
+                <Icon name="x" className="h-4 w-4" /> New Compose
+              </Button>
+              <Button variant="secondary" onClick={() => setActiveTab('convert')}>
+                <Icon name="swap" className="h-4 w-4" /> Switch to Converter
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      <StatusStrip status={status} tone={stale ? 'busy' : current && !current.error ? 'good' : 'neutral'} />
+      {/* Tabs */}
+      <Tabs<ActiveTab> tabs={TABS} active={activeTab} onChange={setActiveTab} label="Docker Compose tool modes" />
 
-      <section
-        aria-label="Conversion options"
-        className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900"
-      >
-        <Segmented<Mode>
-          label="Direction"
-          options={[
-            { value: 'auto', label: 'Auto-detect' },
-            { value: 'run-to-compose', label: 'docker run → Compose' },
-            { value: 'compose-to-run', label: 'Compose → docker run' },
-          ]}
-          value={mode}
-          onChange={setMode}
-        />
-        {!toCompose && (
-          <>
-            <Checkbox label="Add -d (detached)" checked={detach} onChange={setDetach} />
-            <Checkbox label="One option per line" checked={multiline} onChange={setMultiline} />
-          </>
-        )}
-      </section>
+      {/* ── Tab: Convert ── */}
+      {activeTab === 'convert' && (
+        <div id="panel-convert" role="tabpanel" aria-labelledby="tab-convert" className="space-y-6">
+          <StatusStrip status={status} tone={stale ? 'busy' : current && !current.error ? 'good' : 'neutral'} />
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <CodeArea
-          label={toCompose ? 'docker run command(s)' : 'Compose file'}
-          hint={mode === 'auto' ? (toCompose ? 'detected: docker run' : 'detected: Compose YAML') : undefined}
-          id="compose-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          rows={18}
-          placeholder={toCompose ? 'docker run -d -p 8080:80 nginx' : 'services:\n  web:\n    image: nginx'}
-          aria-invalid={current?.error ? true : undefined}
-          onFileText={(t) => setInput(t)}
-        />
-
-        <div className="min-w-0 space-y-6">
-          {current?.error && (
-            <ErrorPanel error={{ message: current.error, line: 1, column: 1, offset: 0 }} text={input} fieldId="compose-input" title="Couldn't convert" />
-          )}
-          {current && !current.error && current.output && (
-            <OutputPanel
-              title={toCompose ? 'docker-compose.yml' : 'docker run'}
-              icon={toCompose ? 'braces' : 'code'}
-              text={current.output}
-              fileName={toCompose ? 'docker-compose.yml' : 'docker-run.sh'}
-              mime={toCompose ? 'application/yaml' : 'text/x-shellscript'}
-              kind={toCompose ? 'yaml' : 'code'}
+          <section
+            aria-label="Conversion options"
+            className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <Segmented<Mode>
+              label="Direction"
+              options={[
+                { value: 'auto', label: 'Auto-detect' },
+                { value: 'run-to-compose', label: 'docker run → Compose' },
+                { value: 'compose-to-run', label: 'Compose → docker run' },
+              ]}
+              value={mode}
+              onChange={setMode}
             />
-          )}
-          {current && <Notices items={current.warnings} />}
-          {current && current.notes.length > 0 && (
-            <ul className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-              {current.notes.map((n) => (
-                <li key={n} className="flex gap-2 break-words">
-                  <Icon name="info" className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span className="min-w-0">{n}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+            {!toCompose && (
+              <>
+                <Checkbox label="Add -d (detached)" checked={detach} onChange={setDetach} />
+                <Checkbox label="One option per line" checked={multiline} onChange={setMultiline} />
+              </>
+            )}
+            {((toCompose && current?.output) || (!toCompose && input.trim())) && (
+              <Button variant="secondary" onClick={handleOpenInBuilder}>
+                <Icon name="grid" className="h-4 w-4" /> Open in Builder
+              </Button>
+            )}
+          </section>
 
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        Conversion runs in your browser; nothing is uploaded. Paste several docker run commands to get several services. Flags that Compose can&rsquo;t express are
-        listed as warnings instead of being dropped silently.
-      </p>
+          <div className="grid items-start gap-6 lg:grid-cols-2">
+            <CodeArea
+              label={toCompose ? 'docker run command(s)' : 'Compose file'}
+              hint={mode === 'auto' ? (toCompose ? 'detected: docker run' : 'detected: Compose YAML') : undefined}
+              id="compose-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={18}
+              placeholder={toCompose ? 'docker run -d -p 8080:80 nginx' : 'services:\n  web:\n    image: nginx'}
+              aria-invalid={current?.error ? true : undefined}
+              onFileText={(t) => setInput(t)}
+            />
+
+            <div className="min-w-0 space-y-6">
+              {current?.error && (
+                <ErrorPanel
+                  error={{ message: current.error, line: 1, column: 1, offset: 0 }}
+                  text={input}
+                  fieldId="compose-input"
+                  title="Couldn't convert"
+                />
+              )}
+              {current && !current.error && current.output && (
+                <OutputPanel
+                  title={toCompose ? 'docker-compose.yml' : 'docker run'}
+                  icon={toCompose ? 'braces' : 'code'}
+                  text={current.output}
+                  fileName={toCompose ? 'docker-compose.yml' : 'docker-run.sh'}
+                  mime={toCompose ? 'application/yaml' : 'text/x-shellscript'}
+                  kind={toCompose ? 'yaml' : 'code'}
+                />
+              )}
+              {current && <Notices items={current.warnings} />}
+              {current && current.notes.length > 0 && (
+                <ul className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                  {current.notes.map((n) => (
+                    <li key={n} className="flex gap-2 break-words">
+                      <Icon name="info" className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="min-w-0">{n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Conversion runs in your browser; nothing is uploaded. Paste several docker run commands to get several services. Flags that Compose can&rsquo;t express are
+            listed as warnings instead of being dropped silently.
+          </p>
+        </div>
+      )}
+
+      {/* ── Tab: Builder ── */}
+      {activeTab === 'build' && (
+        <div id="panel-build" role="tabpanel" aria-labelledby="tab-build" className="space-y-6">
+          {builderImportWarn && (
+            <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-xs text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+              <Icon name="warn" className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="flex-1">
+                <p>{builderImportWarn}</p>
+                <button
+                  type="button"
+                  onClick={() => setBuilderImportWarn(null)}
+                  className="mt-1 font-semibold underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
+
+          <ServiceBuilder
+            state={builderState}
+            onChange={setBuilderState}
+            onSendToConverter={handleSendToConverter}
+          />
+
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Validation in this visual builder helps spot common configuration bugs like port conflicts and missing dependencies,
+            but does not guarantee Docker or Docker Compose will accept or run the resulting file. Everything runs entirely in your browser.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

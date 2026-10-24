@@ -23,6 +23,7 @@ Converts `docker run` commands into Compose service YAML and Compose files back 
 
 - Input over 1,000,000 characters is refused. Only `docker run` is converted; flags/keys without a counterpart warn and are dropped.
 - Networks become `external: true`; names are not project-prefixed. No `.env` interpolation.
+- Service Builder (`features/service-builder.ts`, `components/ServiceBuilder.tsx`): import warns about every key it can't represent instead of dropping it; command arrays, exec-form healthchecks and `KEY` vs `KEY=` env entries round-trip unchanged.
 
 ## Tests
 

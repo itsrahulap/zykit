@@ -35,6 +35,8 @@ const blockText = (b: PostBlock): string => {
       return b.items.map((i) => `${i.title} ${i.text}`).join(' ');
     case 'posts':
       return '';
+    case 'link':
+      return b.label;
   }
 };
 

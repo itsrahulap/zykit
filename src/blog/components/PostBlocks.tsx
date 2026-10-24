@@ -137,6 +137,22 @@ function Block({ block }: { block: PostBlock }) {
           ))}
         </ol>
       );
+    case 'link':
+      return (
+        <p>
+          <a
+            href={block.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-slate-900 ring-1 ring-inset ring-field-edge hover:bg-slate-50 pointer-coarse:min-h-11 dark:text-white dark:hover:bg-slate-800"
+          >
+            <Icon name="code" className="h-4 w-4" />
+            {block.label}
+            <span className="sr-only">(opens in a new tab)</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        </p>
+      );
     case 'posts':
       return (
         <ul className="grid gap-4 sm:grid-cols-2">

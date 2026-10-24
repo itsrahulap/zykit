@@ -6,6 +6,7 @@ const docs: ToolDocs = {
     'Pick the **Draft**: **Auto ($schema)** reads the schema’s `$schema`, or force **2020-12** or **Draft-07**. Untick **Check formats (date-time, email, ipv4, uuid, uri…)** to treat `format` as a hint only.',
     'Read the result: the status line says whether the document is valid, and each error lists the failing location in the document, a message and the schema path. **Copy errors** copies the list.',
     'No schema yet? Paste a sample document and press **Generate schema from JSON**, then edit the generated schema and use **Copy schema**.',
+    'To build a schema visually: switch to the **Builder** tab, set the root type, add properties and set their types and constraints. Use **Send to Validate tab** to validate the result, or **Copy schema JSON** to copy it. You can also load an existing simple schema with **Open in Builder** from the Validate tab.',
   ],
   howItWorks:
     'A built-in validator runs in a background worker. It supports draft 2020-12 and draft-07 (draft-04 and draft-06 schemas use draft-07 rules, and 2019-09 uses 2020-12). Supported keywords include `type`, `enum`, `const`, number and string limits, `pattern`, `items`/`prefixItems`/`additionalItems`, `contains` with `minContains`/`maxContains`, `uniqueItems`, `properties`, `patternProperties`, `additionalProperties`, `propertyNames`, `required`, `dependentRequired`, `dependentSchemas` and `dependencies`, `allOf`, `anyOf`, `oneOf`, `not` and `if`/`then`/`else`. Every error is reported, not just the first.\n\n' +
@@ -46,6 +47,11 @@ const docs: ToolDocs = {
       question: 'How do I read the error paths?',
       answer:
         'The first path is a JSON Pointer into your document, such as `/address/zip`, or *(root)* for the whole document. The second is the schema keyword that failed, such as `#/$defs/address/properties/zip/pattern`. With `$ref`, it points at the referenced definition.',
+    },
+    {
+      question: 'What does the Builder tab do?',
+      answer:
+        'The **Builder** tab provides a visual property tree editor. Set the root type to object, then add and name properties, pick their types and fill in constraints (min/max length, pattern, format, minimum, maximum, required, nullable, enum, const and default values typed as JSON). The generated draft 2020-12 schema updates live, and values that aren\'t valid JSON or properties with an empty or repeated name are listed and left out until fixed. Click **Send to Validate tab** to validate documents against it, or **Copy schema JSON** to copy it. Properties that use `allOf`, `anyOf`, `oneOf`, `$ref`, `not` or `if/then/else`, or have no single type, are kept as-is and marked **Edit as JSON only**, and so are keywords the builder doesn\'t edit. A schema whose root is like that can\'t be loaded — edit it in the Validate tab directly.',
     },
   ],
 };

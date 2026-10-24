@@ -122,6 +122,15 @@ import postgresQueryBuilder from './postgres-query-builder';
 import gitCommandBuilder from './git-command-builder';
 import dockerfileGenerator from './dockerfile-generator';
 import webhookPayloadBuilder from './webhook-payload-builder';
+import gitPlayground from './git-playground';
+import mockApiGenerator from './mock-api-generator';
+import sqlExplainVisualizer from './sql-explain-visualizer';
+import openapiDesigner from './openapi-designer';
+import openapiDependencyMapper from './openapi-dependency-mapper';
+import sqlSchemaVisualizer from './sql-schema-visualizer';
+import architectureDiagramBuilder from './architecture-diagram-builder';
+import codeComplexityAnalyzer from './code-complexity-analyzer';
+import typescriptTypeExplorer from './typescript-type-explorer';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -244,6 +253,15 @@ export const TOOLS: ToolDefinition[] = [
   gitCommandBuilder,
   dockerfileGenerator,
   webhookPayloadBuilder,
+  gitPlayground,
+  mockApiGenerator,
+  sqlExplainVisualizer,
+  openapiDesigner,
+  openapiDependencyMapper,
+  sqlSchemaVisualizer,
+  architectureDiagramBuilder,
+  codeComplexityAnalyzer,
+  typescriptTypeExplorer,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

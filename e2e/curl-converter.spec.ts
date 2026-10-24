@@ -84,3 +84,51 @@ test('loads examples and has no horizontal scroll at 320px', async ({ page }) =>
   await expect(page.getByRole('region', { name: 'Output' }).locator('pre')).toContainText('curl https://api.example.com/v1/orders');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test('cURL request builder builds requests, hides secrets and round-trips a pasted command', async ({ page }) => {
+  const origin = new URL(test.info().project.use.baseURL!).origin;
+  const offOrigin: string[] = [];
+  const errors: string[] = [];
+  page.on('request', (r) => {
+    if (!r.url().startsWith(origin) || r.method() !== 'GET') offOrigin.push(`${r.method()} ${r.url()}`);
+  });
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  await page.goto('/tools/curl-converter');
+  await page.getByLabel('cURL command').fill(`curl 'https://a.test/items?limit=5' -H 'X-Trace: 1' --data-raw '{"a":1}' --retry 3`);
+  await page.getByRole('button', { name: 'Edit in builder' }).click();
+  await expect(page.getByText('Not carried over from the cURL command')).toBeVisible();
+
+  const code = page.getByRole('region', { name: 'Generated request' });
+  await expect(code).toContainText(`--data-raw '{"a":1}'`);
+  await expect(code).toContainText('limit=5');
+
+  await page.getByRole('tab', { name: 'Auth' }).click();
+  await page.getByRole('group', { name: 'Auth type' }).getByRole('button', { name: 'Bearer' }).click();
+  const token = page.getByLabel('Token', { exact: true });
+  await expect(token).toHaveAttribute('type', 'password');
+  await token.fill('tok123');
+  await expect(code).toContainText('Authorization: Bearer tok123');
+  await expect(code).toContainText('Contains credentials');
+
+  await page.getByRole('group', { name: 'Output' }).getByRole('button', { name: 'Python' }).click();
+  await expect(code).toContainText('requests.');
+
+  await page.getByRole('button', { name: 'Open in converter' }).click();
+  await expect(page.getByLabel('cURL command')).toHaveValue(/Bearer tok123/);
+
+  expect(offOrigin).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('cURL request builder has no sideways scrolling on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/tools/curl-converter');
+  await page.getByRole('group', { name: 'Mode' }).getByRole('button', { name: 'Request builder' }).click();
+  for (const tab of ['Query (0)', 'Auth', 'Body']) {
+    await page.getByRole('tab', { name: tab }).click();
+    const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
+    expect(sw, tab).toBeLessThanOrEqual(vw);
+  }
+});
