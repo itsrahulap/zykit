@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test('docker run ↔ Compose works locally', async ({ page, context }) => {
@@ -47,8 +48,10 @@ test('docker run ↔ Compose has no sideways scrolling on a phone', async ({ pag
   const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
   expect(sw).toBeLessThanOrEqual(vw);
 
-  // Switch to Builder tab on phone
+  // Switch to Builder tab on phone, with service cards (fields, healthcheck, dependencies) open
   await page.getByRole('tab', { name: 'Service Builder' }).click();
+  await page.getByRole('button', { name: 'Full Development Stack' }).click();
+  await expect(page.getByLabel('Test Command').first()).toBeVisible();
   const phoneBuilder = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
   expect(phoneBuilder.sw).toBeLessThanOrEqual(phoneBuilder.vw);
 });
@@ -78,3 +81,23 @@ test('Docker Compose Service Builder loads templates and exports to converter', 
   await expect(page.locator('#compose-input')).toHaveValue(/postgres:16-alpine/);
 });
 
+
+test('Service Builder cards pass axe and keep depends_on in sync on rename', async ({ page }) => {
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/tools/docker-compose-converter');
+    await page.getByRole('tab', { name: 'Service Builder' }).click();
+    await page.getByRole('button', { name: 'API + PostgreSQL' }).click();
+    await page.getByRole('button', { name: 'Show port & volume tables ↓' }).click();
+    await expect(page.getByRole('article', { name: 'Service db' }).getByLabel('Test Command')).toBeVisible();
+    await page.waitForTimeout(300); // let transition-colors finish so axe reads the final colours
+    const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  }
+
+  // Renaming db updates api's depends_on instead of leaving it dangling.
+  await page.getByRole('article', { name: 'Service db' }).getByLabel('Service name').fill('postgres');
+  const yamlOutput = page.getByRole('region', { name: 'Generated docker-compose.yml' });
+  await expect(yamlOutput).toContainText('postgres:\n        condition: service_healthy');
+  await expect(page.getByRole('region', { name: 'Configuration warnings' })).toHaveCount(0);
+});

@@ -15,6 +15,7 @@ import {
 export type Selection = { type: 'node' | 'edge' | 'group'; id: string } | null;
 
 const clampCoordinate = (v: number) => Math.round(Math.min(LIMITS.coordinate, Math.max(-LIMITS.coordinate, v)));
+// oxlint-disable-next-line no-control-regex
 export const clampLabel = (s: string) => s.replace(/[\u0000-\u001f\u007f]+/g, ' ').slice(0, LIMITS.label);
 
 /** First `${prefix}-N` not used by any node, edge or group. */

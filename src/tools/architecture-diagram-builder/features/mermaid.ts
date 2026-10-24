@@ -11,6 +11,7 @@ export function escapeMermaidLabel(label: string): string {
   return label
     .replace(/[#"|[\]{}()<>&;`]/g, (c) => `#${c.charCodeAt(0)};`)
     .replace(/\r\n?|\n/g, '<br/>')
+    // oxlint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001f\u007f]/g, ' ');
 }
 

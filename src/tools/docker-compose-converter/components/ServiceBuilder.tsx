@@ -385,6 +385,8 @@ interface ServiceCardProps {
 }
 
 function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: ServiceCardProps) {
+  const id = useId();
+  const label = service.name.trim() || 'unnamed service';
   const [expanded, setExpanded] = useState(true);
   const [showHealthcheck, setShowHealthcheck] = useState(!!service.healthcheck);
   const [newPort, setNewPort] = useState('');
@@ -417,7 +419,8 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
   // Env management
   const handleAddEnv = () => {
     if (!newEnvKey.trim()) return;
-    onUpdate({ environment: [...service.environment, [newEnvKey.trim(), newEnvVal]] });
+    // An empty value passes the variable through from the host, as `KEY` alone does in Compose.
+    onUpdate({ environment: [...service.environment, [newEnvKey.trim(), newEnvVal === '' ? null : newEnvVal]] });
     setNewEnvKey('');
     setNewEnvVal('');
   };
@@ -434,7 +437,9 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
     if (exists) {
       onUpdate({ dependsOn: service.dependsOn.filter((d) => d.service !== depName) });
     } else {
-      onUpdate({ dependsOn: [...service.dependsOn, { service: depName, condition: 'service_healthy' }] });
+      // service_healthy on a service without a healthcheck makes `docker compose up` fail.
+      const target = allServices.find((s) => s.name === depName);
+      onUpdate({ dependsOn: [...service.dependsOn, { service: depName, condition: target?.healthcheck ? 'service_healthy' : 'service_started' }] });
     }
   };
 
@@ -448,26 +453,30 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
   };
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+    <article aria-label={`Service ${label}`} className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-5 dark:border-slate-800 dark:bg-slate-900">
       {/* Header */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3 dark:border-slate-800">
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             aria-expanded={expanded}
+            aria-label={`${label} settings`}
             onClick={() => setExpanded(!expanded)}
-            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            className="flex h-6 w-6 items-center justify-center rounded text-slate-400 hover:text-slate-600 pointer-coarse:h-11 pointer-coarse:w-11 dark:hover:text-slate-200"
           >
             <Icon name="chevron-right" className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`} />
           </button>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Service</span>
+            <label htmlFor={`${id}-name`} className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Service name
+            </label>
             <input
+              id={`${id}-name`}
               type="text"
               value={service.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
               placeholder="service_name"
-              className="max-w-[10rem] flex-1 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-sm font-semibold text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="max-w-[10rem] flex-1 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-sm font-semibold text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
         </div>
@@ -476,16 +485,18 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
           <button
             type="button"
             onClick={onDuplicate}
-            className="rounded p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="rounded p-1.5 text-slate-400 hover:bg-slate-50 hover:text-slate-700 pointer-coarse:min-h-11 pointer-coarse:min-w-11 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             title="Duplicate service"
+            aria-label={`Duplicate service ${label}`}
           >
             <Icon name="copy" className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={onRemove}
-            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 pointer-coarse:min-h-11 pointer-coarse:min-w-11 dark:hover:bg-red-950/50 dark:hover:text-red-400"
             title="Remove service"
+            aria-label={`Remove service ${label}`}
           >
             <Icon name="x" className="h-4 w-4" />
           </button>
@@ -498,60 +509,64 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Image */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+              <label htmlFor={`${id}-image`} className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
                 Image (e.g. <code>postgres:16-alpine</code>)
               </label>
               <input
                 type="text"
+                id={`${id}-image`}
                 value={service.image}
                 onChange={(e) => onUpdate({ image: e.target.value })}
                 placeholder="nginx:alpine"
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </div>
 
             {/* Build context */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+              <label htmlFor={`${id}-build`} className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
                 Build Context (optional)
               </label>
               <input
                 type="text"
+                id={`${id}-build`}
                 value={service.buildContext || ''}
                 onChange={(e) => onUpdate({ buildContext: e.target.value || undefined })}
                 placeholder="./backend"
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </div>
 
             {/* Restart policy */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
-                Restart Policy
-              </label>
-              <select
+              <Select
+                label="Restart Policy"
                 value={service.restart}
-                onChange={(e) => onUpdate({ restart: e.target.value as ServiceDef['restart'] })}
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              >
-                <option value="unless-stopped">unless-stopped</option>
-                <option value="always">always</option>
-                <option value="on-failure">on-failure</option>
-                <option value="no">no</option>
-              </select>
+                onChange={(restart) => onUpdate({ restart })}
+                options={[
+                  { value: '', label: '(not set)' },
+                  { value: 'unless-stopped', label: 'unless-stopped' },
+                  { value: 'always', label: 'always' },
+                  { value: 'on-failure', label: 'on-failure' },
+                  // Keep an imported retry limit such as on-failure:3 selectable.
+                  ...(service.restart.startsWith('on-failure:') ? [{ value: service.restart, label: service.restart }] : []),
+                  { value: 'no', label: 'no' },
+                ]}
+              />
             </div>
 
             {/* Container Name */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+              <label htmlFor={`${id}-container`} className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
                 Container Name (optional)
               </label>
               <input
                 type="text"
+                id={`${id}-container`}
                 value={service.containerName || ''}
                 onChange={(e) => onUpdate({ containerName: e.target.value || undefined })}
                 placeholder="my-app"
-                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </div>
           </div>
@@ -560,7 +575,7 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
           <div className="grid min-w-0 gap-4 sm:grid-cols-2">
             {/* Ports */}
             <div className="min-w-0 space-y-2 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/30">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label htmlFor={`${id}-port`} className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Ports ({service.ports.length})
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -573,7 +588,8 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                     <button
                       type="button"
                       onClick={() => handleRemovePort(idx)}
-                      className="shrink-0 text-slate-400 hover:text-red-500"
+                      aria-label={`Remove port ${p} from ${label}`}
+                      className="shrink-0 text-slate-400 hover:text-red-500 pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                     >
                       ×
                     </button>
@@ -583,13 +599,14 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
               <div className="flex items-center gap-2">
                 <input
                   type="text"
+                  id={`${id}-port`}
                   value={newPort}
                   onChange={(e) => setNewPort(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddPort())}
                   placeholder="8080:80"
-                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
-                <Button variant="ghost" onClick={handleAddPort} className="text-xs">
+                <Button variant="ghost" onClick={handleAddPort} aria-label={`Add port to ${label}`} className="text-xs">
                   Add
                 </Button>
               </div>
@@ -597,7 +614,7 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
 
             {/* Volumes */}
             <div className="min-w-0 space-y-2 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/30">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label htmlFor={`${id}-volume`} className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Volumes ({service.volumes.length})
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -619,7 +636,8 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                       <button
                         type="button"
                         onClick={() => handleRemoveVolume(idx)}
-                        className="shrink-0 text-slate-400 hover:text-red-500"
+                        aria-label={`Remove volume ${v} from ${label}`}
+                        className="shrink-0 text-slate-400 hover:text-red-500 pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                       >
                         ×
                       </button>
@@ -630,13 +648,14 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
               <div className="flex items-center gap-2">
                 <input
                   type="text"
+                  id={`${id}-volume`}
                   value={newVolume}
                   onChange={(e) => setNewVolume(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddVolume())}
                   placeholder="data:/var/lib/data or ./src:/app"
-                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
-                <Button variant="ghost" onClick={handleAddVolume} className="text-xs">
+                <Button variant="ghost" onClick={handleAddVolume} aria-label={`Add volume to ${label}`} className="text-xs">
                   Add
                 </Button>
               </div>
@@ -645,20 +664,21 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
 
           {/* Environment Variables */}
           <div className="space-y-2 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/30">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <p className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Environment Variables ({service.environment.length})
-            </label>
+            </p>
             {service.environment.length > 0 && (
               <div className="space-y-1.5">
                 {service.environment.map(([k, v], idx) => (
                   <div key={idx} className="flex items-center gap-2 font-mono text-xs">
                     <span className="font-semibold text-slate-800 dark:text-slate-200">{k}</span>
                     <span className="text-slate-400">=</span>
-                    <span className="flex-1 truncate text-slate-600 dark:text-slate-300">{v || '""'}</span>
+                    <span className="flex-1 truncate text-slate-600 dark:text-slate-300">{v === null ? '(from host)' : v || '""'}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveEnv(idx)}
-                      className="text-slate-400 hover:text-red-500"
+                      aria-label={`Remove variable ${k} from ${label}`}
+                      className="text-slate-400 hover:text-red-500 pointer-coarse:min-h-11 pointer-coarse:min-w-11"
                     >
                       ×
                     </button>
@@ -670,19 +690,21 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
               <input
                 type="text"
                 value={newEnvKey}
+                aria-label={`New variable name for ${label}`}
                 onChange={(e) => setNewEnvKey(e.target.value)}
                 placeholder="KEY (e.g. PORT)"
-                className="w-28 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="w-28 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
               <input
                 type="text"
                 value={newEnvVal}
+                aria-label={`New variable value for ${label}`}
                 onChange={(e) => setNewEnvVal(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddEnv())}
                 placeholder="VALUE (e.g. 8080)"
-                className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
-              <Button variant="ghost" onClick={handleAddEnv} className="text-xs">
+              <Button variant="ghost" onClick={handleAddEnv} aria-label={`Add variable to ${label}`} className="text-xs">
                 Add
               </Button>
             </div>
@@ -691,16 +713,16 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
           {/* Dependencies (depends_on) */}
           {otherServices.length > 0 && (
             <div className="space-y-2 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/30">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <p className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Dependencies (depends_on)
-              </label>
+              </p>
               <div className="space-y-2">
                 {otherServices.map((other) => {
                   const dep = service.dependsOn.find((d) => d.service === other.name);
                   const isChecked = !!dep;
                   return (
                     <div key={other.id} className="flex flex-wrap items-center gap-3 text-xs">
-                      <label className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                      <label className="flex items-center gap-2 text-slate-700 pointer-coarse:min-h-11 dark:text-slate-300">
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -710,20 +732,16 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                         <span className="font-mono font-medium">{other.name}</span>
                       </label>
                       {isChecked && (
-                        <select
-                          value={dep?.condition || 'service_healthy'}
-                          onChange={(e) =>
-                            handleUpdateDepCondition(
-                              other.name,
-                              e.target.value as 'service_started' | 'service_healthy' | 'service_completed_successfully',
-                            )
-                          }
-                          className="rounded border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                        >
-                          <option value="service_healthy">condition: service_healthy</option>
-                          <option value="service_started">condition: service_started</option>
-                          <option value="service_completed_successfully">condition: completed</option>
-                        </select>
+                        <Select
+                          label={`${other.name} condition`}
+                          value={dep?.condition || 'service_started'}
+                          onChange={(condition) => handleUpdateDepCondition(other.name, condition)}
+                          options={[
+                            { value: 'service_started', label: 'service_started' },
+                            { value: 'service_healthy', label: 'service_healthy' },
+                            { value: 'service_completed_successfully', label: 'service_completed_successfully' },
+                          ]}
+                        />
                       )}
                     </div>
                   );
@@ -735,9 +753,9 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
           {/* Healthcheck Collapsible */}
           <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/30">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Health Check
-              </label>
+              </p>
               <button
                 type="button"
                 onClick={() => {
@@ -757,7 +775,8 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                     setShowHealthcheck(true);
                   }
                 }}
-                className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                aria-label={`${showHealthcheck ? 'Remove' : 'Add'} healthcheck for ${label}`}
+                className="text-xs font-medium text-emerald-700 hover:underline pointer-coarse:min-h-11 dark:text-emerald-400"
               >
                 {showHealthcheck ? 'Remove healthcheck' : '+ Add healthcheck'}
               </button>
@@ -766,23 +785,25 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
             {showHealthcheck && service.healthcheck && (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="sm:col-span-2 lg:col-span-4">
-                  <label className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Test Command</label>
+                  <label htmlFor={`${id}-hc-test`} className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Test Command</label>
                   <input
                     type="text"
-                    value={service.healthcheck.test}
+                    id={`${id}-hc-test`}
+                    value={healthcheckTestText(service.healthcheck.test)}
                     onChange={(e) =>
                       onUpdate({
-                        healthcheck: { ...service.healthcheck!, test: e.target.value },
+                        healthcheck: { ...service.healthcheck!, test: parseHealthcheckTest(e.target.value) },
                       })
                     }
                     placeholder="curl -f http://localhost:80/ || exit 1"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Interval</label>
+                  <label htmlFor={`${id}-hc-interval`} className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Interval</label>
                   <input
                     type="text"
+                    id={`${id}-hc-interval`}
                     value={service.healthcheck.interval || ''}
                     onChange={(e) =>
                       onUpdate({
@@ -790,13 +811,14 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                       })
                     }
                     placeholder="30s"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Timeout</label>
+                  <label htmlFor={`${id}-hc-timeout`} className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Timeout</label>
                   <input
                     type="text"
+                    id={`${id}-hc-timeout`}
                     value={service.healthcheck.timeout || ''}
                     onChange={(e) =>
                       onUpdate({
@@ -804,13 +826,14 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                       })
                     }
                     placeholder="10s"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Retries</label>
+                  <label htmlFor={`${id}-hc-retries`} className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Retries</label>
                   <input
                     type="number"
+                    id={`${id}-hc-retries`}
                     value={service.healthcheck.retries ?? 3}
                     onChange={(e) =>
                       onUpdate({
@@ -818,13 +841,14 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                       })
                     }
                     placeholder="3"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Start Period</label>
+                  <label htmlFor={`${id}-hc-start`} className="mb-1 block text-xs text-slate-600 dark:text-slate-400">Start Period</label>
                   <input
                     type="text"
+                    id={`${id}-hc-start`}
                     value={service.healthcheck.startPeriod || ''}
                     onChange={(e) =>
                       onUpdate({
@@ -832,7 +856,7 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
                       })
                     }
                     placeholder="10s"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs text-slate-900 focus:border-slate-400 focus:outline-none pointer-coarse:min-h-11 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -842,4 +866,19 @@ function ServiceCard({ service, allServices, onUpdate, onRemove, onDuplicate }: 
       )}
     </article>
   );
+}
+
+// An exec-form test (["CMD", …] / ["NONE"]) is edited as JSON so its arguments stay separate; anything else is a shell command.
+function healthcheckTestText(test: string | string[]): string {
+  return Array.isArray(test) ? JSON.stringify(test) : test;
+}
+
+function parseHealthcheckTest(text: string): string | string[] {
+  if (!text.trimStart().startsWith('[')) return text;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return Array.isArray(parsed) && parsed.every((part) => typeof part === 'string') ? parsed : text;
+  } catch {
+    return text; // Still being typed: keep the raw text until it is a valid JSON array.
+  }
 }

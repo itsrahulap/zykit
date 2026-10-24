@@ -10,6 +10,8 @@ const openapiDesigner: ToolDefinition = {
   icon: 'globe',
   tags: ['openapi', 'swagger', 'api', 'spec', 'yaml', 'rest', 'design'],
   status: 'available',
+  accepts: ['json', 'yaml'],
+  produces: ['json'],
   load: () => import('./OpenapiDesignerPage'),
   docs: () => import('./docs'),
 };

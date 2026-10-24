@@ -51,7 +51,7 @@ const docs: ToolDocs = {
     {
       question: 'What does the Builder tab do?',
       answer:
-        'The **Builder** tab provides a visual property tree editor. Set the root type to object, then add and name properties, pick their types and fill in constraints (min/max length, pattern, format, minimum, maximum, required, nullable, enum values). The generated draft 2020-12 schema updates live. Click **Send to Validate tab** to validate documents against it, or **Copy schema JSON** to copy it. Schemas that use `allOf`, `anyOf`, `oneOf`, `$ref`, `not` or `if/then/else` can\'t be loaded into the builder — edit those in the Validate tab directly.',
+        'The **Builder** tab provides a visual property tree editor. Set the root type to object, then add and name properties, pick their types and fill in constraints (min/max length, pattern, format, minimum, maximum, required, nullable, enum, const and default values typed as JSON). The generated draft 2020-12 schema updates live, and values that aren\'t valid JSON or properties with an empty or repeated name are listed and left out until fixed. Click **Send to Validate tab** to validate documents against it, or **Copy schema JSON** to copy it. Properties that use `allOf`, `anyOf`, `oneOf`, `$ref`, `not` or `if/then/else`, or have no single type, are kept as-is and marked **Edit as JSON only**, and so are keywords the builder doesn\'t edit. A schema whose root is like that can\'t be loaded — edit it in the Validate tab directly.',
     },
   ],
 };

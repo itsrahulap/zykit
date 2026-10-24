@@ -34,6 +34,7 @@ export interface PropertyNode {
   // Enum / const
   enumValues: string; // newline-separated JSON values, '' = unset
   constValue: string; // JSON value, '' = unset
+  defaultValue: string; // JSON value, '' = unset
   // Object children (type === 'object')
   properties: PropertyNode[];
   additionalProperties: boolean; // false = disallowed
@@ -42,8 +43,13 @@ export interface PropertyNode {
   minItems: string;
   maxItems: string;
   uniqueItems: boolean;
-  // Keywords the builder doesn't understand (preserved verbatim).
-  unsupportedKeys: string[];
+  /** Keywords the builder doesn't edit, with their raw values, written back verbatim on export. */
+  extra: Record<string, unknown>;
+  /**
+   * The raw subschema when the builder can't represent it (no single type, $ref,
+   * anyOf, a schema-valued additionalProperties…): exported as-is, edit as JSON only.
+   */
+  opaqueSchema?: unknown;
 }
 
 let _counter = 0;
@@ -70,103 +76,131 @@ export function emptyNode(name = '', type: JsonType = 'string'): PropertyNode {
     multipleOf: '',
     enumValues: '',
     constValue: '',
+    defaultValue: '',
     properties: [],
     additionalProperties: true,
     items: null,
     minItems: '',
     maxItems: '',
     uniqueItems: false,
-    unsupportedKeys: [],
+    extra: {},
   };
 }
 
 // ---------------------------------------------------------------------------
 // JSON Schema → builder model
 
-const SUPPORTED_KEYWORDS = new Set([
-  '$schema', 'type', 'description', 'required', 'properties', 'additionalProperties',
-  'items', 'minItems', 'maxItems', 'uniqueItems',
-  'minLength', 'maxLength', 'pattern', 'format',
-  'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf',
-  'enum', 'const',
-  'nullable', // OpenAPI-style; preserved when present
-]);
+const JSON_TYPES: JsonType[] = ['string', 'number', 'integer', 'boolean', 'null', 'object', 'array'];
+
+/** Keywords that make a subschema mean more than "one type plus constraints", so it's kept verbatim. */
+const COMPOSITION_KEYWORDS = ['allOf', 'anyOf', 'oneOf', 'not', 'if', 'then', 'else', '$ref', '$dynamicRef'];
+
+const COMMON_KEYWORDS = ['type', 'nullable', 'description', 'enum', 'const', 'default'];
+const NUMBER_KEYWORDS = ['minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf'];
+/** Keywords the builder edits, per type. Anything else stays in `extra`. */
+const TYPE_KEYWORDS: Record<JsonType, string[]> = {
+  string: ['minLength', 'maxLength', 'pattern', 'format'],
+  number: NUMBER_KEYWORDS,
+  integer: NUMBER_KEYWORDS,
+  object: ['properties', 'required', 'additionalProperties'],
+  array: ['items', 'minItems', 'maxItems', 'uniqueItems'],
+  boolean: [],
+  null: [],
+};
+
+type NumericField = 'minLength' | 'maxLength' | 'minimum' | 'maximum' | 'exclusiveMinimum' | 'exclusiveMaximum' | 'multipleOf' | 'minItems' | 'maxItems';
+const NUMERIC_FIELDS: string[] = [...TYPE_KEYWORDS.string.slice(0, 2), ...NUMBER_KEYWORDS, 'minItems', 'maxItems'];
 
 type RawObj = Record<string, unknown>;
 const isObj = (v: unknown): v is RawObj => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-function readType(schema: RawObj): { type: JsonType; nullable: boolean } {
-  let raw = schema.type;
-  let nullable = false;
-
-  // Draft 2020-12 nullable is expressed as a type array including 'null',
-  // or (OpenAPI 3.0) as the nullable:true keyword.
-  if (schema.nullable === true) nullable = true;
-
-  if (Array.isArray(raw)) {
-    const filtered = raw.filter((t) => t !== 'null');
-    nullable = nullable || raw.includes('null');
-    raw = filtered.length === 1 ? filtered[0] : filtered[0] ?? 'string';
-  }
-
-  const TYPE_SET: JsonType[] = ['string', 'number', 'integer', 'boolean', 'null', 'object', 'array'];
-  const type: JsonType = TYPE_SET.includes(raw as JsonType) ? (raw as JsonType) : 'string';
-  return { type, nullable };
+/** One editable type (plus optional null), or null when the schema has no type or several. */
+function readType(schema: RawObj): { type: JsonType; nullable: boolean } | null {
+  const types: unknown[] = Array.isArray(schema.type) ? schema.type : [schema.type];
+  if (types.length === 0 || !types.every((t) => JSON_TYPES.includes(t as JsonType))) return null;
+  const nonNull = types.filter((t) => t !== 'null') as JsonType[];
+  if (nonNull.length > 1) return null;
+  // OpenAPI 3.0 `nullable: true` is read as a type list including 'null'.
+  return { type: nonNull[0] ?? 'null', nullable: nonNull.length === 1 && (types.includes('null') || schema.nullable === true) };
 }
 
-function fromRaw(schema: RawObj, name: string, requiredSet: Set<string>): PropertyNode {
+/** Copies one editable keyword into the node; false when its value has an unexpected shape. */
+function readKeyword(node: PropertyNode, key: string, value: unknown, schema: RawObj): boolean {
+  switch (key) {
+    case 'type':
+      return true;
+    case 'nullable':
+      return typeof value === 'boolean';
+    case 'description':
+    case 'pattern':
+    case 'format':
+      if (typeof value !== 'string') return false;
+      node[key] = value;
+      return true;
+    case 'enum':
+      if (!Array.isArray(value)) return false;
+      node.enumValues = value.map((v) => JSON.stringify(v)).join('\n');
+      return true;
+    case 'const':
+      node.constValue = JSON.stringify(value);
+      return true;
+    case 'default':
+      node.defaultValue = JSON.stringify(value);
+      return true;
+    case 'uniqueItems':
+    case 'additionalProperties':
+      if (typeof value !== 'boolean') return false;
+      node[key] = value;
+      return true;
+    case 'items':
+      node.items = fromRaw(value, '', false);
+      return true;
+    case 'properties': {
+      if (!isObj(value)) return false;
+      const required = Array.isArray(schema.required) ? schema.required : [];
+      node.properties = Object.entries(value).map(([name, child]) => fromRaw(child, name, required.includes(name)));
+      return true;
+    }
+    case 'required': {
+      if (!Array.isArray(value) || !value.every((n) => typeof n === 'string')) return false;
+      // Names without a matching property can't be toggled in the UI; keep them so they aren't dropped.
+      const undefinedNames = value.filter((n) => !(isObj(schema.properties) && Object.hasOwn(schema.properties, n)));
+      if (undefinedNames.length > 0) node.extra.required = undefinedNames;
+      return true;
+    }
+    default:
+      if (!NUMERIC_FIELDS.includes(key) || typeof value !== 'number') return false;
+      node[key as NumericField] = String(value);
+      return true;
+  }
+}
+
+function fromRaw(schema: unknown, name: string, required: boolean): PropertyNode {
   const node = emptyNode(name);
-  const { type, nullable } = readType(schema);
-  node.type = type;
-  node.nullable = nullable;
-  node.required = requiredSet.has(name);
-
-  if (typeof schema.description === 'string') node.description = schema.description;
-
-  // String constraints
-  if (typeof schema.minLength === 'number') node.minLength = String(schema.minLength);
-  if (typeof schema.maxLength === 'number') node.maxLength = String(schema.maxLength);
-  if (typeof schema.pattern === 'string') node.pattern = schema.pattern;
-  if (typeof schema.format === 'string') node.format = schema.format;
-
-  // Number constraints
-  if (typeof schema.minimum === 'number') node.minimum = String(schema.minimum);
-  if (typeof schema.maximum === 'number') node.maximum = String(schema.maximum);
-  if (typeof schema.exclusiveMinimum === 'number') node.exclusiveMinimum = String(schema.exclusiveMinimum);
-  if (typeof schema.exclusiveMaximum === 'number') node.exclusiveMaximum = String(schema.exclusiveMaximum);
-  if (typeof schema.multipleOf === 'number') node.multipleOf = String(schema.multipleOf);
-
-  // Enum / const
-  if (Array.isArray(schema.enum)) node.enumValues = schema.enum.map((v) => JSON.stringify(v)).join('\n');
-  if (schema.const !== undefined) node.constValue = JSON.stringify(schema.const);
-
-  // Object
-  if (type === 'object' && isObj(schema.properties)) {
-    const childRequired = new Set(Array.isArray(schema.required) ? (schema.required as string[]) : []);
-    node.properties = Object.entries(schema.properties).map(([k, v]) =>
-      fromRaw(isObj(v) ? v : {}, k, childRequired),
-    );
+  node.required = required;
+  const typeInfo = isObj(schema) ? readType(schema) : null;
+  if (
+    !isObj(schema) ||
+    !typeInfo ||
+    COMPOSITION_KEYWORDS.some((k) => k in schema) ||
+    ('additionalProperties' in schema && typeof schema.additionalProperties !== 'boolean')
+  ) {
+    node.opaqueSchema = schema;
+    return node;
   }
-  if (schema.additionalProperties === false) node.additionalProperties = false;
-
-  // Array
-  if (type === 'array' && isObj(schema.items)) {
-    node.items = fromRaw(schema.items, '', new Set());
+  node.type = typeInfo.type;
+  node.nullable = typeInfo.nullable;
+  const editable = new Set([...COMMON_KEYWORDS, ...TYPE_KEYWORDS[node.type]]);
+  for (const [key, value] of Object.entries(schema)) {
+    if (!editable.has(key) || !readKeyword(node, key, value, schema)) node.extra[key] = value;
   }
-  if (typeof schema.minItems === 'number') node.minItems = String(schema.minItems);
-  if (typeof schema.maxItems === 'number') node.maxItems = String(schema.maxItems);
-  if (schema.uniqueItems === true) node.uniqueItems = true;
-
-  // Track unsupported keys so we can warn the user and preserve them on export.
-  node.unsupportedKeys = Object.keys(schema).filter((k) => !SUPPORTED_KEYWORDS.has(k));
-
   return node;
 }
 
 /**
  * Parse a JSON Schema draft 2020-12 document into the builder model.
- * Returns null when the schema has constructs the builder can't represent
- * at the root level (allOf, anyOf, oneOf, $ref, etc.).
+ * Returns null when the root itself can't be edited (composition keywords,
+ * $ref, no type or several types); nested ones are kept as opaque nodes.
  */
 export interface LoadResult {
   root: PropertyNode;
@@ -175,15 +209,71 @@ export interface LoadResult {
 }
 
 export function loadSchema(schema: unknown): LoadResult | null {
-  if (!isObj(schema)) return null;
-  // Bail out on composition keywords at the root — the builder can't represent them.
-  const bail = ['allOf', 'anyOf', 'oneOf', '$ref', 'not', 'if', 'then', 'else', '$defs', 'definitions'];
-  if (bail.some((k) => k in schema)) return null;
+  const root = fromRaw(schema, '', false);
+  if (root.opaqueSchema !== undefined) return null;
+  delete root.extra.$schema; // re-added as draft 2020-12 on export
+  return { root, unsupportedRootKeys: Object.keys(root.extra) };
+}
 
-  const root = fromRaw(schema, '', new Set());
-  root.required = false; // root has no parent, required flag is meaningless
-  const unsupportedRootKeys = Object.keys(schema).filter((k) => !SUPPORTED_KEYWORDS.has(k) && k !== '$schema');
-  return { root, unsupportedRootKeys };
+// ---------------------------------------------------------------------------
+// Validation of user-typed values
+
+/** Parses a JSON value typed into a field: null when blank, else the value or an actionable error. */
+function readJsonValue(text: string): { value: unknown } | { error: string } | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  try {
+    return { value: JSON.parse(trimmed) };
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) throw e;
+    return { error: `${trimmed} isn't a JSON value. Put strings in double quotes, e.g. "red".` };
+  }
+}
+
+export type FieldErrors = Partial<Record<'enumValues' | 'constValue' | 'defaultValue', string>>;
+
+/** Errors for the JSON-valued fields; a field with an error is left out of the generated schema. */
+export function fieldErrors(node: PropertyNode): FieldErrors {
+  const errors: FieldErrors = {};
+  for (const line of node.enumValues.split('\n')) {
+    const parsed = readJsonValue(line);
+    if (parsed && 'error' in parsed) {
+      errors.enumValues = parsed.error;
+      break;
+    }
+  }
+  for (const field of ['constValue', 'defaultValue'] as const) {
+    const parsed = readJsonValue(node[field]);
+    if (parsed && 'error' in parsed) errors[field] = parsed.error;
+  }
+  return errors;
+}
+
+/** Errors keyed by node id for empty or repeated property names; those properties aren't exported. */
+export function nameErrors(properties: PropertyNode[]): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const seen = new Set<string>();
+  for (const p of properties) {
+    if (!p.name) errors[p.id] = 'Give this property a name to include it in the schema.';
+    else if (seen.has(p.name)) errors[p.id] = `Another property is already named "${p.name}"; only the first one is in the schema.`;
+    seen.add(p.name);
+  }
+  return errors;
+}
+
+/** Every problem in the tree, prefixed with the property path, for a summary next to the output. */
+export function collectProblems(node: PropertyNode, path = '(root)'): string[] {
+  if (node.opaqueSchema !== undefined) return [];
+  const problems = Object.values(fieldErrors(node)).map((m) => `${path}: ${m}`);
+  if (node.type === 'object') {
+    const names = nameErrors(node.properties);
+    for (const child of node.properties) {
+      if (names[child.id]) problems.push(`${path}: ${names[child.id]}`);
+      else problems.push(...collectProblems(child, path === '(root)' ? child.name : `${path}.${child.name}`));
+    }
+  }
+  if (node.type === 'array' && node.items) problems.push(...collectProblems(node.items, `${path}[]`));
+  return problems;
 }
 
 // ---------------------------------------------------------------------------
@@ -194,58 +284,63 @@ function num(s: string): number | undefined {
   return s.trim() !== '' && !Number.isNaN(n) ? n : undefined;
 }
 
-function toRaw(node: PropertyNode, isRoot = false): RawObj {
-  const out: RawObj = {};
+function toRaw(node: PropertyNode): unknown {
+  if (node.opaqueSchema !== undefined) return node.opaqueSchema;
+  // Unsupported keywords first, so a value edited in the builder wins over a stale raw one.
+  const out: RawObj = { ...node.extra };
 
   // type (with nullable)
-  const typeVal: string[] = [node.type];
-  if (node.nullable && node.type !== 'null') typeVal.push('null');
-  out.type = typeVal.length === 1 ? typeVal[0] : typeVal;
+  out.type = node.nullable && node.type !== 'null' ? [node.type, 'null'] : node.type;
 
   if (node.description.trim()) out.description = node.description.trim();
 
-  // String
-  const minLen = num(node.minLength);
-  if (minLen !== undefined) out.minLength = minLen;
-  const maxLen = num(node.maxLength);
-  if (maxLen !== undefined) out.maxLength = maxLen;
-  if (node.pattern.trim()) out.pattern = node.pattern.trim();
-  if (node.format.trim()) out.format = node.format.trim();
-
-  // Number
-  const minimum = num(node.minimum);
-  if (minimum !== undefined) out.minimum = minimum;
-  const maximum = num(node.maximum);
-  if (maximum !== undefined) out.maximum = maximum;
-  const exMin = num(node.exclusiveMinimum);
-  if (exMin !== undefined) out.exclusiveMinimum = exMin;
-  const exMax = num(node.exclusiveMaximum);
-  if (exMax !== undefined) out.exclusiveMaximum = exMax;
-  const multipleOf = num(node.multipleOf);
-  if (multipleOf !== undefined) out.multipleOf = multipleOf;
-
-  // Enum / const
-  if (node.enumValues.trim()) {
-    const lines = node.enumValues.split('\n').map((l) => l.trim()).filter(Boolean);
-    const parsed = lines.flatMap((l) => {
-      try { return [JSON.parse(l)]; } catch { return []; }
-    });
-    if (parsed.length > 0) out.enum = parsed;
+  // Only constraints for the current type, so ones left over from a previous type aren't exported.
+  if (node.type === 'string') {
+    const minLen = num(node.minLength);
+    if (minLen !== undefined) out.minLength = minLen;
+    const maxLen = num(node.maxLength);
+    if (maxLen !== undefined) out.maxLength = maxLen;
+    if (node.pattern.trim()) out.pattern = node.pattern.trim();
+    if (node.format.trim()) out.format = node.format.trim();
   }
-  if (node.constValue.trim()) {
-    try { out.const = JSON.parse(node.constValue); } catch { /* leave unset */ }
+
+  if (node.type === 'number' || node.type === 'integer') {
+    const minimum = num(node.minimum);
+    if (minimum !== undefined) out.minimum = minimum;
+    const maximum = num(node.maximum);
+    if (maximum !== undefined) out.maximum = maximum;
+    const exMin = num(node.exclusiveMinimum);
+    if (exMin !== undefined) out.exclusiveMinimum = exMin;
+    const exMax = num(node.exclusiveMaximum);
+    if (exMax !== undefined) out.exclusiveMaximum = exMax;
+    const multipleOf = num(node.multipleOf);
+    if (multipleOf !== undefined) out.multipleOf = multipleOf;
   }
+
+  // Enum / const / default: invalid values are reported by fieldErrors and left out.
+  const enumValues = node.enumValues.split('\n').flatMap((line) => {
+    const parsed = readJsonValue(line);
+    return parsed && 'value' in parsed ? [parsed.value] : [];
+  });
+  if (enumValues.length > 0) out.enum = enumValues;
+  const constValue = readJsonValue(node.constValue);
+  if (constValue && 'value' in constValue) out.const = constValue.value;
+  const defaultValue = readJsonValue(node.defaultValue);
+  if (defaultValue && 'value' in defaultValue) out.default = defaultValue.value;
 
   // Object
   if (node.type === 'object') {
     const properties: RawObj = {};
-    const required: string[] = [];
+    const required = new Set<string>();
+    const skipped = nameErrors(node.properties);
     for (const child of node.properties) {
+      if (skipped[child.id]) continue;
       properties[child.name] = toRaw(child);
-      if (child.required) required.push(child.name);
+      if (child.required) required.add(child.name);
     }
+    if (Array.isArray(node.extra.required)) for (const name of node.extra.required) required.add(name);
     if (Object.keys(properties).length > 0) out.properties = properties;
-    if (required.length > 0) out.required = required;
+    if (required.size > 0) out.required = [...required];
     if (!node.additionalProperties) out.additionalProperties = false;
   }
 
@@ -259,17 +354,12 @@ function toRaw(node: PropertyNode, isRoot = false): RawObj {
     if (node.uniqueItems) out.uniqueItems = true;
   }
 
-  // Preserve root-level $schema on export.
-  if (isRoot) {
-    return { $schema: 'https://json-schema.org/draft/2020-12/schema', ...out };
-  }
-
   return out;
 }
 
 /** Serialize the builder model to a draft 2020-12 JSON Schema object. */
 export function exportSchema(root: PropertyNode): RawObj {
-  return toRaw(root, true);
+  return { $schema: 'https://json-schema.org/draft/2020-12/schema', ...(toRaw(root) as RawObj) };
 }
 
 // ---------------------------------------------------------------------------

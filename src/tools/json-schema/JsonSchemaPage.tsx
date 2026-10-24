@@ -107,21 +107,29 @@ export default function JsonSchemaPage() {
 
   /** Load the schema text into the builder model. */
   const loadSchemaIntoBuilder = () => {
-    if (!schemaParsed?.ok) return;
-    const result = loadSchema(JSON.parse(schemaText));
+    setActiveTab('build');
+    let schema: unknown;
+    try {
+      // Read the current text, not the deferred copy, and drop a BOM like parseJson does.
+      schema = JSON.parse(schemaText.replace(/^\uFEFF/, ''));
+    } catch (e) {
+      if (!(e instanceof SyntaxError)) throw e;
+      setBuilderLoadWarn('The schema isn\'t valid JSON. Fix it in the Validate tab, then open it in the Builder again.');
+      return;
+    }
+    const result = loadSchema(schema);
     if (!result) {
       setBuilderLoadWarn(
-        'This schema uses composition keywords (allOf, anyOf, oneOf, $ref, not, if/then/else) or $defs — the builder can\'t represent it. Edit as JSON only.',
+        'The builder can\'t represent this schema\'s root: it needs one "type" and no allOf, anyOf, oneOf, $ref, not or if/then/else. Edit it as JSON in the Validate tab.',
       );
       return;
     }
     setBuilderRoot(result.root);
     setBuilderLoadWarn(
       result.unsupportedRootKeys.length > 0
-        ? `Loaded. These root keywords aren't editable in the builder and will be lost if you export: ${result.unsupportedRootKeys.join(', ')}.`
+        ? `Loaded. These root keywords can only be edited as JSON and are kept as-is in the generated schema: ${result.unsupportedRootKeys.join(', ')}.`
         : null,
     );
-    setActiveTab('build');
   };
 
   /** Push builder output back to the Validate tab schema textarea. */
@@ -321,7 +329,8 @@ export default function JsonSchemaPage() {
 
         <p className="text-sm text-slate-500 dark:text-slate-400">
           The builder targets <strong>draft 2020-12</strong>. It supports object properties, arrays, scalars and their constraints.
-          Schemas with <code>allOf</code>, <code>anyOf</code>, <code>oneOf</code>, <code>$ref</code>, <code>not</code> or <code>if/then/else</code> can't be loaded — edit them in the Validate tab directly.
+          Properties that use <code>allOf</code>, <code>anyOf</code>, <code>oneOf</code>, <code>$ref</code>, <code>not</code> or <code>if/then/else</code>, or have no single type,
+          are kept as-is and marked "Edit as JSON only", as are keywords the builder doesn't edit. A root schema like that can't be loaded — edit it in the Validate tab.
           One sample can't capture every optional field or union.
         </p>
       </div>

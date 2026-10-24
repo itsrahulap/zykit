@@ -10,6 +10,7 @@ const openapiDependencyMapper: ToolDefinition = {
   icon: 'network',
   tags: ['openapi', 'swagger', 'dependencies', 'schema', 'ref', 'graph', 'api'],
   status: 'available',
+  accepts: ['json', 'yaml'],
   load: () => import('./OpenapiDependencyMapperPage'),
   docs: () => import('./docs'),
 };

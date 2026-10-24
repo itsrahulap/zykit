@@ -76,8 +76,9 @@ export const isLocalRef = (ref: string) => ref === '#' || ref.startsWith('#/');
 /** Resolves a local JSON Pointer `$ref` (`#/components/schemas/Pet`) inside `doc`; undefined if missing or remote. */
 export function resolveRef(doc: unknown, ref: string): unknown {
   if (!isLocalRef(ref)) return undefined;
+  if (ref === '#') return doc;
   let node: unknown = doc;
-  for (const raw of ref.slice(2).split('/').filter((_, i, all) => ref !== '#' || all.length > 1 || i > 0)) {
+  for (const raw of ref.slice(2).split('/')) {
     let key: string;
     try {
       key = decodeURIComponent(raw).replace(/~1/g, '/').replace(/~0/g, '~');
@@ -231,7 +232,7 @@ export function validateSpec(doc: JsonObject): Issue[] {
 // ---------- unsupported constructs ----------
 
 const TOP_LEVEL = new Set(['openapi', 'info', 'servers', 'tags', 'paths', 'components']);
-const PATH_ITEM = new Set([...HTTP_METHODS, 'parameters', 'summary', 'description']);
+const PATH_ITEM = new Set<string>(HTTP_METHODS);
 const OPERATION = new Set(['tags', 'summary', 'description', 'operationId', 'parameters', 'requestBody', 'responses', 'deprecated']);
 
 /**

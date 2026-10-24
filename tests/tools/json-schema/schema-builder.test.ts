@@ -7,6 +7,9 @@ import {
   removeProperty,
   updateProperty,
   moveProperty,
+  fieldErrors,
+  nameErrors,
+  collectProblems,
   type PropertyNode,
 } from '../../../src/tools/json-schema/features/schema-builder';
 
@@ -125,13 +128,17 @@ describe('loadSchema', () => {
     expect(result!.unsupportedRootKeys).toContain('deprecated');
   });
 
-  test('tracks unsupported property keys in unsupportedKeys', () => {
+  test('keeps unsupported property keywords with their values', () => {
     const schema = {
       type: 'object',
       properties: { name: { type: 'string', writeOnly: true } },
     };
     const result = loadSchema(schema);
-    expect(result!.root.properties[0].unsupportedKeys).toContain('writeOnly');
+    expect(result!.root.properties[0].extra).toEqual({ writeOnly: true });
+  });
+
+  test('loads default as a JSON value', () => {
+    expect(loadSchema({ type: 'integer', default: 3 })!.root.defaultValue).toBe('3');
   });
 
   test('loads nested object', () => {
@@ -317,5 +324,97 @@ describe('moveProperty', () => {
     const b = emptyNode('b');
     expect(moveProperty([a, b], a.id, 'up')).toEqual([a, b]);
     expect(moveProperty([a, b], b.id, 'down')).toEqual([a, b]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Round trips that must not lose or flatten anything
+
+describe('round trip preserves what the builder cannot edit', () => {
+  const original = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    type: 'object',
+    'x-custom': { owner: 'team-a' },
+    $defs: { id: { type: 'integer' } },
+    properties: {
+      a: { type: 'string', writeOnly: true, default: 'hi' },
+      b: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+      c: { type: ['string', 'number'] },
+      d: { type: 'object', additionalProperties: { type: 'string' } },
+      e: {},
+      f: { $ref: '#/$defs/id' },
+      g: { type: 'array', items: { allOf: [{ type: 'string' }, { minLength: 1 }] } },
+      h: true,
+    },
+    required: ['a', 'ghost'],
+  };
+
+  test('export equals the original schema', () => {
+    expect(exportSchema(loadSchema(original)!.root)).toEqual(original);
+  });
+
+  test('nodes that are not one plain type are opaque', () => {
+    const props = loadSchema(original)!.root.properties;
+    const opaque = Object.fromEntries(props.map((p) => [p.name, p.opaqueSchema !== undefined]));
+    expect(opaque).toEqual({ a: false, b: true, c: true, d: true, e: true, f: true, g: false, h: true });
+    expect(props.find((p) => p.name === 'g')!.items!.opaqueSchema).toEqual(original.properties.g.items);
+  });
+
+  test('constraints for another type are kept, not edited', () => {
+    const root = loadSchema({ type: 'string', minimum: 3 })!.root;
+    expect(root.minimum).toBe('');
+    expect(exportSchema(root).minimum).toBe(3);
+  });
+
+  test('root keywords that are not editable are reported', () => {
+    expect(loadSchema(original)!.unsupportedRootKeys).toEqual(['x-custom', '$defs', 'required']); // 'ghost' has no property row
+  });
+});
+
+describe('editing', () => {
+  test('changing type drops the old type’s constraints from the export', () => {
+    const node = emptyNode('', 'integer');
+    node.minimum = '5';
+    node.type = 'string';
+    expect(exportSchema(node).minimum).toBeUndefined();
+  });
+
+  test('exports default', () => {
+    const node = emptyNode('', 'string');
+    node.defaultValue = '"hi"';
+    expect(exportSchema(node).default).toBe('hi');
+  });
+
+  test('reports invalid enum, const and default values instead of hiding them', () => {
+    const node = emptyNode('', 'string');
+    node.enumValues = '"ok"\nred';
+    node.constValue = 'admin';
+    node.defaultValue = '{';
+    const errors = fieldErrors(node);
+    expect(errors.enumValues).toMatch(/^red isn't a JSON value/);
+    expect(errors.constValue).toMatch(/^admin isn't a JSON value/);
+    expect(errors.defaultValue).toMatch(/^\{ isn't a JSON value/);
+    expect(exportSchema(node).default).toBeUndefined();
+    expect(fieldErrors(emptyNode())).toEqual({});
+  });
+
+  test('flags empty and duplicate property names and keeps the first duplicate', () => {
+    const root = emptyNode('', 'object');
+    const first = emptyNode('a', 'integer');
+    const second = emptyNode('a', 'string');
+    const unnamed = emptyNode('');
+    root.properties = [first, second, unnamed];
+    expect(Object.keys(nameErrors(root.properties))).toEqual([second.id, unnamed.id]);
+    expect(exportSchema(root).properties).toEqual({ a: { type: 'integer' } });
+    expect(collectProblems(root)).toHaveLength(2);
+  });
+
+  test('collects nested problems with their path', () => {
+    const root = emptyNode('', 'object');
+    const list = emptyNode('tags', 'array');
+    list.items = emptyNode('', 'string');
+    list.items.constValue = 'x';
+    root.properties = [list];
+    expect(collectProblems(root)).toEqual([`tags[]: x isn't a JSON value. Put strings in double quotes, e.g. "red".`]);
   });
 });

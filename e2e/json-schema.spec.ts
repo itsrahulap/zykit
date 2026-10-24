@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test('JSON Schema Validator lists errors and generates schemas', async ({ page }) => {
@@ -49,6 +50,7 @@ test('JSON Schema Validator has no sideways scrolling on a phone', async ({ page
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/tools/json-schema');
   await page.getByRole('button', { name: 'Try an example' }).click();
+  await expect(page.getByRole('region', { name: 'Validation errors' })).toBeVisible();
   const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
   expect(sw).toBeLessThanOrEqual(vw);
 });
@@ -75,3 +77,39 @@ test('JSON Schema Builder creates schemas visually and transfers to validator', 
   await expect(page.getByRole('textbox', { name: 'JSON Schema' })).toHaveValue(/"prop1"/);
 });
 
+test('JSON Schema Builder edits a loaded schema without losing what it cannot edit', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/tools/json-schema');
+
+  // A leading BOM must not break loading.
+  await page.getByRole('textbox', { name: 'JSON Schema' }).fill(
+    '\uFEFF{"type": "object", "x-custom": 1, "properties": {"age": {"type": "integer", "minimum": 0}, "id": {"$ref": "#/$defs/id"}}, "$defs": {"id": {"type": "string"}}}',
+  );
+  await page.getByRole('button', { name: 'Open in Builder' }).click();
+  await expect(page.getByRole('tab', { name: 'Builder' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByText(/root keywords can only be edited as JSON.*x-custom/)).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Properties' }).getByText('Edit as JSON only', { exact: true })).toBeVisible();
+
+  // Exercise a property row: required toggle, constraints and an invalid default.
+  const required = page.getByRole('button', { name: 'Required age' });
+  await expect(required).toHaveAttribute('aria-pressed', 'false');
+  await required.click();
+  await expect(required).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Constraints for age' }).click();
+  await page.getByLabel('Default').fill('ten');
+  await expect(page.getByLabel('Default')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.getByText(/^age: ten isn't a JSON value/)).toBeVisible();
+
+  const generated = page.getByRole('region', { name: 'Generated JSON Schema' });
+  await expect(generated).toContainText('"$ref": "#/$defs/id"');
+  await expect(generated).toContainText('"x-custom": 1');
+  await expect(generated).toContainText('"required": [');
+
+  const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
+  expect(sw).toBeLessThanOrEqual(vw);
+  const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  expect(errors).toEqual([]);
+});
