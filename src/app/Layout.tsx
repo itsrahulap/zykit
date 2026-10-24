@@ -66,7 +66,7 @@ function SiteHeader() {
           <IconTile icon="grid" />
           <span>{SITE.name}</span>
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-1 sm:gap-4">
+        <nav aria-label="Main" className="flex flex-wrap items-center gap-1 sm:gap-4">
           <NavLink to="/" end className={navClass}>
             Tools
           </NavLink>

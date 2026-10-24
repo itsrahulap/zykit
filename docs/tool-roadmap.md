@@ -89,12 +89,12 @@ Work through it one item per session. Each item is sized to finish, test and rev
 **Medium:**
 
 - [x] I-6 Regex Tester: structure tree
-- [ ] I-8 JSON Schema: builder tab
-- [ ] I-9 Compose: service builder
-- [ ] I-10 cURL: request builder
-- [ ] N-4 Mock API Generator
-- [ ] N-5 EXPLAIN Visualizer
-- [ ] N-6 PostgreSQL Query Builder (finish the scaffold; this also fixes the failing docs test)
+- [x] I-8 JSON Schema: builder tab
+- [x] I-9 Compose: service builder
+- [x] I-10 cURL: request builder
+- [x] N-4 Mock API Generator
+- [x] N-5 EXPLAIN Visualizer
+- [x] N-6 PostgreSQL Query Builder (built by another session; e2e + a11y verified)
 
 **Large:**
 

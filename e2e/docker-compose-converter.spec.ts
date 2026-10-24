@@ -46,4 +46,35 @@ test('docker run ↔ Compose has no sideways scrolling on a phone', async ({ pag
   await expect(page.getByRole('region', { name: 'Output' })).toBeVisible();
   const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
   expect(sw).toBeLessThanOrEqual(vw);
+
+  // Switch to Builder tab on phone
+  await page.getByRole('tab', { name: 'Service Builder' }).click();
+  const phoneBuilder = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
+  expect(phoneBuilder.sw).toBeLessThanOrEqual(phoneBuilder.vw);
 });
+
+test('Docker Compose Service Builder loads templates and exports to converter', async ({ page }) => {
+  await page.goto('/tools/docker-compose-converter');
+
+  // Switch to Service Builder tab
+  await page.getByRole('tab', { name: 'Service Builder' }).click();
+  await expect(page.getByRole('heading', { name: 'Starter Templates' })).toBeVisible();
+
+  // Load API + PostgreSQL template
+  await page.getByRole('button', { name: 'API + PostgreSQL' }).click();
+
+  // Check generated outputs
+  const yamlOutput = page.getByRole('region', { name: 'Generated docker-compose.yml' });
+  await expect(yamlOutput).toContainText('postgres:16-alpine');
+  await expect(yamlOutput).toContainText('service_healthy');
+  await expect(yamlOutput).toContainText('pgdata:');
+
+  const envOutput = page.getByRole('region', { name: 'Generated .env.example' });
+  await expect(envOutput).toContainText('POSTGRES_PASSWORD=change_me');
+
+  // Transfer to converter
+  await page.getByRole('button', { name: 'Send to Converter' }).click();
+  await expect(page.getByRole('tab', { name: 'Convert' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#compose-input')).toHaveValue(/postgres:16-alpine/);
+});
+

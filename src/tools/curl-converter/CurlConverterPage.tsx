@@ -3,6 +3,8 @@ import curlConverter from './index';
 import { parseCurl, type HttpRequest } from './features/curl';
 import { parseFetch, toCurl } from './features/fetch';
 import { credentialHeaders, generate, type Target } from './features/generate';
+import { emptyBuilderState, requestToBuilderState, type RequestBuilderState } from './features/request-builder';
+import { RequestBuilder } from './components/RequestBuilder';
 import { Headline, StatusStrip } from '../../shared/ui/page';
 import { Breadcrumb, CodeArea, CodeBlock, CopyButton, Segmented } from '../../shared/ui/tool';
 import { Button, Icon } from '../../shared/ui/ui';
@@ -13,6 +15,7 @@ import { useShareState } from '../../shared/hooks/useShareState';
 import { useToolShortcuts } from '../../shared/hooks/useToolShortcuts';
 
 type Direction = 'to-code' | 'to-curl';
+type Mode = 'convert' | 'builder';
 
 const TARGETS: { value: Target; label: string }[] = [
   { value: 'fetch', label: 'JavaScript fetch' },
@@ -81,6 +84,10 @@ export default function CurlConverterPage() {
   const [direction, setDirection] = useState<Direction>('to-code');
   const [inputs, setInputs] = useState<Record<Direction, string>>({ 'to-code': '', 'to-curl': '' });
   const [target, setTarget] = useState<Target>('fetch');
+  const [mode, setMode] = useState<Mode>('convert');
+  const [builder, setBuilder] = useState<RequestBuilderState>(emptyBuilderState);
+  // cURL options the converter couldn't map, shown in the builder so nothing is dropped silently.
+  const [builderNotes, setBuilderNotes] = useState<string[]>([]);
 
   const input = inputs[direction];
   const setInput = (v: string) => setInputs((prev) => ({ ...prev, [direction]: v }));
@@ -111,7 +118,14 @@ export default function CurlConverterPage() {
     { direction: ['to-code', 'to-curl'], target: TARGETS.map((t) => t.value) },
   );
 
-  const status = !result
+  const openInBuilder = (request: HttpRequest, warnings: string[]) => {
+    setBuilder(requestToBuilderState(request));
+    setBuilderNotes(warnings);
+    setMode('builder');
+  };
+  const status = mode === 'builder'
+    ? 'Fill in the form; the code below updates as you type.'
+    : !result
     ? toCode
       ? 'Paste a cURL command to turn it into code.'
       : 'Paste a fetch() call to turn it into a cURL command.'
@@ -125,7 +139,7 @@ export default function CurlConverterPage() {
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <Headline accent="code">Turn cURL into </Headline>
-        <div className="flex flex-wrap gap-3">
+        <div className={`flex flex-wrap gap-3 ${mode === 'builder' ? 'hidden' : ''}`}>
           <Button variant="secondary" onClick={() => setInput(toCode ? CURL_SAMPLE : FETCH_SAMPLE)}>
             Try an example
           </Button>
@@ -142,6 +156,16 @@ export default function CurlConverterPage() {
         aria-label="Conversion options"
         className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
+        <Segmented<Mode>
+          label="Mode"
+          options={[
+            { value: 'convert', label: 'Convert' },
+            { value: 'builder', label: 'Request builder' },
+          ]}
+          value={mode}
+          onChange={setMode}
+        />
+        {mode === 'convert' && (
         <Segmented<Direction>
           label="Direction"
           options={[
@@ -151,9 +175,26 @@ export default function CurlConverterPage() {
           value={direction}
           onChange={setDirection}
         />
-        {toCode && <Segmented<Target> label="Language" options={TARGETS} value={target} onChange={setTarget} />}
+        )}
+        {mode === 'convert' && toCode && <Segmented<Target> label="Language" options={TARGETS} value={target} onChange={setTarget} />}
       </section>
 
+      {mode === 'builder' && (
+        <>
+          {builderNotes.length > 0 && <NoteList title="Not carried over from the cURL command" items={builderNotes} tone="amber" />}
+          <RequestBuilder
+            state={builder}
+            onChange={setBuilder}
+            onSendToConverter={(curl) => {
+              setInputs((prev) => ({ ...prev, 'to-code': curl }));
+              setDirection('to-code');
+              setMode('convert');
+            }}
+          />
+        </>
+      )}
+
+      {mode === 'convert' && (
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <CodeArea
           label={toCode ? 'cURL command' : 'fetch() code'}
@@ -181,6 +222,11 @@ export default function CurlConverterPage() {
                   <Icon name="code" className="h-4 w-4" /> {toCode ? targetLabel : 'cURL'}
                 </h2>
                 <div className="flex flex-wrap items-center gap-1">
+                  {toCode && result.request && (
+                    <Button variant="ghost" onClick={() => openInBuilder(result.request!, [...result.warnings, ...result.notes.filter((n) => n.includes('was skipped'))])}>
+                      Edit in builder
+                    </Button>
+                  )}
                   <CopyButton text={result.output} />
                   <SendToMenu text={result.output} kind="code" lang={outputLang} />
                 </div>
@@ -222,6 +268,7 @@ export default function CurlConverterPage() {
           {result && result.notes.length > 0 && <NoteList title="Notes" items={result.notes} tone="slate" />}
         </div>
       </div>
+      )}
 
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Conversion happens in your browser. The request is never sent, and pasted code is parsed, not run.

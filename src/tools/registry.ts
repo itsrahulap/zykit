@@ -123,6 +123,8 @@ import gitCommandBuilder from './git-command-builder';
 import dockerfileGenerator from './dockerfile-generator';
 import webhookPayloadBuilder from './webhook-payload-builder';
 import gitPlayground from './git-playground';
+import mockApiGenerator from './mock-api-generator';
+import sqlExplainVisualizer from './sql-explain-visualizer';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -246,6 +248,8 @@ export const TOOLS: ToolDefinition[] = [
   dockerfileGenerator,
   webhookPayloadBuilder,
   gitPlayground,
+  mockApiGenerator,
+  sqlExplainVisualizer,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

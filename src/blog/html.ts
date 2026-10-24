@@ -27,6 +27,8 @@ function blockHtml(b: PostBlock): string {
       return `<ol>${b.items.map((i) => `<li><strong>${esc(i.title)}</strong>: ${inline(i.text)}</li>`).join('')}</ol>`;
     case 'posts':
       return `<ul>${b.slugs.map(getPost).filter((p) => p !== undefined).map((p) => `<li>${postLink(p)}</li>`).join('')}</ul>`;
+    case 'link':
+      return `<p><a href="${esc(b.href)}" rel="noopener noreferrer">${esc(b.label)}</a></p>`;
   }
 }
 

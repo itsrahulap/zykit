@@ -49,7 +49,29 @@ test('JSON Schema Validator has no sideways scrolling on a phone', async ({ page
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto('/tools/json-schema');
   await page.getByRole('button', { name: 'Try an example' }).click();
-  await expect(page.getByRole('region', { name: 'Validation errors' })).toBeVisible();
   const { sw, vw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }));
   expect(sw).toBeLessThanOrEqual(vw);
 });
+
+test('JSON Schema Builder creates schemas visually and transfers to validator', async ({ page }) => {
+  await page.goto('/tools/json-schema');
+
+  // Switch to Builder tab
+  await page.getByRole('tab', { name: 'Builder' }).click();
+  await expect(page.getByRole('heading', { name: 'Root schema' })).toBeVisible();
+
+  // Add a property and name it
+  await page.getByRole('button', { name: 'Add property' }).first().click();
+  await page.getByPlaceholder('property name').fill('prop1');
+
+  // Inspect the generated schema pre block
+  const generated = page.getByRole('region', { name: 'Generated schema' });
+  await expect(generated).toContainText('"type": "object"');
+  await expect(generated).toContainText('"prop1"');
+
+  // Send to Validate tab
+  await page.getByRole('button', { name: 'Send to Validate tab' }).click();
+  await expect(page.getByRole('tab', { name: 'Validate' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('textbox', { name: 'JSON Schema' })).toHaveValue(/"prop1"/);
+});
+

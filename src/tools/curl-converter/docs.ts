@@ -5,8 +5,8 @@ const docs: ToolDocs = {
     'Choose a **Direction**: **cURL → code** or **fetch → cURL**.',
     'Paste a cURL command (for example from DevTools → Network → Copy as cURL, bash or cmd) or a `fetch()` call into the input. You can also drop a file on the box, use **Open file**, or click **Try an example**.',
     'For cURL → code, pick a **Language**: **JavaScript fetch**, **Node.js fetch**, **axios** or **Python requests**.',
-    'Copy the result, or use **Send to…** to open it in another tool. The **Request headers** panel lists the headers on their own, ready to copy or send to the headers inspector.',
-    'Read the **Warnings** and **Notes** under the output: they list options that were ignored, local files that became placeholders and things the target can’t reproduce.',
+    'Read the **Warnings** and **Notes** under the output (ignored options, local files that became placeholders, things the target can’t reproduce), then copy the result or use **Send to…**. The **Request headers** panel lists the headers on their own.',
+    'To build a request from scratch, switch **Mode** to **Request builder** (or press **Edit in builder** on a converted command): set the method and URL, then use the **Query**, **Headers**, **Auth**, **Body** and **Settings** tabs. The code updates as you type, and **Open in converter** sends the cURL back.',
   ],
   howItWorks:
     'A cURL command is split into arguments with POSIX shell quoting rules: single and double quotes, `$\'…\'` strings, backslash escapes, line continuations and `#` comments. Windows cmd syntax (`^` line ends and `^"` quoting, as in Chrome’s “Copy as cURL (cmd)”) is detected automatically. Only the first command is used; anything after `|`, `;`, `&&` or a redirect is dropped with a warning.\n\n' +
@@ -17,6 +17,7 @@ const docs: ToolDocs = {
     'Recognised cURL options: `-X`, `-H`, `-d`/`--data`, `--data-raw`, `--data-binary`, `--data-urlencode`, `--json`, `-F`, `--form-string`, `-u`, `-b`, `-A`, `-e`, `--url`, `--oauth2-bearer`, `-T`, `-G`, `-I`, `-L`, `-k` and `--compressed`. Output, logging and protocol options such as `-s`, `-v`, `-o` and `--http2` are ignored; others such as `--proxy`, `--max-time` or `--cert` are noted as skipped, and unknown options are listed as warnings.',
     'Files referenced with `@file` or `<file` (in `-d`, `--data-binary`, `--json`, `-F`, `-T`, `-H @file`) can’t be read, so the code contains a placeholder such as `<contents of file>`. `-b` with a cookie file instead of `name=value` can’t be converted.',
     'Only the first URL in a command is used. A URL without a scheme gets `http://`, as curl does.',
+    'The request builder never sends anything: the site’s security policy blocks connections to other sites. Copy the generated command or code and run it where the API is reachable. Options the builder can’t represent are listed as **Not carried over** when you open a command in it; multipart file parts are file-path placeholders.',
     'In the browser fetch output, headers such as `Cookie`, `Host`, `Origin` and `Referer` are silently dropped by the browser, CORS applies, and `-k` can’t be reproduced. Node fetch has no per-request equivalent of `-k` either.',
     'fetch → cURL needs a string literal URL and an object literal for the options. Template literals keep `${…}` as literal text, computed values become placeholders, and only `method`, `headers`, `body`, `referrer` and `redirect` change the command (`credentials` only adds a warning).',
   ],

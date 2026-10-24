@@ -13,7 +13,9 @@ export type PostBlock =
   | { type: 'cards'; items: { title: string; text: string }[] }
   | { type: 'steps'; items: { title: string; text: string }[] }
   /** Cards linking to other posts, by slug. */
-  | { type: 'posts'; slugs: string[] };
+  | { type: 'posts'; slugs: string[] }
+  /** An external link (e.g. a GitHub repo), opened in a new tab. */
+  | { type: 'link'; href: string; label: string };
 
 export interface PostSection {
   heading: string;
