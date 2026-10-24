@@ -8,10 +8,12 @@ import {
   isNamedVolume,
   parsePort,
   parseVolume,
+  renameService,
   serializeBuilderState,
   TEMPLATES,
   type ComposeBuilderState,
 } from '../../../src/tools/docker-compose-converter/features/service-builder';
+import { AppError } from '../../../src/shared/lib/errors';
 
 describe('Compose Service Builder: utilities & analysis', () => {
   it('correctly distinguishes named volumes from bind mounts', () => {
@@ -27,9 +29,9 @@ describe('Compose Service Builder: utilities & analysis', () => {
 
   it('parses port strings accurately', () => {
     expect(parsePort('8080:80')).toEqual({ hostPort: '8080', containerPort: '80', protocol: undefined });
-    expect(parsePort('127.0.0.1:3000:3000')).toEqual({ hostPort: '3000', containerPort: '3000', protocol: undefined });
+    expect(parsePort('127.0.0.1:3000:3000')).toEqual({ hostIp: '127.0.0.1', hostPort: '3000', containerPort: '3000', protocol: undefined });
     expect(parsePort('53:53/udp')).toEqual({ hostPort: '53', containerPort: '53', protocol: 'udp' });
-    expect(parsePort('80')).toEqual({ hostPort: '80', containerPort: '80', protocol: undefined });
+    expect(parsePort('80')).toEqual({ hostPort: '', containerPort: '80', protocol: undefined });
     expect(parsePort('')).toBeNull();
   });
 
@@ -262,5 +264,123 @@ networks:
 
   it('rejects YAML without services', async () => {
     await expect(importComposeYaml('version: "3.8"\nfoo: bar')).rejects.toThrow(/No "services:" section found/);
+  });
+});
+
+describe('Compose Service Builder: lossless round trip', () => {
+  const roundTrip = async (yaml: string) => {
+    const imported = await importComposeYaml(yaml);
+    const { parse } = await import('yaml');
+    return { ...imported, doc: parse(await serializeBuilderState(imported.state)) };
+  };
+
+  it('keeps command arrays as arrays', async () => {
+    const { doc } = await roundTrip(`services:\n  app:\n    image: busybox\n    command: ["sh", "-c", "echo hi && sleep 1"]\n`);
+    expect(doc.services.app.command).toEqual(['sh', '-c', 'echo hi && sleep 1']);
+  });
+
+  it('keeps healthcheck CMD form, its arguments, and NONE', async () => {
+    const { doc } = await roundTrip(`services:
+  a:
+    image: distroless
+    healthcheck:
+      test: ["CMD", "/bin/check", "--url", "http://x/a b"]
+  b:
+    image: busybox
+    healthcheck:
+      test: ["NONE"]
+  c:
+    image: busybox
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost || exit 1"]
+`);
+    expect(doc.services.a.healthcheck.test).toEqual(['CMD', '/bin/check', '--url', 'http://x/a b']);
+    expect(doc.services.b.healthcheck.test).toEqual(['NONE']);
+    expect(doc.services.c.healthcheck.test).toEqual(['CMD-SHELL', 'curl -f localhost || exit 1']);
+  });
+
+  it('keeps empty env values distinct from pass-through variables', async () => {
+    const { doc } = await roundTrip(`services:\n  app:\n    image: x\n    environment:\n      - EMPTY=\n      - FROM_HOST\n      - SET=1\n`);
+    expect(doc.services.app.environment).toEqual({ EMPTY: '', FROM_HOST: null, SET: '1' });
+  });
+
+  it('keeps on-failure:N and long-form ports with host_ip, and warns about what it cannot represent', async () => {
+    const { doc, warnings } = await roundTrip(`services:
+  app:
+    image: x
+    restart: on-failure:3
+    user: "1000"
+    ports:
+      - target: 80
+        published: 8080
+        host_ip: 127.0.0.1
+        protocol: udp
+    volumes:
+      - type: tmpfs
+        target: /tmp
+      - type: volume
+        source: data
+        target: /data
+        read_only: true
+    depends_on:
+      db:
+        condition: service_started
+        restart: true
+  db:
+    image: postgres
+`);
+    expect(doc.services.app.restart).toBe('on-failure:3');
+    expect(doc.services.app.ports).toEqual(['127.0.0.1:8080:80/udp']);
+    expect(doc.services.app.volumes).toEqual(['data:/data:ro']);
+    expect(warnings.some((w) => w.includes('"user"'))).toBe(true);
+    expect(warnings.some((w) => w.includes('tmpfs'))).toBe(true);
+    expect(warnings.some((w) => w.includes('"restart"') && w.includes('db'))).toBe(true);
+  });
+
+  it('throws an AppError for broken YAML', async () => {
+    await expect(importComposeYaml('services: [broken')).rejects.toBeInstanceOf(AppError);
+  });
+});
+
+describe('Compose Service Builder: names, renames and dependencies', () => {
+  const state = (...services: ComposeBuilderState['services']): ComposeBuilderState => ({ services, namedVolumes: [], networks: [] });
+
+  it('warns about duplicate and empty service names', () => {
+    const { warnings } = analyzeCompose(state(emptyService('web'), emptyService('web'), emptyService(''), emptyService('app')));
+    expect(warnings.some((w) => w.includes('"web"') && w.includes('more than one'))).toBe(true);
+    expect(warnings.some((w) => w.includes('no name'))).toBe(true);
+    expect(warnings.some((w) => w.includes('"app"') && w.includes('more than one'))).toBe(true);
+  });
+
+  it('updates other services’ depends_on when a service is renamed', () => {
+    const db = emptyService('db');
+    const api = { ...emptyService('api'), dependsOn: [{ service: 'db', condition: 'service_started' as const }] };
+    const next = renameService(state(db, api), db.id, 'postgres');
+    expect(next.services[0].name).toBe('postgres');
+    expect(next.services[1].dependsOn).toEqual([{ service: 'postgres', condition: 'service_started' }]);
+  });
+
+  it('warns when service_healthy targets a service without a healthcheck', () => {
+    const { warnings } = analyzeCompose(state({ ...emptyService('api'), dependsOn: [{ service: 'db', condition: 'service_healthy' }] }, emptyService('db')));
+    expect(warnings.some((w) => w.includes('service_healthy') && w.includes('"db"'))).toBe(true);
+  });
+});
+
+describe('Compose Service Builder: port conflicts', () => {
+  const ports = (...lists: string[][]) =>
+    analyzeCompose({ services: lists.map((p, i) => ({ ...emptyService(`s${i}`), ports: p })), namedVolumes: [], networks: [] }).warnings;
+
+  it('ignores container-only ports', () => {
+    expect(ports(['3000'], ['3000'])).toEqual([]);
+  });
+
+  it('treats a missing protocol as tcp', () => {
+    expect(ports(['8080:80'], ['8080:80/tcp']).some((w) => w.includes('8080'))).toBe(true);
+    expect(ports(['53:53'], ['53:53/udp'])).toEqual([]);
+  });
+
+  it('only flags the same host port on overlapping IPs', () => {
+    expect(ports(['127.0.0.1:80:80'], ['192.168.1.2:80:80'])).toEqual([]);
+    expect(ports(['127.0.0.1:80:80'], ['80:80']).some((w) => w.includes('80'))).toBe(true);
   });
 });

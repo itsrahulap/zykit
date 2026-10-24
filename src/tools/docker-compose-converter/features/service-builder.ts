@@ -3,6 +3,7 @@
 
 import { Quoted, type Obj, type ComposeDoc } from './run';
 import { composeYaml } from './docker-compose-converter';
+import { AppError } from '../../../shared/lib/errors';
 
 export interface ServiceDependency {
   service: string;
@@ -10,7 +11,8 @@ export interface ServiceDependency {
 }
 
 export interface ServiceHealthcheck {
-  test: string;
+  /** A string runs in a shell (CMD-SHELL); an array is the exact Compose form, e.g. ["CMD", …] or ["NONE"]. */
+  test: string | string[];
   interval?: string;
   timeout?: string;
   retries?: number;
@@ -24,12 +26,14 @@ export interface ServiceDef {
   buildContext?: string;
   dockerfile?: string;
   containerName?: string;
-  command?: string;
+  /** An array is exec form and is exported unchanged; joining it would change its meaning. */
+  command?: string | string[];
   ports: string[];
   volumes: string[];
-  environment: [string, string][];
+  /** A null value passes the variable through from the host (`KEY` with no `=`); '' sets it empty. */
+  environment: [string, string | null][];
   networks: string[];
-  restart: 'no' | 'always' | 'on-failure' | 'unless-stopped' | '';
+  restart: 'no' | 'always' | 'on-failure' | `on-failure:${number}` | 'unless-stopped' | '';
   healthcheck?: ServiceHealthcheck;
   dependsOn: ServiceDependency[];
 }
@@ -289,6 +293,7 @@ export const TEMPLATES: Record<TemplateId, { name: string; description: string; 
 
 export interface PortEntry {
   service: string;
+  hostIp?: string;
   hostPort: string;
   containerPort: string;
   protocol?: string;
@@ -326,7 +331,7 @@ export function isNamedVolume(source: string): boolean {
   return true;
 }
 
-export function parsePort(raw: string): { hostPort: string; containerPort: string; protocol?: string } | null {
+export function parsePort(raw: string): { hostIp?: string; hostPort: string; containerPort: string; protocol?: string } | null {
   const clean = raw.trim().replace(/^["']|["']$/g, '');
   if (!clean) return null;
 
@@ -340,14 +345,15 @@ export function parsePort(raw: string): { hostPort: string; containerPort: strin
 
   const parts = withoutProto.split(':');
   if (parts.length === 1) {
-    return { hostPort: parts[0], containerPort: parts[0], protocol };
+    // Container port only: Docker picks a random host port, so nothing to conflict with.
+    return { hostPort: '', containerPort: parts[0], protocol };
   }
   if (parts.length === 2) {
     return { hostPort: parts[0], containerPort: parts[1], protocol };
   }
   if (parts.length >= 3) {
     // ip:hostPort:containerPort
-    return { hostPort: parts[parts.length - 2], containerPort: parts[parts.length - 1], protocol };
+    return { hostIp: parts.slice(0, -2).join(':'), hostPort: parts[parts.length - 2], containerPort: parts[parts.length - 1], protocol };
   }
   return null;
 }
@@ -374,8 +380,15 @@ export function analyzeCompose(state: ComposeBuilderState): AnalysisResult {
   const serviceNames = new Set(state.services.map((s) => s.name.trim()).filter(Boolean));
   const declaredVolumes = new Set(state.namedVolumes.map((v) => v.trim()).filter(Boolean));
 
-  // Map to track host port bindings: hostPort -> list of service names
-  const hostPortMap = new Map<string, string[]>();
+  // Names as exported: an empty name becomes "app", and a repeated name overwrites the earlier service.
+  const exportedNames = state.services.map((s) => s.name.trim() || 'app');
+  if (state.services.some((s) => !s.name.trim())) warnings.push('A service has no name; it is exported as "app". Give it a name.');
+  for (const name of new Set(exportedNames.filter((n, i) => exportedNames.indexOf(n) !== i))) {
+    warnings.push(`Service name "${name}" is used by more than one service; only the last one is exported. Rename the others.`);
+  }
+
+  // "hostPort/protocol" -> bindings, so a host IP can be compared within the same port.
+  const hostPortMap = new Map<string, { ip: string; service: string }[]>();
 
   for (const svc of state.services) {
     const sName = svc.name.trim() || 'unnamed';
@@ -386,6 +399,7 @@ export function analyzeCompose(state: ComposeBuilderState): AnalysisResult {
       if (parsed) {
         ports.push({
           service: sName,
+          hostIp: parsed.hostIp,
           hostPort: parsed.hostPort,
           containerPort: parsed.containerPort,
           protocol: parsed.protocol,
@@ -394,9 +408,9 @@ export function analyzeCompose(state: ComposeBuilderState): AnalysisResult {
 
         // Check for duplicate host port bindings
         if (parsed.hostPort) {
-          const key = parsed.protocol ? `${parsed.hostPort}/${parsed.protocol}` : parsed.hostPort;
+          const key = `${parsed.hostPort}/${parsed.protocol || 'tcp'}`;
           const current = hostPortMap.get(key) || [];
-          current.push(sName);
+          current.push({ ip: parsed.hostIp || '', service: sName });
           hostPortMap.set(key, current);
         }
       }
@@ -435,14 +449,25 @@ export function analyzeCompose(state: ComposeBuilderState): AnalysisResult {
 
       if (!serviceNames.has(targetName)) {
         warnings.push(`Service "${sName}" depends on "${targetName}", but "${targetName}" is not defined in services.`);
+      } else if (dep.condition === 'service_healthy') {
+        const target = state.services.find((s) => s.name.trim() === targetName);
+        const test = target?.healthcheck?.test;
+        if (!test || !test.length || (Array.isArray(test) && test[0] === 'NONE')) {
+          warnings.push(
+            `Service "${sName}" waits for "${targetName}" to be service_healthy, but "${targetName}" has no healthcheck here. Add one, or use service_started, unless its image defines a HEALTHCHECK.`,
+          );
+        }
       }
     }
   }
 
   // Detect port conflicts
-  for (const [port, svcs] of hostPortMap.entries()) {
-    if (svcs.length > 1) {
-      warnings.push(`Host port ${port} is bound by multiple services: ${[...new Set(svcs)].join(', ')}.`);
+  const anyIp = (ip: string) => ip === '' || ip === '0.0.0.0' || ip === '::' || ip === '[::]';
+  for (const [key, bindings] of hostPortMap.entries()) {
+    const clashing = bindings.filter((b, i) => bindings.some((o, j) => i !== j && (o.ip === b.ip || anyIp(o.ip) || anyIp(b.ip))));
+    if (clashing.length > 1) {
+      const port = key.endsWith('/tcp') ? key.slice(0, -4) : key;
+      warnings.push(`Host port ${port} is bound by multiple services: ${[...new Set(clashing.map((b) => b.service))].join(', ')}.`);
     }
   }
 
@@ -452,6 +477,21 @@ export function analyzeCompose(state: ComposeBuilderState): AnalysisResult {
     volumes,
     dependencies,
     hasConflicts: warnings.length > 0,
+  };
+}
+
+/** Renames a service and points other services' depends_on at the new name. */
+export function renameService(state: ComposeBuilderState, id: string, name: string): ComposeBuilderState {
+  const oldName = state.services.find((s) => s.id === id)?.name.trim();
+  return {
+    ...state,
+    services: state.services.map((s) =>
+      s.id === id
+        ? { ...s, name }
+        : oldName && name.trim() && s.dependsOn.some((d) => d.service.trim() === oldName)
+          ? { ...s, dependsOn: s.dependsOn.map((d) => (d.service.trim() === oldName ? { ...d, service: name.trim() } : d)) }
+          : s,
+    ),
   };
 }
 
@@ -481,7 +521,7 @@ export function generateEnvExample(state: ComposeBuilderState): string {
         continue;
       }
       // Never copy a real secret into an example file.
-      const val = /pass|secret|key|token|credential|auth/i.test(key) ? 'change_me' : v.trim();
+      const val = /pass|secret|key|token|credential|auth/i.test(key) ? 'change_me' : (v ?? '').trim();
       lines.push(`${key}=${/^[\w.,:/@%+=-]*$/.test(val) ? val : JSON.stringify(val)}`);
     }
     lines.push('');
@@ -528,8 +568,8 @@ export function exportComposeDoc(state: ComposeBuilderState): ComposeDoc {
       sDef.container_name = svc.containerName.trim();
     }
 
-    if (svc.command?.trim()) {
-      sDef.command = svc.command.trim();
+    if (Array.isArray(svc.command) ? svc.command.length : svc.command?.trim()) {
+      sDef.command = Array.isArray(svc.command) ? svc.command : svc.command!.trim();
     }
 
     if (svc.restart) {
@@ -554,7 +594,7 @@ export function exportComposeDoc(state: ComposeBuilderState): ComposeDoc {
       const envObj: Record<string, string | null> = {};
       for (const [k, v] of svc.environment) {
         if (k.trim()) {
-          envObj[k.trim()] = v === '' ? null : v;
+          envObj[k.trim()] = v;
         }
       }
       if (Object.keys(envObj).length > 0) {
@@ -566,9 +606,10 @@ export function exportComposeDoc(state: ComposeBuilderState): ComposeDoc {
       sDef.networks = svc.networks.map((n) => n.trim()).filter(Boolean);
     }
 
-    if (svc.healthcheck && svc.healthcheck.test.trim()) {
+    const test = svc.healthcheck?.test;
+    if (svc.healthcheck && (Array.isArray(test) ? test.length : test?.trim())) {
       const hc: Obj = {
-        test: ['CMD-SHELL', svc.healthcheck.test.trim()],
+        test: Array.isArray(test) ? test : ['CMD-SHELL', test!.trim()],
       };
       if (svc.healthcheck.interval) hc.interval = svc.healthcheck.interval;
       if (svc.healthcheck.timeout) hc.timeout = svc.healthcheck.timeout;
@@ -633,19 +674,26 @@ export async function serializeBuilderState(state: ComposeBuilderState): Promise
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown): string => (typeof v === 'string' ? v : String(v));
 
+const SERVICE_KEYS = ['image', 'build', 'container_name', 'command', 'ports', 'volumes', 'environment', 'networks', 'restart', 'healthcheck', 'depends_on'];
+const DEPENDENCY_CONDITIONS = ['service_started', 'service_healthy', 'service_completed_successfully'];
+
 export async function importComposeYaml(yamlText: string): Promise<{ state: ComposeBuilderState; warnings: string[] }> {
   const warnings: string[] = [];
+  // The builder can't represent every Compose key; say so instead of dropping it silently.
+  const notImported = (where: string, obj: Obj, known: string[]) => {
+    for (const k of Object.keys(obj)) if (!known.includes(k)) warnings.push(`${where}: "${k}" isn't supported by the builder and was not imported.`);
+  };
   const { parse } = await import('yaml');
 
   let parsed: unknown;
   try {
     parsed = parse(yamlText, { merge: true, maxAliasCount: 100 });
   } catch (e) {
-    throw new Error(`YAML syntax error: ${(e as Error).message.split('\n')[0]}`);
+    throw new AppError('CORRUPT', `YAML syntax error: ${(e as Error).message.split('\n')[0]}. Fix the YAML and try again.`);
   }
 
   if (!isObj(parsed)) {
-    throw new Error('Expected a Docker Compose YAML document with a "services:" section.');
+    throw new AppError('VALIDATION_FAILED', 'Expected a Docker Compose YAML document with a "services:" section.');
   }
 
   const services: ServiceDef[] = [];
@@ -653,10 +701,11 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
   let servicesObj: Record<string, unknown> = {};
   if (isObj(parsed.services)) {
     servicesObj = parsed.services as Record<string, unknown>;
+    notImported('Compose file', parsed, ['services', 'volumes', 'networks', 'version', 'name']);
   } else if (parsed.image !== undefined || parsed.build !== undefined) {
     servicesObj = { app: parsed };
   } else {
-    throw new Error('No "services:" section found in the Compose file.');
+    throw new AppError('VALIDATION_FAILED', 'No "services:" section found in the Compose file. Paste a Compose file or a single service definition.');
   }
 
   for (const [name, rawDef] of Object.entries(servicesObj)) {
@@ -664,20 +713,23 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
       warnings.push(`Service "${name}" is empty and was ignored.`);
       continue;
     }
+    notImported(`Service "${name}"`, rawDef, SERVICE_KEYS);
+
+    const restart = rawDef.restart === undefined ? '' : str(rawDef.restart);
+    const restartOk = /^(no|always|on-failure(:\d+)?|unless-stopped)$/.test(restart);
+    if (restart && !restartOk) warnings.push(`Service "${name}": restart "${restart}" isn't a valid policy and was not imported.`);
 
     const svc: ServiceDef = {
       id: createId(),
       name,
       image: rawDef.image ? str(rawDef.image) : '',
       containerName: rawDef.container_name ? str(rawDef.container_name) : undefined,
-      command: Array.isArray(rawDef.command) ? rawDef.command.map(str).join(' ') : rawDef.command ? str(rawDef.command) : undefined,
+      command: Array.isArray(rawDef.command) ? rawDef.command.map(str) : rawDef.command ? str(rawDef.command) : undefined,
       ports: [],
       volumes: [],
       environment: [],
       networks: [],
-      restart: (['no', 'always', 'on-failure', 'unless-stopped'].includes(str(rawDef.restart))
-        ? (str(rawDef.restart) as ServiceDef['restart'])
-        : '') || '',
+      restart: restartOk ? (restart as ServiceDef['restart']) : '',
       dependsOn: [],
     };
 
@@ -687,6 +739,7 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
     } else if (isObj(rawDef.build)) {
       if (rawDef.build.context) svc.buildContext = str(rawDef.build.context);
       if (rawDef.build.dockerfile) svc.dockerfile = str(rawDef.build.dockerfile);
+      notImported(`Service "${name}" build`, rawDef.build, ['context', 'dockerfile']);
     }
 
     // Ports
@@ -694,10 +747,11 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
       svc.ports = rawDef.ports.map((p) => {
         if (typeof p === 'number' || typeof p === 'string') return String(p);
         if (isObj(p)) {
-          const target = p.target;
-          const published = p.published ? `${p.published}:` : '';
+          notImported(`Service "${name}" port ${str(p.target)}`, p, ['target', 'published', 'host_ip', 'protocol']);
+          const hostIp = p.host_ip ? `${str(p.host_ip)}:` : '';
+          const published = p.published !== undefined ? `${p.published}:` : hostIp ? ':' : '';
           const proto = p.protocol ? `/${p.protocol}` : '';
-          return `${published}${target}${proto}`;
+          return `${hostIp}${published}${p.target}${proto}`;
         }
         return str(p);
       });
@@ -705,29 +759,34 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
 
     // Volumes
     if (Array.isArray(rawDef.volumes)) {
-      svc.volumes = rawDef.volumes.map((v) => {
-        if (typeof v === 'string') return v;
-        if (isObj(v)) {
-          const source = v.source || '';
-          const target = v.target || '';
-          const ro = v.read_only ? ':ro' : '';
-          return `${source}:${target}${ro}`;
+      for (const v of rawDef.volumes) {
+        if (!isObj(v)) {
+          svc.volumes.push(str(v));
+          continue;
         }
-        return str(v);
-      });
+        const type = v.type === undefined ? 'volume' : str(v.type);
+        if ((type !== 'volume' && type !== 'bind') || !v.target) {
+          warnings.push(`Service "${name}": the ${type} mount at ${str(v.target ?? '?')} has no short form and was not imported.`);
+          continue;
+        }
+        notImported(`Service "${name}" volume ${str(v.target)}`, v, ['type', 'source', 'target', 'read_only']);
+        const ro = v.read_only ? ':ro' : '';
+        if (!v.source && ro) warnings.push(`Service "${name}": read_only on the anonymous volume ${str(v.target)} was not imported.`);
+        svc.volumes.push(v.source ? `${str(v.source)}:${str(v.target)}${ro}` : str(v.target));
+      }
     }
 
     // Environment
     if (isObj(rawDef.environment)) {
       for (const [k, val] of Object.entries(rawDef.environment)) {
-        svc.environment.push([k, val === null || val === undefined ? '' : str(val)]);
+        svc.environment.push([k, val === null || val === undefined ? null : str(val)]);
       }
     } else if (Array.isArray(rawDef.environment)) {
       for (const entry of rawDef.environment) {
         const s = str(entry);
         const eqIdx = s.indexOf('=');
         if (eqIdx === -1) {
-          svc.environment.push([s, '']);
+          svc.environment.push([s, null]);
         } else {
           svc.environment.push([s.slice(0, eqIdx), s.slice(eqIdx + 1)]);
         }
@@ -739,22 +798,26 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
       svc.networks = rawDef.networks.map(str);
     } else if (isObj(rawDef.networks)) {
       svc.networks = Object.keys(rawDef.networks);
+      for (const [net, cfg] of Object.entries(rawDef.networks)) {
+        if (isObj(cfg)) notImported(`Service "${name}" network ${net}`, cfg, []);
+      }
     }
 
     // Healthcheck
     if (isObj(rawDef.healthcheck)) {
       const hc = rawDef.healthcheck;
-      let testCmd = '';
+      notImported(`Service "${name}" healthcheck`, hc, ['test', 'interval', 'timeout', 'retries', 'start_period']);
+      let test: string | string[] = '';
       if (typeof hc.test === 'string') {
-        testCmd = hc.test;
+        test = hc.test;
       } else if (Array.isArray(hc.test)) {
-        // e.g. ["CMD", "curl", "-f", "localhost"] or ["CMD-SHELL", "curl -f localhost"]
-        const nonHeader = hc.test.filter((t) => !['CMD', 'CMD-SHELL'].includes(str(t)));
-        testCmd = nonHeader.map(str).join(' ');
+        // CMD-SHELL stays editable as one command; CMD and NONE keep their exact form.
+        const parts = hc.test.map(str);
+        test = parts[0] === 'CMD-SHELL' ? parts.slice(1).join(' ') : parts;
       }
-      if (testCmd) {
+      if (test.length) {
         svc.healthcheck = {
-          test: testCmd,
+          test,
           interval: hc.interval ? str(hc.interval) : undefined,
           timeout: hc.timeout ? str(hc.timeout) : undefined,
           retries: typeof hc.retries === 'number' ? hc.retries : undefined,
@@ -771,7 +834,12 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
       }));
     } else if (isObj(rawDef.depends_on)) {
       for (const [depName, depCfg] of Object.entries(rawDef.depends_on)) {
-        const cond = isObj(depCfg) && depCfg.condition ? str(depCfg.condition) : 'service_started';
+        let cond = isObj(depCfg) && depCfg.condition ? str(depCfg.condition) : 'service_started';
+        if (isObj(depCfg)) notImported(`Service "${name}" depends_on ${depName}`, depCfg, ['condition']);
+        if (!DEPENDENCY_CONDITIONS.includes(cond)) {
+          warnings.push(`Service "${name}" depends_on ${depName}: condition "${cond}" isn't valid; service_started was used.`);
+          cond = 'service_started';
+        }
         svc.dependsOn.push({
           service: depName,
           condition: cond as ServiceDependency['condition'],
@@ -782,16 +850,17 @@ export async function importComposeYaml(yamlText: string): Promise<{ state: Comp
     services.push(svc);
   }
 
-  // Top-level named volumes
+  // Top-level named volumes and networks; their settings (driver, external, …) aren't kept.
   const namedVolumes: string[] = [];
   if (isObj(parsed.volumes)) {
     namedVolumes.push(...Object.keys(parsed.volumes));
+    for (const [vol, cfg] of Object.entries(parsed.volumes)) if (isObj(cfg)) notImported(`Volume ${vol}`, cfg, []);
   }
 
-  // Top-level networks
   const networks: string[] = [];
   if (isObj(parsed.networks)) {
     networks.push(...Object.keys(parsed.networks));
+    for (const [net, cfg] of Object.entries(parsed.networks)) if (isObj(cfg)) notImported(`Network ${net}`, cfg, []);
   }
 
   return {

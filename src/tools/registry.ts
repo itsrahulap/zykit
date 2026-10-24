@@ -125,6 +125,10 @@ import webhookPayloadBuilder from './webhook-payload-builder';
 import gitPlayground from './git-playground';
 import mockApiGenerator from './mock-api-generator';
 import sqlExplainVisualizer from './sql-explain-visualizer';
+import openapiDesigner from './openapi-designer';
+import openapiDependencyMapper from './openapi-dependency-mapper';
+import sqlSchemaVisualizer from './sql-schema-visualizer';
+import architectureDiagramBuilder from './architecture-diagram-builder';
 import type { ToolDefinition } from './types';
 
 export const TOOLS: ToolDefinition[] = [
@@ -250,6 +254,10 @@ export const TOOLS: ToolDefinition[] = [
   gitPlayground,
   mockApiGenerator,
   sqlExplainVisualizer,
+  openapiDesigner,
+  openapiDependencyMapper,
+  sqlSchemaVisualizer,
+  architectureDiagramBuilder,
 ];
 
 export const toolPath = (tool: Pick<ToolDefinition, 'id'>) => `/tools/${tool.id}`;

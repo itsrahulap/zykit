@@ -2,13 +2,14 @@
 // Allows adding, configuring, and connecting services, applying common architecture templates,
 // inspecting port/volume/dependency summaries and conflicts, and exporting live YAML and .env.example.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import {
   analyzeCompose,
   createId,
   emptyService,
   generateEnvExample,
   isNamedVolume,
+  renameService,
   serializeBuilderState,
   TEMPLATES,
   type ComposeBuilderState,
@@ -17,6 +18,7 @@ import {
 } from '../features/service-builder';
 import { Button, Icon } from '../../../shared/ui/ui';
 import { CopyButton } from '../../../shared/ui/tool';
+import { Select } from '../../../shared/ui/Select';
 import { downloadText } from '../../../shared/utils/dom.utils';
 
 export interface ServiceBuilderProps {
@@ -60,9 +62,11 @@ export function ServiceBuilder({ state, onChange, onSendToConverter }: ServiceBu
   };
 
   const handleUpdateService = (id: string, patch: Partial<ServiceDef>) => {
+    // A rename also repoints other services' depends_on, so it goes through renameService.
+    const base = patch.name === undefined ? state : renameService(state, id, patch.name);
     onChange({
-      ...state,
-      services: state.services.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+      ...base,
+      services: base.services.map((s) => (s.id === id ? { ...s, ...patch } : s)),
     });
   };
 
@@ -132,7 +136,7 @@ export function ServiceBuilder({ state, onChange, onSendToConverter }: ServiceBu
                   key={key}
                   type="button"
                   onClick={() => handleApplyTemplate(key)}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-colors ${
+                  className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-colors pointer-coarse:min-h-11 ${
                     isSelected
                       ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                       : 'border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
@@ -190,7 +194,8 @@ export function ServiceBuilder({ state, onChange, onSendToConverter }: ServiceBu
           <button
             type="button"
             onClick={() => setExpandedSummary(!expandedSummary)}
-            className="text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            aria-expanded={expandedSummary}
+            className="text-xs font-medium text-slate-600 hover:text-slate-900 pointer-coarse:min-h-11 dark:text-slate-400 dark:hover:text-slate-100"
           >
             {expandedSummary ? 'Hide details ↑' : 'Show port & volume tables ↓'}
           </button>
@@ -219,7 +224,7 @@ export function ServiceBuilder({ state, onChange, onSendToConverter }: ServiceBu
                       {analysis.ports.map((p, i) => (
                         <tr key={i}>
                           <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-slate-100">{p.service}</td>
-                          <td className="px-3 py-1.5 font-mono text-slate-700 dark:text-slate-300">{p.hostPort}</td>
+                          <td className="px-3 py-1.5 font-mono text-slate-700 dark:text-slate-300">{p.hostPort || 'random'}</td>
                           <td className="px-3 py-1.5 font-mono text-slate-700 dark:text-slate-300">{p.containerPort}</td>
                         </tr>
                       ))}
