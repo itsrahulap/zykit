@@ -120,3 +120,19 @@ test('tool pages suggest related tools and Learn lessons', async ({ page }) => {
   await related.getByRole('link', { name: /JSON to SQL/ }).click();
   await expect(page).toHaveURL(/\/tools\/json-to-sql$/);
 });
+
+test('search shows ranked best matches and Enter opens the top one', async ({ page }) => {
+  await page.goto('/');
+  const search = page.getByRole('searchbox', { name: 'Search tools' });
+  await search.fill('jwt');
+  const best = page.getByRole('region', { name: 'Best matches' });
+  await expect(best).toBeVisible();
+  // Results are one ranked list, not split by category.
+  await expect(page.getByRole('heading', { level: 2, name: /^Security/ })).toHaveCount(0);
+  const first = best.getByRole('link').first();
+  await expect(first).toContainText(/JWT/);
+  await expect(page.getByText(/press Enter to open/)).toBeVisible();
+  const href = await first.getAttribute('href');
+  await search.press('Enter');
+  await expect(page).toHaveURL(new RegExp(`${href}$`));
+});
