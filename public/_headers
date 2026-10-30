@@ -2,10 +2,10 @@
 # /sandbox/* is the lesson-code sandbox (loaded in <iframe sandbox>): it needs its own CSP
 # ('unsafe-eval', framable by this site). "! Header" detaches the value /* set (Cloudflare Pages);
 # otherwise both policies would apply and the frame would be blocked.
-# Pages may be framed only by the owner's portfolio (rahulap.vercel.app, plus localhost on any port for its dev server),
+# Pages may be framed only by the owner's portfolio (rahulap.vercel.app, its v5-story preview, plus localhost on any port for its dev server),
 # which shows the blog live on a 3D desk. X-Frame-Options can't allow-list a site, so frame-ancestors alone does it.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://rahulap.vercel.app http://localhost:* http://127.0.0.1:*; object-src 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors https://rahulap.vercel.app https://folio-git-v5-story-rahulapjs-projects.vercel.app http://localhost:* http://127.0.0.1:*; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

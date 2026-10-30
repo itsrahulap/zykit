@@ -6,7 +6,7 @@ import { seoPlugin } from './scripts/seo-plugin.ts'
 
 // Same policies as public/_headers and vercel.json; applied to `vite preview` so e2e tests run under them.
 // Only the owner's portfolio may frame pages (it shows the blog live on a 3D desk); localhost (any port) is its dev server.
-const FRAME_ANCESTORS = 'https://rahulap.vercel.app http://localhost:* http://127.0.0.1:*'
+const FRAME_ANCESTORS = 'https://rahulap.vercel.app https://folio-git-v5-story-rahulapjs-projects.vercel.app http://localhost:* http://127.0.0.1:*'
 const CSP =
   "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; " +
   "connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; " +
