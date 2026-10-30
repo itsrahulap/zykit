@@ -5,10 +5,12 @@ import { defineConfig, type Plugin } from 'vite'
 import { seoPlugin } from './scripts/seo-plugin.ts'
 
 // Same policies as public/_headers and vercel.json; applied to `vite preview` so e2e tests run under them.
+// Only the owner's portfolio may frame pages (it shows the blog live on a 3D desk); localhost is its dev server.
+const FRAME_ANCESTORS = 'https://rahulap.vercel.app http://localhost:5173'
 const CSP =
   "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; " +
   "connect-src 'self'; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; " +
-  "frame-ancestors 'none'; object-src 'none'"
+  `frame-ancestors ${FRAME_ANCESTORS}; object-src 'none'`
 // The SQLite worker of Query CSV with SQL (assets/sql-worker-*.js) compiles WebAssembly. A dedicated
 // worker takes its CSP from its own script response, so only that script gets 'wasm-unsafe-eval'.
 const SQL_WORKER_CSP = CSP.replace("script-src 'self'", "script-src 'self' 'wasm-unsafe-eval'")
@@ -27,7 +29,8 @@ function previewSecurityHeaders(): Plugin {
         const sandbox = url.startsWith('/sandbox/')
         const sqlWorker = url.startsWith('/assets/sql-worker-')
         res.setHeader('Content-Security-Policy', sandbox ? SANDBOX_CSP : sqlWorker ? SQL_WORKER_CSP : CSP)
-        res.setHeader('X-Frame-Options', sandbox ? 'SAMEORIGIN' : 'DENY')
+        // X-Frame-Options can't allow-list the portfolio, so only the sandbox keeps it; frame-ancestors covers the rest.
+        if (sandbox) res.setHeader('X-Frame-Options', 'SAMEORIGIN')
         next()
       })
     },
