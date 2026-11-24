@@ -12,7 +12,8 @@ export type SubjectId =
   | "databases"
   | "software-architecture"
   | "aws"
-  | "ai-engineering";
+  | "ai-engineering"
+  | "programming-fundamentals";
 
 export type TopicLevel = "beginner" | "intermediate" | "advanced";
 

@@ -9,8 +9,10 @@ import { systemDesignSubject } from "./system-design";
 import { softwareArchitectureSubject } from "./software-architecture";
 import { awsSubject } from "./aws";
 import { aiEngineeringSubject } from "./ai-engineering";
+import { programmingFundamentalsSubject } from "./programming-fundamentals";
 
 export const subjects: Subject[] = [
+  programmingFundamentalsSubject,
   javascriptSubject,
   typescriptSubject,
   dsaSubject,
@@ -34,6 +36,7 @@ const subjectsById: Record<SubjectId, Subject> = {
   "software-architecture": softwareArchitectureSubject,
   aws: awsSubject,
   "ai-engineering": aiEngineeringSubject,
+  "programming-fundamentals": programmingFundamentalsSubject,
 };
 
 export function getSubject(id: string): Subject | undefined {
