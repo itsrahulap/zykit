@@ -1244,7 +1244,7 @@ load time.
 
 **JITs.** V8 (JavaScript), HotSpot (Java) and others start by interpreting
 bytecode while profiling. Hot functions are compiled with optimizations based on
-observed types (\"this argument is always an integer\"). If an assumption later
+observed types ("this argument is always an integer"). If an assumption later
 breaks, they **deoptimize** back to the interpreter.
     `.trim(),
     diagram: `
@@ -1495,5 +1495,563 @@ signed arithmetic use the same circuits as unsigned arithmetic.
     relatedTopics: ["binary-and-number-systems", "data-types-and-values", "floating-point-numbers", "big-o"],
     keywords: ["bitwise", "and", "or", "xor", "not", "shift", "mask", "flags", "two's complement", "power of two", "popcount", "bit manipulation", "bitset"],
   },
-  // @@NEXT@@
+  {
+    id: "design-patterns-overview",
+    title: "Design Patterns Overview",
+    level: "advanced",
+    description: "Named, reusable solutions to recurring design problems, and when they help or just add layers.",
+    explanation: `
+A **design pattern** is a proven shape for solving a problem that keeps coming
+up in software design. It isn't a library you import; it's a vocabulary. Saying
+"wrap it in an Adapter" or "use a Strategy here" communicates a whole design in
+two words.
+
+The classic catalogue (from the 1994 "Gang of Four" book) groups patterns into
+three families:
+
+- **Creational**: how objects get created.
+  **Factory** (choose which class to create), **Builder** (assemble a complex
+  object step by step), **Singleton** (exactly one instance).
+- **Structural**: how objects are composed.
+  **Adapter** (make one interface look like another), **Decorator** (wrap an
+  object to add behaviour), **Facade** (a simple front for a complex subsystem).
+- **Behavioral**: how objects communicate and divide responsibilities.
+  **Strategy** (swap an algorithm), **Observer** (notify subscribers of changes),
+  **Command** (turn a request into an object you can queue, log or undo).
+
+Patterns are tools, not goals. Many were invented to work around limits of
+1990s C++ and Java. In languages with first-class functions, a Strategy is often
+just a function argument, and a Command is just a closure. A pattern applied
+where the problem doesn't exist only adds indirection.
+    `.trim(),
+    analogy:
+      "Patterns are like architectural terms such as 'open-plan kitchen' or 'load-bearing wall'. Builders don't reinvent them for every house, and saying the name conveys a lot. But putting a load-bearing wall where nothing needs holding up just makes the house harder to change.",
+    examples: [
+      {
+        title: "Strategy: pass the varying behaviour in (TypeScript)",
+        language: "typescript",
+        code: `type ShippingStrategy = (weightKg: number) => number;
+
+const standardShipping: ShippingStrategy = (weightKg) => 5 + weightKg * 1.2;
+const expressShipping: ShippingStrategy = (weightKg) => 15 + weightKg * 2.5;
+
+function checkoutTotal(subtotal: number, weightKg: number, shipping: ShippingStrategy) {
+  return subtotal + shipping(weightKg);
+}
+
+checkoutTotal(40, 2, expressShipping); // 60`,
+        walkthrough: [
+          { code: "type ShippingStrategy = (weightKg: number) => number;", explanation: "Defines the interface every strategy must follow. Here it's just a function type." },
+          { code: "const standardShipping: ShippingStrategy = ...", explanation: "Each concrete strategy is one interchangeable implementation." },
+          { code: "function checkoutTotal(..., shipping: ShippingStrategy)", explanation: "The caller decides which strategy to use; checkoutTotal doesn't need an if/else for every shipping type." },
+          { code: "checkoutTotal(40, 2, expressShipping);", explanation: "Adding a new shipping option means writing a new function, not editing checkoutTotal." },
+        ],
+      },
+      {
+        title: "Adapter and Decorator (Python)",
+        language: "python",
+        code: `class LegacyMailer:                       # third-party API we can't change
+    def send_mail(self, address, subject, body): ...
+
+class EmailAdapter:                       # Adapter: fits our Notifier interface
+    def __init__(self, mailer):
+        self.mailer = mailer
+    def notify(self, user, message):
+        self.mailer.send_mail(user.email, "Notification", message)
+
+class LoggingNotifier:                    # Decorator: same interface, extra behaviour
+    def __init__(self, inner):
+        self.inner = inner
+    def notify(self, user, message):
+        print("notifying", user.id)
+        self.inner.notify(user, message)
+
+notifier = LoggingNotifier(EmailAdapter(LegacyMailer()))`,
+        explanation:
+          "The Adapter changes the interface; the Decorator keeps the interface and adds behaviour. Both rely on composition, so they stack.",
+      },
+      {
+        title: "Observer (JavaScript)",
+        language: "javascript",
+        code: `class Store {
+  #listeners = new Set();
+  #state = { count: 0 };
+
+  subscribe(listener) {
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);   // unsubscribe function
+  }
+
+  increment() {
+    this.#state = { count: this.#state.count + 1 };
+    this.#listeners.forEach((listener) => listener(this.#state));
+  }
+}
+
+const store = new Store();
+const unsubscribe = store.subscribe((state) => console.log("count:", state.count));
+store.increment();   // count: 1
+unsubscribe();       // forgetting this is a classic memory leak`,
+      },
+    ],
+    howItWorks: `
+Most patterns share two moves: **program to an interface** (depend on what an
+object does, not its concrete class) and **prefer composition** (combine small
+objects rather than building deep inheritance trees).
+
+**Creational**
+- **Factory**: a function or method decides which concrete type to construct
+  (\`createParser("csv")\`), so callers don't depend on concrete classes.
+- **Builder**: separates constructing a complex object from its representation;
+  useful when there are many optional parameters (\`new RequestBuilder().url(u).timeout(5).build()\`).
+  Languages with named/default arguments need it less.
+- **Singleton**: guarantees one instance with global access. It's often an
+  **anti-pattern**: it's global mutable state in disguise, hides dependencies,
+  makes tests share state, and is awkward with concurrency. Prefer creating one
+  instance at startup and passing it in (dependency injection).
+
+**Structural**
+- **Adapter**: translates one interface to another expected by the client.
+- **Decorator**: wraps an object with the same interface to add behaviour
+  (logging, caching, retries); wrappers can stack.
+- **Facade**: one simple interface over a complicated subsystem.
+
+**Behavioral**
+- **Strategy**: encapsulates interchangeable algorithms behind one interface.
+- **Observer**: subjects keep a list of subscribers and notify them of changes
+  (DOM events, reactive stores, pub/sub).
+- **Command**: wraps a request as an object with an \`execute\` (and often
+  \`undo\`), enabling queues, retries, logging, and undo/redo.
+
+**When patterns hurt.** Each pattern adds a layer. Applied speculatively ("we
+might need another implementation someday") they produce \`AbstractFactoryFactory\`
+code that is harder to read and change than the plain version. Introduce a
+pattern when duplication or rigidity is actually hurting, not before.
+    `.trim(),
+    diagram: `
+ Creational          Structural             Behavioral
+ ----------          ----------             ----------
+ Factory             Adapter                Strategy
+ Builder             Decorator              Observer
+ Singleton (!)       Facade                 Command
+
+ Decorator stacking:
+   client --> LoggingNotifier --> RetryNotifier --> EmailAdapter --> LegacyMailer
+              (same interface)     (same interface)  (adapts interface)
+
+ Observer:
+   Subject --notify--> [listener 1]
+           --notify--> [listener 2]
+           --notify--> [listener 3]
+    `.trim(),
+    whyItExists: `
+Developers kept solving the same design problems from scratch and giving the
+solutions different names. Cataloguing them gave teams a shared vocabulary and a
+set of known trade-offs. Patterns also capture hard-won principles, like
+depending on abstractions and favouring composition, in concrete, teachable form.
+    `.trim(),
+    whenToUse: `
+- **Strategy** when you have growing \`if/else\` or \`switch\` chains choosing
+  between algorithms.
+- **Adapter** when integrating a third-party or legacy API whose interface
+  doesn't match yours.
+- **Decorator** for cross-cutting concerns (logging, caching, retries, metrics)
+  that should wrap many implementations.
+- **Facade** to give the rest of the codebase one clean entry point into a messy
+  subsystem.
+- **Observer** for event systems and UI state updates.
+- **Command** for undo/redo, job queues, and audit logs of actions.
+- **Factory/Builder** when construction logic is complex or depends on config.
+    `.trim(),
+    whenNotToUse: `
+- When there's only one implementation and no real sign of a second; a plain
+  function or class is clearer.
+- When the language already provides the feature: first-class functions replace
+  most Strategy and Command classes; modules already act as single instances.
+- Singleton for anything with mutable state or that tests need to replace; pass
+  dependencies explicitly instead.
+- Observer chains that get long and implicit: debugging "who changed this and
+  why" through several layers of notifications becomes very hard.
+    `.trim(),
+    commonMistakes: [
+      "Applying patterns because they're known, not because the problem needs them, producing layers of interfaces with one implementation each.",
+      "Using a Singleton as a convenient global, which hides dependencies and makes tests leak state into each other.",
+      "Confusing Adapter (changes the interface) with Decorator (keeps the interface, adds behaviour) and Facade (simplifies a whole subsystem).",
+      "Forgetting to unsubscribe observers, leaking memory and running handlers for components that no longer exist.",
+      "Writing Strategy or Command class hierarchies in a language where passing a function would do the same job in a few lines.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Refactor a function with a `switch` over discount types (none, percentage, fixed, buy-one-get-one) into the Strategy pattern using a map from type name to function." },
+      { difficulty: "Medium", prompt: "Write an HTTP client interface with one real implementation, then add a caching decorator and a retry decorator. Show they can be stacked in either order and explain how the order changes behaviour." },
+      { difficulty: "Hard", prompt: "Build a small text editor model with insert and delete operations implemented as Commands that support undo and redo. Then replace a Singleton-based logger in it with dependency injection and write a test that uses a fake logger." },
+    ],
+    interviewQuestions: [
+      { question: "What is a design pattern?", answer: "A named, reusable solution to a recurring design problem, described in terms of roles and relationships rather than specific code. Patterns give teams a shared vocabulary and known trade-offs; they're templates, not libraries." },
+      { question: "What are the three categories of GoF patterns?", answer: "Creational (how objects are created: Factory, Builder, Singleton, Prototype), Structural (how objects are composed: Adapter, Decorator, Facade, Proxy, Composite), and Behavioral (how objects interact: Strategy, Observer, Command, Iterator, State)." },
+      { question: "Why is Singleton often called an anti-pattern?", answer: "It's global state with a nicer name. It hides dependencies, couples code to a concrete class, makes tests interfere through shared state, complicates concurrency, and makes later 'we need two of these' changes painful. Create one instance at the composition root and inject it instead." },
+      { question: "What is the difference between Adapter, Decorator and Facade?", answer: "Adapter converts one interface into another a client expects. Decorator wraps an object with the same interface to add behaviour. Facade provides a new, simpler interface over a whole subsystem of several objects." },
+      { question: "How does Strategy relate to first-class functions?", answer: "Strategy encapsulates interchangeable algorithms behind one interface. In languages with first-class functions, the interface is just a function type, and each strategy is a function, so the pattern often reduces to passing a function argument." },
+      { question: "When would you use the Builder pattern?", answer: "When an object has many optional parameters or must be assembled in steps with validation at the end, such as HTTP requests, SQL queries, or complex config. It avoids telescoping constructors. Languages with named and default parameters need it less." },
+      { question: "What problem does the Observer pattern solve, and what are its pitfalls?", answer: "It lets a subject notify many dependents of changes without knowing their concrete types, decoupling producers from consumers. Pitfalls: memory leaks from forgotten subscriptions, unpredictable notification order, cascading updates, and hard-to-trace control flow." },
+      { question: "What is the Command pattern good for?", answer: "Representing an action as an object with everything needed to execute it later. That enables queuing, scheduling, retrying, logging, and undo/redo (by pairing execute with undo). Job queues and editor history are classic uses." },
+      { question: "How do you decide whether to introduce a pattern?", answer: "Wait for the pain: duplicated branching, code that is hard to extend or test, or a real second implementation. Then pick the simplest pattern that removes it. If the pattern adds more indirection than it removes complexity, keep the plain code." },
+      { question: "Factory Method vs Abstract Factory?", answer: "Factory Method defines a method that subclasses (or a function) use to decide which single product to create. Abstract Factory is an object providing methods to create a family of related products that must be used together, such as all widgets for one UI theme." },
+    ],
+    prerequisites: ["object-oriented-programming", "inheritance-vs-composition", "functions-and-parameters"],
+    relatedTopics: ["object-oriented-programming", "inheritance-vs-composition", "solid-principles", "coupling-and-cohesion", "programming-paradigms", "clean-code-and-refactoring"],
+    keywords: ["design patterns", "gang of four", "gof", "factory", "builder", "singleton", "adapter", "decorator", "facade", "strategy", "observer", "command", "anti-pattern", "dependency injection"],
+  },
+  {
+    id: "programming-paradigms",
+    title: "Programming Paradigms",
+    level: "advanced",
+    description: "The major styles of organizing programs, what each is good at, and how modern languages mix them.",
+    explanation: `
+A **paradigm** is a style of thinking about and structuring a program. It
+shapes what you consider the basic building blocks and how they fit together.
+
+- **Imperative**: tell the computer *how*, step by step, by changing state.
+  Loops, assignments, mutable variables.
+- **Procedural**: imperative code organized into procedures (functions) that
+  operate on data. C, Pascal, much of Go.
+- **Object-oriented**: bundle data with the methods that operate on it into
+  objects; use encapsulation, polymorphism and (sometimes) inheritance. Java,
+  C#, Smalltalk.
+- **Functional**: build programs from pure functions and immutable data; avoid
+  side effects; treat functions as values. Haskell, Clojure, Elm, F#.
+- **Declarative**: describe *what* you want, not how to compute it. SQL, HTML,
+  CSS, regular expressions, Terraform. Functional and logic programming are
+  declarative styles.
+- **Logic**: state facts and rules, then ask questions; the engine searches for
+  answers. Prolog, Datalog.
+- **Reactive**: model programs as streams of values over time and declare how
+  outputs depend on inputs; changes propagate automatically. RxJS, spreadsheets,
+  signals in UI frameworks.
+
+Most popular languages are **multi-paradigm**. Python, JavaScript, Kotlin,
+Scala, Rust and C# all let you mix procedural code, objects and functional
+techniques. The useful skill is not picking a camp but recognizing which style
+fits each part of a problem.
+    `.trim(),
+    analogy:
+      "Getting someone to your house: imperative is turn-by-turn directions. Object-oriented is giving them a car that knows how to drive itself to addresses. Functional is a set of transformations on a map that output a route. Declarative is just giving the address and letting the GPS work it out.",
+    examples: [
+      {
+        title: "Same task, three styles: total of squares of even numbers (Python)",
+        language: "python",
+        code: `numbers = [1, 2, 3, 4, 5, 6]
+
+# Imperative / procedural: explicit steps and a mutable accumulator
+total = 0
+for number in numbers:
+    if number % 2 == 0:
+        total += number * number
+
+# Functional: compose transformations, no mutation
+total = sum(map(lambda n: n * n, filter(lambda n: n % 2 == 0, numbers)))
+
+# Declarative-ish comprehension: describe the result
+total = sum(n * n for n in numbers if n % 2 == 0)   # 56 in every case`,
+        walkthrough: [
+          { code: "total = 0 / for number in numbers:", explanation: "Imperative: you manage the loop and update state yourself." },
+          { code: "filter(...) then map(...) then sum(...)", explanation: "Functional: a pipeline of pure transformations; nothing is mutated." },
+          { code: "sum(n * n for n in numbers if n % 2 == 0)", explanation: "Reads close to the mathematical description of the result; Python decides how to iterate." },
+        ],
+      },
+      {
+        title: "Declarative and logic: describe the result, not the steps",
+        language: "sql",
+        code: `-- SQL: what rows you want; the query planner decides indexes, join order, etc.
+SELECT customer_id, SUM(amount) AS total_spent
+FROM orders
+WHERE created_at >= DATE '2026-01-01'
+GROUP BY customer_id
+HAVING SUM(amount) > 1000;
+
+-- Prolog (logic): facts, a rule, and a question
+-- parent(alice, bob).  parent(bob, carol).
+-- grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
+-- ?- grandparent(alice, Who).     % Who = carol`,
+        explanation:
+          "Neither snippet says how to loop or search. The database and the Prolog engine choose the execution strategy.",
+      },
+    ],
+    howItWorks: `
+Paradigms differ mainly in how they handle **state** and **control flow**:
+
+- **Imperative/procedural:** structured as statements and procedures; state lives in mutable variables; control flow is an explicit sequence and loops.
+- **Object-oriented:** structured as objects with methods; state is encapsulated in objects; control flow is method calls and polymorphic dispatch.
+- **Functional:** structured as pure functions; state is immutable values; control flow is composition, recursion and higher-order functions.
+- **Declarative:** structured as descriptions or queries; state is hidden from you; the engine decides the control flow.
+- **Logic:** structured as facts and rules; state is a knowledge base; control flow is search and unification.
+- **Reactive:** structured as streams or signals; state is values over time; control flow is propagation of changes.
+
+**Trade-offs.**
+- Imperative code maps closely to the hardware and is easy to follow step by
+  step, but shared mutable state grows hard to reason about.
+- OOP is good at modelling entities with identity and lifecycle and at hiding
+  implementation details, but deep inheritance hierarchies become rigid.
+- Functional code is easy to test and parallelize because pure functions have no
+  hidden inputs or outputs, but real programs still need effects (I/O, time),
+  which have to be pushed to the edges.
+- Declarative code is concise and lets an engine optimize, but you give up
+  control and must understand the engine when performance matters.
+
+**A common mix** is "functional core, imperative shell": pure functions for
+business logic, with a thin outer layer doing I/O and mutation.
+    `.trim(),
+    diagram: `
+            Imperative                     Declarative
+     (how: steps & state)           (what: describe the result)
+        /            \\                 /         |          \\
+  Procedural   Object-oriented    Functional   Logic   Reactive/dataflow
+    (C)       (Java, C#, Smalltalk) (Haskell)  (Prolog)  (RxJS, spreadsheets)
+
+  Multi-paradigm: Python, JavaScript/TypeScript, Kotlin, Scala, Rust, C#, Swift
+    `.trim(),
+    whyItExists: `
+Different problems have different natural shapes. Simulations and UIs have
+long-lived entities (OOP). Data transformations are pipelines (functional).
+Querying data is best described, not programmed (declarative). Rules engines and
+type checkers are search problems (logic). Each paradigm grew from a field where
+it made a class of problems much simpler, and languages borrowed from each other
+once those ideas proved themselves.
+    `.trim(),
+    whenToUse: `
+- **Procedural** for scripts, straightforward algorithms, and performance-critical
+  loops.
+- **OOP** for domains with stateful entities, plug-in architectures, and
+  long-lived systems where encapsulation protects invariants.
+- **Functional** for data transformation, concurrency (immutable data is safe to
+  share), and business rules you want to unit test easily.
+- **Declarative** for querying (SQL), layout and styling (HTML/CSS),
+  infrastructure (Terraform), and configuration.
+- **Reactive** for UIs and event streams where many outputs depend on changing
+  inputs.
+    `.trim(),
+    whenNotToUse: `
+- Don't force one paradigm everywhere: an "everything is a class" design for a
+  data pipeline, or pure functional gymnastics for a simple stateful script.
+- Avoid heavy reactive stream code for simple one-off async calls; a plain
+  async function is easier to read.
+- Avoid deep recursion as a loop replacement in languages without tail-call
+  optimization (Python, Java, most JavaScript engines); use iteration.
+- Don't fight a team's or language's idioms; idiomatic code in a mixed style
+  usually beats "pure" code in a style the language barely supports.
+    `.trim(),
+    commonMistakes: [
+      "Treating paradigms as rival religions instead of tools; most real codebases benefit from a mix.",
+      "Equating OOP with inheritance. Encapsulation and polymorphism matter more; composition often beats inheritance.",
+      "Calling code 'functional' because it uses `map` and `filter` while the callbacks still mutate shared state.",
+      "Assuming declarative means 'no need to understand execution'. Slow SQL queries are fixed by understanding the planner and indexes.",
+      "Mixing paradigms inconsistently inside one module so readers can't predict where state lives.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Given a list of orders, compute the total revenue per customer three ways: an imperative loop, a functional pipeline, and an SQL query over an equivalent table." },
+      { difficulty: "Medium", prompt: "Model a bank account first in OOP style (class with deposit/withdraw that mutates balance) and then in functional style (pure functions returning new account values). Compare how you'd test each and how each behaves when two threads use it." },
+      { difficulty: "Hard", prompt: "Take a small program that mixes I/O and logic (e.g. reading a CSV, computing statistics, writing a report) and restructure it as a 'functional core, imperative shell'. Write unit tests for the core that need no files or mocks." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between imperative and declarative programming?", answer: "Imperative code specifies how to compute a result through a sequence of state-changing steps. Declarative code specifies what result you want and leaves the how to an engine or runtime. Loops are imperative; SQL queries and CSS rules are declarative." },
+      { question: "What are the core ideas of object-oriented programming?", answer: "Encapsulation (bundling data with behaviour and hiding internals), abstraction (exposing a simple interface), polymorphism (one interface, many implementations), and inheritance as one, often overused, way to share behaviour. Composition is frequently preferred to inheritance." },
+      { question: "What makes a programming style functional?", answer: "Pure functions without side effects, immutable data, functions as first-class values (passed and returned), composition of small functions, and expressions rather than statements. The payoff is referential transparency: a call can be replaced by its result." },
+      { question: "What is a multi-paradigm language? Give examples.", answer: "A language that supports several paradigms well, letting you choose per problem. Python, JavaScript/TypeScript, Kotlin, Scala, C#, Swift and Rust all mix procedural, object-oriented and functional features." },
+      { question: "What is logic programming?", answer: "Programs are sets of facts and rules; you ask queries and the engine finds bindings that satisfy them through unification and backtracking search. Prolog and Datalog are examples; it's used in rule engines, type inference, program analysis, and some query languages." },
+      { question: "What is reactive programming?", answer: "Programming with data streams and automatic propagation of change: you declare how values depend on others, and when an input changes, dependents update. Spreadsheets, RxJS observables, and signals in UI frameworks are examples." },
+      { question: "Why is functional programming considered good for concurrency?", answer: "Immutable data can be shared between threads without locks because nobody can change it, and pure functions have no hidden shared state, so they can run in parallel safely. Effects are isolated, so the remaining synchronization points are few and explicit." },
+      { question: "What does 'functional core, imperative shell' mean?", answer: "Put decisions and business logic in pure functions that take values and return values, and keep I/O, mutation and time in a thin outer layer that calls them. The core is trivially unit-testable; the shell is small enough to cover with a few integration tests." },
+      { question: "Is SQL a programming language, and which paradigm is it?", answer: "Yes. Standard SQL with recursive CTEs is Turing complete. It's primarily declarative: you describe the desired result set, and the query planner chooses access paths, join algorithms and order." },
+      { question: "How do you choose a paradigm for a new component?", answer: "Look at the problem's shape: stateful entities with invariants suit objects; transformations and rules suit pure functions; queries and configuration suit declarative tools; event-driven UIs suit reactive. Then weigh language idioms and team familiarity, and keep the choice consistent within a module." },
+    ],
+    prerequisites: ["object-oriented-programming", "functional-programming", "mutability-and-immutability"],
+    relatedTopics: ["object-oriented-programming", "functional-programming", "design-patterns-overview", "mutability-and-immutability", "async-and-event-driven-programming"],
+    keywords: ["paradigm", "imperative", "procedural", "object-oriented", "oop", "functional", "declarative", "logic programming", "prolog", "reactive", "multi-paradigm", "sql"],
+  },
+  {
+    id: "clean-code-and-refactoring",
+    title: "Clean Code and Refactoring",
+    level: "advanced",
+    description: "Writing code other people can read and change safely, and improving existing code without breaking it.",
+    explanation: `
+Code is read far more often than it's written. **Clean code** is code a
+teammate (or you, six months later) can understand quickly and change without
+fear. It's less about rules and more about lowering the cost of the next change.
+
+Key habits:
+
+- **Names that explain intent.** \`elapsedSeconds\` beats \`t\`;
+  \`isEligibleForRefund\` beats \`check\`.
+- **Small, focused functions** that do one thing at one level of detail.
+- **Single responsibility**: a module or class should have one reason to change.
+- **DRY** ("Don't Repeat Yourself") for *knowledge*, not for every similar-looking
+  line. Sometimes a little duplication (**WET**, "Write Everything Twice") is
+  better than the wrong abstraction.
+- **Readability over cleverness.** A clear loop beats a one-liner nobody can
+  debug.
+
+**Refactoring** is changing the structure of code without changing what it
+does. It's done in small steps (rename, extract function, inline, move), each
+verified by tests, so the program works after every step. **Code smells** are
+surface signs that a refactoring may be due: long functions, duplicated logic,
+long parameter lists, deep nesting, and classes that know too much about each
+other.
+    `.trim(),
+    analogy:
+      "Clean code is a well-organised kitchen: labelled jars, tools where you expect them, one drawer per purpose. Anyone can cook there. Refactoring is reorganising that kitchen while the restaurant stays open: you move one shelf at a time and check nothing is missing before moving the next.",
+    examples: [
+      {
+        title: "Before and after: names, extraction, guard clauses (JavaScript)",
+        language: "javascript",
+        code: `// Before
+function proc(u, o) {
+  let t = 0;
+  if (u) {
+    if (u.active) {
+      for (const i of o) {
+        if (i.s !== "cancelled") t += i.p * i.q;
+      }
+      if (u.vip) t = t * 0.9;
+    }
+  }
+  return t;
+}
+
+// After
+const VIP_DISCOUNT = 0.9;
+
+function orderTotal(user, orders) {
+  if (!user || !user.active) return 0;
+  const subtotal = sumOfActiveOrders(orders);
+  return user.vip ? subtotal * VIP_DISCOUNT : subtotal;
+}
+
+function sumOfActiveOrders(orders) {
+  return orders
+    .filter((order) => order.status !== "cancelled")
+    .reduce((sum, order) => sum + order.price * order.quantity, 0);
+}`,
+        walkthrough: [
+          { code: "function proc(u, o)", explanation: "Short names force the reader to reverse-engineer meaning from usage." },
+          { code: "if (!user || !user.active) return 0;", explanation: "A guard clause handles the edge case first and removes two levels of nesting." },
+          { code: "const subtotal = sumOfActiveOrders(orders);", explanation: "Extracting a well-named function lets the top-level code read like a summary." },
+          { code: "const VIP_DISCOUNT = 0.9;", explanation: "A named constant replaces a magic number and gives one place to change it." },
+        ],
+      },
+      {
+        title: "When DRY goes wrong: the premature shared abstraction (Python)",
+        language: "python",
+        code: `# Two functions looked similar, so they were merged behind flags...
+def format_record(record, for_invoice=False, for_report=False, include_tax=True):
+    ...  # every caller's special case now lives here, tangled together
+
+# ...when the knowledge was actually different and changes for different reasons.
+def format_invoice_line(item): ...
+def format_report_row(row): ...`,
+        explanation:
+          "Duplication of *knowledge* (one business rule in two places) should be removed. Code that merely looks similar but represents different concepts is better left separate. The 'rule of three' says wait for the third occurrence before abstracting.",
+      },
+    ],
+    howItWorks: `
+**Common code smells and their usual refactorings**
+
+- **Long function:** Extract Function, Decompose Conditional
+- **Unclear name:** Rename Variable/Function
+- **Duplicated logic:** Extract Function, then reuse it
+- **Deep nesting:** Guard Clauses, Extract Function
+- **Long parameter list:** Introduce Parameter Object
+- **Magic numbers/strings:** Replace with Named Constant
+- **Feature envy** (a method uses another class's data more than its own): Move Function
+- **Switch on type repeated in many places:** Replace Conditional with Polymorphism or a lookup table
+- **Large class with many responsibilities:** Extract Class
+
+**The safe refactoring loop**
+1. Make sure the behaviour is covered by tests. If it isn't, write
+   **characterization tests** that pin down what the code currently does.
+2. Make one small structural change, ideally with an IDE's automated refactoring.
+3. Run the tests. Green: commit or continue. Red: undo and take a smaller step.
+4. Keep refactoring commits separate from behaviour changes so review is easy
+   ("make the change easy, then make the easy change").
+
+**Single responsibility, concretely.** Ask "who would ask for this to change?"
+If tax rules, PDF layout and email delivery all live in one class, three teams'
+requests collide in it. Splitting along those lines keeps changes local.
+
+**Readability over cleverness.** Prefer explicit over implicit, one idea per
+line, consistent conventions, and comments that explain *why* (a constraint or
+trade-off), not *what* the code already says.
+    `.trim(),
+    diagram: `
+ Safe refactoring loop:
+
+   +--> tests green? --no--> add characterization tests
+   |        |
+   |       yes
+   |        v
+   |   small structural change (rename / extract / move)
+   |        |
+   |        v
+   |   run tests --red--> revert, take a smaller step
+   |        |
+   |      green
+   |        v
+   +--- commit, repeat until the code is easy to change
+
+ Then, separately: make the behaviour change.
+    `.trim(),
+    whyItExists: `
+Most of a program's cost comes after it's first written: fixing bugs, adding
+features, onboarding new people. Messy code makes every one of those slower and
+riskier, and the slowdown compounds (technical debt). Refactoring exists because
+nobody gets the design right the first time; requirements change, and the code
+must be reshaped continuously to stay easy to change.
+    `.trim(),
+    whenToUse: `
+- **Before** adding a feature to code that's hard to change: refactor first,
+  then add the feature.
+- **During code review**, when a name or structure confuses the reviewer;
+  confusion is the signal.
+- **After** getting something working: the "make it work, make it right" step.
+- When you touch a file anyway (the "boy scout rule": leave it a little better
+  than you found it), as long as the change stays small and related.
+    `.trim(),
+    whenNotToUse: `
+- Don't refactor code without tests unless you add characterization tests
+  first or the change is a purely mechanical, tool-assisted rename.
+- Don't mix large refactors with behaviour changes in one commit or PR; it
+  hides bugs and makes review nearly impossible.
+- Don't rewrite stable, rarely touched code just because it's ugly; the value of
+  clean code is in code that changes.
+- Don't extract abstractions after seeing a pattern only once or twice; wait
+  until the shape is clear.
+- Close to a deadline or release freeze, prefer the minimal fix and schedule the
+  cleanup.
+    `.trim(),
+    commonMistakes: [
+      "Over-applying DRY: merging code that only looks alike into one function full of flags, coupling unrelated features.",
+      "Splitting code into so many tiny functions and files that following one behaviour means jumping across ten places.",
+      "Refactoring and changing behaviour in the same step, so when a test fails you can't tell which change caused it.",
+      "Writing comments that restate the code (`i++ // increment i`) instead of explaining why a non-obvious choice was made.",
+      "Optimizing for cleverness (dense one-liners, obscure language features) over clarity for the next reader.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Take a 40+ line function from a project you know and list every code smell you can find. For each, name the refactoring you'd apply." },
+      { difficulty: "Medium", prompt: "Write characterization tests for an untested function with messy logic (for example a price calculator full of nested ifs), then refactor it with guard clauses, extracted functions and named constants, keeping all tests green after each step." },
+      { difficulty: "Hard", prompt: "Find a class in an open-source project with several responsibilities. Plan a sequence of small, independently mergeable refactoring commits that splits it, describing what tests protect each step. Then carry out the first three steps." },
+    ],
+    interviewQuestions: [
+      { question: "What is refactoring?", answer: "Changing the internal structure of code without changing its observable behaviour, in small, verifiable steps, to make it easier to understand and modify. If behaviour changes, it's not a refactoring." },
+      { question: "Why are tests important for refactoring?", answer: "They're the evidence that behaviour hasn't changed. With fast tests you can take small steps and know immediately if one broke something. Without them, refactoring is just editing and hoping." },
+      { question: "What is a code smell? Give examples.", answer: "A surface symptom that often indicates a deeper design problem, not a bug in itself. Examples: long functions, duplicated logic, long parameter lists, deep nesting, magic numbers, feature envy, shotgun surgery (one change touches many files), and god classes." },
+      { question: "Explain DRY vs WET, and when duplication is acceptable.", answer: "DRY means every piece of knowledge has one authoritative representation; it's about rules and decisions, not similar-looking code. Duplication is acceptable when similar code represents different concepts that will change for different reasons; merging them creates coupling. The 'rule of three' suggests abstracting on the third occurrence." },
+      { question: "What is the Single Responsibility Principle?", answer: "A module should have one reason to change, meaning it serves one actor or concern. Mixing concerns (business rules, persistence, formatting) means unrelated changes collide in the same code and break each other." },
+      { question: "What makes a good name?", answer: "It reveals intent and is specific: what the thing is or does and, for booleans, the question it answers (`isExpired`). It uses domain vocabulary, avoids abbreviations and noise words (`data`, `manager`, `info`), and its length scales with scope." },
+      { question: "What are characterization tests?", answer: "Tests written against existing, often legacy, code to record what it currently does, right or wrong, so you can refactor safely. You call the code with representative inputs and assert on the actual outputs." },
+      { question: "How do you refactor a large legacy codebase with no tests?", answer: "Pick the area you need to change, add characterization tests around it (finding or creating seams to isolate dependencies), use automated IDE refactorings for the riskiest mechanical steps, and improve incrementally alongside feature work. Avoid big-bang rewrites; consider the strangler-fig approach for replacing whole subsystems." },
+      { question: "When should you not refactor?", answer: "When code is stable and rarely touched, when there are no tests and adding them isn't feasible right now, close to a release when risk must be minimal, or when a rewrite is genuinely planned. Refactor where change is happening." },
+      { question: "How do you balance clean code against delivery speed?", answer: "Treat cleanliness as a means to faster future changes, not an end. Keep refactors small and tied to the work at hand, separate them into their own commits, take on deliberate technical debt with a note and a plan, and avoid gold-plating code that may be thrown away." },
+    ],
+    prerequisites: ["functions-and-parameters", "testing-fundamentals"],
+    relatedTopics: ["testing-fundamentals", "design-patterns-overview", "solid-principles", "coupling-and-cohesion", "technical-debt", "clean-architecture"],
+    keywords: ["clean code", "refactoring", "code smells", "naming", "dry", "wet", "single responsibility", "readability", "characterization tests", "guard clause", "extract function", "technical debt"],
+  },
 ];

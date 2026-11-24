@@ -1255,7 +1255,7 @@ cost of compaction I/O that can cause latency spikes if it falls behind.
 B-tree (update in place)                LSM-tree (append, then merge)
 
          [ 30 | 60 ]                   write → WAL (append)
-        /     |     \                        → memtable (sorted, in RAM)
+        /     |     \\                        → memtable (sorted, in RAM)
   [10|20] [40|50] [70|80]                         │ full → flush
      leaf pages edited                            ▼
      in place, split when full          L0: [SST][SST][SST]   (may overlap)
@@ -1449,14 +1449,12 @@ Kafka. Side effects outside Kafka still need idempotency.
 
 **Log vs traditional queue.**
 
-| | Log (Kafka) | Queue (RabbitMQ, SQS) |
-|---|---|---|
-| After consume | Kept until retention | Deleted after ack |
-| Ordering | Per partition | Per queue (weakened by redelivery and parallel consumers) |
-| Parallelism | Up to #partitions per group | Add consumers freely |
-| Replay | Yes, seek to any offset | No (once acked, gone) |
-| Slow message | Blocks its partition (head-of-line) | Others proceed; per-message ack, retry, DLQ |
-| Best for | Event streams, CDC, fan-out, high throughput | Task/job distribution, per-message routing |
+- **After consume:** a log (Kafka) keeps messages until retention expires; a queue (RabbitMQ, SQS) deletes them after ack.
+- **Ordering:** a log orders per partition; a queue orders per queue, weakened by redelivery and parallel consumers.
+- **Parallelism:** a log allows up to one consumer per partition in a group; a queue lets you add consumers freely.
+- **Replay:** a log can seek to any offset; a queue cannot (once acked, gone).
+- **Slow message:** in a log it blocks its partition (head-of-line); in a queue others proceed, with per-message ack, retry and DLQ.
+- **Best for:** logs suit event streams, CDC, fan-out and high throughput; queues suit task/job distribution and per-message routing.
     `.trim(),
     diagram: `
 Topic "orders", 3 partitions, two consumer groups

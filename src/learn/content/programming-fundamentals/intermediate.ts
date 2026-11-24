@@ -1515,5 +1515,658 @@ them with an empty \`catch\`. Don't catch the broadest type (\`Exception\`,
     relatedTopics: ["error-handling", "testing-fundamentals", "clean-code-and-refactoring", "stack-and-heap"],
     keywords: ["exceptions", "error handling", "try catch", "finally", "Result type", "error values", "checked exceptions", "unchecked exceptions", "fail fast", "defer", "RAII", "context manager", "stack unwinding"],
   },
-  // __CONTINUE__
+  {
+    id: "testing-fundamentals",
+    title: "Testing Fundamentals",
+    level: "intermediate",
+    description: "Unit, integration and end-to-end tests, the test pyramid, arrange-act-assert, test doubles, TDD and what makes a test good.",
+    explanation: `
+A **test** is code that runs your code and checks the result
+automatically. Tests catch regressions, document how code is meant to
+behave, and let you change code with confidence.
+
+Tests come in three broad sizes:
+
+- **Unit tests** check one small piece (a function or class) in isolation.
+  They're fast and pinpoint failures precisely.
+- **Integration tests** check that several pieces work together: your code
+  with a real database, or two modules through their real interfaces.
+- **End-to-end (E2E) tests** drive the whole system like a user would,
+  through the UI or public API. They give the most confidence per test but
+  are slow and more brittle.
+
+The **test pyramid** suggests many unit tests, fewer integration tests and
+a handful of E2E tests.
+
+Most tests follow **Arrange-Act-Assert**: set up the inputs, run the code,
+check the outcome. When the code under test depends on something slow or
+unpredictable (network, clock, payment provider), you substitute a **test
+double**: a stub, mock, fake or spy.
+
+**Test-driven development (TDD)** reverses the usual order: write a
+failing test first, write just enough code to pass it, then refactor.
+    `.trim(),
+    analogy:
+      "Unit tests are checking each ingredient before cooking; integration tests are tasting the sauce once things are combined; an end-to-end test is serving the full meal to a guest. You want to catch a bad egg at the ingredient stage, not when the guest is eating.",
+    examples: [
+      {
+        title: "A unit test with Arrange-Act-Assert (Python, pytest)",
+        language: "python",
+        code: `def apply_discount(price: float, percent: float) -> float:
+    if not 0 <= percent <= 100:
+        raise ValueError("percent must be between 0 and 100")
+    return round(price * (1 - percent / 100), 2)
+
+
+def test_apply_discount_reduces_price():
+    # Arrange
+    price, percent = 80.0, 25
+    # Act
+    result = apply_discount(price, percent)
+    # Assert
+    assert result == 60.0
+
+
+def test_apply_discount_rejects_invalid_percent():
+    import pytest
+    with pytest.raises(ValueError):
+        apply_discount(80.0, 150)`,
+        walkthrough: [
+          { code: "def test_apply_discount_reduces_price():", explanation: "pytest discovers functions starting with test_ and runs each one separately." },
+          { code: "price, percent = 80.0, 25", explanation: "Arrange: prepare the inputs." },
+          { code: "result = apply_discount(price, percent)", explanation: "Act: call exactly the behaviour under test." },
+          { code: "assert result == 60.0", explanation: "Assert: one clear check of the expected outcome." },
+          { code: "with pytest.raises(ValueError):", explanation: "Error cases are behaviour too, and deserve their own test." },
+        ],
+      },
+      {
+        title: "Replacing a dependency with a fake (TypeScript, Vitest)",
+        language: "typescript",
+        code: `import { describe, it, expect, vi } from "vitest";
+
+interface Clock { now(): Date }
+
+function greeting(clock: Clock): string {
+  return clock.now().getHours() < 12 ? "Good morning" : "Good afternoon";
+}
+
+describe("greeting", () => {
+  it("says good morning before noon", () => {
+    const fakeClock: Clock = { now: () => new Date("2024-01-01T09:00:00") };
+    expect(greeting(fakeClock)).toBe("Good morning");
+  });
+
+  it("asks the clock exactly once", () => {
+    const mockClock = { now: vi.fn(() => new Date("2024-01-01T15:00:00")) };
+    greeting(mockClock);
+    expect(mockClock.now).toHaveBeenCalledTimes(1); // verifies the interaction
+  });
+});`,
+        explanation:
+          "Passing the clock in (dependency injection) makes time controllable. The first test checks the result; the second uses a mock to verify how the dependency was called. Prefer result checks; interaction checks couple tests to implementation.",
+      },
+    ],
+    howItWorks: `
+A test runner (pytest, Vitest, Jest, JUnit, \`go test\`, \`cargo test\`)
+finds test functions, runs each in isolation, and reports which assertions
+failed. Good runners show a diff between expected and actual values.
+
+**Test doubles** stand in for real dependencies:
+
+- **Dummy**: passed to fill a parameter, never used.
+- **Stub**: returns canned answers ("the API returns this user").
+- **Fake**: a working but simplified implementation (an in-memory
+  database).
+- **Spy**: records how it was called so you can inspect it afterwards.
+- **Mock**: pre-programmed with expectations about calls, and fails the
+  test if they aren't met.
+
+**TDD** runs in short cycles called **red, green, refactor**: write a test
+that fails (red), make it pass with the simplest code (green), then clean
+up the code with the test as a safety net.
+
+**Coverage** tools report which lines ran during tests. High coverage shows
+what *wasn't* tested; it doesn't prove that what ran was checked well.
+    `.trim(),
+    diagram: `
+              /\\
+             /E2E\\          few: slow, broad, most realistic
+            /------\\
+           /integra-\\      some: real components together
+          /  tion    \\
+         /------------\\
+        /     unit     \\   many: fast, focused, isolated
+       /----------------\\
+    `.trim(),
+    whyItExists: `
+Manually re-checking everything after each change is slow and unreliable,
+and bugs found late (in production) cost far more to fix than bugs found
+minutes after writing the code. Automated tests make checking cheap enough
+to do on every change, and they allow refactoring without fear because a
+broken behaviour shows up immediately.
+    `.trim(),
+    whenToUse: `
+Write unit tests for logic with branches, calculations, parsing and edge
+cases. Write integration tests where your code meets something external
+(database queries, HTTP clients, file formats). Keep a few E2E tests for
+critical user journeys (sign-up, checkout). For every bug you fix, add a
+test that fails without the fix. TDD works best when requirements are
+clear and the logic is non-trivial.
+    `.trim(),
+    whenNotToUse: `
+Don't unit-test trivial code (plain getters, framework configuration) or
+private helpers directly: test them through the public behaviour that uses
+them. Don't mock everything; tests full of mocks pass while the real
+integration is broken. Don't chase 100% coverage as a goal in itself. For
+throwaway prototypes and spikes, heavy test suites may not pay off.
+    `.trim(),
+    commonMistakes: [
+      "Testing implementation details (private methods, exact call sequences) so tests break on every refactor even when behaviour is unchanged.",
+      "Over-mocking, so tests only verify that the mocks were configured, not that the system works.",
+      "Tests that depend on each other or on shared state, so they pass alone but fail together (or in a different order).",
+      "Flaky tests that depend on real time, randomness or network, which teach the team to ignore failures.",
+      "Asserting nothing meaningful, e.g. only checking that no exception was thrown or that a result is 'truthy'.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Write three unit tests for a `isLeapYear(year)` function: a normal leap year, a century that is not a leap year (1900), and a century that is (2000)." },
+      { difficulty: "Medium", prompt: "Write a `WeatherService` that fetches a temperature through an injected HTTP client, and test it with a stub client covering success, a network error and malformed data." },
+      { difficulty: "Hard", prompt: "Use TDD to build a string calculator `add(\"1,2\\n3\")` that supports commas and newlines, rejects negatives with a message listing them, and ignores numbers over 1000. Commit after each red-green-refactor cycle." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between unit, integration and end-to-end tests?", answer: "Unit tests check a single unit (function or class) in isolation. Integration tests check several components working together, often with real infrastructure like a database. End-to-end tests exercise the whole system through its real interface, as a user would." },
+      { question: "What is the test pyramid?", answer: "A guideline to have many fast unit tests at the base, fewer integration tests in the middle and a small number of slow end-to-end tests at the top, balancing confidence against speed and maintenance cost." },
+      { question: "What is Arrange-Act-Assert?", answer: "A structure for tests: Arrange sets up inputs and dependencies, Act invokes the behaviour under test, Assert verifies the outcome. It keeps tests readable and focused on one behaviour." },
+      { question: "What is the difference between a stub, a mock and a fake?", answer: "A stub returns canned data to drive the code under test. A mock is configured with expectations about how it should be called and verifies them. A fake is a lightweight working implementation, such as an in-memory repository." },
+      { question: "What is TDD?", answer: "Test-driven development: write a failing test first, write the minimum code to make it pass, then refactor while keeping tests green. It drives design from the caller's perspective and ensures every behaviour has a test." },
+      { question: "What makes a good unit test?", answer: "It's fast, isolated, deterministic and readable; tests one behaviour through the public interface; has a descriptive name; and fails for exactly one reason with a clear message. The FIRST acronym: Fast, Isolated, Repeatable, Self-validating, Timely." },
+      { question: "Does 100% code coverage mean the code is bug-free?", answer: "No. Coverage shows which lines executed, not whether the assertions were meaningful or whether all input combinations and edge cases were checked. It's useful for finding untested code, not for proving correctness." },
+      { question: "What is a flaky test and how do you fix it?", answer: "A test that sometimes passes and sometimes fails without code changes, usually because of timing, shared state, randomness, test order or real network calls. Fix it by controlling those sources: inject clocks and random seeds, isolate state, and wait on conditions instead of fixed sleeps." },
+      { question: "Why should you test behaviour rather than implementation?", answer: "Tests tied to internals break whenever you refactor, even when the behaviour is correct, which makes them a burden. Tests through the public interface stay valid across refactors and only fail when something users rely on changes." },
+      { question: "Why write a test when fixing a bug?", answer: "A test that reproduces the bug proves the fix works (it fails before and passes after) and prevents the same bug from silently returning later: a regression test." },
+    ],
+    prerequisites: ["functions-and-parameters", "debugging-basics"],
+    relatedTopics: ["error-handling-strategies", "clean-code-and-refactoring", "testing-backend-code", "dependency-inversion", "functional-programming"],
+    keywords: ["unit test", "integration test", "end-to-end test", "e2e", "test pyramid", "arrange act assert", "mock", "stub", "fake", "spy", "test double", "TDD", "red green refactor", "code coverage", "flaky test"],
+  },
+  {
+    id: "character-encoding-and-unicode",
+    title: "Character Encoding and Unicode",
+    level: "intermediate",
+    description: "How text becomes bytes: ASCII, Unicode code points, UTF-8 and UTF-16, grapheme clusters, mojibake and string length pitfalls.",
+    explanation: `
+Computers store only bytes, so text needs an agreed mapping from
+characters to numbers to bytes.
+
+- **ASCII** (1963) maps 128 characters (English letters, digits,
+  punctuation, control codes) to the numbers 0–127. One byte each, but no
+  room for \`é\`, \`ß\`, \`中\` or emoji.
+- **Unicode** assigns every character in every writing system a number
+  called a **code point**, written like \`U+0041\` (A) or \`U+1F600\` (😀).
+  There's room for 1,114,112 of them (\`U+0000\` to \`U+10FFFF\`).
+- An **encoding** turns code points into bytes. **UTF-8** uses 1 to 4
+  bytes per code point and is identical to ASCII for the first 128, which is
+  why it dominates the web and files. **UTF-16** uses 2 or 4 bytes and is
+  what JavaScript, Java and Windows use internally.
+
+What a reader sees as one character, a **grapheme cluster**, can be several
+code points: \`é\` can be one code point or \`e\` plus a combining accent, and
+a family emoji is several people joined by invisible joiner characters.
+So "how long is this string?" has at least three answers: bytes, code units
+or code points, and user-visible characters.
+
+Decoding bytes with the wrong encoding produces **mojibake**: garbled text
+like \`cafÃ©\` instead of \`café\`.
+    `.trim(),
+    analogy:
+      "Unicode is a giant phone book that gives every character on Earth a unique number. An encoding like UTF-8 is the way you write those numbers on paper: short numbers take one box, long ones take up to four. Mojibake is reading someone's note with the wrong decoder ring.",
+    examples: [
+      {
+        title: "Three different 'lengths' for one string (JavaScript)",
+        language: "javascript",
+        code: `const smile = "\\u{1F600}";                 // one emoji, one code point
+console.log(smile.length);                  // 2  (UTF-16 code units)
+console.log([...smile].length);             // 1  (code points)
+
+const family = "\\u{1F468}\\u200D\\u{1F469}\\u200D\\u{1F467}"; // man ZWJ woman ZWJ girl
+console.log(family.length);                 // 8  code units
+console.log([...family].length);            // 5  code points
+const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+console.log([...segmenter.segment(family)].length); // 1 visible character
+
+console.log(new TextEncoder().encode("café").length); // 5 bytes in UTF-8`,
+        walkthrough: [
+          { code: "smile.length  // 2", explanation: "JavaScript strings are UTF-16. Code points above U+FFFF need two 16-bit units (a surrogate pair), and .length counts units." },
+          { code: "[...smile].length  // 1", explanation: "Spreading a string iterates by code point, so the pair counts once." },
+          { code: "family.length  // 8", explanation: "Three emoji (2 units each) plus two zero-width joiners (1 unit each)." },
+          { code: "Intl.Segmenter ... // 1", explanation: "Grapheme segmentation gives what a user would call one character." },
+          { code: 'encode("café").length  // 5', explanation: "In UTF-8, c, a and f take one byte each and é takes two." },
+        ],
+      },
+      {
+        title: "Bytes vs text, normalisation and mojibake (Python)",
+        language: "python",
+        code: `import unicodedata
+
+text = "café"
+data = text.encode("utf-8")       # b'caf\\xc3\\xa9'  (5 bytes)
+print(len(text), len(data))       # 4 5
+
+print(data.decode("latin-1"))     # 'cafÃ©'  mojibake: wrong decoder
+
+composed = "\\u00e9"               # é as one code point
+decomposed = "e\\u0301"            # e + combining acute accent
+print(composed == decomposed)     # False, though they look identical
+print(unicodedata.normalize("NFC", decomposed) == composed)  # True`,
+        explanation:
+          "Python 3 separates `str` (code points) from `bytes`. Normalise strings (usually to NFC) before comparing or using them as keys if they may come from different sources.",
+      },
+    ],
+    howItWorks: `
+**UTF-8** encodes each code point by its size:
+
+- \`U+0000\`–\`U+007F\`: 1 byte (plain ASCII)
+- \`U+0080\`–\`U+07FF\`: 2 bytes (most Latin accents, Greek, Cyrillic, Arabic, Hebrew)
+- \`U+0800\`–\`U+FFFF\`: 3 bytes (most CJK characters)
+- \`U+10000\`–\`U+10FFFF\`: 4 bytes (emoji, rarer scripts)
+
+The leading bits of each byte say whether it starts a sequence or continues
+one, so a decoder can resynchronise after an error, and no multi-byte
+sequence ever contains an ASCII byte.
+
+**UTF-16** stores code points up to \`U+FFFF\` in one 16-bit unit and the rest
+as a **surrogate pair** of two units. It also needs a byte order (big- or
+little-endian), sometimes marked by a byte order mark (BOM).
+
+Languages differ in what a "string" is: Python \`str\` is a sequence of code
+points; JavaScript and Java strings are UTF-16 code units; Rust \`String\`
+and Go strings are UTF-8 bytes (Go's \`len\` returns bytes). Grapheme
+clusters are defined by Unicode rules (UAX #29) and need a library or
+\`Intl.Segmenter\` to count.
+    `.trim(),
+    diagram: `
+  "é" (U+00E9) through the layers
+
+  grapheme:     é
+  code point:   U+00E9
+  UTF-8 bytes:  C3 A9          (2 bytes)
+  UTF-16 units: 00E9           (1 unit, 2 bytes)
+
+  Same text, read with the wrong decoder:
+  bytes C3 A9 as Latin-1  ->  "Ã" + "©"  ->  "Ã©"   (mojibake)
+    `.trim(),
+    whyItExists: `
+Before Unicode, every region had its own incompatible 8-bit code page
+(Latin-1, Shift-JIS, KOI8-R, Windows-1252), so a document often turned to
+garbage on another computer, and mixing languages in one file was nearly
+impossible. Unicode unified all scripts into one numbering, and UTF-8 made
+it practical by staying backward-compatible with ASCII.
+    `.trim(),
+    whenToUse: `
+Use UTF-8 for everything that leaves your program: files, network
+protocols, databases, HTML (\`<meta charset="utf-8">\`). Decode bytes to text
+as soon as they enter, work with text inside, and encode back at the exit.
+Count graphemes for anything user-facing (character limits, truncation,
+cursor movement), bytes for storage and protocol limits.
+    `.trim(),
+    whenNotToUse: `
+Don't treat binary data (images, compressed files, encrypted bytes) as
+text; decoding it will corrupt it. Don't truncate or index strings by
+bytes or UTF-16 units when the result is shown to people: you can cut an
+emoji or accented letter in half. Don't guess encodings if you can declare
+them explicitly.
+    `.trim(),
+    commonMistakes: [
+      "Assuming one character is one byte, or that `.length` in JavaScript counts visible characters.",
+      "Opening files without an explicit encoding (e.g. Python's `open(path)` on Windows may default to a legacy code page) and getting mojibake or decode errors.",
+      "Truncating a string with `slice(0, n)` and splitting a surrogate pair or grapheme, producing broken symbols.",
+      "Comparing strings that look identical but use different normalisation forms (precomposed vs combining characters).",
+      "Using `toUpperCase`/`toLowerCase` for case-insensitive comparison in every language; locale rules (Turkish dotted i, German ß) need locale-aware comparison or case folding.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Print the code point (in U+XXXX form) and UTF-8 byte count of each character in the string \"Añ中\" in Python and in JavaScript." },
+      { difficulty: "Medium", prompt: "Write `truncate(text, maxChars)` in JavaScript that never splits a grapheme cluster, using `Intl.Segmenter`, and appends an ellipsis only when the text was actually cut." },
+      { difficulty: "Hard", prompt: "Implement a UTF-8 encoder by hand: given a code point, return its bytes using the 1–4 byte rules, and test it against `TextEncoder` (JS) or `str.encode` (Python) for code points in each range." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between Unicode and UTF-8?", answer: "Unicode is a character set: it assigns a numeric code point to each character. UTF-8 is an encoding: a way to represent those code points as bytes (1 to 4 per code point)." },
+      { question: "What is a code point?", answer: "The unique number Unicode assigns to a character or symbol, written as U+ followed by hex digits, for example U+0041 for 'A'. Valid code points range from U+0000 to U+10FFFF." },
+      { question: "Why is UTF-8 so widely used?", answer: "It's backward-compatible with ASCII, compact for English and most markup, has no byte-order issues, is self-synchronising, and can encode every Unicode code point. It's the default for the web, Linux and most file formats." },
+      { question: "Why does `\"😀\".length` return 2 in JavaScript?", answer: "JavaScript strings are sequences of UTF-16 code units. Code points above U+FFFF, including most emoji, are stored as a surrogate pair of two code units, and `.length` counts code units." },
+      { question: "What is a grapheme cluster?", answer: "What a user perceives as a single character, which can consist of several code points: a letter plus combining marks, a flag made of two regional indicators, or an emoji sequence joined with zero-width joiners." },
+      { question: "What is mojibake and what causes it?", answer: "Garbled text caused by decoding bytes with a different encoding than they were written with, for example UTF-8 bytes read as Latin-1 turning 'é' into 'Ã©'." },
+      { question: "What is Unicode normalisation and why does it matter?", answer: "Converting text to a canonical form, because some characters have several representations (é as one code point, or e plus a combining accent). Without normalising (e.g. to NFC), visually identical strings may compare unequal or fail lookups." },
+      { question: "How many bytes does UTF-8 use for ASCII, for 'é', for '中' and for an emoji?", answer: "1 byte for ASCII, 2 bytes for 'é' (U+00E9), 3 bytes for '中' (U+4E2D) and 4 bytes for emoji above U+FFFF." },
+      { question: "What is the difference between `str` and `bytes` in Python 3?", answer: "`str` is a sequence of Unicode code points (text). `bytes` is a sequence of raw 8-bit values. You convert with `.encode(encoding)` and `.decode(encoding)`, and mixing them without converting raises TypeError." },
+      { question: "What is a BOM?", answer: "A byte order mark: the code point U+FEFF at the start of a file, used to signal byte order for UTF-16/UTF-32. In UTF-8 it's unnecessary and can cause problems (e.g. a stray character at the start of a CSV or script)." },
+    ],
+    prerequisites: ["binary-and-number-systems", "data-types-and-values"],
+    relatedTopics: ["binary-and-number-systems", "regular-expressions", "bitwise-operations", "data-types-and-values"],
+    keywords: ["unicode", "utf-8", "utf-16", "ascii", "code point", "code unit", "surrogate pair", "grapheme cluster", "mojibake", "encoding", "normalization", "NFC", "BOM", "emoji length"],
+  },
+  {
+    id: "floating-point-numbers",
+    title: "Floating-Point Numbers",
+    level: "intermediate",
+    description: "How computers store real numbers with IEEE 754, why 0.1 + 0.2 isn't 0.3, comparing with tolerance, NaN and Infinity, and handling money.",
+    explanation: `
+Most languages store non-integer numbers as **floating-point** values
+following the **IEEE 754** standard. A 64-bit "double" (JavaScript's
+\`number\`, Python's \`float\`, Java's \`double\`) is a binary version of
+scientific notation: a sign, an exponent and about 15–17 significant
+decimal digits of precision.
+
+Because it's binary, many simple decimal fractions can't be stored exactly.
+\`0.1\` in binary is an infinitely repeating fraction, just like 1/3 is
+\`0.333…\` in decimal. The computer stores the nearest representable value,
+so small errors appear:
+
+\`0.1 + 0.2\` gives \`0.30000000000000004\`, not \`0.3\`.
+
+This isn't a bug in any language; it's how the format works. The practical
+consequences:
+
+- Don't compare floats with \`==\`; check whether they're **close enough**.
+- Know the special values: \`Infinity\`, \`-Infinity\`, \`-0\` and **NaN**
+  ("not a number"), which is not even equal to itself.
+- Don't store money in floats. Use integer cents or a decimal type.
+    `.trim(),
+    analogy:
+      "Floating point is like writing every number with a fixed number of digits on a calculator display. You can show huge or tiny numbers by moving the decimal point, but a number like 1/3 never fits exactly; it gets cut off. Binary floats have the same problem with numbers like 0.1.",
+    examples: [
+      {
+        title: "The classic surprise, and how to compare safely",
+        language: "javascript",
+        code: `console.log(0.1 + 0.2);           // 0.30000000000000004
+console.log(0.1 + 0.2 === 0.3);   // false
+
+function nearlyEqual(a, b, tolerance = 1e-9) {
+  return Math.abs(a - b) <= tolerance * Math.max(1, Math.abs(a), Math.abs(b));
+}
+console.log(nearlyEqual(0.1 + 0.2, 0.3)); // true
+
+console.log(Number.MAX_SAFE_INTEGER);       // 9007199254740991 (2^53 - 1)
+console.log(9007199254740992 + 1);          // 9007199254740992 (precision lost)`,
+        walkthrough: [
+          { code: "0.1 + 0.2", explanation: "Neither 0.1 nor 0.2 is exact in binary. Their rounded sum lands just above 0.3." },
+          { code: "=== 0.3  // false", explanation: "The literal 0.3 is also rounded, to a slightly different double, so exact equality fails." },
+          { code: "Math.abs(a - b) <= tolerance * ...", explanation: "Compare within a tolerance scaled to the size of the numbers (a relative tolerance)." },
+          { code: "Number.MAX_SAFE_INTEGER", explanation: "Above 2^53, doubles can't represent every integer, so adding 1 may do nothing." },
+        ],
+      },
+      {
+        title: "NaN, Infinity and money (Python)",
+        language: "python",
+        code: `import math
+from decimal import Decimal
+
+nan = float("nan")
+print(nan == nan)            # False: NaN never equals anything
+print(math.isnan(nan))       # True: the correct check
+print(float("inf") > 1e308)  # True
+print(math.isclose(0.1 + 0.2, 0.3))   # True (relative tolerance 1e-09)
+
+# Money: floats drift, decimals and integer cents don't
+print(sum([0.1] * 10))                     # 0.9999999999999999
+print(sum([Decimal("0.10")] * 10))         # 1.00
+price_in_cents = 1999                      # $19.99 as an integer
+print(price_in_cents * 3)                  # 5997 cents, exact`,
+        explanation:
+          "Build `Decimal` from strings, not floats: `Decimal(0.1)` faithfully copies the float's error. In JavaScript, use integer cents or a decimal library, and `Number.isNaN` rather than `=== NaN`.",
+      },
+    ],
+    howItWorks: `
+A 64-bit IEEE 754 double has three fields:
+
+- **1 sign bit**
+- **11 exponent bits**: scale the number by a power of two
+- **52 fraction bits**: the significant digits (53 bits of precision
+  counting an implicit leading 1)
+
+The value is roughly \`(-1)^sign × 1.fraction × 2^(exponent − 1023)\`.
+Because the exponent moves the binary point, doubles cover an enormous
+range (about 10^-308 to 10^308), but the **gap between neighbouring values
+grows with the magnitude**. Near 1 the gap is about 2.2 × 10^-16 (machine
+epsilon, \`Number.EPSILON\`); near 10^16 it's 2.
+
+Every arithmetic operation rounds its exact result to the nearest
+representable double. Rounding errors are tiny per step but can accumulate
+over many steps, and subtracting two nearly equal numbers can wipe out most
+of the significant digits (**catastrophic cancellation**).
+
+Special bit patterns encode \`±Infinity\` (overflow, or \`1/0\` in JS),
+\`NaN\` (invalid results like \`0/0\` or \`sqrt(-1)\`) and \`-0\`.
+    `.trim(),
+    diagram: `
+  64-bit double layout
+
+  | s |   exponent (11)   |              fraction (52)                 |
+   63  62               52 51                                          0
+
+  0.1 stored as  0.1000000000000000055511151231257827...
+  0.2 stored as  0.2000000000000000111022302462515654...
+  sum rounds to  0.3000000000000000444089209850062616...
+  0.3 stored as  0.2999999999999999888977697537484345...
+    `.trim(),
+    whyItExists: `
+Scientific and graphics work needs both astronomically large and tiny
+numbers, fast. Fixed-point or arbitrary-precision decimal arithmetic can't
+do that efficiently in hardware. IEEE 754 (1985) standardised a binary
+format that CPUs and GPUs implement directly, so results are fast and
+consistent across machines, at the cost of exactness for decimal fractions.
+    `.trim(),
+    whenToUse: `
+Floats are right for measurements and continuous quantities where tiny
+relative errors don't matter: physics, statistics, graphics, machine
+learning, sensor data, percentages for display. Always compare with a
+tolerance, and round only when presenting the result.
+    `.trim(),
+    whenNotToUse: `
+Don't use binary floats for money, or anywhere exact decimal results are
+legally or logically required (invoices, tax, ledgers). Use integer minor
+units (cents), \`Decimal\` (Python), \`BigDecimal\` (Java) or a decimal
+library. Don't use floats for large integer IDs: in JavaScript, values above
+2^53 lose precision, so use strings or \`BigInt\`.
+    `.trim(),
+    commonMistakes: [
+      "Comparing floats with `==`/`===` instead of using a tolerance (`math.isclose`, an epsilon check).",
+      "Storing currency as floats, so totals drift by fractions of a cent and fail to reconcile.",
+      "Checking for NaN with `x === NaN` or `x == float('nan')`, which is always false; use `Number.isNaN` or `math.isnan`.",
+      "Using a fixed absolute epsilon like `1e-9` for numbers of any size, which is far too strict for large values and too loose for tiny ones.",
+      "Parsing large numeric IDs from JSON into JavaScript numbers and silently corrupting them above 2^53.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "In Python and JavaScript, print `0.1 + 0.2`, `1 / 3 * 3`, `0.1 * 3` and `1e16 + 1`. Explain each result." },
+      { difficulty: "Medium", prompt: "Write a function that splits a bill of $100.00 among 3 people using integer cents, so the parts add up exactly to the total (e.g. 3334 + 3333 + 3333)." },
+      { difficulty: "Hard", prompt: "Sum the numbers 0.1 ten million times with a naive loop, then with Kahan summation (or Python's `math.fsum`). Compare both results with the exact answer and explain the difference." },
+    ],
+    interviewQuestions: [
+      { question: "Why does 0.1 + 0.2 not equal 0.3 in most languages?", answer: "Floats are stored in binary, where 0.1 and 0.2 are infinitely repeating fractions. Each is rounded to the nearest double, and their sum rounds to a value slightly above 0.3 (0.30000000000000004), which differs from the double nearest to 0.3." },
+      { question: "How should you compare two floating-point numbers?", answer: "Check whether their difference is within a tolerance, usually relative to their magnitude (with an absolute floor near zero). Use `math.isclose` in Python or a helper like `Math.abs(a - b) <= eps * Math.max(1, |a|, |b|)` in JavaScript." },
+      { question: "What is IEEE 754?", answer: "The standard for binary floating-point arithmetic used by virtually all hardware and languages. It defines formats (32-bit float, 64-bit double), rounding rules and special values like Infinity, -0 and NaN." },
+      { question: "How many significant digits does a double have?", answer: "53 bits of binary precision, which is about 15 to 17 significant decimal digits." },
+      { question: "What is NaN, and why is `NaN === NaN` false?", answer: "NaN (Not a Number) represents an undefined result such as 0/0. IEEE 754 defines it as unordered and unequal to every value, including itself, so you must test it with `Number.isNaN` or `math.isnan`." },
+      { question: "What is machine epsilon?", answer: "The gap between 1.0 and the next larger representable double, about 2.22e-16 (2^-52). It indicates the relative precision of the format; JavaScript exposes it as `Number.EPSILON`." },
+      { question: "How should money be represented?", answer: "As integers in the smallest unit (cents), or with a decimal type such as Python's `Decimal` or Java's `BigDecimal`, with explicit rounding rules. Never as binary floats, whose rounding errors accumulate." },
+      { question: "What is `Number.MAX_SAFE_INTEGER` and why does it exist?", answer: "It's 2^53 - 1 (9007199254740991), the largest integer such that every integer up to it can be represented exactly by a double. Beyond it, some integers can't be represented, so arithmetic silently rounds. Use `BigInt` for larger integers." },
+      { question: "What does `1 / 0` produce in JavaScript and in Python?", answer: "In JavaScript it's `Infinity`, as IEEE 754 specifies. Python raises `ZeroDivisionError` for both int and float division by zero, though `float('inf')` exists and overflow in some operations yields inf." },
+      { question: "What is catastrophic cancellation?", answer: "A large loss of precision when subtracting two nearly equal floating-point numbers: the leading digits cancel and the result is dominated by earlier rounding errors. Reformulating the calculation usually avoids it." },
+    ],
+    prerequisites: ["binary-and-number-systems", "data-types-and-values"],
+    relatedTopics: ["binary-and-number-systems", "bitwise-operations", "data-types-and-values", "type-systems"],
+    keywords: ["floating point", "IEEE 754", "double", "0.1 + 0.2", "precision", "epsilon", "rounding error", "NaN", "Infinity", "negative zero", "decimal", "money", "MAX_SAFE_INTEGER", "BigInt"],
+  },
+  {
+    id: "regular-expressions",
+    title: "Regular Expressions",
+    level: "intermediate",
+    description: "A compact pattern language for matching text: literals, character classes, quantifiers, anchors, groups, greedy vs lazy, and ReDoS.",
+    explanation: `
+A **regular expression** (regex) is a pattern that describes a set of
+strings. You use it to **test** whether text matches, **find** matches
+inside text, **extract** parts, or **replace** them.
+
+The building blocks:
+
+- **Literals**: \`cat\` matches the characters c, a, t in order.
+- **Character classes**: \`[aeiou]\` any vowel, \`[0-9]\` any digit,
+  \`[^0-9]\` anything but a digit. Shorthands: \`\\d\` digit, \`\\w\` word
+  character, \`\\s\` whitespace, \`.\` any character except newline.
+- **Quantifiers**: \`*\` zero or more, \`+\` one or more, \`?\` zero or one,
+  \`{2,4}\` between two and four.
+- **Anchors**: \`^\` start, \`$\` end, \`\\b\` word boundary. They match
+  positions, not characters.
+- **Groups**: \`( … )\` group a sub-pattern and **capture** what it matched;
+  \`(?: … )\` groups without capturing; \`(?<name> … )\` names the capture.
+  \`|\` means "or".
+
+Quantifiers are **greedy** by default (match as much as possible). Adding
+\`?\` makes them **lazy** (as little as possible). Badly built patterns can
+take exponential time on certain inputs (**catastrophic backtracking**),
+which attackers exploit as **ReDoS** (regular expression denial of service).
+    `.trim(),
+    analogy:
+      "A regex is a stencil you slide along the text: wherever the text fits the stencil's shape, you have a match. Character classes are holes that accept several letters, quantifiers are holes that stretch, and anchors pin the stencil to the edge of the page.",
+    examples: [
+      {
+        title: "Testing and extracting with groups (JavaScript)",
+        language: "javascript",
+        code: `const datePattern = /^(\\d{4})-(\\d{2})-(\\d{2})$/;
+
+console.log(datePattern.test("2024-03-15"));   // true
+console.log(datePattern.test("15/03/2024"));   // false
+
+const match = "2024-03-15".match(datePattern);
+const [, year, month, day] = match;            // skip the full match at [0]
+console.log(year, month, day);                 // "2024" "03" "15"
+
+// Named groups read better
+const named = /(?<year>\\d{4})-(?<month>\\d{2})/.exec("Due 2024-03");
+console.log(named.groups.year);                // "2024"`,
+        walkthrough: [
+          { code: "^ ... $", explanation: "Anchors: the whole string must match, not just part of it." },
+          { code: "(\\d{4})", explanation: "A capture group of exactly four digits: the year." },
+          { code: "-", explanation: "A literal hyphen." },
+          { code: "const [, year, month, day] = match;", explanation: "Index 0 is the full match; captured groups follow in order." },
+          { code: "(?<year>\\d{4})", explanation: "A named group, accessible as match.groups.year." },
+        ],
+      },
+      {
+        title: "Greedy vs lazy, and find-all (Python)",
+        language: "python",
+        code: `import re
+
+html = "<b>bold</b> and <i>italic</i>"
+
+print(re.findall(r"<.+>", html))    # ['<b>bold</b> and <i>italic</i>']  greedy
+print(re.findall(r"<.+?>", html))   # ['<b>', '</b>', '<i>', '</i>']     lazy
+
+log = "ERROR 2024-03-15 disk full; WARN 2024-03-16 cpu high"
+for level, date in re.findall(r"(ERROR|WARN) (\\d{4}-\\d{2}-\\d{2})", log):
+    print(level, date)
+# ERROR 2024-03-15
+# WARN 2024-03-16
+
+print(re.sub(r"\\s+", " ", "too    many   spaces"))  # 'too many spaces'`,
+        explanation:
+          "Use raw strings (`r\"...\"`) in Python so backslashes reach the regex engine unchanged. Use regex for small tag-like patterns as shown, but parse real HTML with an HTML parser.",
+      },
+      {
+        title: "Catastrophic backtracking (ReDoS)",
+        language: "javascript",
+        code: `const evil = /^(a+)+$/;
+
+evil.test("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");   // true, instantly
+evil.test("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!");   // false, but after ~2^29 attempts:
+                                               // can freeze the thread for seconds
+
+const safe = /^a+$/;                           // same language, no nested quantifier
+safe.test("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa!");   // false, instantly`,
+        explanation:
+          "`(a+)+` gives the engine exponentially many ways to split the a's between the inner and outer loop, and it tries every one before giving up. Avoid nested quantifiers over overlapping patterns, limit input length, or use a linear-time engine (Go's regexp, Rust's regex crate, RE2).",
+      },
+    ],
+    howItWorks: `
+Most engines in JavaScript, Python, Java, Perl, PCRE and .NET are
+**backtracking** engines. They walk the pattern left to right; when a
+choice point (a quantifier or an alternation) fails later on, they back up
+and try the next option. That supports powerful features like
+backreferences (\`\\1\`) and lookarounds (\`(?=…)\`), but in the worst case the
+number of paths grows exponentially.
+
+**Greedy** quantifiers first take as much as possible, then give back one
+character at a time if the rest of the pattern fails. **Lazy** ones start
+with as little as possible and take more only when needed. Both find a match
+if one exists; they differ in **which** match they pick.
+
+Another family, used by RE2, Go and Rust, compiles the pattern into a
+**finite automaton** and scans the input once, guaranteeing time linear in
+the input length. The trade-off is no backreferences and, in some engines,
+no lookarounds.
+
+Flags change behaviour: \`i\` case-insensitive, \`g\` global (all matches,
+JavaScript), \`m\` makes \`^\`/\`$\` match at line breaks, \`s\` lets \`.\` match
+newlines, \`u\` enables full Unicode handling in JavaScript.
+    `.trim(),
+    diagram: `
+  Pattern ^(\\d{4})-(\\d{2})$ against "2024-03"
+
+  ^        position 0           ok
+  (\\d{4})  "2024"               group 1 = "2024"
+  -        "-"                  ok
+  (\\d{2})  "03"                 group 2 = "03"
+  $        end of string        ok  -> match
+
+  Greedy  <.+>   on "<b>x</b>"  ->  "<b>x</b>"   (longest)
+  Lazy    <.+?>  on "<b>x</b>"  ->  "<b>"        (shortest first)
+    `.trim(),
+    whyItExists: `
+Searching and validating text is everywhere: log analysis, input
+validation, find-and-replace in editors, tokenising, data cleanup. Writing
+a hand-made loop for each pattern is long and error-prone. Regular
+expressions, from Stephen Kleene's 1950s formal language theory and
+popularised by Unix tools like \`grep\`, \`sed\` and Perl, give a compact,
+portable notation for it.
+    `.trim(),
+    whenToUse: `
+Use regex for flat, well-defined text patterns: validating formats (postal
+codes, ISO dates, simple identifiers), extracting fields from log lines,
+search-and-replace across files, splitting on complex delimiters, and quick
+checks in editors and the command line.
+    `.trim(),
+    whenNotToUse: `
+Don't parse nested or recursive structures (HTML, JSON, programming
+languages) with regex: use a real parser. Don't use a regex to fully
+validate email addresses or URLs; use a URL parser, or a simple sanity
+check followed by a verification step. When a simple string method
+(\`startsWith\`, \`includes\`, \`split\`) does the job, it's clearer and
+faster. Avoid running backtracking regex on untrusted, unbounded input.
+    `.trim(),
+    commonMistakes: [
+      "Forgetting anchors, so `/\\d{3}/` 'validates' a string like `abc12345xyz` because it matches somewhere inside it.",
+      "Using a greedy `.*` and matching far more than intended; use a lazy `.*?` or a negated class like `[^\"]*`.",
+      "Not escaping special characters (`.`, `?`, `+`, `(`, `$`) when matching them literally, e.g. using `.` to match a dot.",
+      "Writing nested quantifiers like `(a+)+` or `(.*)*` that can backtrack catastrophically on crafted input (ReDoS).",
+      "In Python, writing patterns in normal strings instead of raw strings, so `\\b` becomes a backspace character.",
+    ],
+    exercises: [
+      { difficulty: "Easy", prompt: "Write a regex that matches a US-style ZIP code: exactly 5 digits, optionally followed by a hyphen and 4 more digits. Test it against valid and invalid examples." },
+      { difficulty: "Medium", prompt: "From log lines like `2024-03-15 12:01:09 [ERROR] (auth) Login failed`, extract the date, level and module with named groups, and count errors per module." },
+      { difficulty: "Hard", prompt: "Find a regex that hangs on a 30-character input, measure how long it takes as the input grows by one character at a time, then rewrite it to match the same strings in linear time." },
+    ],
+    interviewQuestions: [
+      { question: "What is the difference between greedy and lazy quantifiers?", answer: "Greedy quantifiers (`*`, `+`, `{n,}`) match as much as possible and give back characters only if the rest of the pattern fails. Lazy quantifiers (`*?`, `+?`) match as little as possible and expand only when needed." },
+      { question: "What do `^` and `$` do?", answer: "They're anchors matching the start and end of the input (or of each line with the multiline flag). They match positions, not characters, and are essential for validating that a whole string fits a pattern." },
+      { question: "What is a capture group, and what is a non-capturing group?", answer: "`( … )` groups part of a pattern and remembers the text it matched, so you can extract or backreference it. `(?: … )` groups for quantifiers or alternation without capturing, which keeps group numbering clean and is slightly faster." },
+      { question: "What is catastrophic backtracking?", answer: "Exponential run time in a backtracking regex engine when a pattern offers many overlapping ways to match the same text (e.g. `(a+)+$`) and the overall match fails, so the engine tries every combination." },
+      { question: "What is ReDoS and how do you prevent it?", answer: "Regular expression denial of service: an attacker sends input that triggers catastrophic backtracking, tying up CPU. Prevent it by avoiding nested or overlapping quantifiers, limiting input length, using timeouts, or using a linear-time engine like RE2 or Rust's regex crate." },
+      { question: "What do `\\d`, `\\w` and `\\s` match?", answer: "`\\d` a digit, `\\w` a word character (letters, digits, underscore) and `\\s` a whitespace character. Their uppercase forms (`\\D`, `\\W`, `\\S`) match the opposite. With Unicode modes they may include non-ASCII digits and letters." },
+      { question: "What is a lookahead?", answer: "A zero-width assertion that checks what follows without consuming it: `(?=…)` positive, `(?!…)` negative. For example `\\d+(?=px)` matches the digits in '12px' but not the 'px'." },
+      { question: "Why shouldn't you parse HTML with regex?", answer: "HTML is nested and irregular (attributes in any order, comments, self-closing tags, malformed markup). Regular expressions can't track arbitrary nesting, so regex-based parsing is fragile; an HTML parser handles these cases correctly." },
+      { question: "Why should Python regex patterns be raw strings?", answer: "In normal Python strings, backslash sequences like `\\b` or `\\1` are interpreted by Python before the regex engine sees them (`\\b` becomes a backspace). A raw string `r\"\\b\"` passes the backslash through unchanged." },
+      { question: "How do backtracking and automaton-based engines differ?", answer: "Backtracking engines (PCRE, JavaScript, Python, Java) try alternatives recursively and support backreferences and lookarounds, but can take exponential time. Automaton-based engines (RE2, Go, Rust) guarantee linear time in the input length but drop features like backreferences." },
+    ],
+    prerequisites: ["data-types-and-values", "control-flow"],
+    relatedTopics: ["character-encoding-and-unicode", "how-compilers-work", "big-o"],
+    keywords: ["regex", "regular expression", "pattern matching", "character class", "quantifier", "anchor", "capture group", "named group", "greedy", "lazy", "backtracking", "ReDoS", "lookahead", "RE2"],
+  },
 ];

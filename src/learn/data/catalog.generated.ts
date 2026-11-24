@@ -4,6 +4,578 @@ import type { LearnCatalog } from './catalog.types';
 export const catalog: LearnCatalog = {
   "subjects": [
     {
+      "id": "programming-fundamentals",
+      "title": "Programming Fundamentals",
+      "description": "The language-agnostic core every developer needs, from binary and variables to memory, concurrency and compilers.",
+      "topics": [
+        {
+          "id": "what-is-programming",
+          "title": "What is Programming?",
+          "level": "beginner",
+          "description": "Writing precise instructions that a computer can follow to solve a problem.",
+          "prerequisites": [],
+          "relatedTopics": [
+            "how-code-runs",
+            "variables-and-assignment",
+            "control-flow",
+            "programming-paradigms"
+          ]
+        },
+        {
+          "id": "how-code-runs",
+          "title": "How Code Runs",
+          "level": "beginner",
+          "description": "How source code becomes instructions a CPU executes: compilers, interpreters, bytecode and JIT.",
+          "prerequisites": [
+            "what-is-programming"
+          ],
+          "relatedTopics": [
+            "how-compilers-work",
+            "binary-and-number-systems",
+            "stack-and-heap",
+            "memory-management-and-garbage-collection",
+            "event-loop"
+          ]
+        },
+        {
+          "id": "binary-and-number-systems",
+          "title": "Binary and Number Systems",
+          "level": "beginner",
+          "description": "Bits, bytes, binary and hexadecimal, converting between bases, and why integers overflow.",
+          "prerequisites": [
+            "how-code-runs"
+          ],
+          "relatedTopics": [
+            "bitwise-operations",
+            "floating-point-numbers",
+            "character-encoding-and-unicode",
+            "data-types-and-values"
+          ]
+        },
+        {
+          "id": "variables-and-assignment",
+          "title": "Variables and Assignment",
+          "level": "beginner",
+          "description": "Giving names to values, changing what a name refers to, and naming things well.",
+          "prerequisites": [
+            "what-is-programming"
+          ],
+          "relatedTopics": [
+            "data-types-and-values",
+            "scope-and-lifetime",
+            "value-vs-reference",
+            "mutability-and-immutability",
+            "clean-code-and-refactoring"
+          ]
+        },
+        {
+          "id": "data-types-and-values",
+          "title": "Data Types and Values",
+          "level": "beginner",
+          "description": "Numbers, text, booleans, null and collections, and how languages convert between them.",
+          "prerequisites": [
+            "variables-and-assignment",
+            "binary-and-number-systems"
+          ],
+          "relatedTopics": [
+            "type-systems",
+            "floating-point-numbers",
+            "character-encoding-and-unicode",
+            "basic-data-structures",
+            "value-vs-reference"
+          ]
+        },
+        {
+          "id": "control-flow",
+          "title": "Control Flow",
+          "level": "beginner",
+          "description": "Making decisions with if/else and repeating work with for and while loops.",
+          "prerequisites": [
+            "data-types-and-values"
+          ],
+          "relatedTopics": [
+            "functions-and-parameters",
+            "recursion",
+            "big-o",
+            "basic-data-structures"
+          ]
+        },
+        {
+          "id": "functions-and-parameters",
+          "title": "Functions and Parameters",
+          "level": "beginner",
+          "description": "Packaging steps into reusable, named units that take inputs and return outputs.",
+          "prerequisites": [
+            "control-flow"
+          ],
+          "relatedTopics": [
+            "scope-and-lifetime",
+            "stack-and-heap",
+            "recursion",
+            "functional-programming",
+            "closures",
+            "value-vs-reference"
+          ]
+        },
+        {
+          "id": "basic-data-structures",
+          "title": "Basic Data Structures",
+          "level": "beginner",
+          "description": "Lists/arrays, dictionaries/maps, sets and tuples, and how to choose between them.",
+          "prerequisites": [
+            "data-types-and-values",
+            "control-flow"
+          ],
+          "relatedTopics": [
+            "arrays",
+            "hash-tables",
+            "big-o",
+            "linked-lists",
+            "stack",
+            "queue",
+            "mutability-and-immutability"
+          ]
+        },
+        {
+          "id": "debugging-basics",
+          "title": "Debugging Basics",
+          "level": "beginner",
+          "description": "Finding and fixing bugs: reading errors and stack traces, printing, breakpoints and minimal reproductions.",
+          "prerequisites": [
+            "functions-and-parameters"
+          ],
+          "relatedTopics": [
+            "error-handling-strategies",
+            "testing-fundamentals",
+            "version-control-basics",
+            "clean-code-and-refactoring"
+          ]
+        },
+        {
+          "id": "version-control-basics",
+          "title": "Version Control Basics",
+          "level": "beginner",
+          "description": "Tracking changes with Git: repositories, commits, branches, merges, remotes and good commit messages.",
+          "prerequisites": [
+            "what-is-programming"
+          ],
+          "relatedTopics": [
+            "debugging-basics",
+            "testing-fundamentals",
+            "clean-code-and-refactoring"
+          ]
+        },
+        {
+          "id": "type-systems",
+          "title": "Type Systems",
+          "level": "intermediate",
+          "description": "How languages classify values and catch mismatches: static vs dynamic, strong vs weak, inference, nominal vs structural.",
+          "prerequisites": [
+            "data-types-and-values",
+            "variables-and-assignment"
+          ],
+          "relatedTopics": [
+            "how-compilers-work",
+            "object-oriented-programming",
+            "generics",
+            "type-narrowing",
+            "programming-paradigms"
+          ]
+        },
+        {
+          "id": "value-vs-reference",
+          "title": "Value vs Reference",
+          "level": "intermediate",
+          "description": "What actually gets copied when you assign a variable or pass an argument, and why shared objects cause aliasing bugs.",
+          "prerequisites": [
+            "variables-and-assignment",
+            "functions-and-parameters",
+            "basic-data-structures"
+          ],
+          "relatedTopics": [
+            "mutability-and-immutability",
+            "pointers-and-references",
+            "stack-and-heap",
+            "memory-management",
+            "closures"
+          ]
+        },
+        {
+          "id": "stack-and-heap",
+          "title": "Stack and Heap",
+          "level": "intermediate",
+          "description": "The two main regions of program memory: the call stack for function frames and the heap for longer-lived data.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "how-code-runs"
+          ],
+          "relatedTopics": [
+            "memory-management-and-garbage-collection",
+            "pointers-and-references",
+            "recursion",
+            "value-vs-reference",
+            "processes-and-threads",
+            "memory-management"
+          ]
+        },
+        {
+          "id": "scope-and-lifetime",
+          "title": "Scope and Lifetime",
+          "level": "intermediate",
+          "description": "Where a name is visible (scope) versus how long its value exists (lifetime), including lexical scoping, shadowing and closures.",
+          "prerequisites": [
+            "variables-and-assignment",
+            "functions-and-parameters"
+          ],
+          "relatedTopics": [
+            "closures",
+            "stack-and-heap",
+            "functional-programming",
+            "memory-management-and-garbage-collection"
+          ]
+        },
+        {
+          "id": "mutability-and-immutability",
+          "title": "Mutability and Immutability",
+          "level": "intermediate",
+          "description": "Data that can change in place versus data that never changes, and why immutable data makes programs easier to reason about.",
+          "prerequisites": [
+            "value-vs-reference",
+            "basic-data-structures"
+          ],
+          "relatedTopics": [
+            "functional-programming",
+            "concurrency-and-race-conditions",
+            "value-vs-reference",
+            "hash-tables"
+          ]
+        },
+        {
+          "id": "object-oriented-programming",
+          "title": "Object-Oriented Programming",
+          "level": "intermediate",
+          "description": "Organising code around objects that bundle data with behaviour: classes, encapsulation, abstraction, inheritance, polymorphism and interfaces.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "basic-data-structures",
+            "type-systems"
+          ],
+          "relatedTopics": [
+            "inheritance-vs-composition",
+            "design-patterns-overview",
+            "programming-paradigms",
+            "solid-principles",
+            "prototypes",
+            "coupling-and-cohesion"
+          ]
+        },
+        {
+          "id": "inheritance-vs-composition",
+          "title": "Inheritance vs Composition",
+          "level": "intermediate",
+          "description": "Two ways to reuse behaviour: extending a class (is-a) or holding other objects (has-a), and why composition is usually preferred.",
+          "prerequisites": [
+            "object-oriented-programming"
+          ],
+          "relatedTopics": [
+            "object-oriented-programming",
+            "design-patterns-overview",
+            "solid-principles",
+            "coupling-and-cohesion",
+            "dependency-inversion"
+          ]
+        },
+        {
+          "id": "functional-programming",
+          "title": "Functional Programming",
+          "level": "intermediate",
+          "description": "Building programs from pure functions, first-class and higher-order functions, map/filter/reduce, immutability, currying and composition.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "scope-and-lifetime",
+            "mutability-and-immutability"
+          ],
+          "relatedTopics": [
+            "programming-paradigms",
+            "mutability-and-immutability",
+            "closures",
+            "recursion",
+            "scope-and-lifetime"
+          ]
+        },
+        {
+          "id": "error-handling-strategies",
+          "title": "Error Handling Strategies",
+          "level": "intermediate",
+          "description": "Exceptions vs error values, checked vs unchecked errors, failing fast, and reliable cleanup with finally, defer and RAII.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "control-flow",
+            "debugging-basics"
+          ],
+          "relatedTopics": [
+            "error-handling",
+            "testing-fundamentals",
+            "clean-code-and-refactoring",
+            "stack-and-heap"
+          ]
+        },
+        {
+          "id": "testing-fundamentals",
+          "title": "Testing Fundamentals",
+          "level": "intermediate",
+          "description": "Unit, integration and end-to-end tests, the test pyramid, arrange-act-assert, test doubles, TDD and what makes a test good.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "debugging-basics"
+          ],
+          "relatedTopics": [
+            "error-handling-strategies",
+            "clean-code-and-refactoring",
+            "testing-backend-code",
+            "dependency-inversion",
+            "functional-programming"
+          ]
+        },
+        {
+          "id": "character-encoding-and-unicode",
+          "title": "Character Encoding and Unicode",
+          "level": "intermediate",
+          "description": "How text becomes bytes: ASCII, Unicode code points, UTF-8 and UTF-16, grapheme clusters, mojibake and string length pitfalls.",
+          "prerequisites": [
+            "binary-and-number-systems",
+            "data-types-and-values"
+          ],
+          "relatedTopics": [
+            "binary-and-number-systems",
+            "regular-expressions",
+            "bitwise-operations",
+            "data-types-and-values"
+          ]
+        },
+        {
+          "id": "floating-point-numbers",
+          "title": "Floating-Point Numbers",
+          "level": "intermediate",
+          "description": "How computers store real numbers with IEEE 754, why 0.1 + 0.2 isn't 0.3, comparing with tolerance, NaN and Infinity, and handling money.",
+          "prerequisites": [
+            "binary-and-number-systems",
+            "data-types-and-values"
+          ],
+          "relatedTopics": [
+            "binary-and-number-systems",
+            "bitwise-operations",
+            "data-types-and-values",
+            "type-systems"
+          ]
+        },
+        {
+          "id": "regular-expressions",
+          "title": "Regular Expressions",
+          "level": "intermediate",
+          "description": "A compact pattern language for matching text: literals, character classes, quantifiers, anchors, groups, greedy vs lazy, and ReDoS.",
+          "prerequisites": [
+            "data-types-and-values",
+            "control-flow"
+          ],
+          "relatedTopics": [
+            "character-encoding-and-unicode",
+            "how-compilers-work",
+            "big-o"
+          ]
+        },
+        {
+          "id": "memory-management-and-garbage-collection",
+          "title": "Memory Management and Garbage Collection",
+          "level": "advanced",
+          "description": "How programs get memory, give it back, and how languages automate (or don't automate) that job.",
+          "prerequisites": [
+            "stack-and-heap",
+            "scope-and-lifetime",
+            "value-vs-reference"
+          ],
+          "relatedTopics": [
+            "pointers-and-references",
+            "stack-and-heap",
+            "memory-management",
+            "scope-and-lifetime"
+          ]
+        },
+        {
+          "id": "pointers-and-references",
+          "title": "Pointers and References",
+          "level": "advanced",
+          "description": "Values that hold the location of other values, and what goes wrong when that location is invalid.",
+          "prerequisites": [
+            "value-vs-reference",
+            "stack-and-heap"
+          ],
+          "relatedTopics": [
+            "memory-management-and-garbage-collection",
+            "value-vs-reference",
+            "stack-and-heap",
+            "basic-data-structures"
+          ]
+        },
+        {
+          "id": "processes-and-threads",
+          "title": "Processes and Threads",
+          "level": "advanced",
+          "description": "How the operating system runs many programs, and many paths within one program, at the same time.",
+          "prerequisites": [
+            "how-code-runs",
+            "stack-and-heap"
+          ],
+          "relatedTopics": [
+            "concurrency-and-race-conditions",
+            "async-and-event-driven-programming",
+            "locks-and-deadlocks",
+            "event-loop"
+          ]
+        },
+        {
+          "id": "concurrency-and-race-conditions",
+          "title": "Concurrency and Race Conditions",
+          "level": "advanced",
+          "description": "What goes wrong when several tasks touch the same data at once, and why the result depends on timing.",
+          "prerequisites": [
+            "processes-and-threads",
+            "mutability-and-immutability"
+          ],
+          "relatedTopics": [
+            "locks-and-deadlocks",
+            "processes-and-threads",
+            "async-and-event-driven-programming",
+            "mutability-and-immutability",
+            "distributed-locks-and-fencing"
+          ]
+        },
+        {
+          "id": "locks-and-deadlocks",
+          "title": "Locks and Deadlocks",
+          "level": "advanced",
+          "description": "Tools that make threads take turns on shared data, and the ways they can get stuck forever.",
+          "prerequisites": [
+            "concurrency-and-race-conditions",
+            "processes-and-threads"
+          ],
+          "relatedTopics": [
+            "concurrency-and-race-conditions",
+            "processes-and-threads",
+            "distributed-locks-and-fencing",
+            "async-and-event-driven-programming"
+          ]
+        },
+        {
+          "id": "async-and-event-driven-programming",
+          "title": "Async and Event-Driven Programming",
+          "level": "advanced",
+          "description": "Handling many slow operations at once by reacting to events instead of blocking while you wait.",
+          "prerequisites": [
+            "processes-and-threads",
+            "concurrency-and-race-conditions",
+            "functions-and-parameters"
+          ],
+          "relatedTopics": [
+            "event-loop",
+            "promises",
+            "async-await",
+            "processes-and-threads",
+            "concurrency-and-race-conditions",
+            "queues"
+          ]
+        },
+        {
+          "id": "how-compilers-work",
+          "title": "How Compilers Work",
+          "level": "advanced",
+          "description": "The pipeline that turns source code text into something a machine can run.",
+          "prerequisites": [
+            "how-code-runs",
+            "type-systems"
+          ],
+          "relatedTopics": [
+            "how-code-runs",
+            "type-systems",
+            "regular-expressions",
+            "recursion",
+            "programming-paradigms"
+          ]
+        },
+        {
+          "id": "bitwise-operations",
+          "title": "Bitwise Operations",
+          "level": "advanced",
+          "description": "Working directly with the individual bits of an integer: masks, flags, shifts and classic tricks.",
+          "prerequisites": [
+            "binary-and-number-systems",
+            "data-types-and-values"
+          ],
+          "relatedTopics": [
+            "binary-and-number-systems",
+            "data-types-and-values",
+            "floating-point-numbers",
+            "big-o"
+          ]
+        },
+        {
+          "id": "design-patterns-overview",
+          "title": "Design Patterns Overview",
+          "level": "advanced",
+          "description": "Named, reusable solutions to recurring design problems, and when they help or just add layers.",
+          "prerequisites": [
+            "object-oriented-programming",
+            "inheritance-vs-composition",
+            "functions-and-parameters"
+          ],
+          "relatedTopics": [
+            "object-oriented-programming",
+            "inheritance-vs-composition",
+            "solid-principles",
+            "coupling-and-cohesion",
+            "programming-paradigms",
+            "clean-code-and-refactoring"
+          ]
+        },
+        {
+          "id": "programming-paradigms",
+          "title": "Programming Paradigms",
+          "level": "advanced",
+          "description": "The major styles of organizing programs, what each is good at, and how modern languages mix them.",
+          "prerequisites": [
+            "object-oriented-programming",
+            "functional-programming",
+            "mutability-and-immutability"
+          ],
+          "relatedTopics": [
+            "object-oriented-programming",
+            "functional-programming",
+            "design-patterns-overview",
+            "mutability-and-immutability",
+            "async-and-event-driven-programming"
+          ]
+        },
+        {
+          "id": "clean-code-and-refactoring",
+          "title": "Clean Code and Refactoring",
+          "level": "advanced",
+          "description": "Writing code other people can read and change safely, and improving existing code without breaking it.",
+          "prerequisites": [
+            "functions-and-parameters",
+            "testing-fundamentals"
+          ],
+          "relatedTopics": [
+            "testing-fundamentals",
+            "design-patterns-overview",
+            "solid-principles",
+            "coupling-and-cohesion",
+            "technical-debt",
+            "clean-architecture"
+          ]
+        }
+      ]
+    },
+    {
       "id": "javascript",
       "title": "JavaScript",
       "description": "From absolute beginner to advanced JavaScript.",
@@ -1579,7 +2151,7 @@ export const catalog: LearnCatalog = {
     {
       "id": "system-design",
       "title": "System Design",
-      "description": "Understand how real-world software systems are designed.",
+      "description": "Design real-world systems, from networking and DNS basics to consensus, streaming and multi-region architecture.",
       "topics": [
         {
           "id": "what-is-system-design",
@@ -1659,6 +2231,130 @@ export const catalog: LearnCatalog = {
           "relatedTopics": [
             "http",
             "rest-apis"
+          ]
+        },
+        {
+          "id": "networking-basics",
+          "title": "Networking Basics",
+          "level": "beginner",
+          "description": "IP addresses, packets, ports, TCP vs UDP and the layers that move data between machines.",
+          "prerequisites": [
+            "client-and-server"
+          ],
+          "relatedTopics": [
+            "dns",
+            "http",
+            "proxy-and-reverse-proxy",
+            "load-balancing",
+            "realtime-communication",
+            "timeouts-retries-and-backoff"
+          ]
+        },
+        {
+          "id": "dns",
+          "title": "DNS",
+          "level": "beginner",
+          "description": "How human-readable names like example.com are turned into IP addresses, and how that can steer traffic.",
+          "prerequisites": [
+            "networking-basics"
+          ],
+          "relatedTopics": [
+            "load-balancing",
+            "cdn",
+            "service-discovery",
+            "multi-region-and-disaster-recovery",
+            "caching"
+          ]
+        },
+        {
+          "id": "back-of-the-envelope-estimation",
+          "title": "Back-of-the-Envelope Estimation",
+          "level": "beginner",
+          "description": "Quick, rough math for traffic, storage and bandwidth that tells you which parts of a design will strain.",
+          "prerequisites": [
+            "what-is-system-design"
+          ],
+          "relatedTopics": [
+            "scalability",
+            "caching",
+            "cdn",
+            "sharding",
+            "system-design-interview-framework",
+            "storage-engines"
+          ]
+        },
+        {
+          "id": "availability-and-slas",
+          "title": "Availability, SLIs, SLOs and SLAs",
+          "level": "beginner",
+          "description": "How to measure uptime, what 'the nines' mean, error budgets, and how dependencies multiply availability.",
+          "prerequisites": [
+            "what-is-system-design"
+          ],
+          "relatedTopics": [
+            "monitoring-and-observability",
+            "circuit-breaker",
+            "database-replication",
+            "multi-region-and-disaster-recovery",
+            "deployment-strategies",
+            "load-balancing"
+          ]
+        },
+        {
+          "id": "stateless-vs-stateful-services",
+          "title": "Stateless vs Stateful Services",
+          "level": "beginner",
+          "description": "Why keeping app servers stateless lets you scale them freely, and where the state goes instead.",
+          "prerequisites": [
+            "client-and-server",
+            "load-balancing"
+          ],
+          "relatedTopics": [
+            "authentication-and-sessions",
+            "scalability",
+            "caching",
+            "websockets",
+            "consistent-hashing",
+            "object-storage",
+            "deployment-strategies"
+          ]
+        },
+        {
+          "id": "object-storage",
+          "title": "Object Storage",
+          "level": "beginner",
+          "description": "S3-style storage for files and blobs: buckets, keys, presigned URLs, and how it compares to block and file storage.",
+          "prerequisites": [
+            "databases"
+          ],
+          "relatedTopics": [
+            "cdn",
+            "databases",
+            "stateless-vs-stateful-services",
+            "security-in-system-design",
+            "queues",
+            "data-warehouses-and-olap",
+            "storage-engines"
+          ]
+        },
+        {
+          "id": "system-design-interview-framework",
+          "title": "System Design Interview Framework",
+          "level": "beginner",
+          "description": "A step-by-step approach for a 45–60 minute design interview, and the pitfalls that sink candidates.",
+          "prerequisites": [
+            "what-is-system-design",
+            "back-of-the-envelope-estimation"
+          ],
+          "relatedTopics": [
+            "back-of-the-envelope-estimation",
+            "availability-and-slas",
+            "scalability",
+            "rest-apis",
+            "databases",
+            "caching",
+            "unique-id-generation",
+            "hot-keys-and-thundering-herd"
           ]
         },
         {
@@ -1784,6 +2480,224 @@ export const catalog: LearnCatalog = {
           "relatedTopics": [
             "queues",
             "microservices-vs-monolith"
+          ]
+        },
+        {
+          "id": "api-styles-graphql-grpc",
+          "title": "REST vs GraphQL vs gRPC",
+          "level": "intermediate",
+          "description": "Three common API styles, what each optimizes for, and when each fits.",
+          "prerequisites": [
+            "http",
+            "rest-apis"
+          ],
+          "relatedTopics": [
+            "rest-apis",
+            "api-gateway",
+            "realtime-communication",
+            "service-mesh-and-sidecars",
+            "microservices-vs-monolith"
+          ]
+        },
+        {
+          "id": "realtime-communication",
+          "title": "Realtime Communication Patterns",
+          "level": "intermediate",
+          "description": "Short polling, long polling, SSE, WebSockets and webhooks: how servers push updates.",
+          "prerequisites": [
+            "http",
+            "client-and-server"
+          ],
+          "relatedTopics": [
+            "websockets",
+            "pub-sub",
+            "load-balancing",
+            "hot-keys-and-thundering-herd",
+            "api-styles-graphql-grpc",
+            "message-delivery-semantics"
+          ]
+        },
+        {
+          "id": "cache-eviction-policies",
+          "title": "Cache Eviction, Write Policies and Invalidation",
+          "level": "intermediate",
+          "description": "How caches decide what to drop, how writes reach them, and how to keep them fresh.",
+          "prerequisites": [
+            "caching"
+          ],
+          "relatedTopics": [
+            "caching",
+            "cdn",
+            "hot-keys-and-thundering-herd",
+            "consistency-models",
+            "event-streaming"
+          ]
+        },
+        {
+          "id": "message-delivery-semantics",
+          "title": "Message Delivery Semantics",
+          "level": "intermediate",
+          "description": "At-most-once, at-least-once and effectively-once delivery, and how to build reliable consumers.",
+          "prerequisites": [
+            "queues",
+            "pub-sub",
+            "idempotency"
+          ],
+          "relatedTopics": [
+            "queues",
+            "pub-sub",
+            "idempotency",
+            "event-streaming",
+            "distributed-transactions",
+            "timeouts-retries-and-backoff"
+          ]
+        },
+        {
+          "id": "timeouts-retries-and-backoff",
+          "title": "Timeouts, Retries and Backoff",
+          "level": "intermediate",
+          "description": "How to retry failed calls safely without turning a small outage into a big one.",
+          "prerequisites": [
+            "http",
+            "idempotency"
+          ],
+          "relatedTopics": [
+            "circuit-breaker",
+            "idempotency",
+            "rate-limiting",
+            "backpressure-and-load-shedding",
+            "hot-keys-and-thundering-herd",
+            "message-delivery-semantics"
+          ]
+        },
+        {
+          "id": "unique-id-generation",
+          "title": "Unique ID Generation",
+          "level": "intermediate",
+          "description": "Generating unique IDs across many machines: UUIDs, Snowflake, ULID and ticket servers.",
+          "prerequisites": [
+            "databases",
+            "sharding"
+          ],
+          "relatedTopics": [
+            "sharding",
+            "databases",
+            "storage-engines",
+            "consensus-and-leader-election",
+            "multi-region-and-disaster-recovery"
+          ]
+        },
+        {
+          "id": "search-and-inverted-index",
+          "title": "Search and the Inverted Index",
+          "level": "intermediate",
+          "description": "How full-text search engines find and rank documents fast, and how to keep them in sync.",
+          "prerequisites": [
+            "databases"
+          ],
+          "relatedTopics": [
+            "databases",
+            "sharding",
+            "database-replication",
+            "event-streaming",
+            "storage-engines",
+            "bloom-filters-and-probabilistic-structures"
+          ]
+        },
+        {
+          "id": "service-discovery",
+          "title": "Service Discovery",
+          "level": "intermediate",
+          "description": "How services find healthy instances of each other when IPs change constantly.",
+          "prerequisites": [
+            "load-balancing",
+            "microservices-vs-monolith"
+          ],
+          "relatedTopics": [
+            "load-balancing",
+            "service-mesh-and-sidecars",
+            "dns",
+            "api-gateway",
+            "consensus-and-leader-election",
+            "gossip-and-failure-detection"
+          ]
+        },
+        {
+          "id": "deployment-strategies",
+          "title": "Deployment Strategies",
+          "level": "intermediate",
+          "description": "Rolling, blue-green, canary, feature flags and safe database migrations.",
+          "prerequisites": [
+            "load-balancing",
+            "databases"
+          ],
+          "relatedTopics": [
+            "load-balancing",
+            "monitoring-and-observability",
+            "service-mesh-and-sidecars",
+            "stateless-vs-stateful-services",
+            "availability-and-slas",
+            "multi-region-and-disaster-recovery"
+          ]
+        },
+        {
+          "id": "security-in-system-design",
+          "title": "Security in System Design",
+          "level": "intermediate",
+          "description": "Authentication, authorization, OAuth/OIDC, JWTs, TLS, encryption, secrets and common attacks.",
+          "prerequisites": [
+            "authentication-and-sessions",
+            "http"
+          ],
+          "relatedTopics": [
+            "authentication-and-sessions",
+            "api-gateway",
+            "rate-limiting",
+            "service-mesh-and-sidecars",
+            "cdn",
+            "proxy-and-reverse-proxy"
+          ]
+        },
+        {
+          "id": "change-data-capture",
+          "title": "Change Data Capture (CDC)",
+          "level": "intermediate",
+          "description": "Stream every insert, update and delete out of a database into search indexes, caches, warehouses and queues.",
+          "prerequisites": [
+            "databases",
+            "database-replication",
+            "queues"
+          ],
+          "relatedTopics": [
+            "transactional-outbox-and-inbox",
+            "event-streaming",
+            "message-delivery-semantics",
+            "idempotency",
+            "search-and-inverted-index",
+            "data-warehouses-and-olap",
+            "caching",
+            "postgresql-deep-dive"
+          ]
+        },
+        {
+          "id": "transactional-outbox-and-inbox",
+          "title": "Transactional Outbox and Inbox",
+          "level": "intermediate",
+          "description": "Publish events reliably by saving them in the same transaction as your data, and dedupe them on the consumer side.",
+          "prerequisites": [
+            "databases",
+            "queues",
+            "idempotency"
+          ],
+          "relatedTopics": [
+            "change-data-capture",
+            "distributed-transactions",
+            "message-delivery-semantics",
+            "event-streaming",
+            "pub-sub",
+            "idempotency",
+            "transactions-and-acid",
+            "background-jobs"
           ]
         },
         {
@@ -1937,6 +2851,307 @@ export const catalog: LearnCatalog = {
           "relatedTopics": [
             "microservices-vs-monolith",
             "circuit-breaker"
+          ]
+        },
+        {
+          "id": "consensus-and-leader-election",
+          "title": "Consensus and Leader Election",
+          "level": "advanced",
+          "description": "How a group of machines agrees on one value or one leader, even when some of them crash or the network misbehaves.",
+          "prerequisites": [
+            "database-replication",
+            "cap-theorem",
+            "consistency-models"
+          ],
+          "relatedTopics": [
+            "distributed-locks-and-fencing",
+            "gossip-and-failure-detection",
+            "database-replication",
+            "cap-theorem",
+            "consistency-models",
+            "service-discovery",
+            "distributed-transactions"
+          ]
+        },
+        {
+          "id": "distributed-transactions",
+          "title": "Distributed Transactions",
+          "level": "advanced",
+          "description": "Keeping data consistent when one business operation spans several databases or services.",
+          "prerequisites": [
+            "microservices-vs-monolith",
+            "databases",
+            "queues",
+            "idempotency"
+          ],
+          "relatedTopics": [
+            "consensus-and-leader-election",
+            "event-streaming",
+            "idempotency",
+            "message-delivery-semantics",
+            "microservices-vs-monolith",
+            "pub-sub",
+            "stream-and-batch-processing"
+          ]
+        },
+        {
+          "id": "conflict-resolution-and-crdts",
+          "title": "Conflict Resolution and CRDTs",
+          "level": "advanced",
+          "description": "What happens when two replicas accept different writes to the same data at the same time, and how to merge them safely.",
+          "prerequisites": [
+            "database-replication",
+            "consistency-models",
+            "cap-theorem"
+          ],
+          "relatedTopics": [
+            "consensus-and-leader-election",
+            "gossip-and-failure-detection",
+            "database-replication",
+            "consistency-models",
+            "consistent-hashing",
+            "multi-region-and-disaster-recovery",
+            "storage-engines"
+          ]
+        },
+        {
+          "id": "gossip-and-failure-detection",
+          "title": "Gossip and Failure Detection",
+          "level": "advanced",
+          "description": "How nodes in a large cluster figure out who is alive and spread information without a central coordinator.",
+          "prerequisites": [
+            "load-balancing",
+            "consistent-hashing",
+            "cap-theorem"
+          ],
+          "relatedTopics": [
+            "consensus-and-leader-election",
+            "conflict-resolution-and-crdts",
+            "service-discovery",
+            "consistent-hashing",
+            "timeouts-retries-and-backoff",
+            "monitoring-and-observability"
+          ]
+        },
+        {
+          "id": "distributed-locks-and-fencing",
+          "title": "Distributed Locks and Fencing Tokens",
+          "level": "advanced",
+          "description": "Making sure only one process at a time does something across many machines, and staying safe when that guarantee breaks.",
+          "prerequisites": [
+            "consistency-models",
+            "idempotency",
+            "caching"
+          ],
+          "relatedTopics": [
+            "consensus-and-leader-election",
+            "gossip-and-failure-detection",
+            "idempotency",
+            "timeouts-retries-and-backoff",
+            "distributed-transactions",
+            "hot-keys-and-thundering-herd"
+          ]
+        },
+        {
+          "id": "storage-engines",
+          "title": "Storage Engines: B-Trees vs LSM-Trees",
+          "level": "advanced",
+          "description": "How databases actually lay data out on disk, and why that choice decides whether they're better at reads or writes.",
+          "prerequisites": [
+            "databases",
+            "sql-vs-nosql",
+            "database-replication"
+          ],
+          "relatedTopics": [
+            "bloom-filters-and-probabilistic-structures",
+            "database-replication",
+            "sharding",
+            "event-streaming",
+            "data-warehouses-and-olap",
+            "conflict-resolution-and-crdts"
+          ]
+        },
+        {
+          "id": "event-streaming",
+          "title": "Event Streaming and Log-Based Brokers",
+          "level": "advanced",
+          "description": "Kafka-style brokers that store events in an ordered, replayable log instead of deleting them once delivered.",
+          "prerequisites": [
+            "queues",
+            "pub-sub",
+            "sharding"
+          ],
+          "relatedTopics": [
+            "stream-and-batch-processing",
+            "distributed-transactions",
+            "message-delivery-semantics",
+            "pub-sub",
+            "queues",
+            "backpressure-and-load-shedding",
+            "storage-engines"
+          ]
+        },
+        {
+          "id": "stream-and-batch-processing",
+          "title": "Stream and Batch Processing",
+          "level": "advanced",
+          "description": "Processing large datasets all at once (batch) or continuously as events arrive (stream), and the time and correctness problems each brings.",
+          "prerequisites": [
+            "queues",
+            "pub-sub",
+            "scalability"
+          ],
+          "relatedTopics": [
+            "event-streaming",
+            "distributed-transactions",
+            "data-warehouses-and-olap",
+            "message-delivery-semantics",
+            "backpressure-and-load-shedding",
+            "storage-engines"
+          ]
+        },
+        {
+          "id": "bloom-filters-and-probabilistic-structures",
+          "title": "Bloom Filters and Probabilistic Data Structures",
+          "level": "advanced",
+          "description": "Tiny, fast structures that answer 'have I seen this?' or 'how many?' approximately, trading a small, known error for huge memory savings.",
+          "prerequisites": [
+            "databases",
+            "caching"
+          ],
+          "relatedTopics": [
+            "storage-engines",
+            "caching",
+            "cdn",
+            "stream-and-batch-processing",
+            "data-warehouses-and-olap",
+            "search-and-inverted-index"
+          ]
+        },
+        {
+          "id": "geospatial-indexing",
+          "title": "Geospatial Indexing",
+          "level": "advanced",
+          "description": "Finding things near a point fast, using geohash, quadtrees and S2/H3 cells instead of scanning every location.",
+          "prerequisites": [
+            "databases",
+            "sharding"
+          ],
+          "relatedTopics": [
+            "sharding",
+            "caching",
+            "hot-keys-and-thundering-herd",
+            "search-and-inverted-index",
+            "consistent-hashing"
+          ]
+        },
+        {
+          "id": "hot-keys-and-thundering-herd",
+          "title": "Hot Keys and Thundering Herd",
+          "level": "advanced",
+          "description": "Handling the one key everyone wants at once: hot partitions, cache stampedes, request coalescing and key splitting.",
+          "prerequisites": [
+            "caching",
+            "sharding"
+          ],
+          "relatedTopics": [
+            "caching",
+            "cache-eviction-policies",
+            "sharding",
+            "consistent-hashing",
+            "timeouts-retries-and-backoff",
+            "backpressure-and-load-shedding",
+            "bloom-filters-and-probabilistic-structures",
+            "distributed-locks-and-fencing"
+          ]
+        },
+        {
+          "id": "backpressure-and-load-shedding",
+          "title": "Backpressure and Load Shedding",
+          "level": "advanced",
+          "description": "Keeping a system healthy when demand exceeds capacity: slowing producers, bounding queues, rejecting early and degrading gracefully.",
+          "prerequisites": [
+            "queues",
+            "rate-limiting",
+            "circuit-breaker"
+          ],
+          "relatedTopics": [
+            "rate-limiting",
+            "circuit-breaker",
+            "queues",
+            "timeouts-retries-and-backoff",
+            "hot-keys-and-thundering-herd",
+            "multi-region-and-disaster-recovery",
+            "availability-and-slas",
+            "event-streaming"
+          ]
+        },
+        {
+          "id": "multi-region-and-disaster-recovery",
+          "title": "Multi-Region and Disaster Recovery",
+          "level": "advanced",
+          "description": "Surviving the loss of a data centre or a whole region: RPO/RTO, backups, active-passive vs active-active, failover, cells and game days.",
+          "prerequisites": [
+            "database-replication",
+            "consistency-models",
+            "load-balancing"
+          ],
+          "relatedTopics": [
+            "availability-and-slas",
+            "database-replication",
+            "consistency-models",
+            "cap-theorem",
+            "conflict-resolution-and-crdts",
+            "consensus-and-leader-election",
+            "distributed-locks-and-fencing",
+            "dns",
+            "deployment-strategies",
+            "object-storage",
+            "backpressure-and-load-shedding"
+          ]
+        },
+        {
+          "id": "data-warehouses-and-olap",
+          "title": "Data Warehouses and OLAP",
+          "level": "advanced",
+          "description": "Systems built for analytics over huge datasets: OLTP vs OLAP, columnar storage, ETL vs ELT, lakes, lakehouses and star schemas.",
+          "prerequisites": [
+            "databases",
+            "sql-vs-nosql"
+          ],
+          "relatedTopics": [
+            "databases",
+            "storage-engines",
+            "object-storage",
+            "stream-and-batch-processing",
+            "event-streaming",
+            "sharding",
+            "bloom-filters-and-probabilistic-structures",
+            "database-replication"
+          ]
+        },
+        {
+          "id": "service-mesh-and-sidecars",
+          "title": "Service Mesh and Sidecars",
+          "level": "advanced",
+          "description": "Moving retries, timeouts, mTLS and telemetry out of application code into proxies next to every service, and what that costs.",
+          "prerequisites": [
+            "microservices-vs-monolith",
+            "proxy-and-reverse-proxy",
+            "load-balancing"
+          ],
+          "relatedTopics": [
+            "microservices-vs-monolith",
+            "proxy-and-reverse-proxy",
+            "api-gateway",
+            "service-discovery",
+            "load-balancing",
+            "circuit-breaker",
+            "timeouts-retries-and-backoff",
+            "monitoring-and-observability",
+            "security-in-system-design",
+            "deployment-strategies",
+            "api-styles-graphql-grpc"
           ]
         }
       ]
