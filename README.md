@@ -4,7 +4,7 @@ Private tools and learning material that run **entirely in the browser**: develo
 
 Live at [zykit.vercel.app](https://zykit.vercel.app).
 
-- **Tools** (`/`, `/tools/<tool-id>`): the list below. The home page has search (press `/`) and category filters.
+- **Tools** (`/`, `/tools/<tool-id>`): the list below. The home page has search (press `/`) and category filters. 
 - **Learn** (`/learn`): 9 subjects, 176 lessons with runnable examples, 151 solved DSA problems and 9 system design case studies. See [Learn](#learn).
 - **Blog** (`/blog`): guides, including the Claude Code plugins used to build the site.
 
